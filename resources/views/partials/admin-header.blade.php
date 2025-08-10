@@ -9,7 +9,7 @@
 
     <!-- Logo -->
     <div class="flex items-center gap-3">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-24">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-24 ml-24">
         <!-- Removed 'Mi App' text -->
     </div>
 
