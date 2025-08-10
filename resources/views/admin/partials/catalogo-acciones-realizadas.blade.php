@@ -129,7 +129,27 @@
 
 
     </div>
-    <x-admin.confirmation-modal modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
-        message="¿Estás seguro de que deseas eliminar este tipo de objeto?" />
+    <!-- MODAL ELIMINAR ACCIÓN REALIZADA -->
+    <x-admin.confirmation-modal 
+        modalName="isDeleteAccionModalOpen"
+        title="Eliminar Acción Realizada"
+        :itemToDelete="'accionToDelete'"
+        itemNameProperty="nombre"
+        message="¿Estás seguro de que deseas eliminar la acción realizada"
+    />
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('accionesRealizadas', () => ({
+                ...Alpine.rawData,
+                deleteAccion() {
+                    if (this.accionToDelete) {
+                        this.acciones = this.acciones.filter(a => a.id_accion !== this.accionToDelete.id_accion);
+                        this.isDeleteAccionModalOpen = false;
+                        this.accionToDelete = { id_accion: '', nombre: '', descripcion: '' };
+                    }
+                }
+            }));
+        });
+    </script>
 
 </div>
