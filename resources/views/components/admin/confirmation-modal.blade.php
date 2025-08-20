@@ -1,6 +1,6 @@
 @props([
     'modalName',
-    'title' => 'Confirmar Eliminación',
+    'title' => 'Confirmar',
     'itemToDelete',
     'itemNameProperty' => 'nombre',
     'message'
@@ -22,11 +22,11 @@
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
         </div>
         <div class="mt-4">
-            <p>{{ $message }} <strong x-text="{{ $itemToDelete }} ? {{ $itemToDelete }}.{{ $itemNameProperty }} : ''"></strong>? Esta acción no se puede deshacer.</p>
+            <p>{{ $message }} <strong x-text="{{ $itemToDelete }} ? {{ $itemToDelete }}.{{ $itemNameProperty }} : ''"></strong>?</p>
         </div>
         <div class="flex justify-end pt-4">
             <button type="button" @click="{{ $modalName }} = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
-            <button type="submit" @click="{{ $modalName }} = false" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
+            <button type="button" @click="$dispatch('confirm-delete'); {{ $modalName }} = false" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Confirmar</button>
         </div>
     </div>
 </div>

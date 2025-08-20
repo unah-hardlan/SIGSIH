@@ -1,0 +1,30 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-BipackPm.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/global.css": {
+    "file": "assets/global-Dcbx8HGs.css",
+    "src": "resources/css/global.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DCPrjuDB.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/auth.js": {
+    "file": "assets/auth-DgYWvaop.js",
+    "name": "auth",
+    "src": "resources/js/auth.js",
+    "isEntry": true
+  },
+  "resources/js/sidebar.js": {
+    "file": "assets/sidebar-g0EymUnS.js",
+    "name": "sidebar",
+    "src": "resources/js/sidebar.js",
+    "isEntry": true
+  }
+}

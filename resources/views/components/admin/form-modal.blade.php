@@ -21,7 +21,7 @@
             <h3 class="text-xl font-bold text-gray-700">{{ $title }}</h3>
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
         </div>
-        <form @submit.prevent="$dispatch('submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-4">
+        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-4">
             {{ $slot }}
             <div class="flex justify-end pt-4">
                 <button type="button" @click="{{ $modalName }} = false"
