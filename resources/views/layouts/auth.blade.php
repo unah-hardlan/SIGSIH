@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Iniciar Sesión – SIGSIH</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configurar Tailwind para modo oscuro con la clase 'dark'
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -19,15 +21,25 @@
             plugins: []
         }
     </script>
-    
+
+    <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
         input[type="password"]::-ms-reveal,
         input[type="password"]::-ms-clear {
             display: none;
         }
     </style>
+
     @livewireStyles
+
+    <!-- Alpine.js (defer para que cargue antes de tu script) -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Axios (para manejar el login por API y cookies) -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/login-guard.js" defer></script>
+    <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
 </head>
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
@@ -41,7 +53,7 @@
     <div class="min-h-screen flex items-center justify-center">
         <div class="w-full max-w-sm">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 transition-colors">
-                <!-- CÍRCULO CON TU LOGO -->
+                <!-- LOGO -->
                 <div class="text-center mb-6">
                     <div
                         class="inline-flex items-center justify-center w-36 h-36 rounded-full mb-3 bg-gray-100 dark:bg-white border-4 border-white dark:border-gray-200 transition-colors">
@@ -56,11 +68,11 @@
                     </p>
                 </div>
 
-                <form @submit.prevent="handleSubmit">
-                    <!-- Nombre_usuario (solo registro) -->
+                <form @submit.prevent="handleSubmit" autocomplete="off">
+                    <!-- Nombre de usuario (solo registro) -->
                     <div x-show="!isLogin" class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de Usuario
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de
+                            Usuario</label>
                         <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                             placeholder="Juan Orlando" />
@@ -74,8 +86,7 @@
                             placeholder="Juanchi" />
                     </div>
 
-
-                    <!-- Correo electrónico (solo registro) -->
+                    <!-- Correo (solo registro) -->
                     <div x-show="!isLogin" class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo
                             electrónico</label>
@@ -83,6 +94,7 @@
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                             placeholder="correo@ejemplo.com" />
                     </div>
+
                     <!-- Contraseña -->
                     <div class="mb-2">
                         <label
@@ -103,7 +115,7 @@
                         </p>
                     </div>
 
-                    <!-- Recuperar contraseña -->
+                    <!-- Recuperar contraseña (solo login) -->
                     <div x-show="isLogin" class="mb-6 text-right">
                         <button type="button" @click="handleRecover()"
                             class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none">
@@ -134,19 +146,14 @@
                     <!-- Botón principal -->
                     <button type="submit"
                         class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        :disabled="
-            loading ||
-            (!username) ||
-            (password && !validatePassword(password)) ||
-            (!isLogin && confirmPassword && !validateConfirmPassword())
-          ">
+                        :disabled="loading || (!username) || (password && !validatePassword(password)) || (!isLogin && confirmPassword && !validateConfirmPassword())">
                         <span x-show="loading" class="inline-flex items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4" />
                                 <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2-647z" />
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2z" />
                             </svg>
                             Procesando...
                         </span>
@@ -190,64 +197,8 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('authPage', () => ({
-                isLogin: true,
-                showPassword: false,
-                showConfirmPassword: false,
-                username: '',
-                password: '',
-                confirmPassword: '',
-                name: '',
-                email: '',
-                loading: false,
-                isDark: false,
-
-                initTheme() {
-                    this.isDark = localStorage.getItem('sigTheme') === 'dark';
-                },
-                toggleTheme() {
-                    this.isDark = !this.isDark;
-                    localStorage.setItem('sigTheme', this.isDark ? 'dark' : 'light');
-                },
-                validatePassword(password) {
-                    return password.length >= 8;
-                },
-                validateConfirmPassword() {
-                    return this.password === this.confirmPassword;
-                },
-                handleSubmit() {
-                    this.loading = true;
-                    if (this.isLogin) {
-                        if (this.username === 'admin' && this.password === 'admin123') {
-                            window.location.href = '/admin/dashboard#';
-                        } else {
-                            alert('Usuario o contraseña incorrectos');
-                        }
-                        this.loading = false;
-                    } else {
-                        const alerta = document.createElement('div');
-                        alerta.id = 'registro-alerta';
-                        alerta.className =
-                            'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-100 border border-green-400 text-green-800 px-6 py-3 rounded-xl shadow-lg z-50';
-                        alerta.innerText = '✅ ¡Cuenta creada con éxito!';
-                        document.body.appendChild(alerta);
-                        setTimeout(() => {
-                            document.body.removeChild(alerta);
-                            window.location.href = '/admin/perfil';
-                        }, 2500);
-                    }
-                },
-                handleGoogle() {
-                    alert('Redirigiendo a Google Sign-In…');
-                },
-                handleRecover() {
-                    alert('Redirigiendo a recuperar contraseña…');
-                }
-            }));
-        });
-    </script>
+    <!-- Tu script de lógica -->
+    <script src="{{ asset('js/auth.js') }}"></script>
     @livewireScripts
 </body>
 

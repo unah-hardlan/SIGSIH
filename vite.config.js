@@ -9,6 +9,7 @@ export default defineConfig({
                 "resources/css/global.css",
                 "resources/js/app.js",
                 "resources/js/sidebar.js",
+                "resources/js/auth.js",
             ],
             refresh: true,
         }),

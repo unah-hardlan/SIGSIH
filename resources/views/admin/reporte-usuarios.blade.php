@@ -26,66 +26,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Juan Pérez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">jperez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">juan.perez@example.com</td>
-                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                <span class="text-green-700 nunito-bold">Activo</span>
-                            </td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">30/07/2025</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">002</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Ana López</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">alopez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">ana.lopez@example.com</td>
-                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                <span class="text-green-700 nunito-bold">Activo</span>
-                            </td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">25/07/2025</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">003</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Carlos Ruiz</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">cruiz</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">carlos.ruiz@example.com</td>
-                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                <span class="text-red-700 nunito-bold">Inactivo</span>
-                            </td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">20/07/2025</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">004</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">María Torres</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">mtorres</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">maria.torres@example.com</td>
-                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                <span class="text-green-700 nunito-bold">Activo</span>
-                            </td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">18/07/2025</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">005</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Pedro Gómez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">pgomez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">pedro.gomez@example.com</td>
-                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                <span class="text-red-700 nunito-bold">Inactivo</span>
-                            </td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">15/07/2025</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">006</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Lucía Fernández</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">lfernandez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">lucia.fernandez@example.com</td>
-                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                <span class="text-green-700 nunito-bold">Activo</span>
-                            </td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">10/07/2025</td>
-                        </tr>
+                        @forelse($usuarios as $u)
+                            <tr>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->id_usuario_pk }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->nombre_usuario }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->usuario }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->correo_electronico }}</td>
+                                <td class="border border-gray-300 py-2 px-3 text-center">
+                                    @if($u->estado_usuario==='ACTIVO')
+                                        <span class="text-green-700 nunito-bold">Activo</span>
+                                    @else
+                                        <span class="text-red-700 nunito-bold">Inactivo</span>
+                                    @endif
+                                </td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ optional($u->fecha_creacion)->format('d/m/Y') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="border border-gray-300 py-4 px-3 text-center text-gray-500">Sin datos</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -95,15 +53,15 @@
                 <div class="flex justify-center gap-8 text-sm">
                     <div class="text-center">
                         <span class="nunito-bold text-gray-700">Total: </span>
-                        <span class="nunito-regular">6 usuarios</span>
+                        <span class="nunito-regular">{{ $total }} usuarios</span>
                     </div>
                     <div class="text-center">
                         <span class="nunito-bold text-green-700">Activos: </span>
-                        <span class="nunito-regular">4</span>
+                        <span class="nunito-regular">{{ $activos }}</span>
                     </div>
                     <div class="text-center">
                         <span class="nunito-bold text-red-700">Inactivos: </span>
-                        <span class="nunito-regular">2</span>
+                        <span class="nunito-regular">{{ $inactivos }}</span>
                     </div>
                 </div>
             </div>

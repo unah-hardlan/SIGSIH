@@ -1,4 +1,6 @@
 import "./bootstrap";
+import "./usuarios";
+import "./parametros";
 
 // Alpine.js collapse plugin
 document.addEventListener("alpine:init", () => {

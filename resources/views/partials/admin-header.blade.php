@@ -30,8 +30,10 @@
                 </button>
                 <div x-show="open" @click.away="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white shadow rounded-md py-1 z-50">
-                    <button @click="loadView('perfil'); open = false" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">Editar perfil</button>
-                    <a href="/login" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Cerrar sesión</a>
+                    <button @click="loadView('perfil'); open = false"
+                        class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">Editar perfil</button>
+                    <button type="button" onclick="window.appLogout && window.appLogout()"
+                        class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">Cerrar sesión</button>
                 </div>
             </div>
             <div class="flex flex-col items-start">

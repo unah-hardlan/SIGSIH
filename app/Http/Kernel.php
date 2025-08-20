@@ -40,7 +40,7 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -65,5 +65,12 @@ class Kernel extends HttpKernel
         'spa.init' => \App\Http\Middleware\SpaInitializer::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        // JWT (API) - ya lo tenías
+        'jwt.auth' => \App\Http\Middleware\JwtMiddleware::class,
+
+        // JWT (WEB) - NUEVO alias para proteger /admin/*
+        'auth.jwt.web' => \App\Http\Middleware\JwtWebAuth::class,
+        'jwt.refresh' => \App\Http\Middleware\JwtRefresh::class,
     ];
 }

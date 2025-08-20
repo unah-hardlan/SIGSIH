@@ -1,226 +1,131 @@
-<div
-    x-data="{ 
-        isModalOpen: false, 
-        isEditUserModalOpen: false, 
-        isDeleteUserModalOpen: false, 
-        userToEdit: null, 
-        userToDelete: null,
-        search: '',
-        filtroPerfil: '',
-        ordenarPor: ''
-    }">
-    <!-- REFERENCIA A LA TABLA -->
+<div x-data="usuariosCrud" x-init="init()" class="p-4 space-y-4">
     <x-admin.tabla-crud :titulo="'Lista de Usuarios'">
         <x-slot name="filtros">
             @include('partials.filtros-generales', [
             'searchModel' => 'search',
             'filtrosSelect' => [
-            'filtroPerfil' => [
-            'label' => 'perfiles',
-            'options' => ['Técnico', 'Admin', 'Cliente']
-            ]
+            'filtroPerfil' => [ 'label' => 'Estado', 'options' => ['ACTIVO','INACTIVO'] ]
             ],
-            'ordenarOptions' => [
-            'nombre' => 'Nombre de Usuario',
-            'usuario' => 'Usuario',
-            'correo electrónico' => 'Correo Electrónico',
-            'estado' => 'Estado',
-            ]
+            'ordenarOptions' => [ 'nombre_usuario' => 'Nombre', 'usuario' => 'Usuario', 'correo_electronico' =>
+            'Correo', 'estado_usuario' => 'Estado']
             ])
         </x-slot>
-
-                <x-slot name="boton">
-            <div class="flex gap-2">
-                <a href="/admin/reportes-header?modulo=Usuarios&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                   class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                    <i class="fas fa-file-alt"></i> Generar Reporte
-                </a>
-                <button @click="isModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar
-                    usuario</button>
+        <x-slot name="boton">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1.5">
+                <button @click="openCreate()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-md bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-green-500">
+                    <i class="fas fa-user-plus text-[11px]"></i>
+                    <span>Agregar usuario</span>
+                </button>
+                <button @click="openReporte()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    <i class="fas fa-file-alt text-[11px]"></i>
+                    <span>Generar Reporte</span>
+                </button>
             </div>
         </x-slot>
-
-        <!-- Tabla estática -->
-        <table class="min-w-full text-sm">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="py-2 px-4 text-left">Nombre de Usuario</th>
-                    <th class="py-2 px-4 text-left">Usuario</th>
-                    <th class="py-2 px-4 text-left">Correo Electrónico</th>
-                    <th class="py-2 px-4 text-left">Estado</th>
-                    <th class="py-2 px-4 text-left">Creado por</th>
-                    <th class="py-2 px-4 text-left">Fecha de creación</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="py-2 px-4">Juan Pérez</td>
-                    <td class="py-2 px-4">jperez</td>
-                    <td class="py-2 px-4">juan.perez@example.com</td>
-                    <td class="py-2 px-4">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Activo</span>
-                    </td>
-                    <td class="py-2 px-4">admin</td>
-                    <td class="py-2 px-4">2025-07-30 10:00:00</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click="isEditUserModalOpen = true; userToEdit = {nombre: 'Juan Pérez', usuario: 'jperez', correo: 'juan.perez@example.com', estado: 'Activo'}"
-                            class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteUserModalOpen = true; userToDelete = {nombre: 'Juan Pérez'}"
-                            class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-4">Ana López</td>
-                    <td class="py-2 px-4">alopez</td>
-                    <td class="py-2 px-4">ana.lopez@example.com</td>
-                    <td class="py-2 px-4">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Activo</span>
-                    </td>
-                    <td class="py-2 px-4">soporte</td>
-                    <td class="py-2 px-4">2025-07-25 09:30:00</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click="isEditUserModalOpen = true; userToEdit = {nombre: 'Ana López', usuario: 'alopez', correo: 'ana.lopez@example.com', estado: 'Activo'}"
-                            class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteUserModalOpen = true; userToDelete = {nombre: 'Ana López'}"
-                            class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-4">Carlos Ruiz</td>
-                    <td class="py-2 px-4">cruiz</td>
-                    <td class="py-2 px-4">carlos.ruiz@example.com</td>
-                    <td class="py-2 px-4">
-                        <span class="bg-red-100 text-red-700 px-2 py-1 rounded">Inactivo</span>
-                    </td>
-                    <td class="py-2 px-4">admin</td>
-                    <td class="py-2 px-4">2025-07-20 08:15:00</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click="isEditUserModalOpen = true; userToEdit = {nombre: 'Carlos Ruiz', usuario: 'cruiz', correo: 'carlos.ruiz@example.com', estado: 'Inactivo'}"
-                            class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteUserModalOpen = true; userToDelete = {nombre: 'Carlos Ruiz'}"
-                            class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-4">María Torres</td>
-                    <td class="py-2 px-4">mtorres</td>
-                    <td class="py-2 px-4">maria.torres@example.com</td>
-                    <td class="py-2 px-4">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Activo</span>
-                    </td>
-                    <td class="py-2 px-4">admin</td>
-                    <td class="py-2 px-4">2025-07-18 11:45:00</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click="isEditUserModalOpen = true; userToEdit = {nombre: 'María Torres', usuario: 'mtorres', correo: 'maria.torres@example.com', estado: 'Activo'}"
-                            class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteUserModalOpen = true; userToDelete = {nombre: 'María Torres'}"
-                            class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-4">Pedro Gómez</td>
-                    <td class="py-2 px-4">pgomez</td>
-                    <td class="py-2 px-4">pedro.gomez@example.com</td>
-                    <td class="py-2 px-4">
-                        <span class="bg-red-100 text-red-700 px-2 py-1 rounded">Inactivo</span>
-                    </td>
-                    <td class="py-2 px-4">soporte</td>
-                    <td class="py-2 px-4">2025-07-15 14:20:00</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click="isEditUserModalOpen = true; userToEdit = {nombre: 'Pedro Gómez', usuario: 'pgomez', correo: 'pedro.gomez@example.com', estado: 'Inactivo'}"
-                            class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteUserModalOpen = true; userToDelete = {nombre: 'Pedro Gómez'}"
-                            class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="py-2 px-4">Lucía Fernández</td>
-                    <td class="py-2 px-4">lfernandez</td>
-                    <td class="py-2 px-4">lucia.fernandez@example.com</td>
-                    <td class="py-2 px-4">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded">Activo</span>
-                    </td>
-                    <td class="py-2 px-4">admin</td>
-                    <td class="py-2 px-4">2025-07-10 16:05:00</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click="isEditUserModalOpen = true; userToEdit = {nombre: 'Lucía Fernández', usuario: 'lfernandez', correo: 'lucia.fernandez@example.com', estado: 'Activo'}"
-                            class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteUserModalOpen = true; userToDelete = {nombre: 'Lucía Fernández'}"
-                            class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="py-2 px-4 text-left">Nombre</th>
+                        <th class="py-2 px-4 text-left">Usuario</th>
+                        <th class="py-2 px-4 text-left">Correo</th>
+                        <th class="py-2 px-4 text-left">Estado</th>
+                        <th class="py-2 px-4 text-left">Creado por</th>
+                        <th class="py-2 px-4 text-left">Creación</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="7" class="py-4 text-center">Cargando...</td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && users.length===0">
+                        <tr>
+                            <td colspan="7" class="py-4 text-center text-gray-500">Sin resultados</td>
+                        </tr>
+                    </template>
+                    <template x-for="u in users" :key="u.id">
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-2 px-4" x-text="u.nombre_usuario"></td>
+                            <td class="py-2 px-4" x-text="u.usuario"></td>
+                            <td class="py-2 px-4" x-text="u.correo_electronico"></td>
+                            <td class="py-2 px-4"><span
+                                    :class="u.estado_usuario==='ACTIVO'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'"
+                                    class="px-2 py-1 rounded" x-text="u.estado_usuario"></span></td>
+                            <td class="py-2 px-4" x-text="u.creado_por||'-'"></td>
+                            <td class="py-2 px-4" x-text="u.fecha_creacion||'-'"></td>
+                            <td class="py-2 px-4 flex gap-2">
+                                <button @click="openEdit(u)" class="text-blue-600 hover:text-blue-800"><i
+                                        class="fas fa-edit"></i></button>
+                                <button @click="openInactivar(u)" class="text-red-600 hover:text-red-800"><i
+                                        class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3 flex items-center justify-between" x-show="pagination.total>0">
+            <div class="text-xs">Página <span x-text="pagination.page"></span>/<span
+                    x-text="pagination.last_page"></span> • Total <span x-text="pagination.total"></span></div>
+            <div class="flex gap-2">
+                <button class="px-2 py-1 border rounded" :disabled="pagination.page<=1"
+                    @click="changePage(pagination.page-1)">Anterior</button>
+                <button class="px-2 py-1 border rounded" :disabled="pagination.page>=pagination.last_page"
+                    @click="changePage(pagination.page+1)">Siguiente</button>
+            </div>
+        </div>
+        <div class="mt-2 text-red-600 text-sm" x-show="error" x-text="error"></div>
     </x-admin.tabla-crud>
-    <!-- Modal Agregar Usuario -->
-    <x-admin.form-modal modalName="isModalOpen" title="Agregar Usuario" submitLabel="Agregar Usuario"
-        maxWidth="max-w-2xl">
+
+    <!-- Crear -->
+    <x-admin.form-modal modalName="isModalOpen" title="Agregar Usuario" submitLabel="Guardar" formId="formCrear">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" id="nombre" name="nombre"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            <div><label class="block text-sm">Nombre</label><input type="text" x-model="createForm.nombre_usuario"
+                    class="mt-1 w-full border rounded px-2 py-1" required></div>
+            <div><label class="block text-sm">Usuario</label><input type="text" x-model="createForm.usuario"
+                    class="mt-1 w-full border rounded px-2 py-1" required></div>
+            <div><label class="block text-sm">Correo</label><input type="email" x-model="createForm.correo_electronico"
+                    class="mt-1 w-full border rounded px-2 py-1" required></div>
+            <div><label class="block text-sm">Estado</label><select x-model="createForm.estado_usuario"
+                    class="mt-1 w-full border rounded px-2 py-1">
+                    <option value="ACTIVO">ACTIVO</option>
+                    <option value="INACTIVO">INACTIVO</option>
+                </select></div>
+            <div class="sm:col-span-2"><label class="block text-sm">Contraseña</label><input type="password"
+                    x-model="createForm.contrasena" minlength="8" class="mt-1 w-full border rounded px-2 py-1" required>
             </div>
-            <div>
-                <label for="usuario" class="block text-sm font-medium text-gray-700">Usuario</label>
-                <input type="text" id="usuario" name="usuario"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                <input type="email" id="correo" name="correo"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
-                <select id="estado" name="estado"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option>Activo</option>
-                    <option>Inactivo</option>
-                </select>
-            </div>
+            <div class="sm:col-span-2 text-red-600 text-sm" x-show="formError" x-text="formError"></div>
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Usuario -->
+    <!-- Editar -->
     <x-admin.edit-modal modalName="isEditUserModalOpen" title="Editar Usuario" itemToEdit="userToEdit"
-        maxWidth="max-w-2xl">
+        submitLabel="Actualizar" formId="formEditar">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label for="edit_nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" id="edit_nombre" name="edit_nombre" :value="userToEdit?.nombre"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_usuario" class="block text-sm font-medium text-gray-700">Usuario</label>
-                <input type="text" id="edit_usuario" name="edit_usuario" :value="userToEdit?.usuario"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_correo" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                <input type="email" id="edit_correo" name="edit_correo" :value="userToEdit?.correo"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_estado" class="block text-sm font-medium text-gray-700">Estado</label>
-                <select id="edit_estado" name="edit_estado"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option :selected="userToEdit?.estado === 'Activo'">Activo</option>
-                    <option :selected="userToEdit?.estado === 'Inactivo'">Inactivo</option>
-                </select>
-            </div>
+            <div><label class="block text-sm">Nombre</label><input type="text" x-model="editForm.nombre_usuario"
+                    class="mt-1 w-full border rounded px-2 py-1" required></div>
+            <div><label class="block text-sm">Usuario</label><input type="text" x-model="editForm.usuario"
+                    class="mt-1 w-full border rounded px-2 py-1 bg-gray-100" disabled></div>
+            <div><label class="block text-sm">Correo</label><input type="email" x-model="editForm.correo_electronico"
+                    class="mt-1 w-full border rounded px-2 py-1" required></div>
+            <div><label class="block text-sm">Estado</label><select x-model="editForm.estado_usuario"
+                    class="mt-1 w-full border rounded px-2 py-1">
+                    <option value="ACTIVO">ACTIVO</option>
+                    <option value="INACTIVO">INACTIVO</option>
+                </select></div>
+            <div class="sm:col-span-2"><label class="block text-sm">Nueva Contraseña (opcional)</label><input
+                    type="password" x-model="editForm.contrasena" minlength="8"
+                    class="mt-1 w-full border rounded px-2 py-1" placeholder="Dejar en blanco"></div>
+            <div class="sm:col-span-2 text-red-600 text-sm" x-show="formError" x-text="formError"></div>
         </div>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Usuario -->
-    <x-admin.confirmation-modal modalName="isDeleteUserModalOpen" itemToDelete="userToDelete"
-        message="¿Estás seguro de que quieres eliminar el usuario?" />
+    <!-- Confirmar inactivación -->
+    <x-admin.confirmation-modal modalName="showDeleteModal" title="Confirmar" itemToDelete="userToInactivate"
+        itemNameProperty="nombre_usuario" message="¿Seguro que deseas inactivar al usuario" />
 </div>
