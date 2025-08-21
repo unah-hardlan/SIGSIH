@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class Handler extends ExceptionHandler
@@ -31,17 +32,21 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (Throwable $e, Request $request) {
             if ($request->is('api/*')) {
-                $statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+                if ($e instanceof ValidationException) {
+                    return response()->json([
+                        'message' => 'Errores de validación.',
+                        'errors' => $e->errors(),
+                    ], 422);
+                }
 
+                $statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
                 $response = [
                     'error' => 'Ocurrió un error en el servidor.',
                     'message' => $e->getMessage(),
                 ];
-
                 if (config('app.debug')) {
                     $response['trace'] = $e->getTraceAsString();
                 }
-
                 return response()->json($response, $statusCode);
             }
         });
