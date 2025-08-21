@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\BitacoraController;
 use App\Http\Controllers\CalificacionServicioController;
+use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\EstadoSolicitudController;
+use App\Http\Controllers\OrdenServicioController;
+use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -50,6 +54,10 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
     Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
     Route::apiResource('kardex', \App\Http\Controllers\KardexController::class);
+    Route::apiResource('contactos', ContactoController::class);
+    Route::apiResource('estados-solicitud', EstadoSolicitudController::class);
     Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
+    Route::apiResource('solicitudes', SolicitudController::class);
+    Route::apiResource('ordenes-servicio', OrdenServicioController::class);
 });
 
