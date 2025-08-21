@@ -4,285 +4,173 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reporte de Proyecto BAC</title>
-    <link rel="stylesheet" href="proyecto-pdf.css" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        html {
-             height: 100%;
-        }
-
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 40px;
-            box-sizing: border-box;
-
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: #fff;
-            padding: 40px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-top: 0;
-            margin-bottom: 40px;
-        }
-
-        .section {
-            margin-bottom: 40px;
-        }
-
-        h2 {
-            font-size: 1.5em;
-            color: #34495e;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #e0e0e0;
-        }
-
-        .summary {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .summary-box {
-            flex: 1;
-            background-color: #f9f9f9;
-            border: 1px solid #e9ecef;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            min-width: 200px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            border: 1px solid #c2c2c2;
-            padding: 12px;
-            text-align: left;
-            font-size: 0.95em;
-        }
-
-        thead th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-
-        .income-row {
-            background-color: #a8e6cf;
-        }
-
-        .expense-row {
-            background-color: #cad2d9;
-        }
-
-        .charts {
-            display: flex;
-            justify-content: space-between;
-            gap: 30px;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        @media print {
-            body {
-                display: block;
-                padding: 0;
-                margin: 0;
-                background: #fff;
-            }
-            .container {
-                width: 100%;
-                max-width: none;
-                box-shadow: none;
-                border: none;
-                padding: 0;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 20px;
-                align-items: flex-start;
-            }
-            .container {
-                padding: 20px;
-            }
-        }
+      @page { size: A4; margin: 12mm; }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .page { box-shadow: none !important; }
+        .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+      }
     </style>
-
   </head>
-  <body>
-    <div class="container">
-      <h1>Proyecto BAC</h1>
+  <body class="bg-gray-100 text-gray-800 print:bg-white">
+    <div class="page max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-6 md:p-10 my-6 print:shadow-none print:rounded-none print:p-0">
+      <!-- Header del reporte -->
+      <x-admin.reportes-header :titulo="'Proyecto BAC'" :fecha="now()->format('d/m/Y')" :modulo="'Proyectos'" />
 
-      <div class="summary">
-        <div class="summary-box">
-          <h2>Ingresos Totales</h2>
-          <p>L. 29,230.00</p>
+      <!-- Resumen -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 avoid-break">
+        <div class="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5">
+          <div class="text-sm text-blue-700 font-semibold">Ingresos Totales</div>
+          <div class="mt-2 text-2xl md:text-3xl font-bold text-blue-900">L. 29,230.00</div>
         </div>
-        <div class="summary-box">
-          <h2>Gastos Totales</h2>
-          <p>L. 15,983.00</p>
+        <div class="rounded-xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-5">
+          <div class="text-sm text-rose-700 font-semibold">Gastos Totales</div>
+          <div class="mt-2 text-2xl md:text-3xl font-bold text-rose-900">L. 15,983.00</div>
         </div>
-        <div class="summary-box">
-          <h2>Balance</h2>
-          <p>L. 13,247.00</p>
+        <div class="rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5">
+          <div class="text-sm text-emerald-700 font-semibold">Balance</div>
+          <div class="mt-2 text-2xl md:text-3xl font-bold text-emerald-900">L. 13,247.00</div>
         </div>
-      </div>
+      </section>
 
-      <div class="section">
-        <h2>Ingresos</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Fecha</th>
-              <th>Monto</th>
-              <th>Categoría</th>
-              <th>Descripción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="income-row">
-              <td>Pago inicial</td>
-              <td>2025-07-20</td>
-              <td>L. 15,000.00</td>
-              <td>Ingreso</td>
-              <td>Primer pago del Proyecto Alpha</td>
-            </tr>
-            <tr class="income-row">
-              <td>Segundo pago</td>
-              <td>2025-07-25</td>
-              <td>L. 14,230.00</td>
-              <td>Ingreso</td>
-              <td>Segundo pago del Proyecto Beta</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="section">
-        <h2>Gastos</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Fecha</th>
-              <th>Monto</th>
-              <th>Categoría</th>
-              <th>Descripción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="expense-row">
-              <td>Compra de software</td>
-              <td>2025-07-22</td>
-              <td>L. 5,500.00</td>
-              <td>Gasto</td>
-              <td>Licencias de software de desarrollo</td>
-            </tr>
-            <tr class="expense-row">
-              <td>Alquiler de oficina</td>
-              <td>2025-07-26</td>
-              <td>L. 10,483.00</td>
-              <td>Gasto</td>
-              <td>Pago de alquiler mensual</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="charts">
-        <div class="chart-container">
-          <h2>Gráfica de Ingresos</h2>
-          <canvas id="incomeChart"></canvas>
+      <!-- Ingresos -->
+      <section class="mb-10 avoid-break">
+        <h2 class="text-xl md:text-2xl font-bold text-blue-900 border-b-4 border-blue-900/80 pb-1 mb-4">Ingresos</h2>
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-gray-50">
+              <tr class="text-left text-gray-700">
+                <th class="px-4 py-3 font-semibold">Nombre</th>
+                <th class="px-4 py-3 font-semibold">Fecha</th>
+                <th class="px-4 py-3 font-semibold">Monto</th>
+                <th class="px-4 py-3 font-semibold">Categoría</th>
+                <th class="px-4 py-3 font-semibold">Descripción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="bg-emerald-50/50">
+                <td class="px-4 py-3">Pago inicial</td>
+                <td class="px-4 py-3">2025-07-20</td>
+                <td class="px-4 py-3 font-semibold text-emerald-700">L. 15,000.00</td>
+                <td class="px-4 py-3">Ingreso</td>
+                <td class="px-4 py-3">Primer pago del Proyecto Alpha</td>
+              </tr>
+              <tr class="bg-emerald-50/50">
+                <td class="px-4 py-3">Segundo pago</td>
+                <td class="px-4 py-3">2025-07-25</td>
+                <td class="px-4 py-3 font-semibold text-emerald-700">L. 14,230.00</td>
+                <td class="px-4 py-3">Ingreso</td>
+                <td class="px-4 py-3">Segundo pago del Proyecto Beta</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="chart-container">
-          <h2>Gráfica de Gastos</h2>
-          <canvas id="expenseChart"></canvas>
+      </section>
+
+      <!-- Gastos -->
+      <section class="mb-10 avoid-break">
+        <h2 class="text-xl md:text-2xl font-bold text-blue-900 border-b-4 border-blue-900/80 pb-1 mb-4">Gastos</h2>
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-gray-50">
+              <tr class="text-left text-gray-700">
+                <th class="px-4 py-3 font-semibold">Nombre</th>
+                <th class="px-4 py-3 font-semibold">Fecha</th>
+                <th class="px-4 py-3 font-semibold">Monto</th>
+                <th class="px-4 py-3 font-semibold">Categoría</th>
+                <th class="px-4 py-3 font-semibold">Descripción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="bg-rose-50/50">
+                <td class="px-4 py-3">Compra de software</td>
+                <td class="px-4 py-3">2025-07-22</td>
+                <td class="px-4 py-3 font-semibold text-rose-700">L. 5,500.00</td>
+                <td class="px-4 py-3">Gasto</td>
+                <td class="px-4 py-3">Licencias de software de desarrollo</td>
+              </tr>
+              <tr class="bg-rose-50/50">
+                <td class="px-4 py-3">Alquiler de oficina</td>
+                <td class="px-4 py-3">2025-07-26</td>
+                <td class="px-4 py-3 font-semibold text-rose-700">L. 10,483.00</td>
+                <td class="px-4 py-3">Gasto</td>
+                <td class="px-4 py-3">Pago de alquiler mensual</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </section>
+
+      <!-- Gráficas -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6 avoid-break mb-6">
+        <div class="rounded-lg border border-gray-200 p-4">
+          <div class="text-sm text-gray-700 font-semibold mb-2">Gráfica de Ingresos</div>
+          <canvas id="incomeChart" height="200"></canvas>
+        </div>
+        <div class="rounded-lg border border-gray-200 p-4">
+          <div class="text-sm text-gray-700 font-semibold mb-2">Gráfica de Gastos</div>
+          <canvas id="expenseChart" height="200"></canvas>
+        </div>
+      </section>
+
+      <!-- Botón imprimir -->
+      <div class="print:hidden flex justify-end">
+        <button onclick="window.print()" class="mt-2 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M6 7V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3h1a3 3 0 0 1 3 3v4a1 1 0 0 1-1 1h-2v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-4H3a1 1 0 0 1-1-1v-4a3 3 0 0 1 3-3h1Zm2 0h8V5H8v2Zm8 10v-3H8v3h8Zm4-7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v3h2v-1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1h2v-3Z"/></svg>
+          Imprimir
+        </button>
       </div>
     </div>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-  // Datos para la gráfica de ingresos
-  const incomeData = {
-    labels: ["Pago inicial", "Segundo pago"],
-    datasets: [
-      {
-        label: "Ingresos",
-        data: [15000, 14230],
-        backgroundColor: ["rgba(75, 192, 192, 0.2)", "rgba(54, 162, 235, 0.2)"],
-        borderColor: ["rgba(75, 192, 192, 1)", "rgba(54, 162, 235, 1)"],
-        borderWidth: 1,
-      },
-    ],
-  };
+      document.addEventListener("DOMContentLoaded", function () {
+        // Datos para la gráfica de ingresos
+        const incomeData = {
+          labels: ["Pago inicial", "Segundo pago"],
+          datasets: [
+            {
+              label: "Ingresos",
+              data: [15000, 14230],
+              backgroundColor: ["rgba(16, 185, 129, 0.2)", "rgba(59, 130, 246, 0.2)"],
+              borderColor: ["rgba(16, 185, 129, 1)", "rgba(59, 130, 246, 1)"],
+              borderWidth: 1,
+            },
+          ],
+        };
 
-  // Datos para la gráfica de gastos
-  const expenseData = {
-    labels: ["Compra de software", "Alquiler de oficina"],
-    datasets: [
-      {
-        label: "Gastos",
-        data: [5500, 10483],
-        backgroundColor: ["rgba(255, 99, 132, 0.2)", "rgba(255, 159, 64, 0.2)"],
-        borderColor: ["rgba(255, 99, 132, 1)", "rgba(255, 159, 64, 1)"],
-        borderWidth: 1,
-      },
-    ],
-  };
+        // Datos para la gráfica de gastos
+        const expenseData = {
+          labels: ["Compra de software", "Alquiler de oficina"],
+          datasets: [
+            {
+              label: "Gastos",
+              data: [5500, 10483],
+              backgroundColor: ["rgba(239, 68, 68, 0.2)", "rgba(245, 158, 11, 0.2)"],
+              borderColor: ["rgba(239, 68, 68, 1)", "rgba(245, 158, 11, 1)"],
+              borderWidth: 1,
+            },
+          ],
+        };
 
-  // Opciones comunes para las gráficas
-  const options = {
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
+        // Opciones comunes para las gráficas
+        const options = {
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { display: false } },
+        };
 
-  // Crear gráfica de ingresos
-  const incomeCtx = document.getElementById("incomeChart").getContext("2d");
-  new Chart(incomeCtx, {
-    type: "bar",
-    data: incomeData,
-    options: options,
-  });
+        // Crear gráfica de ingresos
+        const incomeCtx = document.getElementById("incomeChart").getContext("2d");
+        new Chart(incomeCtx, { type: "bar", data: incomeData, options });
 
-  // Crear gráfica de gastos
-  const expenseCtx = document.getElementById("expenseChart").getContext("2d");
-  new Chart(expenseCtx, {
-    type: "bar",
-    data: expenseData,
-    options: options,
-  });
-});
-
+        // Crear gráfica de gastos
+        const expenseCtx = document.getElementById("expenseChart").getContext("2d");
+        new Chart(expenseCtx, { type: "bar", data: expenseData, options });
+      });
     </script>
   </body>
 </html>

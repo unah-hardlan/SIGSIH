@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\CalificacionServicioController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -37,7 +38,7 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
-
+  
     // MODULO DE PERSONAS
     Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
     Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
@@ -50,3 +51,6 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
     Route::apiResource('kardex', \App\Http\Controllers\KardexController::class);
 });
+    Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
+});
+

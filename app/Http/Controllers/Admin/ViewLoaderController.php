@@ -25,6 +25,7 @@ class ViewLoaderController extends Controller
             'cotizaciones',
             'solicitudes',
             'gestion-ordenes',
+            'calificaciones-servicio',
             'vista-proyectos',
             'proyectos',
             'tickets',

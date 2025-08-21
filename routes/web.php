@@ -51,6 +51,7 @@ Route::prefix('admin')
 
         // Órdenes de Servicio
         Route::get('gestion-ordenes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-ordenes'))->name('gestion-ordenes');
+        Route::get('calificaciones-servicio', fn() => view('layouts.admin')->with('partialView', 'admin.partials.calificaciones-servicio'))->name('calificaciones-servicio');
 
         // Proyectos
         Route::get('vista-proyectos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.vista-proyectos'))->name('vista-proyectos');

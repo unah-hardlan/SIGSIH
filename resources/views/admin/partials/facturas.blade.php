@@ -93,7 +93,7 @@
                         <td class="py-2 px-4">CAI-987654321</td>
                         <td class="py-2 px-4">BAC credomatic</td>
                         <td class="py-2 px-4 flex gap-2">
-                            <a href="#"
+                            <a href="/admin/formato-factura" target="_blank"
                                 class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2">
                                 <i class="fas fa-eye mr-1"></i> Ver detalles
                             </a>
@@ -122,7 +122,7 @@
                         <td class="py-2 px-4">CAI-123456789</td>
                         <td class="py-2 px-4">Bancafe</td>
                         <td class="py-2 px-4 flex gap-2">
-                            <a href="#"
+                            <a href="/admin/formato-factura" target="_blank"
                                 class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2">
                                 <i class="fas fa-eye mr-1"></i> Ver detalles
                             </a>

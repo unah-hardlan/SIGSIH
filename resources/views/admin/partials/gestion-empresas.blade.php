@@ -3,9 +3,15 @@
         isEmpresaModalOpen: false,
         isEmpresaRegistradaModalOpen: false,
         isOficinaModalOpen: false,
+        isDeleteEmpresaModalOpen: false,
+        isDeleteEmpresaRegistradaModalOpen: false,
+        isDeleteOficinaModalOpen: false,
         empresaToEdit: null,
         empresaRegistradaToEdit: null,
         oficinaToEdit: null,
+        empresaToDelete: null,
+        empresaRegistradaToDelete: null,
+        oficinaToDelete: null,
         empresas: [
             {id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'},
             {id: 2, nombre_empresa: 'Soluciones S.A.', descripcion_empresa: 'Empresa de tecnología', estado_empresa: 'Activo'},
@@ -27,13 +33,51 @@
             this.isOficinaModalOpen = true;
             this.oficinaToEdit = edit ? oficina : null;
         },
+        openDeleteEmpresaModal(empresa) {
+            this.empresaToDelete = empresa;
+            this.isDeleteEmpresaModalOpen = true;
+        },
+        openDeleteEmpresaRegistradaModal(empresa) {
+            this.empresaRegistradaToDelete = empresa;
+            this.isDeleteEmpresaRegistradaModalOpen = true;
+        },
+        openDeleteOficinaModal(oficina) {
+            this.oficinaToDelete = oficina;
+            this.isDeleteOficinaModalOpen = true;
+        },
+        deleteEmpresa() {
+            if (this.empresaToDelete) {
+                // Aquí iría la lógica para eliminar la empresa
+                console.log('Eliminando empresa:', this.empresaToDelete);
+                this.isDeleteEmpresaModalOpen = false;
+                this.empresaToDelete = null;
+            }
+        },
+        deleteEmpresaRegistrada() {
+            if (this.empresaRegistradaToDelete) {
+                // Eliminar de la lista local
+                this.empresasRegistradas = this.empresasRegistradas.filter(e => e.id !== this.empresaRegistradaToDelete.id);
+                console.log('Eliminando empresa registrada:', this.empresaRegistradaToDelete);
+                this.isDeleteEmpresaRegistradaModalOpen = false;
+                this.empresaRegistradaToDelete = null;
+            }
+        },
+        deleteOficina() {
+            if (this.oficinaToDelete) {
+                // Eliminar de la lista local
+                this.oficinas = this.oficinas.filter(o => o.id !== this.oficinaToDelete.id);
+                console.log('Eliminando oficina:', this.oficinaToDelete);
+                this.isDeleteOficinaModalOpen = false;
+                this.oficinaToDelete = null;
+            }
+        },
         oficinas: [
             {id: 1, nombre: 'Oficina Central'},
             {id: 2, nombre: 'Sucursal Norte'},
             {id: 3, nombre: 'Sucursal Sur'}
         ]
     }"
-    @keydown.window.escape="isEmpresaModalOpen = false; isEmpresaRegistradaModalOpen = false; isOficinaModalOpen = false">
+    @keydown.window.escape="isEmpresaModalOpen = false; isEmpresaRegistradaModalOpen = false; isOficinaModalOpen = false; isDeleteEmpresaModalOpen = false; isDeleteEmpresaRegistradaModalOpen = false; isDeleteOficinaModalOpen = false">
 
     <!-- Tabs -->
     <ul class="flex border-b nunito-bold mb-6 flex-wrap gap-2">
@@ -97,7 +141,7 @@
                         <a href="#"
                             @click.prevent="openEmpresaModal(true, {id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'})"
                             class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                        <a href="#" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        <a href="#" @click.prevent="openDeleteEmpresaModal({id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                     </td>
                 </tr>
             </tbody>
@@ -147,7 +191,7 @@
                         <td class="py-2 px-4 flex gap-2">
                             <a href="#" @click.prevent="openEmpresaRegistradaModal(true, empresa)"
                                 class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            <a href="#" @click.prevent="openDeleteEmpresaRegistradaModal(empresa)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 </template>
@@ -185,15 +229,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4">1</td>
-                    <td class="py-2 px-4">Oficina Central</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#" @click.prevent="openOficinaModal(true, {id: 1, nombre: 'Oficina Central'})"
-                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                        <a href="#" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
+                <template x-for="oficina in oficinas" :key="oficina.id">
+                    <tr class="border-b nunito-regular">
+                        <td class="py-2 px-4" x-text="oficina.id"></td>
+                        <td class="py-2 px-4" x-text="oficina.nombre"></td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click.prevent="openOficinaModal(true, oficina)"
+                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click.prevent="openDeleteOficinaModal(oficina)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
     </div>
@@ -328,6 +374,82 @@
                 class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">
                 &times;
             </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modals -->
+    <div x-show="isDeleteEmpresaModalOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+         @click.away="isDeleteEmpresaModalOpen = false"
+         style="display: none;">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold text-gray-700">Eliminar Empresa Cliente</h3>
+                <button @click="isDeleteEmpresaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="mt-4">
+                <p>¿Estás seguro de que deseas eliminar la empresa cliente <strong x-text="empresaToDelete ? empresaToDelete.nombre_empresa : ''"></strong>? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="flex justify-end pt-4">
+                <button type="button" @click="isDeleteEmpresaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
+                <button type="submit" @click="deleteEmpresa()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="isDeleteEmpresaRegistradaModalOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+         @click.away="isDeleteEmpresaRegistradaModalOpen = false"
+         style="display: none;">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold text-gray-700">Eliminar Empresa Registrada</h3>
+                <button @click="isDeleteEmpresaRegistradaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="mt-4">
+                <p>¿Estás seguro de que deseas eliminar la empresa registrada <strong x-text="empresaRegistradaToDelete ? empresaRegistradaToDelete.nombre_empresa : ''"></strong>? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="flex justify-end pt-4">
+                <button type="button" @click="isDeleteEmpresaRegistradaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
+                <button type="submit" @click="deleteEmpresaRegistrada()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="isDeleteOficinaModalOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+         @click.away="isDeleteOficinaModalOpen = false"
+         style="display: none;">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold text-gray-700">Eliminar Oficina</h3>
+                <button @click="isDeleteOficinaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="mt-4">
+                <p>¿Estás seguro de que deseas eliminar la oficina <strong x-text="oficinaToDelete ? oficinaToDelete.nombre : ''"></strong>? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="flex justify-end pt-4">
+                <button type="button" @click="isDeleteOficinaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
+                <button type="submit" @click="deleteOficina()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
+            </div>
         </div>
     </div>
 </div>

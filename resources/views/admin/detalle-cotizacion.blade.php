@@ -263,6 +263,54 @@
                 color: #00008b;
                 margin-top: 10px;
             }
+
+            .print-button-container {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .print-button {
+                background-color: #00008b;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                font-size: 16px;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            @media print {
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: white;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+
+                .container {
+                    page-break-inside: avoid;
+                    width: 100%;
+                    min-height: auto;
+                    box-shadow: none;
+                }
+
+                .items-section table {
+                    page-break-inside: avoid;
+                }
+
+                .terms-section {
+                    page-break-inside: avoid;
+                }
+
+                .summary {
+                    page-break-inside: avoid;
+                }
+
+                .print-button {
+                    display: none;
+                }
+            }
         </style>
         <link
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
@@ -377,76 +425,8 @@
                             <td class="taxes"></td>
                             <td class="total">-</td>
                         </tr>
-                        <!-- Add more rows as needed to fill the space and match the original layout -->
                         <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
-                        </tr>
-                        <tr>
-                            <td class="description"></td>
-                            <td class="unit-price"></td>
-                            <td class="quantity"></td>
-                            <td class="taxes"></td>
-                            <td class="total"></td>
+                            <td colspan="5" style="height: 8px;"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -500,6 +480,12 @@
                         <span class="amount">$ 2,390.00</span>
                     </div>
                 </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <button class="print-button" onclick="window.print()" style="background-color: #00008b; color: white; border: none; padding: 5px 10px; font-size: 14px; border-radius: 5px; cursor: pointer;">
+                    Imprimir Cotización
+                </button>
             </div>
 
             <footer>

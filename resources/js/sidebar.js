@@ -61,3 +61,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, 100);
 });
+
+// Helper para inicializar la lógica responsive del sidebar desde x-init sin usar "const" dentro del atributo
+window.initResponsiveSidebar = function (scope) {
+    if (!scope) return;
+    function checkMobile() {
+        var wasMobile = scope.isMobile;
+        scope.isMobile = window.innerWidth < 768;
+        if (wasMobile && !scope.isMobile) {
+            scope.sidebarOpen = true;
+        } else if (!wasMobile && scope.isMobile) {
+            scope.sidebarOpen = false;
+        }
+    }
+    window.addEventListener("resize", checkMobile);
+};
