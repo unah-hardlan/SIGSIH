@@ -50,7 +50,6 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
     Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
     Route::apiResource('kardex', \App\Http\Controllers\KardexController::class);
-});
     Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
 });
 
