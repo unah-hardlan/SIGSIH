@@ -32,11 +32,28 @@
     @livewireStyles
 </head>
 
-<body class="bg-gray-900 min-h-screen flex flex-col" x-data="{ sidebarOpen: true }">
-    <div class="flex h-screen min-h-0">
+<body class="bg-gray-900 min-h-screen flex flex-col" 
+      x-data="{ 
+          sidebarOpen: window.innerWidth >= 768, 
+          isMobile: window.innerWidth < 768 
+      }" 
+      x-init="initResponsiveSidebar($data)">
+    <div class="flex h-screen min-h-0 relative">
+        <!-- Overlay para móviles -->
+        <div x-show="sidebarOpen && isMobile" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false"
+             class="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden">
+        </div>
+
         @include('partials.admin-sidebar')
 
-        <main class="flex-1 p-6 overflow-y-auto h-screen bg-white text-gray-900">
+        <main class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white text-gray-900">
             @include('partials.admin-header')
             @hasSection('page-header')
             <div class="bg-white p-4 rounded shadow mb-6">
@@ -44,7 +61,7 @@
             </div>
             @endif
 
-            <div class="bg-white p-6 rounded-lg shadow">
+            <div class="bg-white p-3 sm:p-6 rounded-lg shadow">
                 @if(isset($partialView))
                 @include($partialView)
                 @else
