@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" x-data="authPage()" :class="{ 'dark': isDark }" x-init="initTheme()">
+<html lang="es" x-data="authPage()" x-init="init()" :class="{ 'dark': isDark }">
 
 <head>
     <meta charset="UTF-8" />
@@ -30,6 +30,9 @@
         input[type="password"]::-ms-clear {
             display: none;
         }
+        
+        /* Prevenir flash del contenido antes de que Alpine esté listo */
+        [x-cloak] { display: none !important; }
     </style>
 
     @livewireStyles
@@ -70,7 +73,7 @@
 
                 <form @submit.prevent="handleSubmit" autocomplete="off">
                     <!-- Nombre de usuario (solo registro) -->
-                    <div x-show="!isLogin" class="mb-6">
+                    <div x-show="!isLogin" x-cloak class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de
                             Usuario</label>
                         <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
@@ -87,7 +90,7 @@
                     </div>
 
                     <!-- Correo (solo registro) -->
-                    <div x-show="!isLogin" class="mb-6">
+                    <div x-show="!isLogin" x-cloak class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo
                             electrónico</label>
                         <input type="email" name="email" x-model="email" :required="!isLogin"
@@ -124,7 +127,7 @@
                     </div>
 
                     <!-- Confirmar contraseña (solo registro) -->
-                    <div x-show="!isLogin" class="mb-6">
+                    <div x-show="!isLogin" x-cloak class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirmar
                             Contraseña</label>
                         <div class="relative">
