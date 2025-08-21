@@ -404,6 +404,12 @@
                         </x-admin.sidebar-link>
                     </li>
                     <li>
+                        <x-admin.sidebar-link href="#" :active="false" view-name="calificaciones-servicio" class="py-1 px-3">
+                            <i class="fas fa-star text-sm w-4 text-center"></i>
+                            Calificaciones de Servicio
+                        </x-admin.sidebar-link>
+                    </li>
+                    <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-cai"
                             class="py-1 px-3">
                             <i class="fas fa-barcode text-sm w-4 text-center"></i>
