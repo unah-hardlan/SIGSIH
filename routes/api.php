@@ -38,5 +38,19 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
+  
+    // MODULO DE PERSONAS
+    Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
+    Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
+        Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
+    Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
+    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
+    Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);
+    Route::apiResource('cotizaciones', \App\Http\Controllers\CotizacionController::class);
+    Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
+    Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
+    Route::apiResource('kardex', \App\Http\Controllers\KardexController::class);
+});
     Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
 });
+
