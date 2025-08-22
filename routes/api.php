@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AgenciasController;
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\CalificacionServicioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CiudadesController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\DireccionesController;
 use App\Http\Controllers\EmpresasClienteController;
+use App\Http\Controllers\EstadoCalendarioController;
 use App\Http\Controllers\EstadoProyectoController;
 use App\Http\Controllers\EstadoSolicitudController;
 use App\Http\Controllers\EstadoTicketController;
@@ -23,6 +25,12 @@ use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TipoMantenimientoController;
+use App\Http\Controllers\EstadoFacturaController;
+use App\Http\Controllers\EstadoCaiController;
+use App\Http\Controllers\CaiController;
+use App\Http\Controllers\FacturaController;
+use App\Http\Controllers\DetalleFacturaController;
+use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -92,6 +100,14 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('historial-contrasenas', HistorialContrasenasController::class);
     Route::apiResource('tipos-mantenimiento', TipoMantenimientoController::class);
     Route::apiResource('estados-ticket', EstadoTicketController::class);
+    Route::apiResource('estados-calendario', EstadoCalendarioController::class);
     Route::apiResource('tickets', TicketController::class);
+    Route::apiResource('calendario', CalendarioController::class);
+        Route::apiResource('estados-factura', EstadoFacturaController::class);
+            Route::apiResource('estados-cai', EstadoCaiController::class);
+                Route::apiResource('cai', CaiController::class);
+                    Route::apiResource('facturas', FacturaController::class);
+                        Route::apiResource('detalles-factura', DetalleFacturaController::class);
+                            Route::apiResource('servicios', ServicioController::class);
 });
 
