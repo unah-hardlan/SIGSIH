@@ -11,7 +11,7 @@
     <meta name="spa-view" content="{{ request()->header('X-SPA-View') }}">
     @endif
 
-    @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/js/app.js', 'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js'])
+    @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/js/app.js', 'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js', 'resources/js/tabla-responsive.js'])
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
@@ -34,12 +34,12 @@
 
 <body class="bg-gray-900 min-h-screen flex flex-col" 
       x-data="{ 
-          sidebarOpen: window.innerWidth >= 768, 
+          sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
       }" 
       x-init="initResponsiveSidebar($data)">
     <div class="flex h-screen min-h-0 relative">
-        <!-- Overlay para móviles -->
+        <!-- Overlay para móviles SOLO -->
         <div x-show="sidebarOpen && isMobile" 
              x-transition:enter="transition-opacity ease-linear duration-300"
              x-transition:enter-start="opacity-0"
@@ -48,7 +48,8 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              @click="sidebarOpen = false"
-             class="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden">
+             class="fixed inset-0 bg-black bg-opacity-50"
+             style="z-index: 9998;">
         </div>
 
         @include('partials.admin-sidebar')

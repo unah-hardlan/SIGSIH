@@ -31,6 +31,7 @@ use App\Http\Controllers\CaiController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\DetalleFacturaController;
 use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\DetalleOrdenProductoController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -109,5 +110,6 @@ Route::middleware('jwt.auth')->group(function () {
                     Route::apiResource('facturas', FacturaController::class);
                         Route::apiResource('detalles-factura', DetalleFacturaController::class);
                             Route::apiResource('servicios', ServicioController::class);
+                                Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
 });
 
