@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AgenciasController;
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\CalificacionServicioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CiudadesController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\DireccionesController;
 use App\Http\Controllers\EmpresasClienteController;
+use App\Http\Controllers\EstadoCalendarioController;
 use App\Http\Controllers\EstadoProyectoController;
 use App\Http\Controllers\EstadoSolicitudController;
 use App\Http\Controllers\EstadoTicketController;
@@ -92,6 +94,8 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('historial-contrasenas', HistorialContrasenasController::class);
     Route::apiResource('tipos-mantenimiento', TipoMantenimientoController::class);
     Route::apiResource('estados-ticket', EstadoTicketController::class);
+    Route::apiResource('estados-calendario', EstadoCalendarioController::class);
     Route::apiResource('tickets', TicketController::class);
+    Route::apiResource('calendario', CalendarioController::class);
 });
 
