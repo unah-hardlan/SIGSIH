@@ -37,10 +37,7 @@
     </ul>
 
     <div x-show="tab==='proyectos'" class="overflow-x-auto">
-        <x-admin.tabla-crud>
-            <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Proyectos</h2>
-            </x-slot>
+        <x-admin.tabla-mobile titulo="Proyectos">
             <x-slot name="filtros">
                 <input type="text" placeholder="Buscar proyecto..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
                 <select class="border rounded px-1 py-2 text-sm w-full sm:w-40">
@@ -60,61 +57,111 @@
                     <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo proyecto</button>
                 </div>
             </x-slot>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-4 text-left">ID</th>
-                            <th class="py-2 px-4 text-left">Nombre</th>
-                            <th class="py-2 px-4 text-left">Fecha Inicial</th>
-                            <th class="py-2 px-4 text-left">Fecha Fin Estimada</th>
-                            <th class="py-2 px-4 text-left">Fecha Fin Real</th>
-                            <th class="py-2 px-4 text-left">Descripción</th>
-                            <th class="py-2 px-4 text-left">Actividades</th>
-                            <th class="py-2 px-4 text-left">Orden de Servicio</th>
-                            <th class="py-2 px-4 text-left">Estado</th>
-                            <th class="py-2 px-4 text-left">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4">1</td>
-                            <td class="py-2 px-4">Proyecto Alpha</td>
-                            <td class="py-2 px-4">2025-01-15</td>
-                            <td class="py-2 px-4">2025-07-30</td>
-                            <td class="py-2 px-4">2025-07-29</td>
-                            <td class="py-2 px-4">Implementación inicial del sistema</td>
-                            <td class="py-2 px-4">5 tareas</td>
-                            <td class="py-2 px-4">OS-00123</td>
-                            <td class="py-2 px-4">
-                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded">Finalizado</span>
-                            </td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 1, nombre: 'Proyecto Alpha', fecha_inicio: '2025-01-15', fecha_estimada_fin: '2025-07-30', fecha_fin: '2025-07-29', descripcion: 'Implementación inicial del sistema', actividades: '5 tareas', orden_servicio: 'OS-00123', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 1, nombre: 'Proyecto Alpha'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4">2</td>
-                            <td class="py-2 px-4">Proyecto Beta</td>
-                            <td class="py-2 px-4">2025-02-01</td>
-                            <td class="py-2 px-4">2025-08-20</td>
-                            <td class="py-2 px-4">-</td>
-                            <td class="py-2 px-4">Planificación y diseño preliminar</td>
-                            <td class="py-2 px-4">3 tareas</td>
-                            <td class="py-2 px-4">OS-00124</td>
-                            <td class="py-2 px-4">
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded">En Proceso</span>
-                            </td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 2, nombre: 'Proyecto Beta', fecha_inicio: '2025-02-01', fecha_estimada_fin: '2025-08-20', fecha_fin: '', descripcion: 'Planificación y diseño preliminar', actividades: '3 tareas', orden_servicio: 'OS-00124', estado: 'En Proceso'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 2, nombre: 'Proyecto Beta'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </x-admin.tabla-crud>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left">ID</th>
+                        <th class="py-2 px-4 text-left">Nombre</th>
+                        <th class="py-2 px-4 text-left">Fecha Inicial</th>
+                        <th class="py-2 px-4 text-left">Fecha Fin Estimada</th>
+                        <th class="py-2 px-4 text-left">Fecha Fin Real</th>
+                        <th class="py-2 px-4 text-left">Descripción</th>
+                        <th class="py-2 px-4 text-left">Actividades</th>
+                        <th class="py-2 px-4 text-left">Orden de Servicio</th>
+                        <th class="py-2 px-4 text-left">Estado</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b nunito-regular">
+                        <td class="py-2 px-4">1</td>
+                        <td class="py-2 px-4">Proyecto Alpha</td>
+                        <td class="py-2 px-4">2025-01-15</td>
+                        <td class="py-2 px-4">2025-07-30</td>
+                        <td class="py-2 px-4">2025-07-29</td>
+                        <td class="py-2 px-4">Implementación inicial del sistema</td>
+                        <td class="py-2 px-4">5 tareas</td>
+                        <td class="py-2 px-4">OS-00123</td>
+                        <td class="py-2 px-4">
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded">Finalizado</span>
+                        </td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 1, nombre: 'Proyecto Alpha', fecha_inicio: '2025-01-15', fecha_estimada_fin: '2025-07-30', fecha_fin: '2025-07-29', descripcion: 'Implementación inicial del sistema', actividades: '5 tareas', orden_servicio: 'OS-00123', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 1, nombre: 'Proyecto Alpha'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    <tr class="border-b nunito-regular">
+                        <td class="py-2 px-4">2</td>
+                        <td class="py-2 px-4">Proyecto Beta</td>
+                        <td class="py-2 px-4">2025-02-01</td>
+                        <td class="py-2 px-4">2025-08-20</td>
+                        <td class="py-2 px-4">-</td>
+                        <td class="py-2 px-4">Planificación y diseño preliminar</td>
+                        <td class="py-2 px-4">3 tareas</td>
+                        <td class="py-2 px-4">OS-00124</td>
+                        <td class="py-2 px-4">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded">En Proceso</span>
+                        </td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 2, nombre: 'Proyecto Beta', fecha_inicio: '2025-02-01', fecha_estimada_fin: '2025-08-20', fecha_fin: '', descripcion: 'Planificación y diseño preliminar', actividades: '3 tareas', orden_servicio: 'OS-00124', estado: 'En Proceso'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 2, nombre: 'Proyecto Beta'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <x-slot name="mobileTemplate">
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg shadow border border-gray-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Proyecto Alpha</h3>
+                                <p class="text-sm text-gray-500">OS-00123</p>
+                            </div>
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Finalizado</span>
+                        </div>
+                        <div class="space-y-1 text-sm">
+                            <div><span class="font-medium text-gray-600">Fecha Inicial:</span> 2025-01-15</div>
+                            <div><span class="font-medium text-gray-600">Fecha Fin Estimada:</span> 2025-07-30</div>
+                            <div><span class="font-medium text-gray-600">Fecha Fin Real:</span> 2025-07-29</div>
+                            <div><span class="font-medium text-gray-600">Actividades:</span> 5 tareas</div>
+                            <div><span class="font-medium text-gray-600">Descripción:</span> Implementación inicial del sistema</div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
+                            <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow border border-gray-200 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Proyecto Beta</h3>
+                                <p class="text-sm text-gray-500">OS-00124</p>
+                            </div>
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">En Proceso</span>
+                        </div>
+                        <div class="space-y-1 text-sm">
+                            <div><span class="font-medium text-gray-600">Fecha Inicial:</span> 2025-02-01</div>
+                            <div><span class="font-medium text-gray-600">Fecha Fin Estimada:</span> 2025-08-20</div>
+                            <div><span class="font-medium text-gray-600">Fecha Fin Real:</span> -</div>
+                            <div><span class="font-medium text-gray-600">Actividades:</span> 3 tareas</div>
+                            <div><span class="font-medium text-gray-600">Descripción:</span> Planificación y diseño preliminar</div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
+                            <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </x-slot>
+        </x-admin.tabla-mobile>
     </div>
     <div x-show="tab==='movimientos'" class="space-y-6">
         <x-admin.tabla-crud>
