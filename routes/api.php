@@ -25,6 +25,9 @@ use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TipoMantenimientoController;
+use App\Http\Controllers\EstadoFacturaController;
+use App\Http\Controllers\EstadoCaiController;
+use App\Http\Controllers\CaiController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -97,5 +100,8 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('estados-calendario', EstadoCalendarioController::class);
     Route::apiResource('tickets', TicketController::class);
     Route::apiResource('calendario', CalendarioController::class);
+        Route::apiResource('estados-factura', EstadoFacturaController::class);
+            Route::apiResource('estados-cai', EstadoCaiController::class);
+                Route::apiResource('cai', CaiController::class);
 });
 
