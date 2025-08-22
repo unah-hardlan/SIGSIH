@@ -28,6 +28,9 @@ use App\Http\Controllers\TipoMantenimientoController;
 use App\Http\Controllers\EstadoFacturaController;
 use App\Http\Controllers\EstadoCaiController;
 use App\Http\Controllers\CaiController;
+use App\Http\Controllers\FacturaController;
+use App\Http\Controllers\DetalleFacturaController;
+use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -103,5 +106,8 @@ Route::middleware('jwt.auth')->group(function () {
         Route::apiResource('estados-factura', EstadoFacturaController::class);
             Route::apiResource('estados-cai', EstadoCaiController::class);
                 Route::apiResource('cai', CaiController::class);
+                    Route::apiResource('facturas', FacturaController::class);
+                        Route::apiResource('detalles-factura', DetalleFacturaController::class);
+                            Route::apiResource('servicios', ServicioController::class);
 });
 
