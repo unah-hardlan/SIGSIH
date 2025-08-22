@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreDepartamentoRequest extends FormRequest
+{
+    public function authorize(): bool 
+    { 
+        return true; 
+    }
+
+    public function rules(): array
+    {
+        return [
+            'nombre_departamento' => 'required|string|max:100',
+            'id_pais_fk' => 'required|exists:tbl_pais,id_pais_pk'
+        ];
+    }
+}
