@@ -11,6 +11,7 @@ use App\Http\Controllers\DireccionesController;
 use App\Http\Controllers\EmpresasClienteController;
 use App\Http\Controllers\EstadoProyectoController;
 use App\Http\Controllers\EstadoSolicitudController;
+use App\Http\Controllers\EstadoTicketController;
 use App\Http\Controllers\GastosController;
 use App\Http\Controllers\HistorialContrasenasController;
 use App\Http\Controllers\IngresosController;
@@ -20,6 +21,8 @@ use App\Http\Controllers\OrdenServicioController;
 use App\Http\Controllers\PaisesController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TipoMantenimientoController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
@@ -87,5 +90,8 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('solicitudes', SolicitudController::class);
     Route::apiResource('ordenes-servicio', OrdenServicioController::class);
     Route::apiResource('historial-contrasenas', HistorialContrasenasController::class);
+    Route::apiResource('tipos-mantenimiento', TipoMantenimientoController::class);
+    Route::apiResource('estados-ticket', EstadoTicketController::class);
+    Route::apiResource('tickets', TicketController::class);
 });
 
