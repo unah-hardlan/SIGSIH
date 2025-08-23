@@ -84,7 +84,7 @@
                                 <a href="#" @click="isEditRoleModalOpen = true; roleToEdit = role"
                                     class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteRoleModalOpen = true; roleToDelete = role"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
@@ -217,7 +217,7 @@
                                 <a href="#" @click="isEditRoleModalOpen = true; roleToEdit = role"
                                     class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteRoleModalOpen = true; roleToDelete = role"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
@@ -299,7 +299,7 @@
                                 <a href="#" @click="isEditObjetoModalOpen = true; objetoToEdit = objeto"
                                     class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteObjetoModalOpen = true; objetoToDelete = objeto"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
@@ -394,7 +394,7 @@
                                 <a href="#" @click="isEditRoleModalOpen = true; roleToEdit = asignacion"
                                     class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteRoleModalOpen = true; roleToDelete = asignacion"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>

@@ -47,7 +47,7 @@
             <li>
                 <x-admin.sidebar-link href="#" :active="false" view-name="dashboard"
                     class="py-2 px-2 rounded-l-full no-flash">
-                    <i class="fa-solid fa-house w-5 text-center"></i>
+                    <i class="fas fa-house-chimney w-5 text-center text-white"></i>
                     <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Dashboard</span>
                 </x-admin.sidebar-link>
             </li>
