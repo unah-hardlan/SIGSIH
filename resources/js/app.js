@@ -64,6 +64,10 @@ import {
     faChartPie,
     faClipboardCheck,
     faHistory,
+    faUserEdit,
+    faSignOutAlt,
+    faCamera,
+    faBookOpen,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -126,7 +130,11 @@ library.add(
     faBolt,
     faChartPie,
     faClipboardCheck,
-    faHistory
+    faHistory,
+    faUserEdit,
+    faSignOutAlt,
+    faCamera,
+    faBookOpen
 );
 dom.watch();
 

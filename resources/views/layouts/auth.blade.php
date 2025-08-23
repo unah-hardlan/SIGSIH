@@ -5,34 +5,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css'])
     <title>Iniciar Sesión – SIGSIH</title>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {}
-            },
-            variants: {
-                extend: {}
-            },
-            plugins: []
-        }
-    </script>
 
     <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-    <style>
-        input[type="password"]::-ms-reveal,
-        input[type="password"]::-ms-clear {
-            display: none;
-        }
-        
-        [x-cloak] { display: none !important; }
-    </style>
 
     @livewireStyles
 
@@ -44,65 +22,117 @@
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
     <div class="fixed top-4 right-4">
-        <!-- Botón de modo claro/oscuro -->
-        <button @click="toggleTheme()" class="p-2 rounded-full bg-white dark:bg-gray-800 shadow focus:outline-none">
-            <i :class="isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-700'" class="w-6 h-6"></i>
-        </button>
+        <label @click.prevent="toggleTheme()" class="switch cursor-pointer">
+            <input type="checkbox" class="hidden" :checked="isDark">
+            <span class="slider"></span>
+        </label>
     </div>
 
     <div class="min-h-screen flex items-center justify-center">
-        <div class="w-full max-w-sm">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 transition-colors">
+        <div class="w-full max-w-lg"> <!-- Aumentado el max-w para acomodar las dos columnas -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-400 border-opacity-50 dark:border-0 p-4 sm:p-6 transition-colors">
                 <!-- LOGO -->
                 <div class="text-center mb-6">
                     <div
                         class="inline-flex items-center justify-center w-36 h-36 rounded-full mb-3 bg-gray-100 dark:bg-white border-4 border-white dark:border-gray-200 transition-colors">
                         <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-32 h-32 object-contain">
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 serif-boldy">
                         <span x-text="isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'"></span>
                     </h2>
-                    <p class="text-gray-600 dark:text-gray-300 mt-2">
+                    <p class="text-gray-600 dark:text-gray-300 mt-2 nunito-regular">
                         <span
                             x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Regístrate para comenzar'"></span>
                     </p>
                 </div>
 
                 <form @submit.prevent="handleSubmit" autocomplete="off">
-                    <!-- Nombre de usuario (solo registro) -->
-                    <div x-show="!isLogin" x-cloak class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de
-                            Usuario</label>
-                        <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
-                            placeholder="Juan Orlando" />
+                    <!-- Contenedor para campos de registro en dos columnas -->
+                    <div x-show="!isLogin" x-cloak class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                        <!-- Nombre de usuario (solo registro) -->
+                        <div class="mb-6">
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Nombre
+                                de Usuario</label>
+                            <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular"
+                                placeholder="John Doe" />
+                        </div>
+
+                        <!-- Correo (solo registro) -->
+                        <div class="mb-6">
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Correo
+                                electrónico</label>
+                            <input type="email" name="email" x-model="email" :required="!isLogin"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular"
+                                placeholder="correo@ejemplo.com" />
+                        </div>
+
+                        <!-- Contraseña (registro) -->
+                        <div class="mb-2">
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Contraseña</label>
+                            <div class="relative">
+                                <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
+                                    :required="!isLogin"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-60 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular"
+                                    placeholder="••••••••" />
+                                <button type="button"
+                                    class="absolute right-3 top-3 text-gray-400 dark:text-gray-300 hover:text-gray-600"
+                                    @click="showPassword = !showPassword">
+                                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                            <p x-show="password && !validatePassword(password)"
+                                class="mt-2 text-sm text-red-600 nunito-regular">
+                                La contraseña debe tener al menos 8 caracteres
+                            </p>
+                        </div>
+
+                        <!-- Confirmar contraseña (solo registro) -->
+                        <div class="mb-6">
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Confirmar
+                                Contraseña</label>
+                            <div class="relative">
+                                <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
+                                    x-model="confirmPassword" :required="!isLogin"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular"
+                                    placeholder="••••••••" />
+                                <button type="button"
+                                    class="absolute right-3 top-3 text-gray-400 dark:text-gray-300 hover:text-gray-600"
+                                    @click="showConfirmPassword = !showConfirmPassword">
+                                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
+                                        class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                            <p x-show="confirmPassword && !validateConfirmPassword()"
+                                class="mt-2 text-sm text-red-600 nunito-regular">
+                                Las contraseñas no coinciden
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- Usuario -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Usuario</label>
+
+                    <!-- Usuario (siempre visible, pero su mb cambia si es login para que no haya doble margin-bottom) -->
+                    <div :class="{ 'mb-6': isLogin, 'mb-2': !isLogin }">
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent focus:border-gray-300 dark:focus:border-gray-600 transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent focus:border-gray-300 dark:focus:border-gray-600 transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular"
                             placeholder="John Doe" />
                     </div>
 
-                    <!-- Correo (solo registro) -->
-                    <div x-show="!isLogin" x-cloak class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo
-                            electrónico</label>
-                        <input type="email" name="email" x-model="email" :required="!isLogin"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
-                            placeholder="correo@ejemplo.com" />
-                    </div>
-
-                    <!-- Contraseña -->
-                    <div class="mb-2">
+                    <!-- Contraseña (solo para Login, si no está en el div de 2 columnas) -->
+                    <div x-show="isLogin" class="mb-2">
                         <label
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Contraseña</label>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-60 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-60 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular"
                                 placeholder="••••••••" />
                             <button type="button"
                                 class="absolute right-3 top-3 text-gray-400 dark:text-gray-300 hover:text-gray-600"
@@ -110,7 +140,8 @@
                                 <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-6 h-6"></i>
                             </button>
                         </div>
-                        <p x-show="password && !validatePassword(password)" class="mt-2 text-sm text-red-600">
+                        <p x-show="password && !validatePassword(password)"
+                            class="mt-2 text-sm text-red-600 nunito-regular">
                             La contraseña debe tener al menos 8 caracteres
                         </p>
                     </div>
@@ -118,38 +149,18 @@
                     <!-- Recuperar contraseña (solo login) -->
                     <div x-show="isLogin" class="mb-6 text-right">
                         <button type="button" @click="handleRecover()"
-                            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none">
+                            class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none nunito-regular">
                             ¿Olvidaste tu contraseña?
                         </button>
                     </div>
 
-                    <!-- Confirmar contraseña (solo registro) -->
-                    <div x-show="!isLogin" x-cloak class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirmar
-                            Contraseña</label>
-                        <div class="relative">
-                            <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
-                                x-model="confirmPassword" :required="!isLogin"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
-                                placeholder="••••••••" />
-                            <button type="button"
-                                class="absolute right-3 top-3 text-gray-400 dark:text-gray-300 hover:text-gray-600"
-                                @click="showConfirmPassword = !showConfirmPassword">
-                                <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-6 h-6"></i>
-                            </button>
-                        </div>
-                        <p x-show="confirmPassword && !validateConfirmPassword()" class="mt-2 text-sm text-red-600">
-                            Las contraseñas no coinciden
-                        </p>
-                    </div>
-
                     <!-- Botón principal -->
                     <button type="submit"
-                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-600 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed nunito-regular"
                         :disabled="loading || (!username) || (password && !validatePassword(password)) || (!isLogin && confirmPassword && !validateConfirmPassword())">
                         <span x-show="loading" class="inline-flex items-center">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4" />
                                 <path class="opacity-75" fill="currentColor"
@@ -163,13 +174,13 @@
                     <!-- Separador -->
                     <div class="my-4 flex items-center">
                         <hr class="flex-grow border-gray-300 dark:border-gray-600" />
-                        <span class="mx-2 text-gray-400 dark:text-gray-500">o</span>
+                        <span class="mx-2 text-gray-400 dark:text-gray-500 nunito-regular">o</span>
                         <hr class="flex-grow border-gray-300 dark:border-gray-600" />
                     </div>
 
                     <!-- Botón Google -->
                     <button type="button" @click="handleGoogle()"
-                        class="w-full bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-3 rounded-lg font-medium flex items-center justify-center transition-colors mb-4">
+                        class="w-full bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-3 rounded-lg font-medium flex items-center justify-center transition-colors mb-4 nunito-regular">
                         <svg class="w-5 h-5 mr-2" viewBox="0 0 533.5 544.3">
                             <path fill="#4285F4"
                                 d="M533.5 278.4c0-17.4-1.4-34.1-4-50.4H272v95.5h147.5c-6.4 34.7-25.5 64.1-54.5 83.8v69.7h87.9c51.6-47.6 81.6-117.8 81.6-198.6z" />
@@ -184,7 +195,7 @@
                     </button>
 
                     <!-- Switch registro/login -->
-                    <p class="mt-2 text-center text-gray-600 dark:text-gray-400">
+                    <p class="mt-2 text-center text-gray-600 dark:text-gray-400 nunito-regular">
                         <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'"></span>
                         <button type="button"
                             class="ml-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold"

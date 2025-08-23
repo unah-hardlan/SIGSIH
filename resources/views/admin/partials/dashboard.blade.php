@@ -1,4 +1,5 @@
-    <div class="flex items-center my-1 mb-10">
+<div class="z-10">
+<div class="flex items-center my-1 mb-10">
         <div class="flex-grow border-t border-gray-200"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-full border border-blue-200 shadow-sm">
@@ -392,3 +393,5 @@
             </div>
         </div>
     </div>
+
+</div>
