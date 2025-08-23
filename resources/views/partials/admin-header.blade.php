@@ -1,4 +1,7 @@
-<header class="flex items-center justify-between h-16 px-3 sm:px-6">
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <header class="flex items-center justify-between h-16 px-3 sm:px-6">
     <!-- Botón colapsar sidebar -->
     <button @click="sidebarOpen = !sidebarOpen"
         class="p-1 sm:p-2 rounded-md text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
@@ -23,6 +26,10 @@
 
     <!-- Acciones derecha -->
     <div class="flex items-center gap-2 sm:gap-4 md:gap-6 z-50">
+        <label class="switch">
+            <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
+            <span class="slider"></span>
+        </label>
         <!-- Notificaciones -->
         <div x-data="{ openNotif: false }" class="relative">
             <button @click="openNotif = !openNotif" class="relative text-gray-500 hover:text-blue-600">
@@ -60,12 +67,12 @@
                 <div x-show="open" @click.away="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white border border-blue-300 shadow rounded-md py-1">
                     <button @click="loadView('perfil'); open = false"
-                        class="block w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200/80 transition-colors duration-200 flex items-center gap-2">
+                        class="w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200/80 transition-colors duration-200 flex items-center gap-2">
                         <i class="fas fa-user-edit text-blue-500"></i>
                         Editar perfil
                     </button>
                     <button type="button" onclick="window.appLogout && window.appLogout()"
-                        class="block w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200/80 transition-colors duration-200 flex items-center gap-2">
+                        class="w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200/80 transition-colors duration-200 flex items-center gap-2">
                         <i class="fas fa-sign-out-alt text-red-500"></i>
                         Cerrar sesión
                     </button>
@@ -78,7 +85,6 @@
         </div>
     </div>
 </header>
-<!-- Dependencias necesarias para interacciones del header -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
+
+</body>
+</html>
