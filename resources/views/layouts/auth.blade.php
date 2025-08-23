@@ -31,15 +31,12 @@
             display: none;
         }
         
-        /* Prevenir flash del contenido antes de que Alpine esté listo */
         [x-cloak] { display: none !important; }
     </style>
 
     @livewireStyles
 
-    <!-- Alpine.js (defer para que cargue antes de tu script) -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Axios (para manejar el login por API y cookies) -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/login-guard.js" defer></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
@@ -77,7 +74,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de
                             Usuario</label>
                         <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                             placeholder="Juan Orlando" />
                     </div>
 
@@ -85,8 +82,8 @@
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Usuario</label>
                         <input type="text" name="username" x-model="username" required
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
-                            placeholder="Juanchi" />
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent focus:border-gray-300 dark:focus:border-gray-600 transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                            placeholder="John Doe" />
                     </div>
 
                     <!-- Correo (solo registro) -->
@@ -94,7 +91,7 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo
                             electrónico</label>
                         <input type="email" name="email" x-model="email" :required="!isLogin"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                             placeholder="correo@ejemplo.com" />
                     </div>
 
@@ -105,7 +102,7 @@
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-60 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                                 placeholder="••••••••" />
                             <button type="button"
                                 class="absolute right-3 top-3 text-gray-400 dark:text-gray-300 hover:text-gray-600"
@@ -133,7 +130,7 @@
                         <div class="relative">
                             <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
                                 x-model="confirmPassword" :required="!isLogin"
-                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"
                                 placeholder="••••••••" />
                             <button type="button"
                                 class="absolute right-3 top-3 text-gray-400 dark:text-gray-300 hover:text-gray-600"
