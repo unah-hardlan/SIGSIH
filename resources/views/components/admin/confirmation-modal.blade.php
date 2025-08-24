@@ -16,7 +16,7 @@
      class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
      @click.away="{{ $modalName }} = false"
      style="display: none;">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-xs sm:max-w-md" @click.stop>
         <div class="flex justify-between items-center border-b pb-3">
             <h3 class="text-xl font-bold text-gray-700">{{ $title }}</h3>
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>

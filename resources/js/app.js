@@ -74,6 +74,7 @@ import {
     faFilter,
     faChevronUp,
     faChevronDown,
+    faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -146,7 +147,8 @@ library.add(
     faCity,
     faFilter,
     faChevronUp,
-    faChevronDown
+    faChevronDown,
+    faTimes
 );
 dom.watch();
 
