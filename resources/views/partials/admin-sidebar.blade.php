@@ -325,12 +325,6 @@
                         </x-admin.sidebar-link>
                     </li>
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="cambio-contrasena" class="py-1 px-3">
-                            <i class="fas fa-unlock-alt text-sm w-4 text-center"></i>
-                            Cambio de contraseña
-                        </x-admin.sidebar-link>
-                    </li>
-                    <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="bitacora" class="py-1 px-3">
                             <i class="fas fa-book text-sm w-4 text-center"></i>
                             Bitácora

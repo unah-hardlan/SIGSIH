@@ -42,7 +42,7 @@ class SpaHelper
             'gestion-empresas', 'cotizaciones', 'solicitudes', 'gestion-ordenes',
             'vista-proyectos', 'proyectos', 'tickets', 'agencias', 'calendario',
             'facturas', 'cai', 'reportes', 'productos', 'kardex', 'gestion-personas',
-            'perfil', 'cambio-contrasena', 'bitacora', 'gestion-db', 'mantenimiento-general'
+            'perfil', 'bitacora', 'gestion-db', 'mantenimiento-general'
         ];
     }
 }
