@@ -59,7 +59,7 @@
                                 <a href="#"
                                     @click.prevent="isDeleteCalificacionModalOpen = true; calificacionToDelete = Object.assign({}, calificacion)"
                                     class="text-red-600 hover:text-red-800" title="Eliminar">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fas fa-trash"></i>
                                 </a>
                             </td>
                         </tr>

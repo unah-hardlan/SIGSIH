@@ -34,7 +34,7 @@
                             <a href="#" @click="isEditModalOpenGenero = true; itemToEdit = {genero: 'Masculino'}"
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenGenero = true; itemToDelete = {genero: 'Masculino'}"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                     <tr class="border-b">
@@ -44,7 +44,7 @@
                             <a href="#" @click="isEditModalOpenGenero = true; itemToEdit = {genero: 'Femenino'}"
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenGenero = true; itemToDelete = {genero: 'Femenino'}"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 </tbody>

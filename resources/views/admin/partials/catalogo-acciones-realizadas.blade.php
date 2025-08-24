@@ -57,7 +57,7 @@
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#"
                                 @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 </template>
