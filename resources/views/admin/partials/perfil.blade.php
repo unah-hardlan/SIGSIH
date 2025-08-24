@@ -5,7 +5,7 @@
 
         <!-- Panel lateral con avatar -->
         <div class="md:col-span-1">
-            <div class="bg-white rounded-2xl shadow-xl p-6 text-center">
+            <div class="bg-white shadow-xl rounded-2xl border border-gray-400 border-opacity-50 p-6 text-center">
                 <div class="relative inline-block">
                     <img src="https://ui-avatars.com/api/?name=Juan+Hernandez&background=0D8ABC&color=fff&size=128"
                         alt="Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-white">
@@ -24,7 +24,7 @@
         <div class="md:col-span-2 space-y-8">
 
             <!-- Información personal -->
-            <div class="bg-white rounded-2xl shadow-xl p-6" x-data="{ showAlert: false }">
+            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-400 border-opacity-50" x-data="{ showAlert: false }">
                 <h3 class="text-xl font-bold text-gray-800 mb-6">Información Personal</h3>
                 <!-- Alerta de cambios guardados -->
                 <div x-show="showAlert" x-transition class="mb-4">
@@ -102,7 +102,7 @@
             </div>
 
             <!-- Cambio de contraseña -->
-            <div class="bg-white rounded-2xl shadow-xl p-6" x-data="{ showPassAlert: false }">
+            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-400 border-opacity-50 " x-data="{ showPassAlert: false }">
                 <h3 class="text-xl font-bold text-gray-800 mb-6">Actualizar Contraseña</h3>
                 <!-- Alerta de contraseña cambiada -->
                 <div x-show="showPassAlert" x-transition class="mb-4">

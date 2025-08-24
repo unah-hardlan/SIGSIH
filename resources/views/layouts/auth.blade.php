@@ -29,9 +29,9 @@
     </div>
 
     <div class="min-h-screen flex items-center justify-center">
-        <div class="w-full max-w-lg"> <!-- Aumentado el max-w para acomodar las dos columnas -->
+        <div class="w-full max-w-lg">
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-400 border-opacity-50 dark:border-0 p-4 sm:p-6 transition-colors">
+                class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-400 border-opacity-50 dark:border-0 p-4 sm:p-6 transition-colors shadow-xl">
                 <!-- LOGO -->
                 <div class="text-center mb-6">
                     <div

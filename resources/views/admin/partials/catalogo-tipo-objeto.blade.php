@@ -46,7 +46,7 @@
                                 <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = tipo"
                                     class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = tipo"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>

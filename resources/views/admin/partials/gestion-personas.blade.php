@@ -118,7 +118,7 @@
                                 </a>
                                 <a href="#" @click="isDeleteModalOpenPersonas = true; itemToDelete = {...persona}"
                                     class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fas fa-trash"></i>
                                 </a>
                             </td>
                         </tr>

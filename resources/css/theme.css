@@ -3,7 +3,7 @@
     position: relative;
     display: inline-block;
     width: 2.8em;
-    height: 1.7em;
+    height: 1.8em;
 }
 
 .switch input {
@@ -32,7 +32,7 @@
     width: 1.1em;
     border-radius: 50%;
     left: 10%;
-    bottom: 15%;
+    bottom: 19%;
     box-shadow: inset 8px -4px 0px 0px #efff0b;
     background: var(--background);
     transition: 0.5s;

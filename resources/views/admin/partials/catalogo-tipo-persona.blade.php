@@ -39,7 +39,7 @@
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#"
                                 @click="isDeleteModalOpenTipoPersona = true; itemToDelete = {id: 1, nombre: 'Técnico'}"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                     <tr class="border-b">
@@ -52,7 +52,7 @@
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#"
                                 @click="isDeleteModalOpenTipoPersona = true; itemToDelete = {id: 2, nombre: 'Cliente'}"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></a>
+                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 </tbody>

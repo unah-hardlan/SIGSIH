@@ -67,12 +67,13 @@
                 <div x-show="open" @click.away="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white border border-blue-300 shadow rounded-md py-1">
                     <button @click="loadView('perfil'); open = false"
-                        class="w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200/80 transition-colors duration-200 flex items-center gap-2">
-                        <i class="fas fa-user-edit text-blue-500"></i>
-                        Editar perfil
-                    </button>
+                            <x-admin.sidebar-link href="#" :active="false" view-name="perfil" @click="open = false"
+                                class="w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200 hover:text-gray-800 transition-colors duration-200 flex items-center gap-2">
+                                <i class="fas fa-user-edit text-blue-500"></i>
+                                Editar perfil
+                            </x-admin.sidebar-link>
                     <button type="button" onclick="window.appLogout && window.appLogout()"
-                        class="w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200/80 transition-colors duration-200 flex items-center gap-2">
+                        class="w-full text-left px-4 py-2 text-sm nunito-regular text-gray-700 hover:bg-blue-200 hover:text-gray-800 transition-colors duration-200 flex items-center gap-2">
                         <i class="fas fa-sign-out-alt text-red-500"></i>
                         Cerrar sesión
                     </button>

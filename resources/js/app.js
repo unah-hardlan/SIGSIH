@@ -68,6 +68,12 @@ import {
     faSignOutAlt,
     faCamera,
     faBookOpen,
+    faGlobe,
+    faMapMarkedAlt,
+    faCity,
+    faFilter,
+    faChevronUp,
+    faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -134,7 +140,13 @@ library.add(
     faUserEdit,
     faSignOutAlt,
     faCamera,
-    faBookOpen
+    faBookOpen,
+    faGlobe,
+    faMapMarkedAlt,
+    faCity,
+    faFilter,
+    faChevronUp,
+    faChevronDown
 );
 dom.watch();
 
