@@ -15,6 +15,7 @@ class UsuarioResource extends JsonResource
             'nombre_usuario' => $this->nombre_usuario,
             'estado_usuario' => $this->estado_usuario,
             'correo_electronico' => $this->correo_electronico,
+            'id_rol_fk' => $this->id_rol_fk,
             'primer_ingreso' => (bool) $this->primer_ingreso,
             'fecha_ultima_conexion' => optional($this->fecha_ultima_conexion)->toDateTimeString(),
             'fecha_vencimiento' => optional($this->fecha_vencimiento)->toDateString(),

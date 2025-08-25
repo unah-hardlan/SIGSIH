@@ -15,11 +15,38 @@ class Permiso extends Model
     protected $fillable = [
         'id_rol_fk',
         'id_objeto_fk',
-        'permiso_insercion',
-        'permiso_eliminacion',
-        'permiso_actualizacion',
-        'permiso_consultar',
+    'permiso_insercion',
+    'permiso_eliminacion',
+    'permiso_actualizar',
+    'permiso_consultar',
+        'creado_por',
+        'fecha_creacion',
+        'modificado_por',
+        'fecha_modificacion',
     ];
+
+    protected $casts = [
+    'permiso_insercion' => 'boolean',
+    'permiso_eliminacion' => 'boolean',
+    'permiso_actualizar' => 'boolean',
+    'permiso_consultar' => 'boolean',
+        'fecha_creacion' => 'datetime',
+        'fecha_modificacion' => 'datetime',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $now = now();
+            if (!$model->fecha_creacion) $model->fecha_creacion = $now;
+            if (!$model->creado_por) $model->creado_por = auth()->user()->usuario ?? 'system';
+        });
+        static::updating(function ($model) {
+            $model->fecha_modificacion = now();
+            $model->modificado_por = auth()->user()->usuario ?? 'system';
+        });
+    }
 
     public function rol()
     {

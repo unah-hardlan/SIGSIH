@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         // JWT (WEB) - NUEVO alias para proteger /admin/*
         'auth.jwt.web' => \App\Http\Middleware\JwtWebAuth::class,
         'jwt.refresh' => \App\Http\Middleware\JwtRefresh::class,
+        'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
     ];
 }
