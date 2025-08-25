@@ -19,6 +19,7 @@ class StoreUsuarioRequest extends FormRequest
             'correo_electronico' => 'required|email|max:100|unique:tbl_ms_usuario,correo_electronico',
             'contrasena' => 'required|string|min:8',
             'estado_usuario' => 'nullable|string|max:20',
+            'id_rol_fk' => 'nullable|integer|exists:tbl_ms_rol,id_rol_pk',
             'primer_ingreso' => 'nullable|boolean',
             'fecha_ultima_conexion' => 'nullable|date',
             'fecha_vencimiento' => 'nullable|date',

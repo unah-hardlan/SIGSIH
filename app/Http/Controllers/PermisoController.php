@@ -4,98 +4,109 @@ namespace App\Http\Controllers;
 
 use App\Models\Permiso;
 use Illuminate\Http\Request;
+use App\Http\Requests\StorePermisoRequest;
+use App\Http\Requests\UpdatePermisoRequest;
+use App\Http\Resources\PermisoResource;
 
 class PermisoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    /** Listado con búsqueda, filtros, orden y paginación */
+    public function index(Request $request)
     {
-        return response()->json(Permiso::all(), 200);
-    }
+        $query = Permiso::query()->with(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto']);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        if ($q = $request->input('q')) {
+            $query->where(function ($sub) use ($q) {
+                $sub->whereHas('rol', function ($w) use ($q) {
+                    $w->where('rol', 'like', "%$q%");
+                })->orWhereHas('objeto', function ($w) use ($q) {
+                    $w->where('nombre_objeto', 'like', "%$q%")
+                      ->orWhere('descripcion_objeto', 'like', "%$q%");
+                });
+            });
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'id_rol_fk' => 'required|integer|exists:tbl_ms_rol,id_rol_pk',
-            'id_objeto_fk' => 'required|integer|exists:tbl_objetos,id_objetos_pk',
-            'permiso_insercion' => 'required|boolean',
-            'permiso_consultar' => 'required|boolean',
-            'permiso_actualiza' => 'required|boolean',
-            'permiso_eliminado' => 'required|boolean',
+        if ($request->filled('id_rol_fk')) {
+            $query->where('id_rol_fk', (int) $request->input('id_rol_fk'));
+        }
+        if ($request->filled('id_objeto_fk')) {
+            $query->where('id_objeto_fk', (int) $request->input('id_objeto_fk'));
+        }
+
+        $sortable = [
+            'rol' => 'id_rol_fk',
+            'objeto' => 'id_objeto_fk',
+            'creado' => 'fecha_creacion',
+            'modificado' => 'fecha_modificacion',
+        ];
+        $sort = $request->input('sort', 'rol');
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortable[$sort] ?? 'id_rol_fk', $direction);
+
+        if ($request->boolean('all', false)) {
+            $collection = $query->get();
+            return PermisoResource::collection($collection)->additional([
+                'meta' => [
+                    'page' => 1,
+                    'per_page' => $collection->count(),
+                    'total' => $collection->count(),
+                    'last_page' => 1,
+                ],
+            ]);
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $paginator = $query->paginate($perPage);
+        return PermisoResource::collection($paginator)->additional([
+            'meta' => [
+                'page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+            ],
         ]);
-
-        $permiso = Permiso::create($validated);
-
-        return response()->json($permiso, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    /** Crear */
+    public function store(StorePermisoRequest $request)
+    {
+        $data = $request->validated();
+        $data['creado_por'] = auth()->user()->usuario ?? 'system';
+        $data['fecha_creacion'] = now();
+        $permiso = Permiso::create($data)->load(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto']);
+        return (new PermisoResource($permiso))->response()->setStatusCode(201);
+    }
+
+    /** Detalle por ID */
     public function show($id)
     {
-        $permiso = Permiso::find($id);
-        if (!$permiso) {
-            return response()->json(['error' => 'Permiso no encontrado'], 404);
-        }
-        return response()->json($permiso, 200);
+        $permiso = Permiso::with(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto'])->find($id);
+        if (!$permiso) return response()->json(['error' => 'Permiso no encontrado'], 404);
+        return (new PermisoResource($permiso))->response();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
+    /** Actualizar por ID */
+    public function update(UpdatePermisoRequest $request, $id)
     {
         $permiso = Permiso::find($id);
-        if (!$permiso) {
-            return response()->json(['error' => 'Permiso no encontrado'], 404);
-        }
-
-        $validated = $request->validate([
-            'permiso_insercion' => 'boolean',
-            'permiso_consultar' => 'boolean',
-            'permiso_actualiza' => 'boolean',
-            'permiso_eliminado' => 'boolean',
-        ]);
-
-        $permiso->update($validated);
-
-        return response()->json($permiso, 200);
+        if (!$permiso) return response()->json(['error' => 'Permiso no encontrado'], 404);
+        $data = $request->validated();
+        $data['modificado_por'] = auth()->user()->usuario ?? 'system';
+        $data['fecha_modificacion'] = now();
+        $permiso->update($data);
+        $permiso->load(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto']);
+        return (new PermisoResource($permiso))->response();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
+    /** Eliminar por ID */
     public function destroy($id)
     {
         $permiso = Permiso::find($id);
-        if (!$permiso) {
-            return response()->json(['error' => 'Permiso no encontrado'], 404);
-        }
-
+        if (!$permiso) return response()->json(['error' => 'Permiso no encontrado'], 404);
         $permiso->delete();
-
-        return response()->json(['message' => 'Permiso eliminado'], 200);
+        return response()->json(['message' => 'Permiso eliminado']);
     }
+
 }

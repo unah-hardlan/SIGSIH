@@ -42,7 +42,7 @@ class Rol extends Model
 
     public function usuarios()
     {
-        return $this->belongsToMany(Usuario::class, 'tbl_usuario_rol', 'id_rol_fk', 'id_usuario_fk');
+    return $this->hasMany(Usuario::class, 'id_rol_fk', 'id_rol_pk');
     }
 
     public function permisos()

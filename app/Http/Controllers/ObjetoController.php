@@ -4,93 +4,102 @@ namespace App\Http\Controllers;
 
 use App\Models\Objeto;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreObjetoRequest;
+use App\Http\Requests\UpdateObjetoRequest;
+use App\Http\Resources\ObjetoResource;
 
 class ObjetoController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listado con búsqueda, orden y paginación.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Objeto::all(), 200);
-    }
+        $query = Objeto::query();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        if ($q = $request->input('q')) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('nombre_objeto', 'like', "%$q%")
+                    ->orWhere('descripcion_objeto', 'like', "%$q%");
+            });
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nombre_objeto' => 'required|string|max:100',
-            'descripcion_objeto' => 'nullable|string|max:255',
-            'id_tipo_objetos_fk' => 'required|integer',
+        if ($request->filled('id_tipo_objetos_fk')) {
+            $query->where('id_tipo_objetos_fk', (int) $request->input('id_tipo_objetos_fk'));
+        }
+
+        $sortable = [
+            'id' => 'id_objetos_pk',
+            'nombre' => 'nombre_objeto',
+            'descripcion' => 'descripcion_objeto',
+            'tipo' => 'id_tipo_objetos_fk',
+            'creado' => 'fecha_creacion',
+            'modificado' => 'fecha_modificacion',
+        ];
+        $sort = $request->input('sort', 'id');
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortable[$sort] ?? 'id_objetos_pk', $direction);
+
+        if ($request->boolean('all', false)) {
+            $collection = $query->get();
+            return ObjetoResource::collection($collection)->additional([
+                'meta' => [
+                    'page' => 1,
+                    'per_page' => $collection->count(),
+                    'total' => $collection->count(),
+                    'last_page' => 1,
+                ],
+            ]);
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $paginator = $query->paginate($perPage);
+        return ObjetoResource::collection($paginator)->additional([
+            'meta' => [
+                'page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+            ],
         ]);
-
-        $objeto = Objeto::create($validated);
-
-        return response()->json($objeto, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    /** Crear */
+    public function store(StoreObjetoRequest $request)
+    {
+        $data = $request->validated();
+        $data['creado_por'] = auth()->user()->usuario ?? 'system';
+        $data['fecha_creacion'] = now();
+        $objeto = Objeto::create($data);
+        return (new ObjetoResource($objeto))->response()->setStatusCode(201);
+    }
+
+    /** Detalle */
     public function show($id)
     {
         $objeto = Objeto::find($id);
-        if (!$objeto) {
-            return response()->json(['error' => 'Objeto no encontrado'], 404);
-        }
-        return response()->json($objeto, 200);
+        if (!$objeto) return response()->json(['error' => 'Objeto no encontrado'], 404);
+        return (new ObjetoResource($objeto))->response();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
+    /** Actualizar */
+    public function update(UpdateObjetoRequest $request, $id)
     {
         $objeto = Objeto::find($id);
-        if (!$objeto) {
-            return response()->json(['error' => 'Objeto no encontrado'], 404);
-        }
-
-        $validated = $request->validate([
-            'nombre_objeto' => 'string|max:100',
-            'descripcion_objeto' => 'nullable|string|max:255',
-        ]);
-
-        $objeto->update($validated);
-
-        return response()->json($objeto, 200);
+        if (!$objeto) return response()->json(['error' => 'Objeto no encontrado'], 404);
+        $data = $request->validated();
+        $data['modificado_por'] = auth()->user()->usuario ?? 'system';
+        $data['fecha_modificacion'] = now();
+        $objeto->update($data);
+        return (new ObjetoResource($objeto))->response();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    /** Eliminar */
     public function destroy($id)
     {
         $objeto = Objeto::find($id);
-        if (!$objeto) {
-            return response()->json(['error' => 'Objeto no encontrado'], 404);
-        }
-
+        if (!$objeto) return response()->json(['error' => 'Objeto no encontrado'], 404);
         $objeto->delete();
-
-        return response()->json(['message' => 'Objeto eliminado'], 200);
+        return response()->json(['message' => 'Objeto eliminado']);
     }
 }

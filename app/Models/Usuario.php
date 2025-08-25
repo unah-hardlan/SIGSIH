@@ -18,6 +18,7 @@ class Usuario extends Authenticatable
         'estado_usuario',
         'contrasena',
         'correo_electronico',
+    'id_rol_fk',
         'primer_ingreso',
         'fecha_ultima_conexion',
         'fecha_vencimiento',
@@ -76,9 +77,10 @@ class Usuario extends Authenticatable
         return $this->contrasena;
     }
 
-    public function roles()
+    // Relación directa (FK) al rol
+    public function rol()
     {
-        return $this->belongsToMany(Rol::class, 'tbl_usuario_rol', 'id_usuario_fk', 'id_rol_fk');
+        return $this->belongsTo(Rol::class, 'id_rol_fk', 'id_rol_pk');
     }
 
     public function bitacoras()

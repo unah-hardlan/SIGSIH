@@ -8,9 +8,20 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreUsuarioRequest;
 use App\Http\Requests\UpdateUsuarioRequest;
 use App\Http\Resources\UsuarioResource;
+use App\Http\Resources\RolResource;
+use App\Models\Rol;
 
 class UsuarioController extends Controller
 {
+    public function __construct()
+    {
+    // DB-backed permisos por objeto/acción
+    $this->middleware('permiso:usuarios,consultar')->only(['index','show']);
+    $this->middleware('permiso:usuarios,insercion')->only(['store']);
+    $this->middleware('permiso:usuarios,actualizacion')->only(['update','setRol']);
+    $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
+    $this->middleware('permiso:usuarios,consultar')->only(['rol']);
+    }
     public function index()
     {
         $query = Usuario::query();
@@ -108,6 +119,27 @@ class UsuarioController extends Controller
         $usuario->estado_usuario = 'INACTIVO';
         $usuario->save();
         return response()->json(['message' => 'Usuario inactivado'], 200);
+    }
+
+    // Rol del usuario (FK directa)
+    public function rol($id)
+    {
+        $usuario = Usuario::with('rol')->find($id);
+        if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        if (!$usuario->rol) return response()->json(['data' => null]);
+        return (new RolResource($usuario->rol))->response();
+    }
+
+    public function setRol(Request $request, $id)
+    {
+        $usuario = Usuario::find($id);
+        if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        $validated = $request->validate([
+            'id_rol_fk' => 'required|integer|exists:tbl_ms_rol,id_rol_pk',
+        ]);
+        $usuario->id_rol_fk = $validated['id_rol_fk'];
+        $usuario->save();
+        return response()->json(['message' => 'Rol asignado']);
     }
 
     // Reporte web (HTML) dinámico

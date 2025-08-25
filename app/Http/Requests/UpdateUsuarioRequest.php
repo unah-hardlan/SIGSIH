@@ -19,6 +19,7 @@ class UpdateUsuarioRequest extends FormRequest
             'correo_electronico' => "sometimes|email|max:100|unique:tbl_ms_usuario,correo_electronico,{$id},id_usuario_pk",
             'contrasena' => 'sometimes|string|min:8',
             'estado_usuario' => 'sometimes|string|max:20',
+            'id_rol_fk' => 'sometimes|integer|exists:tbl_ms_rol,id_rol_pk',
             'primer_ingreso' => 'sometimes|boolean',
             'fecha_ultima_conexion' => 'sometimes|date',
             'fecha_vencimiento' => 'sometimes|date',
