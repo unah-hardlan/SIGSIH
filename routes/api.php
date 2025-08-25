@@ -72,7 +72,7 @@ Route::middleware('jwt.auth')->group(function () {
     // MODULO DE PERSONAS
     Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
     Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
-        Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
+    Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
     Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
     Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);
@@ -86,16 +86,21 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('ciudades', CiudadesController::class);
     Route::apiResource('direcciones', DireccionesController::class);
     Route::apiResource('cotizaciones', \App\Http\Controllers\CotizacionController::class);
+    Route::apiResource('acciones-realizadas', \App\Http\Controllers\AccionRealizadaController::class);
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
     Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
     Route::apiResource('kardex', \App\Http\Controllers\KardexController::class);
+    Route::apiResource('servicios-realizados', \App\Http\Controllers\ServicioRealizadoController::class);
+    Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
+    Route::apiResource('tipos-visita', \App\Http\Controllers\TipoVisitaController::class);
+    Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
+
     Route::apiResource('contactos', ContactoController::class);
     Route::apiResource('estados-solicitud', EstadoSolicitudController::class);
     Route::apiResource('estados-proyecto', EstadoProyectoController::class);
     Route::apiResource('proyectos', ProyectoController::class);
     Route::apiResource('gastos', GastosController::class);
     Route::apiResource('ingresos', IngresosController::class);
-    Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
     Route::apiResource('solicitudes', SolicitudController::class);
     Route::apiResource('ordenes-servicio', OrdenServicioController::class);
     Route::apiResource('historial-contrasenas', HistorialContrasenasController::class);
@@ -104,12 +109,18 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('estados-calendario', EstadoCalendarioController::class);
     Route::apiResource('tickets', TicketController::class);
     Route::apiResource('calendario', CalendarioController::class);
-        Route::apiResource('estados-factura', EstadoFacturaController::class);
-            Route::apiResource('estados-cai', EstadoCaiController::class);
-                Route::apiResource('cai', CaiController::class);
-                    Route::apiResource('facturas', FacturaController::class);
-                        Route::apiResource('detalles-factura', DetalleFacturaController::class);
-                            Route::apiResource('servicios', ServicioController::class);
-                                Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
-});
+    Route::apiResource('estados-factura', EstadoFacturaController::class);
+    Route::apiResource('estados-cai', EstadoCaiController::class);
+    Route::apiResource('cai', CaiController::class);
+    Route::apiResource('facturas', FacturaController::class);
+    Route::apiResource('detalles-factura', DetalleFacturaController::class);
+    Route::apiResource('servicios', ServicioController::class);
+    Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
 
+    // Rol único del usuario (FK directa)
+    Route::get('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'rol']);
+    Route::put('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'setRol']);
+
+    // Usuarios por rol
+    Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
+});
