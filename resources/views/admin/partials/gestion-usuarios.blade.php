@@ -62,7 +62,7 @@
                                 <button @click="openEdit(u)" class="text-blue-600 hover:text-blue-800"><i
                                         class="fas fa-edit"></i></button>
                                 <button @click="openInactivar(u)" class="text-red-600 hover:text-red-800"><i
-                                        class="fas fa-trash-alt"></i></button>
+                                        class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     </template>

@@ -1,4 +1,5 @@
-    <div class="flex items-center my-1 mb-10">
+<div class="z-10">
+<div class="flex items-center my-1 mb-10">
         <div class="flex-grow border-t border-gray-200"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-full border border-blue-200 shadow-sm">
@@ -174,42 +175,42 @@
 
     <div class="mb-8">
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <a href="#" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 text-center">
+            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
                 <div class="p-3 bg-blue-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-plus text-blue-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nueva Orden</p>
             </a>
-            
-            <a href="#" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 text-center">
+
+            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
                 <div class="p-3 bg-green-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-file-invoice text-green-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nueva Cotización</p>
             </a>
             
-            <a href="#" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 text-center">
+            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
                 <div class="p-3 bg-purple-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-project-diagram text-purple-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nuevo Proyecto</p>
             </a>
             
-            <a href="#" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 text-center">
+            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
                 <div class="p-3 bg-orange-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-box-open text-orange-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Agregar Producto</p>
             </a>
             
-            <a href="#" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 text-center">
+            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
                 <div class="p-3 bg-indigo-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-chart-bar text-indigo-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nuevo Reporte</p>
             </a>
             
-            <a href="#" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 text-center">
+            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
                 <div class="p-3 bg-teal-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-user-plus text-teal-500"></i>
                 </div>
@@ -232,7 +233,7 @@
 
 <div class="mb-12">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="bg-white rounded-xl shadow-md border border-purple-100">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
             <div class="flex items-center px-4 py-3 bg-purple-50 rounded-t-xl border-b border-purple-100">
                 <i class="fas fa-clipboard-list text-purple-700 mr-2"></i>
                 <h3 class="text-sm nunito-bold text-purple-700">Órdenes de Servicio por Estado</h3>
@@ -244,7 +245,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-md border border-indigo-100">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
             <div class="flex items-center px-4 py-3 bg-indigo-50 rounded-t-xl border-b border-indigo-100">
                 <i class="fas fa-file-invoice-dollar text-indigo-700 mr-2"></i>
                 <h3 class="text-sm nunito-bold text-indigo-700">Cotizaciones por Mes</h3>
@@ -256,7 +257,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-md border border-teal-100">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
             <div class="flex items-center px-4 py-3 bg-teal-50 rounded-t-xl border-b border-teal-100">
                 <i class="fas fa-project-diagram text-teal-700 mr-2"></i>
                 <h3 class="text-sm nunito-bold text-teal-700">Proyectos por Estado</h3>
@@ -267,7 +268,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
     <div class="flex items-center my-12">
@@ -283,7 +283,7 @@
     </div>
 
     <div class="mb-12">
-        <div class="bg-white rounded-xl shadow-md border border-slate-100">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
             <div class="flex items-center px-4 py-3 bg-slate-50 rounded-t-xl border-b border-slate-100">
                 <i class="fas fa-history text-slate-700 mr-2"></i>
                 <h3 class="text-base nunito-bold text-slate-700">Registro de acciones recientes de usuarios</h3>
@@ -392,3 +392,5 @@
             </div>
         </div>
     </div>
+
+</div>

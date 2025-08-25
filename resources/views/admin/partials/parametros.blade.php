@@ -43,7 +43,7 @@
                             <td class="py-2 px-4" x-text="p.fecha_creacion||'-'"></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <button @click="openEdit(p)" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
-                                <button @click="openDelete(p)" class="text-red-600 hover:text-red-800"><i class="fas fa-trash-alt"></i></button>
+                                <button @click="openDelete(p)" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     </template>
