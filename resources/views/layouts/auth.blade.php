@@ -31,7 +31,7 @@
     <div class="min-h-screen flex items-center justify-center">
         <div class="w-full max-w-lg">
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-400 border-opacity-50 dark:border-0 p-4 sm:p-6 transition-colors shadow-xl">
+                class="bg-white dark:bg-gray-800 rounded-2xl sm:border sm:border-gray-400 sm:border-opacity-50 dark:sm:border-0 p-4 sm:p-6 transition-colors sm:shadow-xl">
                 <!-- LOGO -->
                 <div class="text-center mb-6">
                     <div

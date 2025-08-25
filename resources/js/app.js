@@ -75,6 +75,7 @@ import {
     faChevronUp,
     faChevronDown,
     faTimes,
+    faSignInAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -148,7 +149,8 @@ library.add(
     faFilter,
     faChevronUp,
     faChevronDown,
-    faTimes
+    faTimes,
+    faSignInAlt
 );
 dom.watch();
 

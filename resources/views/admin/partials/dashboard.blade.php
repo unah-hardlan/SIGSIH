@@ -175,47 +175,47 @@
 
     <div class="mb-8">
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
+            <x-admin.sidebar-link-static href="#" :active="false" view-name="gestion-ordenes" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-blue-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-plus text-blue-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nueva Orden</p>
-            </a>
+            </x-admin.sidebar-link-static>
 
-            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
+            <x-admin.sidebar-link-static href="#" :active="false" view-name="cotizaciones" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-green-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-file-invoice text-green-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nueva Cotización</p>
-            </a>
-            
-            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
+            </x-admin.sidebar-link-static>
+
+            <x-admin.sidebar-link-static href="#" :active="false" view-name="proyectos" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-purple-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-project-diagram text-purple-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nuevo Proyecto</p>
-            </a>
-            
-            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
+            </x-admin.sidebar-link-static>
+
+            <x-admin.sidebar-link-static href="#" :active="false" view-name="productos" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-orange-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-box-open text-orange-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Agregar Producto</p>
-            </a>
-            
-            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
+            </x-admin.sidebar-link-static>
+
+            <x-admin.sidebar-link-static href="#" :active="false" view-name="reportes" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-indigo-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-chart-bar text-indigo-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nuevo Reporte</p>
-            </a>
-            
-            <a href="#" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 text-center">
+            </x-admin.sidebar-link-static>
+
+            <x-admin.sidebar-link-static href="#" :active="false" view-name="gestion-usuarios" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-teal-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-user-plus text-teal-500"></i>
                 </div>
                 <p class="text-sm nunito-regular text-gray-700">Nuevo Usuario</p>
-            </a>
+            </x-admin.sidebar-link-static>
         </div>
     </div>
 
