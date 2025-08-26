@@ -145,12 +145,104 @@
     <!-- Modales Factura -->
     <x-admin.form-modal modalName="isFacturaModalOpen" title="Nueva Factura" submitLabel="Guardar Factura"
         maxWidth="max-w-2xl">
-        <!-- ...campos del formulario como ya tienes arriba... -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="numero_factura" class="block text-sm font-medium text-gray-700">Número</label>
+                <input type="text" id="numero_factura" name="numero_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="fecha_factura" class="block text-sm font-medium text-gray-700">Fecha</label>
+                <input type="date" id="fecha_factura" name="fecha_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="oc_factura" class="block text-sm font-medium text-gray-700">OC</label>
+                <input type="text" id="oc_factura" name="oc_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="subtotal_factura" class="block text-sm font-medium text-gray-700">Subtotal</label>
+                <input type="number" id="subtotal_factura" name="subtotal_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="total_factura" class="block text-sm font-medium text-gray-700">Total</label>
+                <input type="number" id="total_factura" name="total_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="total_letras_factura" class="block text-sm font-medium text-gray-700">Total Letras</label>
+                <input type="text" id="total_letras_factura" name="total_letras_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="estado_factura_id" class="block text-sm font-medium text-gray-700">Estado Factura</label>
+                <select id="estado_factura_id" name="estado_factura_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Seleccione un estado</option>
+                    <option value="1">Pagada</option>
+                    <option value="2">Pendiente</option>
+                    <option value="3">Cancelada</option>
+                </select>
+            </div>
+            <div>
+                <label for="cai_factura" class="block text-sm font-medium text-gray-700">CAI</label>
+                <input type="text" id="cai_factura" name="cai_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="cliente_id" class="block text-sm font-medium text-gray-700">Cliente</label>
+                <select id="cliente_id" name="cliente_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Seleccione un cliente</option>
+                    <option value="1">Bac Credomatic</option>
+                    <option value="2">Bancafe</option>
+                </select>
+            </div>
+        </div>
     </x-admin.form-modal>
 
     <x-admin.edit-modal modalName="isEditFacturaModalOpen" title="Editar Factura" itemToEdit="facturaToEdit"
         maxWidth="max-w-2xl">
-        <!-- ...campos del formulario de edición como ya tienes arriba... -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="edit_numero_factura" class="block text-sm font-medium text-gray-700">Número</label>
+                <input type="text" id="edit_numero_factura" name="edit_numero_factura" :value="facturaToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_fecha_factura" class="block text-sm font-medium text-gray-700">Fecha</label>
+                <input type="date" id="edit_fecha_factura" name="edit_fecha_factura" :value="facturaToEdit.fecha" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_oc_factura" class="block text-sm font-medium text-gray-700">OC</label>
+                <input type="text" id="edit_oc_factura" name="edit_oc_factura" :value="facturaToEdit.oc" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_subtotal_factura" class="block text-sm font-medium text-gray-700">Subtotal</label>
+                <input type="number" id="edit_subtotal_factura" name="edit_subtotal_factura" :value="facturaToEdit.subtotal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_total_factura" class="block text-sm font-medium text-gray-700">Total</label>
+                <input type="number" id="edit_total_factura" name="edit_total_factura" :value="facturaToEdit.total" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_total_letras_factura" class="block text-sm font-medium text-gray-700">Total Letras</label>
+                <input type="text" id="edit_total_letras_factura" name="edit_total_letras_factura" :value="facturaToEdit.total_letras" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_estado_factura_id" class="block text-sm font-medium text-gray-700">Estado Factura</label>
+                <select id="edit_estado_factura_id" name="edit_estado_factura_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Seleccione un estado</option>
+                    <option value="1" :selected="facturaToEdit.estado_factura === 'Pagada'">Pagada</option>
+                    <option value="2" :selected="facturaToEdit.estado_factura === 'Pendiente'">Pendiente</option>
+                    <option value="3" :selected="facturaToEdit.estado_factura === 'Cancelada'">Cancelada</option>
+                </select>
+            </div>
+            <div>
+                <label for="edit_cai_factura" class="block text-sm font-medium text-gray-700">CAI</label>
+                <input type="text" id="edit_cai_factura" name="edit_cai_factura" :value="facturaToEdit.cai" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_cliente_id" class="block text-sm font-medium text-gray-700">Cliente</label>
+                <select id="edit_cliente_id" name="edit_cliente_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Seleccione un cliente</option>
+                    <option value="1" :selected="facturaToEdit.cliente === 'Bac Credomatic'">Bac Credomatic</option>
+                    <option value="2" :selected="facturaToEdit.cliente === 'Bancafe'">Bancafe</option>
+                </select>
+            </div>
+        </div>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal modalName="isDeleteFacturaModalOpen" itemToDelete="facturaToDelete"
@@ -210,13 +302,55 @@
     <!-- Modal Nuevo Detalle Factura -->
     <x-admin.form-modal modalName="isDetalleModalOpen" title="Nuevo Detalle Factura" submitLabel="Guardar Detalle"
         maxWidth="max-w-xl">
-        <!-- ...campos de detalle factura... -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="id_factura" class="block text-sm font-medium text-gray-700">ID Factura</label>
+                <input type="text" id="id_factura" name="id_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="id_servicio" class="block text-sm font-medium text-gray-700">ID Servicio</label>
+                <input type="text" id="id_servicio" name="id_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="fecha_servicio" class="block text-sm font-medium text-gray-700">Fecha Servicio</label>
+                <input type="date" id="fecha_servicio" name="fecha_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="horas" class="block text-sm font-medium text-gray-700">Horas</label>
+                <input type="number" id="horas" name="horas" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="descuento" class="block text-sm font-medium text-gray-700">Descuento</label>
+                <input type="number" id="descuento" name="descuento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+        </div>
     </x-admin.form-modal>
 
     <!-- Modal Editar Detalle Factura -->
     <x-admin.edit-modal modalName="isEditDetalleModalOpen" title="Editar Detalle Factura" itemToEdit="detalleToEdit"
         maxWidth="max-w-xl">
-        <!-- ...campos de detalle factura (edición)... -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="edit_id_factura" class="block text-sm font-medium text-gray-700">ID Factura</label>
+                <input type="text" id="edit_id_factura" name="edit_id_factura" :value="detalleToEdit.id_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_id_servicio" class="block text-sm font-medium text-gray-700">ID Servicio</label>
+                <input type="text" id="edit_id_servicio" name="edit_id_servicio" :value="detalleToEdit.id_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700">Fecha Servicio</label>
+                <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio" :value="detalleToEdit.fecha_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_horas" class="block text-sm font-medium text-gray-700">Horas</label>
+                <input type="number" id="edit_horas" name="edit_horas" :value="detalleToEdit.horas" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="edit_descuento" class="block text-sm font-medium text-gray-700">Descuento</label>
+                <input type="number" id="edit_descuento" name="edit_descuento" :value="detalleToEdit.descuento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+        </div>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal modalName="isDeleteDetalleModalOpen" itemToDelete="detalleToDelete"
