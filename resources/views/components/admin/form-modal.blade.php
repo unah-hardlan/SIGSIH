@@ -14,8 +14,9 @@
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
     class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4"
-    @click.away="{{ $modalName }} = false"
-    style="display: none;">
+  @click="{{ $modalName }} = false"
+  @keydown.window.escape="{{ $modalName }} = false"
+  x-cloak>
     
     <div class="bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
         
