@@ -66,7 +66,6 @@ class ViewLoaderController extends Controller
             'catalogo-tipo-objeto',
             'gestion-personas',
             'perfil',
-            'cambio-contrasena',
             'bitacora',
             'gestion-db',
             'mantenimiento-general',

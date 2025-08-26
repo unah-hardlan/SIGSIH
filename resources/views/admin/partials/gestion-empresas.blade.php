@@ -248,7 +248,7 @@
     <div x-show="isEmpresaModalOpen" x-transition.opacity
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         @click.self="isEmpresaModalOpen = false">
-        <div class="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full relative">
+            <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
             <h2 class="text-xl font-bold mb-4" x-text="empresaToEdit ? 'Editar Empresa' : 'Agregar Empresa'"></h2>
             <form @submit.prevent="isEmpresaModalOpen = false">
                 <div class="mb-4">
@@ -305,7 +305,7 @@
     <div x-show="isEmpresaRegistradaModalOpen" x-transition.opacity
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         @click.self="isEmpresaRegistradaModalOpen = false">
-        <div class="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full relative">
+            <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
             <h2 class="text-xl font-bold mb-4"
                 x-text="empresaRegistradaToEdit ? 'Editar Empresa Registrada' : 'Agregar Empresa Registrada'"></h2>
             <form @submit.prevent="isEmpresaRegistradaModalOpen = false">
@@ -354,7 +354,7 @@
     <div x-show="isOficinaModalOpen" x-transition.opacity
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
         @click.self="isOficinaModalOpen = false">
-        <div class="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full relative">
+            <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
             <h2 class="text-xl font-bold mb-4" x-text="oficinaToEdit ? 'Editar Oficina' : 'Agregar Oficina'"></h2>
             <form @submit.prevent="isOficinaModalOpen = false">
                 <div class="mb-4">

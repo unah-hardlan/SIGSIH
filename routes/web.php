@@ -137,7 +137,6 @@ Route::prefix('admin')
         // Administración
         Route::get('gestion-personas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-personas'))->name('gestion-personas');
         Route::get('perfil', fn() => view('layouts.admin')->with('partialView', 'admin.partials.perfil'))->name('perfil');
-        Route::get('cambio-contrasena', fn() => view('layouts.admin')->with('partialView', 'admin.partials.cambio-contrasena'))->name('cambio-contrasena');
         Route::get('bitacora', fn() => view('layouts.admin')->with('partialView', 'admin.partials.bitacora'))->name('bitacora');
         Route::get('gestion-db', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-db'))->name('gestion-db');
 

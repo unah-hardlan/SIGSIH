@@ -54,7 +54,6 @@ Todas las siguientes rutas están configuradas y funcionando:
 -   `/admin/kardex` - Gestión de kardex
 -   `/admin/gestion-personas` - Gestión de personas
 -   `/admin/perfil` - Mi perfil
--   `/admin/cambio-contrasena` - Cambio de contraseña
 -   `/admin/bitacora` - Bitácora
 -   `/admin/gestion-db` - Gestión de base de datos
 -   `/admin/mantenimiento-general` - Mantenimiento del sistema

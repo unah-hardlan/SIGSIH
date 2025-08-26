@@ -3,7 +3,7 @@
     'title',
     'submitLabel' => 'Guardar Cambios',
     'itemToEdit',
-    'maxWidth' => 'max-w-2xl',
+    'maxWidth' => 'max-w-md',
     'formId' => ''
 ])
 
