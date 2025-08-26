@@ -28,15 +28,15 @@
         </label>
     </div>
 
-    <div class="min-h-screen flex items-center justify-center">
+    <div class="min-h-screen flex items-start sm:items-center justify-center py-6 sm:py-12">
         <div class="w-full max-w-lg">
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl sm:border sm:border-gray-400 sm:border-opacity-50 dark:sm:border-0 p-4 sm:p-6 transition-colors sm:shadow-xl">
+                class="bg-white dark:bg-gray-800 rounded-2xl sm:border sm:border-gray-400 sm:border-opacity-50 dark:sm:border-0 p-4 sm:p-6 transition-colors sm:shadow-xl max-h-[calc(100vh-4rem)] overflow-auto">
                 <!-- LOGO -->
                 <div class="text-center mb-6">
                     <div
-                        class="inline-flex items-center justify-center w-36 h-36 rounded-full mb-3 bg-gray-100 dark:bg-white border-4 border-white dark:border-gray-200 transition-colors">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-32 h-32 object-contain">
+                        class="inline-flex items-center justify-center w-24 h-24 sm:w-36 sm:h-36 rounded-full mb-3 bg-gray-100 dark:bg-white border-4 border-white dark:border-gray-200 transition-colors">
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-20 h-20 sm:w-32 sm:h-32 object-contain">
                     </div>
                     <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 serif-boldy">
                         <span x-text="isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'"></span>
