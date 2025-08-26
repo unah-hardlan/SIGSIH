@@ -2,7 +2,7 @@
     'modalName',
     'title',
     'submitLabel',
-    'maxWidth' => 'max-w-2xl',
+    'maxWidth' => 'max-w-md', {{-- Cambiado el valor por defecto a md para un mejor equilibrio --}}
     'formId' => ''
 ])
 
@@ -16,12 +16,13 @@
     class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
     @click.away="{{ $modalName }} = false"
     style="display: none;">
-    <div class="bg-white rounded-lg shadow-xl p-4 w-full max-w-xs sm:max-w-lg sm:p-6 mx-2 sm:mx-1" @click.stop>
+    {{-- Aquí es donde haremos el cambio principal --}}
+    <div class="bg-white rounded-lg shadow-xl p-4 w-11/12 sm:w-full {{ $maxWidth }} mx-auto" @click.stop>
         <div class="flex justify-between items-center border-b pb-3">
             <h3 class="text-xl font-bold text-gray-700">{{ $title }}</h3>
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
         </div>
-    <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-4">
+        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-4">
             {{ $slot }}
             <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2">
                 <button type="button" @click="{{ $modalName }} = false"

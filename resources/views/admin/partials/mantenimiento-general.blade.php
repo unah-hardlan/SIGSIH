@@ -6,6 +6,22 @@
     tema: 'claro',
     nombreSistema: 'HARDLAN',
     colorPrimario: '#0056b3',
+    savedMessagePersonalizacion: '',
+    savedMessageParametros: '',
+
+    guardarPersonalizacion() {
+        // Aquí puedes reemplazar por una llamada fetch() al backend
+        this.savedMessagePersonalizacion = 'Personalización guardada correctamente';
+        setTimeout(() => this.savedMessagePersonalizacion = '', 2500);
+        console.log('Guardar personalización', { nombreSistema: this.nombreSistema, tema: this.tema });
+    },
+
+    guardarParametros() {
+        // Aquí puedes reemplazar por una llamada fetch() al backend
+        this.savedMessageParametros = 'Parámetros guardados correctamente';
+        setTimeout(() => this.savedMessageParametros = '', 2500);
+        console.log('Guardar parámetros');
+    }
 }">
     <h1 class="text-2xl font-bold mb-6">Personalización del Sistema</h1>
 
@@ -27,17 +43,6 @@
                 <img :src="logoUrl" alt="Logo actual" class="h-16 mb-2">
                 <input type="file" class="block mb-2">
             </div>
-            <div>
-                <label class="block font-medium mb-1">Tema</label>
-                <select x-model="tema" class="border rounded px-3 py-2 w-full">
-                    <option value="claro">Claro</option>
-                    <option value="oscuro">Oscuro</option>
-                </select>
-            </div>
-            <div>
-                <label class="block font-medium mb-1">Color Primario</label>
-                <input type="color" x-model="colorPrimario" class="w-16 h-10 p-0 border-0">
-            </div>
 
         </div>
         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -45,6 +50,11 @@
                 <label class="block font-medium mb-1">Nombre del sistema</label>
                 <input type="text" x-model="nombreSistema" class="border rounded px-3 py-2 w-full">
             </div>
+        </div>
+        <div class="mt-6 flex items-center justify-end">
+            <button @click="guardarPersonalizacion()" type="button" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                Guardar
+            </button>
         </div>
     </div>
 
@@ -72,6 +82,11 @@
                 <label class="block font-medium mb-1">Límite de sesiones</label>
                 <input type="number" min="1" max="5" value="2" class="border rounded px-3 py-2 w-full">
             </div>
+        </div>
+        <div class="mt-6 flex items-center justify-end">
+            <button @click="guardarParametros()" type="button" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                Guardar
+            </button>
         </div>
     </div>
 </div>
