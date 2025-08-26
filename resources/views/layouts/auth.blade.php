@@ -31,7 +31,7 @@
     <div class="min-h-screen flex items-start sm:items-center justify-center py-6 sm:py-12">
         <div class="w-full max-w-lg">
             <div
-                class="bg-white dark:bg-gray-800 rounded-2xl sm:border sm:border-gray-400 sm:border-opacity-50 dark:sm:border-0 p-4 sm:p-6 transition-colors sm:shadow-xl max-h-[calc(100vh-4rem)] overflow-auto">
+                class="bg-white dark:bg-gray-800 rounded-2xl sm:border sm:border-gray-400 sm:border-opacity-50 dark:sm:border-0 p-4 sm:p-6 transition-colors sm:shadow-xl">
                 <!-- LOGO -->
                 <div class="text-center mb-6">
                     <div
