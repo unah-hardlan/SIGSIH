@@ -19,10 +19,12 @@
                 class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
         </x-slot>
         <x-slot name="boton">
-            <button @click="isServicioModalOpen = true"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
-                Nuevo Servicio
-            </button>
+            <div class="w-full flex justify-center sm:justify-end">
+                <button @click="isServicioModalOpen = true"
+                    class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">
+                    Nuevo Servicio
+                </button>
+            </div>
         </x-slot>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">

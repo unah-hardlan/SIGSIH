@@ -7,10 +7,11 @@
         filtroNombre: ''
     }">
     <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-2 mb-4">
             <h2 class="text-2xl text-gray-800 nunito-bold">Tipo de Movimiento</h2>
             <button @click="isTipoModalOpen = true"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold">Nuevo tipo</button>
+                class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold flex items-center justify-center">Nuevo tipo
+            </button>
         </div>
         <div class="flex flex-wrap gap-2 items-center mb-4">
             <input type="text" x-model="filtroNombre" placeholder="Buscar por nombre..."

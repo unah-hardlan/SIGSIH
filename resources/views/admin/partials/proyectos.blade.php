@@ -49,12 +49,12 @@
                 </select>
             </x-slot>
             <x-slot name="boton">
-                <div class="flex gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
                     <a href="{{ url('/admin/reportes-header?modulo=Proyectos') }}" target="_blank"
-                        class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
-                    <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo proyecto</button>
+                    <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo proyecto</button>
                 </div>
             </x-slot>
             <table class="min-w-full text-sm">

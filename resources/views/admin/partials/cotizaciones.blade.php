@@ -40,10 +40,10 @@
             </x-slot:filtros>
 
             <x-slot:boton>
-                <button
-                  @click="generateCotizacionModal = true"
-                  class="text-sm w-32 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300"
-                >
+                                <button
+                                    @click="generateCotizacionModal = true"
+                                    class="text-sm w-full sm:w-32 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300"
+                                >
                   <i class="fas fa-plus"></i> Generar Cotización
                 </button>
             </x-slot:boton>
@@ -176,166 +176,240 @@
             </div>
         </x-admin.tabla-crud>
 
-        <x-admin.form-modal modalName="generateCotizacionModal" title="Generar Cotización" submitLabel="Guardar" formId="generateCotizacionForm" maxWidth="max-w-4xl">
-            <div class="grid grid-cols-3 gap-6">
-                <!-- Fila 1 -->
-                <div>
+            <x-admin.form-modal modalName="generateCotizacionModal" title="Generar Cotización" submitLabel="Guardar"
+                formId="generateCotizacionForm" maxWidth="max-w-4xl">
+                <div class="grid grid-cols-1 gap-4"> {{-- Cambiado a grid-cols-1 para que los elementos principales tomen todo el ancho --}}
+
+                <!-- ID del Cliente -->
+                <div> {{-- Este div ahora ocupa todo el ancho --}}
                     <label for="clienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del Cliente</label>
-                    <select id="clienteId" name="clienteId" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <select id="clienteId" name="clienteId"
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                         <option value="">Seleccione un cliente</option>
                         <option value="">Juan Orlando Hernandez</option>
                         <option value="">Rocky</option>
-
                         <!-- Opciones dinámicas -->
                     </select>
                 </div>
-                <div>
-                    <label for="fechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Cotización</label>
-                    <input type="date" id="fechaCotizacion" name="fechaCotizacion" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+
+                <!-- Fecha de Cotización -->
+                <div> {{-- Este div ahora ocupa todo el ancho --}}
+                    <label for="fechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
+                        Cotización</label>
+                    <input type="date" id="fechaCotizacion" name="fechaCotizacion"
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 </div>
-                <div>
+
+                <!-- Válido Hasta -->
+                <div> {{-- Este div ahora ocupa todo el ancho --}}
                     <label for="validoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido Hasta</label>
-                    <input type="date" id="validoHasta" name="validoHasta" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <input type="date" id="validoHasta" name="validoHasta"
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 </div>
 
                 <!-- Descripción dinámica -->
-                <div class="col-span-3" x-data="{ descriptions: [{}] }">
+                <div class="col-span-1" x-data="{ descriptions: [{}] }"> {{-- col-span-1 aquí es redundante pero no hace daño --}}
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <div class="max-h-48 overflow-y-auto pr-2">
                         <template x-for="(description, index) in descriptions" :key="index">
-                            <div class="grid grid-cols-12 gap-2 mt-2 items-center">
-                                <div class="col-span-3">
-                                    <input type="text" :name="`descripcion[${index}][descripcion]`" placeholder="Descripción" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
+                                <div class="col-span-1 sm:col-span-3">
+                                    <input type="text" :name="`descripcion[${index}][descripcion]`"
+                                        placeholder="Descripción"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][precio]`" placeholder="Precio Unitario" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                <div class="col-span-1 sm:col-span-2">
+                                    <input type="number" :name="`descripcion[${index}][precio]`"
+                                        placeholder="Precio Unitario"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][cantidad]`" placeholder="Cantidad" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                <div class="col-span-1 sm:col-span-2">
+                                    <input type="number" :name="`descripcion[${index}][cantidad]`" placeholder="Cantidad"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][impuesto]`" placeholder="Impuesto" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                <div class="col-span-1 sm:col-span-2">
+                                    <input type="number" :name="`descripcion[${index}][impuesto]`" placeholder="Impuesto"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                                 </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][total]`" placeholder="Total" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                <div class="col-span-1 sm:col-span-2">
+                                    <input type="number" :name="`descripcion[${index}][total]`" placeholder="Total"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                                 </div>
-                                <div class="col-span-1 text-right">
-                                    <button type="button" @click="descriptions.splice(index, 1)" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <div class="col-span-1 sm:col-span-1 text-right">
+                                    <button type="button" @click="descriptions.splice(index, 1)"
+                                        class="text-red-500 hover:text-red-700" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
                         </template>
                     </div>
-                    <button type="button" @click="descriptions.push({})" class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
+                    <button type="button" @click="descriptions.push({})"
+                        class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
                         <i class="fas fa-plus"></i> Añadir Descripción
                     </button>
                 </div>
 
-                <!-- Imponible -->
-                <div>
-                    <label for="imponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                    <input type="number" id="imponible" name="imponible" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
-                </div>
+                <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> {{-- Este es el nuevo contenedor para la fila de 3 elementos --}}
+                    <!-- Imponible -->
+                    <div>
+                        <label for="imponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                        <input type="number" id="imponible" name="imponible"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    </div>
 
-                <!-- Total impuesto -->
-                <div>
-                    <label for="totalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total Impuesto</label>
-                    <input type="number" id="totalImpuesto" name="totalImpuesto" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
-                </div>
+                    <!-- Total impuesto -->
+                    <div>
+                        <label for="totalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
+                            Impuesto</label>
+                        <input type="number" id="totalImpuesto" name="totalImpuesto"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    </div>
 
-                <!-- Otros cargos -->
-                <div>
-                    <label for="otrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros Cargos</label>
-                    <input type="number" id="otrosCargos" name="otrosCargos" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <!-- Otros cargos -->
+                    <div>
+                        <label for="otrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
+                            Cargos</label>
+                        <input type="number" id="otrosCargos" name="otrosCargos"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    </div>
                 </div>
 
                 <!-- Total -->
-                <div class="col-span-3">
+                <div> {{-- Este div ahora ocupa todo el ancho --}}
                     <label for="total" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                    <input type="number" id="total" name="total" class="mt-1 block w-48 rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <input type="number" id="total" name="total"
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 </div>
             </div>
         </x-admin.form-modal>
 
         <!-- Modal de Edición de Cotización -->
-        <x-admin.edit-modal modalName="editModal" title="Editar Cotización" submitLabel="Actualizar" itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="editCotizacionForm">
-            <div class="grid grid-cols-3 gap-6">
-                <!-- Fila 1 -->
-                <div>
-                    <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del Cliente</label>
-                    <select id="editClienteId" name="clienteId" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.clienteId">
-                        <option value="">Seleccione un cliente</option>
-                        <option value="CLI-1234">Juan Orlando Hernandez</option>
-                        <option value="CLI-5678">Rocky</option>
-                        <!-- Opciones dinámicas -->
-                    </select>
-                </div>
-                <div>
-                    <label for="editFechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Cotización</label>
-                    <input type="date" id="editFechaCotizacion" name="fechaCotizacion" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.fechaCotizacion">
-                </div>
-                <div>
-                    <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido Hasta</label>
-                    <input type="date" id="editValidoHasta" name="validoHasta" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.validoHasta">
-                </div>
+        <x-admin.edit-modal modalName="editModal" title="Editar Cotización" submitLabel="Actualizar"    itemToEdit="itemToEdit"
+            maxWidth="max-w-4xl" formId="editCotizacionForm">
+            <div x-show="itemToEdit" class="space-y-4"> {{-- Este div envuelve todo el contenido del slot --}}
+                <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
 
-                <!-- Descripción dinámica -->
-                <div class="col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <div class="max-h-48 overflow-y-auto pr-2">
-                        <template x-for="(descripcion, index) in itemToEdit.descripciones" :key="index">
-                            <div class="grid grid-cols-12 gap-2 mt-2 items-center">
-                                <div class="col-span-3">
-                                    <input type="text" :name="`descripcion[${index}][descripcion]`" placeholder="Descripción" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="descripcion.descripcion">
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][precio]`" placeholder="Precio Unitario" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="descripcion.precio">
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][cantidad]`" placeholder="Cantidad" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="descripcion.cantidad">
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][impuesto]`" placeholder="Impuesto" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="descripcion.impuesto">
-                                </div>
-                                <div class="col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][total]`" placeholder="Total" class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="descripcion.total">
-                                </div>
-                                <div class="col-span-1 text-right">
-                                    <button type="button" @click="itemToEdit.descripciones.splice(index, 1)" class="text-red-500 hover:text-red-700" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
+                    <!-- ID del Cliente -->
+                    <div>
+                        <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del
+                            Cliente</label>
+                        <select id="editClienteId" name="clienteId"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                            x-model="itemToEdit.clienteId">
+                            <option value="">Seleccione un cliente</option>
+                            <option value="CLI-1234">Juan Orlando Hernandez</option>
+                            <option value="CLI-5678">Rocky</option>
+                            <!-- Opciones dinámicas -->
+                        </select>
                     </div>
-                    <button type="button" @click="itemToEdit.descripciones.push({})" class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
-                        <i class="fas fa-plus"></i> Añadir Descripción
-                    </button>
-                </div>
 
-                <!-- Imponible -->
-                <div>
-                    <label for="editImponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                    <input type="number" id="editImponible" name="imponible" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.imponible">
-                </div>
+                    <!-- Fecha de Cotización -->
+                    <div>
+                        <label for="editFechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
+                            Cotización</label>
+                        <input type="date" id="editFechaCotizacion" name="fechaCotizacion"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                            x-model="itemToEdit.fechaCotizacion">
+                    </div>
 
-                <!-- Total impuesto -->
-                <div>
-                    <label for="editTotalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total Impuesto</label>
-                    <input type="number" id="editTotalImpuesto" name="totalImpuesto" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.totalImpuesto">
-                </div>
+                    <!-- Válido Hasta -->
+                    <div>
+                        <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
+                            Hasta</label>
+                        <input type="date" id="editValidoHasta" name="validoHasta"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                            x-model="itemToEdit.validoHasta">
+                    </div>
 
-                <!-- Otros cargos -->
-                <div>
-                    <label for="editOtrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros Cargos</label>
-                    <input type="number" id="editOtrosCargos" name="otrosCargos" class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.otrosCargos">
-                </div>
+                    <!-- Descripción dinámica -->
+                    <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
+                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                        <div class="max-h-48 overflow-y-auto pr-2">
+                            <template x-for="(descripcion, index) in itemToEdit.descripciones" :key="index">
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
+                                    <div class="col-span-1 sm:col-span-3">
+                                        <input type="text" :name="`descripcion[${index}][descripcion]`"
+                                            placeholder="Descripción"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.descripcion">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" :name="`descripcion[${index}][precio]`"
+                                            placeholder="Precio Unitario"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.precio">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" :name="`descripcion[${index}][cantidad]`"
+                                            placeholder="Cantidad"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.cantidad">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" :name="`descripcion[${index}][impuesto]`"
+                                            placeholder="Impuesto"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.impuesto">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" :name="`descripcion[${index}][total]`" placeholder="Total"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.total">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-1 text-right">
+                                        <button type="button" @click="itemToEdit.descripciones.splice(index, 1)"
+                                            class="text-red-500 hover:text-red-700" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <button type="button" @click="itemToEdit.descripciones.push({})"
+                            class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
+                            <i class="fas fa-plus"></i> Añadir Descripción
+                        </button>
+                    </div>
 
-                <!-- Total -->
-                <div class="col-span-3">
-                    <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                    <input type="number" id="editTotal" name="total" class="mt-1 block w-48 rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1" x-model="itemToEdit.total">
+                    <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Imponible -->
+                        <div>
+                            <label for="editImponible"
+                                class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                            <input type="number" id="editImponible" name="imponible"
+                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                x-model="itemToEdit.imponible">
+                        </div>
+
+                        <!-- Total impuesto -->
+                        <div>
+                            <label for="editTotalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
+                                Impuesto</label>
+                            <input type="number" id="editTotalImpuesto" name="totalImpuesto"
+                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                x-model="itemToEdit.totalImpuesto">
+                        </div>
+
+                        <!-- Otros cargos -->
+                        <div>
+                            <label for="editOtrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
+                                Cargos</label>
+                            <input type="number" id="editOtrosCargos" name="otrosCargos"
+                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                x-model="itemToEdit.otrosCargos">
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div> {{-- Este div ahora ocupa todo el ancho --}}
+                        <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                        <input type="number" id="editTotal" name="total"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                            x-model="itemToEdit.total">
+                    </div>
                 </div>
             </div>
         </x-admin.edit-modal>

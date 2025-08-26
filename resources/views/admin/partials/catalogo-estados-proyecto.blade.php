@@ -13,8 +13,11 @@
             </div>
         </x-slot>
         <x-slot name="boton">
-            <button @click="isEstadoModalOpen = true"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo Estado</button>
+            <div class="w-full flex justify-center sm:justify-end">
+                <button @click="isEstadoModalOpen = true"
+                    class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">Nuevo Estado
+                </button>
+            </div>
         </x-slot>
         <div class="overflow-x-auto w-full">
             <table class="min-w-full text-sm">
