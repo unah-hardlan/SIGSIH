@@ -13,12 +13,12 @@
         <x-slot name="boton">
             <div class="flex flex-col sm:flex-row sm:items-center gap-1.5">
                 <button @click="openCreate()"
-                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-md bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-green-500">
+                    class="w-full sm:w-auto h-10 sm:h-8 inline-flex items-center justify-center gap-1.5 px-4 rounded-md bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-green-500">
                     <i class="fas fa-user-plus text-[11px]"></i>
                     <span>Agregar usuario</span>
                 </button>
                 <button @click="openReporte()"
-                    class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    class="w-full sm:w-auto h-10 sm:h-8 inline-flex items-center justify-center gap-1.5 px-4 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-blue-500">
                     <i class="fas fa-file-alt text-[11px]"></i>
                     <span>Generar Reporte</span>
                 </button>

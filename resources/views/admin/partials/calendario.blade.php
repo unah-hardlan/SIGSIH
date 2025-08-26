@@ -6,15 +6,17 @@
         </ul>
 
         <div x-show="tab==='calendario'" class="py-8">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-semibold leading-tight nunito-bold">Calendario</h2>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" @click="isAddModalOpen = true">
-                    <i class="fas fa-plus mr-2"></i> Agregar
-                </button>
-                <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                   class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                    <i class="fas fa-file-alt"></i> Generar Reporte
-                </a>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3">Calendario</h2>
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg" @click="isAddModalOpen = true">
+                        <i class="fas fa-plus mr-2"></i> Agregar
+                    </button>
+                    <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center gap-2">
+                        <i class="fas fa-file-alt"></i> Generar Reporte
+                    </a>
+                </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-2 mb-4">
                 <select class="border rounded px-3 py-2 text-sm">

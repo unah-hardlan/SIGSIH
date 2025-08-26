@@ -7,10 +7,13 @@
         filtroNombre: ''
     }">
     <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
             <h2 class="text-2xl text-gray-800 nunito-bold">Tipo de Producto</h2>
-            <button @click="isTipoModalOpen = true"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold">Nuevo tipo</button>
+            <div class="w-full flex justify-center sm:justify-end mt-2 sm:mt-0">
+                <button @click="isTipoModalOpen = true"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold w-11/12 sm:w-auto">Nuevo tipo
+                </button>
+            </div>
         </div>
         <div class="flex flex-wrap gap-2 items-center mb-4">
             <input type="text" x-model="filtroNombre" placeholder="Buscar por nombre..."

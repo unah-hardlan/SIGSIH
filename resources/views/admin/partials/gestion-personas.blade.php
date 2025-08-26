@@ -52,13 +52,13 @@
                 </select>
                 
                 <!-- Botones de acción -->
-                <div class="flex gap-2 ml-auto">
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center sm:ml-auto">
                     <button @click="isModalOpenPersonas = true"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                        class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">
                         Agregar persona
                     </button>
                     <a href="/admin/reportes-header?modulo=Gestion de Personas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                       class="w-11/12 sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2 justify-center">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>
