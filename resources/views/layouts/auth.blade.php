@@ -42,21 +42,21 @@
                 <form @submit.prevent="handleSubmit" autocomplete="off">
                     <div x-show="!isLogin" x-cloak class="grid grid-cols-1 gap-y-2">
                         <div class="mb-2">
-                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre de Usuario</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 placeholder="John Doe" />
                         </div>
 
                         <div class="mb-2">
-                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo electrónico</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo electrónico</label>
                             <input type="email" name="email" x-model="email" :required="!isLogin"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 placeholder="correo@ejemplo.com" />
                         </div>
 
                         <div class="mb-2">
-                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                     :required="!isLogin"
@@ -75,7 +75,7 @@
                         </div>
 
                         <div class="mb-2">
-                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar Contraseña</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar Contraseña</label>
                             <div class="relative">
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
                                     x-model="confirmPassword" :required="!isLogin"
@@ -95,14 +95,14 @@
                     </div>
 
                     <div :class="{ 'mb-4': isLogin, 'mb-2': !isLogin }">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
+                        <label class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required
                             class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             placeholder="John Doe" />
                     </div>
 
                     <div x-show="isLogin" class="mb-2">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required
@@ -164,7 +164,7 @@
                         Iniciar sesión con Google
                     </button>
 
-                    <p class="mt-2 text-center text-xs text-gray-600 dark:text-gray-400 nunito-regular">
+                    <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 nunito-regular">
                         <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'"></span>
                         <button type="button"
                             class="ml-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold"
