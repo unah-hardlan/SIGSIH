@@ -36,7 +36,7 @@
                 <i class="fas fa-bell text-base sm:text-lg"></i>
                 <span class="absolute top-0 right-0 inline-block w-2 h-2 bg-red-600 rounded-full"></span>
             </button>
-            <div x-show="openNotif" @click.away="openNotif = false"
+            <div x-show="openNotif" x-cloak @click.away="openNotif = false"
                 class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md">
                 <div class="px-4 py-2 border-b text-gray-700 serif-bold text-sm">Notificaciones</div>
                 <ul>
@@ -64,7 +64,7 @@
                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold focus:outline-none">
                     JP
                 </button>
-                <div x-show="open" @click.away="open = false" @header-link-click="open = false"
+                <div x-show="open" x-cloak @click.away="open = false" @header-link-click="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white border border-blue-200 shadow rounded-md py-1">
                     <x-admin.header-menu-link view-name="perfil"
                         class="">
