@@ -53,4 +53,11 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+form input,
+form select,
+form textarea {
+  border-color: #A1A1A1 !important;
+  border-width: 1px;
+}
 </style>
