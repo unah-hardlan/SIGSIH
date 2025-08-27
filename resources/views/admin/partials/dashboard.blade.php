@@ -174,7 +174,7 @@
     </div>
 
     <div class="mb-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <x-admin.sidebar-link-static href="#" :active="false" view-name="gestion-ordenes" class="bg-white p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-blue-100 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-plus text-blue-500"></i>
