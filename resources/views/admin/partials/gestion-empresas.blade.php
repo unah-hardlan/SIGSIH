@@ -76,7 +76,7 @@
             {id: 2, nombre: 'Sucursal Norte'},
             {id: 3, nombre: 'Sucursal Sur'}
         ]
-    }"
+    }" @include('partials.persist-tab', ['tabKey' => 'admin-gestion-empresas-tab'])
     @keydown.window.escape="isEmpresaModalOpen = false; isEmpresaRegistradaModalOpen = false; isOficinaModalOpen = false; isDeleteEmpresaModalOpen = false; isDeleteEmpresaRegistradaModalOpen = false; isDeleteOficinaModalOpen = false">
 
     <!-- Tabs -->

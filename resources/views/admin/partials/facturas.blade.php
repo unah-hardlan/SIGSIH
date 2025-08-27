@@ -10,7 +10,7 @@
     detalleToEdit: {id_detalle: '', id_factura: '', id_servicio: '', fecha_servicio: '', horas: '', descuento: ''},
     isDeleteDetalleModalOpen: false,
     detalleToDelete: {id_detalle: ''}
-}" class="p-6">
+}" @include('partials.persist-tab', ['tabKey' => 'admin-facturas-tab']) class="p-6">
 
     <div class="mb-6">
         <ul class="flex border-b nunito-bold">

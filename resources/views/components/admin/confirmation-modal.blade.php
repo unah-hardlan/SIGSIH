@@ -26,8 +26,8 @@
             <p>{{ $message }} <strong x-text="{{ $itemToDelete }} ? {{ $itemToDelete }}.{{ $itemNameProperty }} : ''"></strong>?</p>
         </div>
         <div class="flex justify-end pt-4">
-            <button type="button" @click="{{ $modalName }} = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
-            <button type="button" @click="$dispatch('confirm-delete'); {{ $modalName }} = false" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Confirmar</button>
+            <button type="button" @click="{{ $modalName }} = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2 transition-colors duration-200 ease-in-out">Cancelar</button>
+            <button type="button" @click="$dispatch('confirm-delete'); {{ $modalName }} = false" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors duration-200 ease-in-out">Confirmar</button>
         </div>
     </div>
 </div>

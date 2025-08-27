@@ -35,7 +35,7 @@
         },
         isDeleteContactoModalOpen: false,
         contactoToDelete: null
-    }">
+    }" @include('partials.persist-tab', ['tabKey' => 'admin-solicitudes-tab'])>
     <ul class="flex border-b nunito-bold">
         <li @click="tab='solicitudes'"
             :class="tab==='solicitudes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"

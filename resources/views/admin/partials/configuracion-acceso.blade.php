@@ -16,7 +16,7 @@
     search: '',
     searchObjetos: '',
     ordenarPor: ''
-}">
+}" @include('partials.persist-tab', ['tabKey' => 'admin-configuracion-acceso-tab'])>
     <!-- Tabs -->
     <div class="flex border-b mb-6 flex-wrap gap-2">
         <button @click="tab = 'gestion'"
@@ -50,7 +50,7 @@
             <x-slot name="boton">
                 <a href="/admin/reportes-header?modulo=configuracion-acceso&fecha={{ now()->format('d-M-Y') }}"
                     target="_blank"
-                    class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                    class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </a>
             </x-slot>
@@ -188,7 +188,7 @@
             </x-slot>
             <x-slot name="boton">
                 <button @click="isModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar
+                    class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar
                     rol</button>
             </x-slot>
             <table class="min-w-full text-sm">
@@ -268,7 +268,7 @@
             </x-slot>
             <x-slot name="boton">
                 <button @click="isObjetoModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar
+                    class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar
                     objeto</button>
             </x-slot>
             <table class="min-w-full text-sm">
@@ -365,7 +365,7 @@
             </x-slot>
             <x-slot name="boton">
                 <button @click="isModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Asignar
+                    class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Asignar
                     Rol</button>
             </x-slot>
             <table class="min-w-full text-sm">
