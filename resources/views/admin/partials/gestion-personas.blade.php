@@ -26,41 +26,47 @@
     }">
     <x-admin.tabla-crud :titulo="'Gestión de Personas'">
         <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <!-- Búsqueda -->
-                <input type="text" x-model="searchPersonas" placeholder="Buscar..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-                
-                <!-- Filtros -->
-                <select x-model="filtroTipoPersona" class="border rounded px-3 py-2 text-sm w-full sm:w-40">
-                    <option value="">Todos los tipo de persona</option>
-                    <option>Empleado</option>
-                    <option>Cliente</option>
-                    <option>Administrador</option>
-                </select>
-                
-                <select x-model="filtroGenero" class="border rounded px-3 py-2 text-sm w-full sm:w-40">
-                    <option value="">Todos los género</option>
-                    <option>Masculino</option>
-                    <option>Femenino</option>
-                </select>
-                
-                <select x-model="ordenarPor" class="border rounded px-3 py-2 text-sm w-full sm:w-40">
-                    <option value="">Ordenar por Primer Nombre</option>
-                    <option value="primer_apellido">Ordenar por Primer Apellido</option>
-                    <option value="cargo">Ordenar por Cargo</option>
-                </select>
-                
-                <!-- Botones de acción -->
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-center sm:ml-auto">
-                    <button @click="isModalOpenPersonas = true"
-                        class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">
-                        Agregar persona
-                    </button>
-                    <a href="/admin/reportes-header?modulo=Gestion de Personas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="w-11/12 sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2 justify-center">
-                        <i class="fas fa-file-alt"></i> Generar Reporte
-                    </a>
+            <div class="w-full">
+                <!-- On mobile: stack vertically; on sm+ keep a single row with filters then buttons at the end -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+                    <div class="flex-1">
+                        <div class="grid grid-cols-1 sm:flex sm:flex-wrap sm:items-center gap-2 w-full">
+                            <!-- Búsqueda -->
+                            <input type="text" x-model="searchPersonas" placeholder="Buscar..."
+                                class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
+                            
+                            <!-- Filtros -->
+                            <select x-model="filtroTipoPersona" class="border rounded px-3 py-2 text-sm w-full sm:w-40">
+                                <option value="">Todos los tipo de persona</option>
+                                <option>Empleado</option>
+                                <option>Cliente</option>
+                                <option>Administrador</option>
+                            </select>
+                            
+                            <select x-model="filtroGenero" class="border rounded px-3 py-2 text-sm w-full sm:w-40">
+                                <option value="">Todos los género</option>
+                                <option>Masculino</option>
+                                <option>Femenino</option>
+                            </select>
+                            
+                            <select x-model="ordenarPor" class="border rounded px-3 py-2 text-sm w-full sm:w-40">
+                                <option value="">Ordenar por Primer Nombre</option>
+                                <option value="primer_apellido">Ordenar por Primer Apellido</option>
+                                <option value="cargo">Ordenar por Cargo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-2 items-center mt-2 sm:mt-0 sm:ml-auto">
+                        <button @click="isModalOpenPersonas = true"
+                            class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">
+                            Agregar persona
+                        </button>
+                        <a href="/admin/reportes-header?modulo=Gestion de Personas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2 justify-center">
+                            <i class="fas fa-file-alt"></i> Generar Reporte
+                        </a>
+                    </div>
                 </div>
             </div>
         </x-slot>

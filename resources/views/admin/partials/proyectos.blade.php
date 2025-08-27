@@ -127,10 +127,10 @@
                             <div><span class="font-medium text-gray-600">Descripción:</span> Implementación inicial del sistema</div>
                         </div>
                         <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
-                            <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                            <button @click="isEditProjectModalOpen = true; projectToEdit = {id: 1, nombre: 'Proyecto Alpha', fecha_inicio: '2025-01-15', fecha_estimada_fin: '2025-07-30', fecha_fin: '2025-07-29', descripcion: 'Implementación inicial del sistema', actividades: '5 tareas', orden_servicio: 'OS-00123', estado: 'Finalizado'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                            <button @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 1, nombre: 'Proyecto Alpha'}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
@@ -151,10 +151,10 @@
                             <div><span class="font-medium text-gray-600">Descripción:</span> Planificación y diseño preliminar</div>
                         </div>
                         <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
-                            <button class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                            <button @click="isEditProjectModalOpen = true; projectToEdit = {id: 2, nombre: 'Proyecto Beta', fecha_inicio: '2025-02-01', fecha_estimada_fin: '2025-08-20', fecha_fin: '', descripcion: 'Planificación y diseño preliminar', actividades: '3 tareas', orden_servicio: 'OS-00124', estado: 'En Proceso'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                            <button @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 2, nombre: 'Proyecto Beta'}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
