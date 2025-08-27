@@ -30,7 +30,7 @@
     isDeleteEstadoModalOpen: false, 
     estadoToEdit: { id: '', nombre: '', descripcion: '' }, 
     estadoToDelete: null 
-}">
+    }" @include('partials.persist-tab', ['tabKey' => 'admin-proyectos-tab'])>
     <ul class="flex border-b nunito-bold">
         <li @click="tab='proyectos'" :class="tab==='proyectos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2">Proyectos</li>
         <li @click="tab='movimientos'" :class="tab==='movimientos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2">Movimientos</li>

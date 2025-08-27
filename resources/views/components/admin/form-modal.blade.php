@@ -14,8 +14,9 @@
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
     class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4"
-    @click.away="{{ $modalName }} = false"
-    style="display: none;">
+  @click="{{ $modalName }} = false"
+  @keydown.window.escape="{{ $modalName }} = false"
+  x-cloak>
     
     <div class="bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
         
@@ -28,10 +29,10 @@
             {{ $slot }}
 
             <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 border-t p-4"> 
-                <button type="button" @click="{{ $modalName }} = false"
-                    class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 w-full sm:w-auto">Cancelar</button>
-                <button type="submit"
-                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto">{{ $submitLabel }}</button>
+        <button type="button" @click="{{ $modalName }} = false"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 w-full sm:w-auto transition-colors duration-200 ease-in-out">Cancelar</button>
+        <button type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full sm:w-auto transition-colors duration-200 ease-in-out">{{ $submitLabel }}</button>
             </div>
         </form>
     </div>
