@@ -30,23 +30,26 @@
                 <h2 class="text-2xl text-gray-800 nunito-bold">Facturas</h2>
             </x-slot>
             <x-slot name="filtros">
-                <div class="flex gap-2">
+                <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                     <input type="text" placeholder="Buscar factura..."
                         class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-                    <div class="flex items-center gap-2">
-                        <div class="flex rounded border overflow-hidden text-sm">
+
+                    <div class="w-full sm:w-auto flex items-center gap-2">
+                        <div class="flex rounded border overflow-hidden text-sm w-full sm:w-auto">
                             <span class="bg-white px-3 py-2 border-r">Desde:</span>
-                            <input type="date" class="px-3 py-2 outline-none" />
+                            <input type="date" class="px-3 py-2 outline-none w-full" />
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="flex rounded border overflow-hidden text-sm">
+
+                    <div class="w-full sm:w-auto flex items-center gap-2">
+                        <div class="flex rounded border overflow-hidden text-sm w-full sm:w-auto">
                             <span class="bg-white px-3 py-2 border-r">Hasta:</span>
-                            <input type="date" class="px-3 py-2 outline-none" />
+                            <input type="date" class="px-3 py-2 outline-none w-full" />
                         </div>
                     </div>
+
                     <button
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2 w-full sm:w-auto">
                         <i class="fas fa-filter"></i>
                         Filtrar
                     </button>
@@ -259,9 +262,11 @@
                     class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
             </x-slot>
             <x-slot name="boton">
-                <button @click="isDetalleModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo
-                    Detalle</button>
+                <div class="w-full flex justify-center">
+                    <button @click="isDetalleModalOpen = true"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap w-11/12 sm:w-48">Nuevo
+                        Detalle</button>
+                </div>
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
