@@ -97,7 +97,7 @@
                     <label class="text-sm font-medium text-gray-700">Seleccionar archivo .bak</label>
                     <div class="flex gap-2">
                         <input type="text" value="C:\backups\SIGSIH.bak" class="w-full border rounded px-3 py-2" />
-                        <button class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded">Examinar</button>
+                        <button class="transitions duration-200 ease-in-out bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded">Examinar</button>
                     </div>
                 </div>
             </div>
