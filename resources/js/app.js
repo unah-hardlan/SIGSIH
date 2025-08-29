@@ -1,6 +1,8 @@
 import "./bootstrap";
 import "./usuarios";
 import "./parametros";
+import "./perfil";
+import "./dashboard";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -194,6 +196,32 @@ document.addEventListener("alpine:init", () => {
         currentView: null,
 
         async navigate(url, viewName) {
+            // Si el usuario debe completar su perfil, forzar navegación a 'perfil'
+            try {
+                const store = window.Alpine?.store('perfil');
+                const needsProfile = store && (!store.persona);
+                if (needsProfile && viewName !== 'perfil') {
+                    this.isTransitioning = true;
+                    this.showLoader();
+                    try {
+                        const res = await fetch(`/load-view?view=perfil`);
+                        if (res.ok) {
+                            const html = await res.text();
+                            this.loadedViews['perfil'] = html;
+                            this.setContent(html);
+                            this.updateState('/admin/perfil', 'perfil');
+                        } else {
+                            // Fallback duro si el endpoint devuelve 403/otros
+                            window.location.assign('/admin/perfil');
+                        }
+                    } catch (_) {
+                        window.location.assign('/admin/perfil');
+                    } finally {
+                        this.isTransitioning = false;
+                    }
+                    return;
+                }
+            } catch(_) {}
             // Prevenir múltiples navegaciones simultáneas
             if (this.isTransitioning) return;
 
@@ -213,9 +241,11 @@ document.addEventListener("alpine:init", () => {
             try {
                 const response = await fetch(`/load-view?view=${viewName}`);
                 if (!response.ok) {
-                    throw new Error(
-                        `HTTP ${response.status}: ${response.statusText}`
-                    );
+                    // Si el backend bloquea por perfil incompleto, redirigir a perfil
+                    if (response.status === 403) {
+                        return this.navigate('/admin/perfil', 'perfil');
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const html = await response.text();
@@ -236,6 +266,9 @@ document.addEventListener("alpine:init", () => {
             // Guardar posición del scroll del sidebar antes de cambiar contenido
             this.saveSidebarScrollPosition();
 
+            // Destruir instancias de Chart.js antes de reemplazar el DOM
+            try { if (typeof destroyExistingCharts === 'function') destroyExistingCharts(); } catch (_) {}
+
             document.querySelector("main").innerHTML = html;
             // Reinicializar Alpine.js en el nuevo contenido
             Alpine.initTree(document.querySelector("main"));
@@ -251,7 +284,7 @@ document.addEventListener("alpine:init", () => {
             ) {
                 // Usar setTimeout para asegurar que el DOM esté listo
                 setTimeout(() => {
-                    initializeDashboardCharts();
+                    initializeDashboardChartsWithRetry();
                 }, 100);
             }
         },
@@ -411,11 +444,29 @@ document.addEventListener("alpine:init", () => {
     });
 });
 
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.color = "#6B7280";
+if (typeof window !== 'undefined' && window.Chart) {
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = "#6B7280";
+}
 
 // Función para inicializar los gráficos del dashboard
 function initializeDashboardCharts() {
+    const waitForCanvasReady = (el, cb, attempt = 0) => {
+        const max = 20; // ~3s total (20 * 150ms)
+        const delay = 150;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const ready = rect.width > 10 && rect.height > 10 && el.offsetParent !== null;
+        if (ready) return cb();
+        if (attempt >= max) return cb(); // last resort: try anyway
+        setTimeout(() => waitForCanvasReady(el, cb, attempt + 1), delay);
+    };
+    // Helper reutilizable para fetch con parse seguro
+    const tryFetch = async (url, headers) => {
+        const r = await fetch(url, { headers });
+        if (!r.ok) return { ok:false };
+        try { return { ok:true, data: await r.json() }; } catch(_) { return { ok:false } }
+    };
     // Initialize 'ordenesChart' only if element exists
     const ordenesEl = document.getElementById("ordenesChart");
     if (ordenesEl) {
@@ -423,36 +474,53 @@ function initializeDashboardCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-
-        const ordenesCtx = ordenesEl.getContext("2d");
-        window.ordenesChartInstance = new Chart(ordenesCtx, {
-            type: "doughnut",
-            data: {
-                labels: ["Abiertas", "En Proceso", "Cerradas"],
-                datasets: [
-                    {
-                        data: [45, 123, 1079],
-                        backgroundColor: ["#EF4444", "#F59E0B", "#10B981"],
-                        borderWidth: 2,
-                        borderColor: "#FFFFFF",
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "bottom",
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            font: { size: 12 },
+        const initOrdenes = async () => {
+            const ordenesCtx = ordenesEl.getContext("2d");
+            const store = window.Alpine?.store('dashboard');
+            const fromCache = store?.charts?.ordenes;
+            const draw = (json) => {
+                const labels = json?.labels || ["Abiertas", "En Proceso", "Cerradas"];
+                const data = json?.data || [0, 0, 0];
+                if (!window.ordenesChartInstance) {
+                    window.ordenesChartInstance = new Chart(ordenesCtx, {
+                        type: "doughnut",
+                        data: {
+                            labels,
+                            datasets: [{
+                                data,
+                                backgroundColor: ["#EF4444", "#F59E0B", "#10B981"],
+                                borderWidth: 2,
+                                borderColor: "#FFFFFF",
+                            }],
                         },
-                    },
-                },
-            },
-        });
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "bottom",
+                                    labels: { padding: 20, usePointStyle: true, font: { size: 12 } },
+                                },
+                            },
+                        },
+                    });
+                } else {
+                    window.ordenesChartInstance.data.labels = labels;
+                    window.ordenesChartInstance.data.datasets[0].data = data;
+                    window.ordenesChartInstance.update();
+                }
+            };
+            if (fromCache) draw(fromCache);
+            if (store) {
+                const updated = await store.getChart('ordenes', { force: true });
+                if (updated) draw(updated);
+            } else {
+                let res = await tryFetch('/api/dashboard/ordenes-estado', authHeaders());
+                if (!res.ok) res = await tryFetch('/api-web/dashboard/ordenes-estado', { 'Accept': 'application/json' });
+                if (res.ok) draw(res.data);
+            }
+        };
+        waitForCanvasReady(ordenesEl, initOrdenes);
     }
 
     // Initialize 'cotizacionesChart' only if element exists
@@ -463,59 +531,59 @@ function initializeDashboardCharts() {
             window.cotizacionesChartInstance.destroy();
         }
 
-        const cotizacionesCtx = cotizacionesEl.getContext("2d");
-        window.cotizacionesChartInstance = new Chart(cotizacionesCtx, {
-            type: "line",
-            data: {
-                labels: [
-                    "Ene",
-                    "Feb",
-                    "Mar",
-                    "Abr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Ago",
-                ],
-                datasets: [
-                    {
-                        label: "Cotizaciones",
-                        data: [65, 78, 90, 81, 96, 87, 102, 115],
-                        borderColor: "#6366F1",
-                        backgroundColor: "rgba(99, 102, 241, 0.1)",
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: "#6366F1",
-                        pointBorderColor: "#FFFFFF",
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "#F3F4F6",
+        const initCotizaciones = async () => {
+            const cotizacionesCtx = cotizacionesEl.getContext("2d");
+            const store = window.Alpine?.store('dashboard');
+            const fromCache = store?.charts?.cotizaciones;
+            const draw = (json) => {
+                const labels = json?.labels || [];
+                const data = json?.data || [];
+                if (!window.cotizacionesChartInstance) {
+                    window.cotizacionesChartInstance = new Chart(cotizacionesCtx, {
+                        type: "line",
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: "Cotizaciones",
+                                data,
+                                borderColor: "#6366F1",
+                                backgroundColor: "rgba(99, 102, 241, 0.1)",
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: "#6366F1",
+                                pointBorderColor: "#FFFFFF",
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                            }],
                         },
-                    },
-                    x: {
-                        grid: {
-                            display: false,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: "#F3F4F6" } },
+                                x: { grid: { display: false } },
+                            },
                         },
-                    },
-                },
-            },
-        });
+                    });
+                } else {
+                    window.cotizacionesChartInstance.data.labels = labels;
+                    window.cotizacionesChartInstance.data.datasets[0].data = data;
+                    window.cotizacionesChartInstance.update();
+                }
+            };
+            if (fromCache) draw(fromCache);
+            if (store) {
+                const updated = await store.getChart('cotizaciones', { force: true });
+                if (updated) draw(updated);
+            } else {
+                let res = await tryFetch('/api/dashboard/cotizaciones-mes', authHeaders());
+                if (!res.ok) res = await tryFetch('/api-web/dashboard/cotizaciones-mes', { 'Accept': 'application/json' });
+                if (res.ok) draw(res.data);
+            }
+        };
+        waitForCanvasReady(cotizacionesEl, initCotizaciones);
     }
 
     // Initialize 'proyectosChart' only if element exists
@@ -526,58 +594,88 @@ function initializeDashboardCharts() {
             window.proyectosChartInstance.destroy();
         }
 
-        const proyectosCtx = proyectosEl.getContext("2d");
-        window.proyectosChartInstance = new Chart(proyectosCtx, {
-            type: "bar",
-            data: {
-                labels: [
-                    "En Proceso",
-                    "Finalizados",
-                    "Pendientes",
-                    "Cancelados",
-                ],
-                datasets: [
-                    {
-                        data: [234, 187, 23, 12],
-                        backgroundColor: [
-                            "#06B6D4",
-                            "#10B981",
-                            "#F59E0B",
-                            "#EF4444",
-                        ],
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: "y",
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "#F3F4F6",
-                        },
-                    },
-                    y: {
-                        grid: {
-                            display: false,
-                        },
-                    },
-                },
-            },
-        });
+        const initProyectos = async () => {
+            const proyectosCtx = proyectosEl.getContext("2d");
+            const store = window.Alpine?.store('dashboard');
+            const fromCache = store?.charts?.proyectos;
+            const draw = (json) => {
+                const labels = json?.labels || [];
+                const data = json?.data || [];
+                const colors = labels.map((_, i) => ["#06B6D4", "#10B981", "#F59E0B", "#EF4444", "#6366F1", "#8B5CF6"][i % 6]);
+                if (!window.proyectosChartInstance) {
+                    window.proyectosChartInstance = new Chart(proyectosCtx, {
+                        type: "bar",
+                        data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6, borderSkipped: false }]},
+                        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: "#F3F4F6" } }, y: { grid: { display: false } } } }
+                    });
+                } else {
+                    window.proyectosChartInstance.data.labels = labels;
+                    window.proyectosChartInstance.data.datasets[0].data = data;
+                    window.proyectosChartInstance.data.datasets[0].backgroundColor = colors;
+                    window.proyectosChartInstance.update();
+                }
+            };
+            if (fromCache) draw(fromCache);
+            if (store) {
+                const updated = await store.getChart('proyectos', { force: true });
+                if (updated) draw(updated);
+            } else {
+                let res = await tryFetch('/api/dashboard/proyectos-estado', authHeaders());
+                if (!res.ok) res = await tryFetch('/api-web/dashboard/proyectos-estado', { 'Accept': 'application/json' });
+                if (res.ok) draw(res.data);
+            }
+        };
+        waitForCanvasReady(proyectosEl, initProyectos);
     }
+}
+
+// Destruir instancias activas de Chart.js antes de reemplazar el DOM
+function destroyExistingCharts() {
+    try { if (window.ordenesChartInstance) { window.ordenesChartInstance.destroy(); } } catch (_) {}
+    try { if (window.cotizacionesChartInstance) { window.cotizacionesChartInstance.destroy(); } } catch (_) {}
+    try { if (window.proyectosChartInstance) { window.proyectosChartInstance.destroy(); } } catch (_) {}
+    window.ordenesChartInstance = null;
+    window.cotizacionesChartInstance = null;
+    window.proyectosChartInstance = null;
+}
+
+// Reintento robusto para inicializar gráficos cuando el DOM/tamaño/Chart están listos
+function initializeDashboardChartsWithRetry(retry = 0) {
+    const maxRetries = 10;
+    const delay = 200;
+    // Verificar disponibilidad de Chart y de al menos un canvas objetivo
+    const hasTargets = document.getElementById('ordenesChart') || document.getElementById('cotizacionesChart') || document.getElementById('proyectosChart');
+    if (!window.Chart || !hasTargets) {
+        if (retry < maxRetries) {
+            return setTimeout(() => initializeDashboardChartsWithRetry(retry + 1), delay);
+        }
+        return;
+    }
+    initializeDashboardCharts();
 }
 
 // Inicializar gráficos cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", () => {
-    initializeDashboardCharts();
+    initializeDashboardChartsWithRetry();
 });
+
+// Utilidad: encabezados con token si existe
+function authHeaders() {
+    const headers = { 'Accept': 'application/json' };
+    const token = localStorage.getItem('authToken');
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
+
+// Parchar setContent para destruir charts antes de reemplazar el contenido
+// (ubicación original más arriba en la definición del store de navegación)
+(function patchSetContent(){
+    const nav = window.Alpine?.store && window.Alpine.store('navigation');
+    if (!nav || typeof nav.setContent !== 'function') return;
+    const original = nav.setContent.bind(nav);
+    nav.setContent = function(html){
+        // Destruir charts antes de cambiar el DOM
+        destroyExistingCharts();
+        return original(html);
+    };
+})();

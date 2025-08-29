@@ -11,13 +11,13 @@
         <div class="flex-grow border-t border-gray-200"></div>
     </div>
 
-    <div class="mb-8">
+    <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Total Usuarios</h3>
-                        <p class="text-3xl nunito-bold text-blue-600">847</p>
+                        <p class="text-3xl nunito-bold text-blue-600" x-text="fmt(totalUsuarios)">–</p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-full">
                         <i class="fas fa-users text-blue-500 text-xl"></i>
@@ -29,7 +29,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Empresas Activas</h3>
-                        <p class="text-3xl nunito-bold text-green-600">156</p>
+                        <p class="text-3xl nunito-bold text-green-600" x-text="fmt(empresasActivas)">–</p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-full">
                         <i class="fas fa-building text-green-500 text-xl"></i>
@@ -41,7 +41,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Órdenes de Servicio</h3>
-                        <p class="text-3xl nunito-bold text-purple-600">1,247</p>
+                        <p class="text-3xl nunito-bold text-purple-600" x-text="fmt(ordenesServicio)">–</p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-full">
                         <i class="fas fa-clipboard-list text-purple-500 text-xl"></i>
@@ -53,7 +53,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Cotizaciones</h3>
-                        <p class="text-3xl nunito-bold text-indigo-600">892</p>
+                        <p class="text-3xl nunito-bold text-indigo-600" x-text="fmt(cotizaciones)">–</p>
                     </div>
                     <div class="p-3 bg-indigo-100 rounded-full">
                         <i class="fas fa-file-invoice-dollar text-indigo-500 text-xl"></i>
@@ -73,13 +73,13 @@
                     <div class="space-y-3">
                         <div class="bg-white rounded-lg p-3 shadow-sm border border-blue-400">
                             <div class="flex justify-between items-center">
-                                <span class="text-2xl nunito-bold text-teal-600">234</span>
+                                <span class="text-2xl nunito-bold text-teal-600" x-text="fmt(proyectosActivos)">–</span>
                                 <span class="text-xs nunito-regular text-teal-600 bg-teal-100 px-2 py-1 rounded-full">ACTIVOS</span>
                             </div>
                         </div>
                         <div class="bg-white rounded-lg p-3 shadow-sm border border-blue-400">
                             <div class="flex justify-between items-center">
-                                <span class="text-lg nunito-bold text-gray-600">187</span>
+                                <span class="text-lg nunito-bold text-gray-600" x-text="fmt(proyectosFinalizados)">–</span>
                                 <span class="text-xs nunito-regular text-gray-600 bg-gray-100 px-2 py-1 rounded-full">FINALIZADOS</span>
                             </div>
                         </div>
@@ -99,17 +99,17 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="text-center bg-white rounded-lg p-3 shadow-sm border border-orange-400">
-                            <div class="text-2xl nunito-bold text-orange-600 mb-1">45</div>
+                            <div class="text-2xl nunito-bold text-orange-600 mb-1" x-text="fmt(ticketsAbiertos)">–</div>
                             <div class="text-xs nunito-regular text-orange-600 uppercase">Abiertos</div>
                             <div class="w-full bg-orange-200 rounded-full h-1 mt-2">
-                                <div class="bg-orange-500 h-1 rounded-full" style="width: 13%"></div>
+                                <div class="bg-orange-500 h-1 rounded-full" :style="`width: ${percentTickets('abiertos')}%`"></div>
                             </div>
                         </div>
                         <div class="text-center bg-white rounded-lg p-3 shadow-sm border border-orange-400">
-                            <div class="text-2xl nunito-bold text-gray-600 mb-1">312</div>
+                            <div class="text-2xl nunito-bold text-gray-600 mb-1" x-text="fmt(ticketsCerrados)">–</div>
                             <div class="text-xs nunito-regular text-gray-600 uppercase">Cerrados</div>
                             <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
-                                <div class="bg-gray-500 h-1 rounded-full" style="width: 87%"></div>
+                                <div class="bg-gray-500 h-1 rounded-full" :style="`width: ${percentTickets('cerrados')}%`"></div>
                             </div>
                         </div>
                     </div>
@@ -127,7 +127,7 @@
                     </div>
                     <div class="bg-white rounded-lg p-4 shadow-sm border border-green-700">
                         <div class="flex items-end justify-between mb-2">
-                            <span class="text-3xl nunito-bold text-green-600">3,567</span>
+                            <span class="text-3xl nunito-bold text-green-600" x-text="fmt(inventarioProductos)">–</span>
                             <div class="text-right">
                                 <div class="text-xs nunito-regular text-gray-500 uppercase">Total productos</div>
                             </div>
@@ -150,7 +150,7 @@
                     </div>
                     <div class="bg-white rounded-lg p-4 shadow-sm border border-pink-600">
                         <div class="text-center mb-3">
-                            <span class="text-4xl nunito-bold text-pink-600">1,024</span>
+                            <span class="text-4xl nunito-bold text-pink-600" x-text="fmt(reportesGenerados)">–</span>
                             <p class="text-xs nunito-regular text-gray-500 uppercase mt-1">Generados</p>
                         </div>
                         <div class="flex items-center justify-center space-x-2 pt-3 border-t border-gray-400">
@@ -394,3 +394,5 @@
     </div>
 
 </div>
+
+{{-- KPIs powered by global dashboardKPIs() from resources/js/dashboard.js --}}

@@ -32,7 +32,7 @@ class Usuario extends Authenticatable
     ];
 
     protected $casts = [
-        'primer_ingreso' => 'boolean',
+        // 'primer_ingreso' se normaliza con accessor para soportar 'S'/'N' en BD
         'fecha_ultima_conexion' => 'datetime',
         'fecha_vencimiento' => 'date',
         'fecha_creacion' => 'datetime',
@@ -52,7 +52,10 @@ class Usuario extends Authenticatable
                 $model->creado_por = auth()->user()->usuario ?? 'system';
             }
             // primer ingreso por defecto (si no se envía)
-            if (is_null($model->primer_ingreso)) {
+            $rawPrimerIngreso = method_exists($model, 'getRawOriginal')
+                ? $model->getRawOriginal('primer_ingreso')
+                : ($model->attributes['primer_ingreso'] ?? null);
+            if ($rawPrimerIngreso === null) {
                 $model->primer_ingreso = 1;
             }
             // Valor por defecto para estado_usuario si la BD lo requiere (NOT NULL)
@@ -91,5 +94,17 @@ class Usuario extends Authenticatable
     public function parametros()
     {
         return $this->hasMany(Parametro::class, 'id_usuario_fk');
+    }
+
+    // Normaliza primer_ingreso: true para 1/'1'/true/'S'/'Y'; false para 0/'0'/false/'N' o null
+    public function getPrimerIngresoAttribute($value)
+    {
+        return in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true);
+    }
+
+    // Al asignar, almacenamos 1 o 0 (entero) para compatibilidad con la columna en BD
+    public function setPrimerIngresoAttribute($value)
+    {
+        $this->attributes['primer_ingreso'] = in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true) ? 1 : 0;
     }
 }
