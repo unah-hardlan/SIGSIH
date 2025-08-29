@@ -56,6 +56,18 @@ document.addEventListener("alpine:init", () => {
                     // Guarda el token para las llamadas a /api/* (Authorization: Bearer)
                     if (res.data && res.data.token) {
                         localStorage.setItem("authToken", res.data.token);
+                        if (res.data.user) {
+                            try { localStorage.setItem("authUser", JSON.stringify(res.data.user)); } catch (_) {}
+                        }
+                        try {
+                            const me = await axios.get('/api/me', {
+                                headers: { Authorization: `Bearer ${res.data.token}` }
+                            });
+                                const persona = me?.data?.persona || null;
+                                const firstTime = !!(me?.data?.primer_ingreso && !persona);
+                            try { localStorage.setItem('authPersona', JSON.stringify(persona)); } catch(_){}
+                            try { localStorage.setItem('firstTime', JSON.stringify(firstTime)); } catch(_){}
+                        } catch(_) {}
                     }
 
                     // La cookie HttpOnly 'auth_token' la dejó el backend en Set-Cookie.
@@ -63,25 +75,32 @@ document.addEventListener("alpine:init", () => {
                     window.location.assign("/admin/dashboard");
                     return;
                 } else {
-                    const res = await axios.post("/api/usuarios", {
+                    const res = await axios.post("/api/register", {
                         usuario: this.username,
                         nombre_usuario: this.nombre_usuario,
                         correo_electronico: this.email,
                         contrasena: this.password,
                     });
 
-                    const alerta = document.createElement("div");
-                    alerta.id = "registro-alerta";
-                    alerta.className =
-                        "fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-100 border border-green-400 text-green-800 px-6 py-3 rounded-xl shadow-lg z-50";
-                    alerta.innerText =
-                        "✅ ¡Cuenta creada con éxito! Ahora inicia sesión.";
-                    document.body.appendChild(alerta);
-                    setTimeout(() => {
-                        document.body.removeChild(alerta);
-                        this.isLogin = true;
-                        this.loading = false;
-                    }, 1800);
+                    if (res.data && res.data.token) {
+                        localStorage.setItem("authToken", res.data.token);
+                        if (res.data.user) {
+                            try { localStorage.setItem("authUser", JSON.stringify(res.data.user)); } catch (_) {}
+                        }
+                        try {
+                            const me = await axios.get('/api/me', {
+                                headers: { Authorization: `Bearer ${res.data.token}` }
+                            });
+                                const persona = me?.data?.persona || null;
+                                const firstTime = !!(me?.data?.primer_ingreso && !persona);
+                            try { localStorage.setItem('authPersona', JSON.stringify(persona)); } catch(_){}
+                            try { localStorage.setItem('firstTime', JSON.stringify(firstTime)); } catch(_){}
+                        } catch(_) {}
+                    }
+
+                    // Ir a completar perfil
+                    window.location.assign("/admin/perfil");
+                    return;
                 }
             } catch (err) {
                 console.error("Error auth:", err?.response?.data || err);

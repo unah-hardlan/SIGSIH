@@ -38,6 +38,8 @@ use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -59,16 +61,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Público: login y logout (logout borra cookie aunque el token haya expirado)
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
+Route::post('register', [AuthController::class, 'register']);
 
 // Protegidas con JWT (Authorization: Bearer <token>)
 Route::middleware('jwt.auth')->group(function () {
+    // Perfil del usuario autenticado
+    Route::get('me', [ProfileController::class, 'me']);
+    Route::post('perfil/persona', [ProfileController::class, 'savePersona']);
+    Route::post('perfil/avatar', [ProfileController::class, 'uploadAvatar']);
+    Route::delete('perfil/avatar', [ProfileController::class, 'deleteAvatar']);
+    Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
     Route::apiResource('roles', RolController::class);
     Route::apiResource('permisos', PermisoController::class);
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
-  
+
     // MODULO DE PERSONAS
     Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
     Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
@@ -123,4 +132,12 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Usuarios por rol
     Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
+
+    // Dashboard datasets
+    Route::get('dashboard/indicadores', [DashboardController::class, 'indicators']);
+    Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);
+    Route::get('dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes']);
+    Route::get('dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado']);
+    // KPIs específicos de proyectos (opcional, por si el front los llama por separado)
+    // Mantener sólo si el front los requiere; de lo contrario se usan los de 'indicadores'
 });

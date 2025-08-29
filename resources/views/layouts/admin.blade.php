@@ -20,9 +20,48 @@
 
     <script defer>
         document.addEventListener('alpine:init', () => {
+            // Hidratar desde localStorage para evitar parpadeo en header
+            let cachedUser = null;
+            try { cachedUser = JSON.parse(localStorage.getItem('authUser') || 'null'); } catch(_) {}
             Alpine.store('perfil', {
                 firstTime: false,
+                user: cachedUser,
+                persona: null,
             });
+            // Al cargar el layout, usa cache y luego (opcional) refresca
+            (async () => {
+                try {
+                    // Sembrar desde cache si existe
+                    let cachedPersona = null, cachedFirst = null;
+                    try { cachedPersona = JSON.parse(localStorage.getItem('authPersona') || 'null'); } catch(_) {}
+                    try { cachedFirst = JSON.parse(localStorage.getItem('firstTime') || 'null'); } catch(_) {}
+                    // Si ya hay persona en cache, considera perfil completo
+                    if (cachedPersona) {
+                        Alpine.store('perfil').firstTime = false;
+                        Alpine.store('perfil').persona = cachedPersona;
+                    } else if (cachedFirst !== null) {
+                        Alpine.store('perfil').firstTime = !!cachedFirst;
+                    }
+
+                    // Refresco opcional (silencioso)
+                    const token = localStorage.getItem('authToken');
+                    if (token) {
+                        const res = await fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+                        if(res.ok){
+                            const data = await res.json();
+                                            Alpine.store('perfil').firstTime = !!(data?.primer_ingreso && !data?.persona);
+                            Alpine.store('perfil').user = data?.usuario || null;
+                            Alpine.store('perfil').persona = data?.persona || null;
+                            // Actualizar cache local
+                            try { localStorage.setItem('authUser', JSON.stringify(Alpine.store('perfil').user)); } catch(_) {}
+                            try { localStorage.setItem('authPersona', JSON.stringify(Alpine.store('perfil').persona)); } catch(_) {}
+                            try { localStorage.setItem('firstTime', JSON.stringify(Alpine.store('perfil').firstTime)); } catch(_) {}
+                        }
+                    }
+                } catch(e) {
+                    // Silencioso
+                }
+            })();
         });
     </script>
 

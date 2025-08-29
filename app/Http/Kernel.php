@@ -73,5 +73,6 @@ class Kernel extends HttpKernel
         'auth.jwt.web' => \App\Http\Middleware\JwtWebAuth::class,
         'jwt.refresh' => \App\Http\Middleware\JwtRefresh::class,
         'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
+    'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
     ];
 }

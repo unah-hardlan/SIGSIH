@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ViewLoaderController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -23,15 +24,45 @@ Route::post('/register', [AuthController::class, 'register']);
 // Redirect root to admin dashboard
 Route::redirect('/', '/admin/dashboard');
 
+// API-like fallbacks (cookie-based auth) for SPA when Bearer token is missing/expirado
+Route::get('/api-web/dashboard/indicadores', [DashboardController::class, 'indicators'])
+    ->middleware(['auth.jwt.web'])
+    ->name('dashboard.indicators.web');
+Route::get('/api-web/dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado'])
+    ->middleware(['auth.jwt.web'])
+    ->name('dashboard.ordenes.estado.web');
+Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes'])
+    ->middleware(['auth.jwt.web'])
+    ->name('dashboard.cotizaciones.mes.web');
+Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
+    ->middleware(['auth.jwt.web'])
+    ->name('dashboard.proyectos.estado.web');
+
+// API-like fallbacks para Reportes (cookie-based auth)
+Route::middleware(['auth.jwt.web'])->group(function () {
+    // Reportes de visita CRUD básico
+    Route::get('/api-web/reportes-visita', [\App\Http\Controllers\ReporteVisitaController::class, 'index']);
+    Route::get('/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'show']);
+    Route::post('/api-web/reportes-visita', [\App\Http\Controllers\ReporteVisitaController::class, 'store']);
+    Route::match(['put', 'patch'], '/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'update']);
+    Route::delete('/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'destroy']);
+
+    // Catálogos necesarios (solo index)
+    Route::get('/api-web/tipos-visita', [\App\Http\Controllers\TipoVisitaController::class, 'index']);
+    Route::get('/api-web/servicios-realizados', [\App\Http\Controllers\ServicioRealizadoController::class, 'index']);
+    Route::get('/api-web/acciones-realizadas', [\App\Http\Controllers\AccionRealizadaController::class, 'index']);
+    Route::get('/api-web/ordenes-servicio', [\App\Http\Controllers\OrdenServicioController::class, 'index']);
+});
+
 // Partial view loading for SPA (protegido)
 Route::get('/load-view', [ViewLoaderController::class, 'load'])
     ->name('load-view')
-    ->middleware('auth.jwt.web');
+    ->middleware(['auth.jwt.web', 'force.profile']);
 
 // Admin routes group - SPA Entry Point (PROTEGIDO)
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh'])
+    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh', 'force.profile'])
     ->group(function () {
 
         // Dashboard

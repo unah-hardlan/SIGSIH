@@ -19,6 +19,7 @@ class Persona extends Model
         'segundo_apellido',
         'dni',
         'cargo',
+    'avatar_path',
         'id_tipo_persona_fk',
         'id_genero_fk',
         'id_perfil_fk',

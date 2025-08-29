@@ -1,7 +1,4 @@
 <aside :class="sidebarOpen ? 'w-72' : 'w-20'" x-data x-init="
-    if ($store.perfil.firstTime) {
-        $el.classList.add('pointer-events-none', 'opacity-50');
-    }
     $nextTick(() => {
         if (window.sidebarScrollManager) {
             const savedScrollTop = localStorage.getItem('sidebar-scroll-position');
@@ -29,22 +26,13 @@
   class="bg-gray-900 text-gray-200 h-screen flex flex-col p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
   style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">
 
-
-    <template x-if="$store.perfil.firstTime">
-        <div class="absolute inset-0 z-50 bg-black bg-opacity-60 flex flex-col items-center justify-center">
-            <div class="bg-white rounded-lg shadow p-6 text-center">
-                <div class="text-lg font-bold mb-2 text-gray-800">Completa tu perfil</div>
-                <div class="text-gray-600 mb-4">Debes completar tu perfil antes de navegar por el sistema.</div>
-                <span class="inline-block animate-bounce text-blue-600 text-3xl"><i class="fas fa-user-lock"></i></span>
-            </div>
-        </div>
-    </template>
+    <!-- Banner removido para forzar flujo sin aviso visual -->
 
     <!-- Menú -->
     <nav class="flex-1 flex flex-col py-4">
         <ul class="space-y-3 flex-1">
             {{-- Dashboard --}}
-            <li>
+            <li :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <x-admin.sidebar-link href="#" :active="false" view-name="dashboard"
                     class="py-2 px-2 rounded-l-full no-flash">
                     <i class="fas fa-house-chimney w-5 text-center text-white"></i>
@@ -53,7 +41,7 @@
             </li>
 
             {{-- Seguridad --}}
-            <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -91,7 +79,7 @@
             </li>
 
             {{-- Clientes --}}
-            <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -135,7 +123,7 @@
 
 
             {{-- Proyectos --}}
-            <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -165,7 +153,7 @@
             </li>
 
             {{-- Tickets --}}
-            <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -188,7 +176,7 @@
             </li>
 
             {{-- Calendario --}}
-            <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -217,7 +205,7 @@
             </li>
 
             {{-- Facturación --}}
-            <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -246,7 +234,7 @@
             </li>
 
             {{-- Reportes --}}
-            <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -269,7 +257,7 @@
             </li>
 
             {{-- Inventario --}}
-            <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -312,7 +300,7 @@
                     </svg>
                 </button>
                 <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
-                    <li>
+                    <li :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                         <x-admin.sidebar-link href="#" :active="false" view-name="gestion-personas" class="py-1 px-3">
                             <i class="fas fa-user-cog text-sm w-4 text-center"></i>
                             Gestión de personas
@@ -324,13 +312,13 @@
                             Mi perfil
                         </x-admin.sidebar-link>
                     </li>
-                    <li>
+                    <li :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                         <x-admin.sidebar-link href="#" :active="false" view-name="bitacora" class="py-1 px-3">
                             <i class="fas fa-book text-sm w-4 text-center"></i>
                             Bitácora
                         </x-admin.sidebar-link>
                     </li>
-                    <li>
+                    <li :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                         <x-admin.sidebar-link href="#" :active="false" view-name="gestion-db" class="py-1 px-3">
                             <i class="fas fa-database text-sm w-4 text-center"></i>
                             Gestión de Base de Datos
@@ -340,7 +328,7 @@
             </li>
 
             {{-- Mantenimiento --}}
-            <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
@@ -370,7 +358,7 @@
 
 
             {{-- Catalogo --}}
-            <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
                     <div class="flex items-center gap-3">
