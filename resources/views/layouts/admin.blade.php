@@ -70,7 +70,7 @@
     @livewireStyles
 </head>
 
-<body class="bg-gray-900 min-h-screen flex flex-col" 
+<body class="bg-gray-50 min-h-screen flex flex-col" 
       x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
@@ -78,7 +78,7 @@
       x-init="initResponsiveSidebar($data)">
     <div class="flex h-screen min-h-0 relative">
         <!-- Overlay para móviles SOLO -->
-        <div x-show="sidebarOpen && isMobile" 
+        <div x-show="sidebarOpen && isMobile" x-cloak
              x-transition:enter="transition-opacity ease-linear duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"

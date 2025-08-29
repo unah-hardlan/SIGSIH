@@ -1,3 +1,13 @@
+/* Alpine.js x-cloak support */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Ensure body background is consistent during load */
+body {
+    background-color: #f9fafb !important; /* gray-50 */
+}
+
 .logo {
     height: 10rem;
     width: auto;
