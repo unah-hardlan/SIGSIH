@@ -8,28 +8,28 @@
         searchCategoria: '',
         searchStock: ''
     }">
-    <x-admin.tabla-crud>
+    <x-admin.tabla-crud class="nunito-bold">
         <x-slot name="titulo">
             <h2 class="text-2xl text-gray-800 nunito-bold">Productos</h2>
         </x-slot>
         <x-slot name="filtros">
             <div class="flex flex-wrap gap-2 items-center">
                 <input type="text" x-model="searchProducto" placeholder="Buscar por nombre..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-                <select x-model="searchCategoria" class="border rounded px-1 py-2 text-sm w-full sm:w-40">
-                    <option value="">Todas las categorías</option>
-                    <option>Computadoras</option>
-                    <option>Accesorios</option>
-                    <option>Redes</option>
-                    <option>Impresoras</option>
-                    <option>Software</option>
-                    <option>Componentes</option>
-                    <option>Licencias</option>
+                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
+                <select x-model="searchCategoria" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
+                    <option value="" class="nunito-regular">Todas las categorías</option>
+                    <option class="nunito-regular">Computadoras</option>
+                    <option class="nunito-regular">Accesorios</option>
+                    <option class="nunito-regular">Redes</option>
+                    <option class="nunito-regular">Impresoras</option>
+                    <option class="nunito-regular">Software</option>
+                    <option class="nunito-regular">Componentes</option>
+                    <option class="nunito-regular">Licencias</option>
                 </select>
-                <select x-model="searchStock" class="border rounded px-1 py-2 text-sm w-full sm:w-40">
-                    <option value="">Stock</option>
-                    <option value="disponible">Disponible</option>
-                    <option value="agotado">Agotado</option>
+                <select x-model="searchStock" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
+                    <option value="" class="nunito-regular">Stock</option>
+                    <option value="disponible" class="nunito-regular">Disponible</option>
+                    <option value="agotado" class="nunito-regular">Agotado</option>
                 </select>
             </div>
         </x-slot>
@@ -48,12 +48,12 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-100 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left">ID</th>
-                        <th class="py-2 px-4 text-left">Nombre</th>
-                        <th class="py-2 px-4 text-left">Categoría</th>
-                        <th class="py-2 px-4 text-left">Precio</th>
-                        <th class="py-2 px-4 text-left">Stock</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
+                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Categoría</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Precio</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Stock</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,16 +68,16 @@
                                     (searchStock === 'agotado' && producto.stock == 0)
                                 )
                             ">
-                            <td class="py-2 px-4" x-text="producto.id"></td>
-                            <td class="py-2 px-4" x-text="producto.nombre"></td>
-                            <td class="py-2 px-4" x-text="producto.categoria"></td>
-                            <td class="py-2 px-4">L.<span x-text="producto.precio.toFixed(2)"></span></td>
-                            <td class="py-2 px-4" x-text="producto.stock"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="producto.id"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="producto.nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="producto.categoria"></td>
+                            <td class="py-2 px-4 nunito-regular">L.<span x-text="producto.precio.toFixed(2)"></span></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="producto.stock"></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click="isEditModalOpen = true; productoToEdit = {...producto}"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteModalOpen = true; productoToDelete = {...producto}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
@@ -87,63 +87,63 @@
     </x-admin.tabla-crud>
 
     <!-- Modal Nuevo Producto -->
-    <x-admin.form-modal modalName="isModalOpen" title="Nuevo Producto" submitLabel="Guardar" maxWidth="max-w-md">
+    <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nuevo Producto" submitLabel="Guardar" maxWidth="max-w-md">
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nombre" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Nombre" />
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Categoría</label>
-            <select class="w-full border rounded px-3 py-2">
-                <option>Computadoras</option>
-                <option>Accesorios</option>
-                <option>Redes</option>
-                <option>Impresoras</option>
-                <option>Software</option>
-                <option>Componentes</option>
-                <option>Licencias</option>
+            <label class="block text-sm font-medium mb-1 nunito-bold">Categoría</label>
+            <select class="w-full border rounded px-3 py-2 nunito-regular">
+                <option class="nunito-regular">Computadoras</option>
+                <option class="nunito-regular">Accesorios</option>
+                <option class="nunito-regular">Redes</option>
+                <option class="nunito-regular">Impresoras</option>
+                <option class="nunito-regular">Software</option>
+                <option class="nunito-regular">Componentes</option>
+                <option class="nunito-regular">Licencias</option>
             </select>
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Precio</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="Precio" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Precio</label>
+            <input type="number" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Precio" />
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Stock</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="Stock" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Stock</label>
+            <input type="number" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Stock" />
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Editar Producto -->
-    <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Producto" itemToEdit="productoToEdit"
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Producto" itemToEdit="productoToEdit"
         maxWidth="max-w-md">
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input type="text" x-model="productoToEdit.nombre" class="w-full border rounded px-3 py-2" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+            <input type="text" x-model="productoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular" />
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Categoría</label>
-            <select x-model="productoToEdit.categoria" class="w-full border rounded px-3 py-2">
-                <option>Computadoras</option>
-                <option>Accesorios</option>
-                <option>Redes</option>
-                <option>Impresoras</option>
-                <option>Software</option>
-                <option>Componentes</option>
-                <option>Licencias</option>
+            <label class="block text-sm font-medium mb-1 nunito-bold">Categoría</label>
+            <select x-model="productoToEdit.categoria" class="w-full border rounded px-3 py-2 nunito-regular">
+                <option class="nunito-regular">Computadoras</option>
+                <option class="nunito-regular">Accesorios</option>
+                <option class="nunito-regular">Redes</option>
+                <option class="nunito-regular">Impresoras</option>
+                <option class="nunito-regular">Software</option>
+                <option class="nunito-regular">Componentes</option>
+                <option class="nunito-regular">Licencias</option>
             </select>
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Precio</label>
-            <input type="number" x-model="productoToEdit.precio" class="w-full border rounded px-3 py-2" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Precio</label>
+            <input type="number" x-model="productoToEdit.precio" class="w-full border rounded px-3 py-2 nunito-regular" />
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Stock</label>
-            <input type="number" x-model="productoToEdit.stock" class="w-full border rounded px-3 py-2" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Stock</label>
+            <input type="number" x-model="productoToEdit.stock" class="w-full border rounded px-3 py-2 nunito-regular" />
         </div>
     </x-admin.edit-modal>
 
     <!-- Modal Eliminar Producto -->
-    <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="productoToDelete"
+    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpen" itemToDelete="productoToDelete"
         message="¿Seguro que deseas eliminar este producto?" />
 </div>
