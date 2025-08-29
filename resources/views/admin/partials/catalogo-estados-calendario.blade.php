@@ -58,37 +58,37 @@
     </div>
 
     <!-- Modal Agregar Estado -->
-    <x-admin.form-modal modalName="isAddEstadoModalOpen" title="Agregar Estado de Calendario" submitLabel="Guardar Estado">
+    <x-admin.form-modal class="nunito-bold" modalName="isAddEstadoModalOpen" title="Agregar Estado de Calendario" submitLabel="Guardar Estado">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Estado</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ej: En Proceso">
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Nombre del Estado</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Ej: En Proceso">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Descripción del estado del calendario"></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Descripción</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" rows="3" placeholder="Descripción del estado del calendario"></textarea>
             </div>
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Editar Estado -->
-    <x-admin.edit-modal modalName="isEditEstadoModalOpen" title="Editar Estado de Calendario" itemToEdit="selectedEstado">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoModalOpen" title="Editar Estado de Calendario" itemToEdit="selectedEstado">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ID Estado</label>
-                <input type="text" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg" x-bind:value="selectedEstado?.id" readonly>
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">ID Estado</label>
+                <input type="text" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg nunito-regular" x-bind:value="selectedEstado?.id" readonly>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Estado</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" x-bind:value="selectedEstado?.nombre">
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Nombre del Estado</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" x-bind:value="selectedEstado?.nombre">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" x-text="selectedEstado?.descripcion"></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Descripción</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" rows="3" x-text="selectedEstado?.descripcion"></textarea>
             </div>
         </div>
     </x-admin.edit-modal>
 
     <!-- Modal Eliminar Estado -->
-    <x-admin.confirmation-modal modalName="isDeleteEstadoModalOpen" itemToDelete="selectedEstado" message="¿Está seguro que desea eliminar este estado de calendario? Esta acción no se puede deshacer." />
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteEstadoModalOpen" itemToDelete="selectedEstado" message="¿Está seguro que desea eliminar este estado de calendario? Esta acción no se puede deshacer." />
 </div>

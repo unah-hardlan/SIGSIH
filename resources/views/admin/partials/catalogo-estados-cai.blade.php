@@ -13,18 +13,18 @@
         <table class="min-w-full text-sm w-full">
             <thead class="bg-gray-100 nunito-bold">
                 <tr>
-                    <th class="py-2 px-4 text-left">ID</th>
-                    <th class="py-2 px-4 text-left">Nombre Estado CAI</th>
-                    <th class="py-2 px-4 text-left">Descripción Estado CAI</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
+                    <th class="py-2 px-4 text-left nunito-bold">ID</th>
+                    <th class="py-2 px-4 text-left nunito-bold">Nombre Estado CAI</th>
+                    <th class="py-2 px-4 text-left nunito-bold">Descripción Estado CAI</th>
+                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4">1</td>
-                    <td class="py-2 px-4">Activo</td>
-                    <td class="py-2 px-4">Estado activo para el CAI</td>
-                    <td class="py-2 px-4 flex gap-2">
+                    <td class="py-2 px-4 nunito-regular">1</td>
+                    <td class="py-2 px-4 nunito-regular">Activo</td>
+                    <td class="py-2 px-4 nunito-regular">Estado activo para el CAI</td>
+                    <td class="py-2 px-4 flex gap-2 nunito-regular">
                         <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 1, nombre: 'Activo', descripcion: 'Estado activo para el CAI'}" class="text-blue-500 hover:text-blue-700" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -34,10 +34,10 @@
                     </td>
                 </tr>
                 <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4">2</td>
-                    <td class="py-2 px-4">Inactivo</td>
-                    <td class="py-2 px-4">Estado inactivo para el CAI</td>
-                    <td class="py-2 px-4 flex gap-2">
+                    <td class="py-2 px-4 nunito-regular">2</td>
+                    <td class="py-2 px-4 nunito-regular">Inactivo</td>
+                    <td class="py-2 px-4 nunito-regular">Estado inactivo para el CAI</td>
+                    <td class="py-2 px-4 flex gap-2 nunito-regular">
                         <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 2, nombre: 'Inactivo', descripcion: 'Estado inactivo para el CAI'}" class="text-blue-500 hover:text-blue-700" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -47,10 +47,10 @@
                     </td>
                 </tr>
                 <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4">3</td>
-                    <td class="py-2 px-4">Por Vencer</td>
-                    <td class="py-2 px-4">CAI próximo a vencer</td>
-                    <td class="py-2 px-4 flex gap-2">
+                    <td class="py-2 px-4 nunito-regular">3</td>
+                    <td class="py-2 px-4 nunito-regular">Por Vencer</td>
+                    <td class="py-2 px-4 nunito-regular">CAI próximo a vencer</td>
+                    <td class="py-2 px-4 flex gap-2 nunito-regular">
                         <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 3, nombre: 'Por Vencer', descripcion: 'CAI próximo a vencer'}" class="text-blue-500 hover:text-blue-700" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -64,37 +64,37 @@
     </div>
 
     <!-- Modal Nuevo Estado CAI -->
-    <x-admin.form-modal modalName="isEstadoModalOpen" title="Nuevo Estado CAI" submitLabel="Guardar Estado CAI">
+    <x-admin.form-modal class="nunito-bold" modalName="isEstadoModalOpen" title="Nuevo Estado CAI" submitLabel="Guardar Estado CAI">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Estado CAI</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ej: Vencido">
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Nombre Estado CAI</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Ej: Vencido">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción Estado CAI</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Descripción del estado del CAI"></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Descripción Estado CAI</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" rows="3" placeholder="Descripción del estado del CAI"></textarea>
             </div>
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Editar Estado CAI -->
-    <x-admin.edit-modal modalName="isEditEstadoModalOpen" title="Editar Estado CAI" itemToEdit="estadoToEdit">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoModalOpen" title="Editar Estado CAI" itemToEdit="estadoToEdit">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ID Estado</label>
-                <input type="text" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg" x-bind:value="estadoToEdit?.id" readonly>
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">ID Estado</label>
+                <input type="text" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg nunito-regular" x-bind:value="estadoToEdit?.id" readonly>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Estado CAI</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" x-bind:value="estadoToEdit?.nombre">
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Nombre Estado CAI</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" x-bind:value="estadoToEdit?.nombre">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción Estado CAI</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" x-text="estadoToEdit?.descripcion"></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Descripción Estado CAI</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" rows="3" x-text="estadoToEdit?.descripcion"></textarea>
             </div>
         </div>
     </x-admin.edit-modal>
 
     <!-- Modal Eliminar Estado CAI -->
-    <x-admin.confirmation-modal modalName="isDeleteEstadoModalOpen" itemToDelete="estadoToDelete" message="¿Está seguro que desea eliminar este estado CAI? Esta acción no se puede deshacer." />
+    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteEstadoModalOpen" itemToDelete="estadoToDelete" message="¿Está seguro que desea eliminar este estado CAI? Esta acción no se puede deshacer." />
 </div>

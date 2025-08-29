@@ -19,7 +19,7 @@
                 placeholder="Buscar tipo de visita..." 
                 class="border rounded px-3 py-2 text-sm w-full sm:w-48"
             />
-            <select class="border rounded px-3 py-2 text-sm w-full sm:w-40">
+            <select class="border rounded px-3 py-2 text-sm w-full sm:w-40 nunito-regular">
                 <option value="">Todos los tipos</option>
                 <option>Técnica</option>
                 <option>Supervisión</option>
@@ -59,17 +59,17 @@
     </div>
 
     <!-- Modal Nuevo Tipo de Visita -->
-    <x-admin.form-modal modalName="isTipoVisitaModalOpen" title="Nuevo Tipo de Visita"
+    <x-admin.form-modal class="nunito-bold" modalName="isTipoVisitaModalOpen" title="Nuevo Tipo de Visita"
         submitLabel="Guardar Tipo de Visita" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="nombre_tipo_visita" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <label for="nombre_tipo_visita" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                 <input type="text" id="nombre_tipo_visita" name="nombre_tipo_visita"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div class="col-span-2">
                 <label for="descripcion_tipo_visita"
-                    class="block text-sm font-medium text-gray-700">Descripción</label>
+                    class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="descripcion_tipo_visita" name="descripcion_tipo_visita" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
@@ -77,16 +77,16 @@
     </x-admin.form-modal>
 
     <!-- Modal Editar Tipo de Visita -->
-    <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Tipo de Visita" itemToEdit="tipoVisitaToEdit" maxWidth="max-w-2xl">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Tipo de Visita" itemToEdit="tipoVisitaToEdit" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="edit_nombre_tipo_visita" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <label for="edit_nombre_tipo_visita" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                 <input type="text" id="edit_nombre_tipo_visita" name="edit_nombre_tipo_visita" :value="tipoVisitaToEdit?.nombre"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div class="col-span-2">
                 <label for="edit_descripcion_tipo_visita"
-                    class="block text-sm font-medium text-gray-700">Descripción</label>
+                    class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="edit_descripcion_tipo_visita" name="edit_descripcion_tipo_visita" rows="2" :value="tipoVisitaToEdit?.descripcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
@@ -94,6 +94,6 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación -->
-    <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="tipoVisitaToDelete"
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteModalOpen" itemToDelete="tipoVisitaToDelete"
         message="¿Estás seguro de que quieres eliminar este tipo de visita?" />
 </div>

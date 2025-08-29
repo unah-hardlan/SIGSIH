@@ -52,34 +52,34 @@
         </div>
 
         <!-- Modal Nuevo Tipo de Producto -->
-        <x-admin.form-modal modalName="isTipoModalOpen" title="Nuevo Tipo de Producto" submitLabel="Guardar"
+        <x-admin.form-modal class="nunito-bold" modalName="isTipoModalOpen" title="Nuevo Tipo de Producto" submitLabel="Guardar"
             maxWidth="max-w-md">
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nombre del tipo" />
+                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Nombre del tipo" />
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea class="w-full border rounded px-3 py-2" placeholder="Descripción"></textarea>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Descripción"></textarea>
             </div>
         </x-admin.form-modal>
 
         <!-- Modal Editar Tipo de Producto -->
-        <x-admin.edit-modal modalName="isTipoEditModalOpen" title="Editar Tipo de Producto" itemToEdit="tipoToEdit"
+        <x-admin.edit-modal class="nunito-bold" modalName="isTipoEditModalOpen" title="Editar Tipo de Producto" itemToEdit="tipoToEdit"
             maxWidth="max-w-md">
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" x-model="tipoToEdit.nombre_tipo_producto" class="w-full border rounded px-3 py-2" />
+                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                <input type="text" x-model="tipoToEdit.nombre_tipo_producto" class="w-full border rounded px-3 py-2 nunito-regular" />
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
                 <textarea x-model="tipoToEdit.descripcion_tipo_producto"
-                    class="w-full border rounded px-3 py-2"></textarea>
+                    class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
             </div>
         </x-admin.edit-modal>
 
         <!-- Modal Eliminar Tipo de Producto -->
-        <x-admin.confirmation-modal modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
+        <x-admin.confirmation-modal class="nunito-regular" modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
             message="¿Seguro que deseas eliminar este tipo de producto?" />
     </div>
 </div>

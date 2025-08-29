@@ -14,7 +14,7 @@
     , searchTipos: '', ordenarPor: ''
 }">
     <div x-show="tab === 'tipos'">
-        <x-admin.tabla-crud :titulo="'Tipos de Objetos'">
+        <x-admin.tabla-crud class="nunito-bold" :titulo="'Tipos de Objetos'">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchTipos',
@@ -34,7 +34,7 @@
             </x-slot>
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100">
+                    <tr class="bg-gray-100 nunito-bold">
                         <th class="py-2 px-4 text-left">Nombre</th>
                         <th class="py-2 px-4 text-left">Descripción</th>
                         <th class="py-2 px-4 text-left">Acciones</th>
@@ -42,7 +42,7 @@
                 </thead>
                 <tbody>
                     <template x-for="tipo in tipos" :key="tipo.nombre">
-                        <tr>
+                        <tr class="nunito-regular">
                             <td class="py-2 px-4" x-text="tipo.nombre"></td>
                             <td class="py-2 px-4" x-text="tipo.descripcion"></td>
                             <td class="py-2 px-4 flex gap-2">
@@ -60,15 +60,15 @@
         <div x-show="isTipoModalOpen"
             class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
             <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-                <h2 class="text-xl font-bold mb-4">Agregar Tipo de Objeto</h2>
+                <h2 class="text-xl font-bold mb-4 nunito-bold">Agregar Tipo de Objeto</h2>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2"
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular"
                         placeholder="Ej: Analítica">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2"
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"
                         placeholder="Describe el tipo..."></textarea>
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
@@ -91,14 +91,14 @@
         <div x-show="isTipoEditModalOpen"
             class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
             <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-                <h2 class="text-xl font-bold mb-4">Editar Tipo de Objeto</h2>
+                <h2 class="text-xl font-bold mb-4 nunito-bold">Editar Tipo de Objeto</h2>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2">
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2"></textarea>
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button @click="isTipoEditModalOpen = false" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
@@ -117,6 +117,6 @@
 
 
     </div>
-    <x-admin.confirmation-modal modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
         message="¿Estás seguro de que deseas eliminar este tipo de objeto?" />
 </div>

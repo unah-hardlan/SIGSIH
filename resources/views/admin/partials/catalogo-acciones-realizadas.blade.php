@@ -18,12 +18,12 @@
             <h2 class="text-2xl text-gray-800 nunito-bold">Acciones Realizadas</h2>
             <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
                 <input type="text" x-model="filtroAccion" placeholder="Buscar acción..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-                <select x-model="filtroTipo" class="border rounded px-1 py-2 text-sm w-full sm:w-40">
-                    <option value="">Todas las acciones</option>
-                    <option>Revisión</option>
-                    <option>Mantenimiento</option>
-                    <option>Capacitación</option>
+                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
+                <select x-model="filtroTipo" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
+                    <option class="nunito-regular" value="">Todas las acciones</option>
+                    <option class="nunito-regular">Revisión</option>
+                    <option class="nunito-regular">Mantenimiento</option>
+                    <option class="nunito-regular">Capacitación</option>
                 </select>
             </div>
             <button @click="isAccionModalOpen = true; nuevaAccion = {nombre:'', descripcion:''}"
@@ -35,10 +35,10 @@
         <table class="min-w-full text-sm w-full">
             <thead class="bg-gray-100 nunito-bold">
                 <tr>
-                    <th class="py-2 px-4 text-left">ID Acción</th>
-                    <th class="py-2 px-4 text-left">Nombre</th>
-                    <th class="py-2 px-4 text-left">Descripción</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
+                    <th class="py-2 px-4 text-left nunito-bold">ID Acción</th>
+                    <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
+                    <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
+                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,10 +48,10 @@
                         && (!filtroTipo || a.nombre === filtroTipo)
                     )" :key="accion.id_accion">
                     <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4" x-text="accion.id_accion"></td>
-                        <td class="py-2 px-4" x-text="accion.nombre"></td>
-                        <td class="py-2 px-4" x-text="accion.descripcion"></td>
-                        <td class="py-2 px-4 flex gap-2">
+                        <td class="py-2 px-4 nunito-regular" x-text="accion.id_accion"></td>
+                        <td class="py-2 px-4 nunito-regular" x-text="accion.nombre"></td>
+                        <td class="py-2 px-4 nunito-regular" x-text="accion.descripcion"></td>
+                        <td class="py-2 px-4 flex gap-2 nunito-regular">
                             <a href="#"
                                 @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
@@ -68,20 +68,20 @@
     <!-- MODAL AGREGAR ACCIÓN -->
     <div x-show="isAccionModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
         <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-            <h2 class="text-xl font-bold mb-4">Agregar Acción Realizada</h2>
+            <h2 class="text-xl font-bold mb-4 nunito-bold">Agregar Acción Realizada</h2>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" x-model="nuevaAccion.nombre" class="w-full border rounded px-3 py-2"
+                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                <input type="text" x-model="nuevaAccion.nombre" class="w-full border rounded px-3 py-2 nunito-regular"
                     placeholder="Ej: Revisión">
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea x-model="nuevaAccion.descripcion" class="w-full border rounded px-3 py-2"
+                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                <textarea x-model="nuevaAccion.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"
                     placeholder="Describe la acción..."></textarea>
             </div>
             <div class="flex justify-end gap-2 mt-6">
                 <button @click="isAccionModalOpen = false; nuevaAccion = {nombre:'', descripcion:''}"
-                    class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+                    class="px-4 py-2 bg-gray-200 rounded nunito-regular">Cancelar</button>
                 <button @click="
                     if(nuevaAccion.nombre && nuevaAccion.descripcion){
                         acciones.push({
@@ -92,7 +92,7 @@
                         isAccionModalOpen = false;
                         nuevaAccion = {nombre:'', descripcion:''};
                     }
-                " class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Guardar Acción</button>
+                " class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 nunito-regular">Guardar Acción</button>
             </div>
             <button @click="isAccionModalOpen = false"
                 class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
@@ -103,17 +103,17 @@
     <div x-show="isEditAccionModalOpen"
         class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
         <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-            <h2 class="text-xl font-bold mb-4">Editar Acción Realizada</h2>
+            <h2 class="text-xl font-bold mb-4 nunito-bold">Editar Acción Realizada</h2>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" x-model="accionToEdit.nombre" class="w-full border rounded px-3 py-2">
+                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                <input type="text" x-model="accionToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular">
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea x-model="accionToEdit.descripcion" class="w-full border rounded px-3 py-2"></textarea>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                <textarea x-model="accionToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
             </div>
             <div class="flex justify-end gap-2 mt-6">
-                <button @click="isEditAccionModalOpen = false" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+                <button @click="isEditAccionModalOpen = false" class="px-4 py-2 bg-gray-200 rounded nunito-regular">Cancelar</button>
                 <button @click="
                     let i = acciones.findIndex(a => a.id_accion === accionToEdit.id_accion);
                     if(i !== -1){
@@ -121,7 +121,7 @@
                         acciones[i].descripcion = accionToEdit.descripcion;
                     }
                     isEditAccionModalOpen = false;
-                " class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar Cambios</button>
+                " class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 nunito-regular">Guardar Cambios</button>
             </div>
             <button @click="isEditAccionModalOpen = false"
                 class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
@@ -130,7 +130,7 @@
 
     </div>
     <!-- MODAL ELIMINAR ACCIÓN REALIZADA -->
-    <x-admin.confirmation-modal 
+    <x-admin.confirmation-modal class="nunito-bold"
         modalName="isDeleteAccionModalOpen"
         title="Eliminar Acción Realizada"
         :itemToDelete="'accionToDelete'"
