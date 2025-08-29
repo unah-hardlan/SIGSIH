@@ -32,7 +32,7 @@
             <div class="p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Buscar país..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular">
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -87,7 +87,7 @@
             <div class="p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Buscar departamento..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent nunito-regular">
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -144,7 +144,7 @@
             <div class="p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Buscar ciudad..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent nunito-regular">
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -199,7 +199,7 @@
             <div class="p-6">
                 <div class="mb-4">
                     <input type="text" placeholder="Buscar dirección..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent nunito-regular">
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -235,64 +235,70 @@
     </div>
 
     <!-- Modal Nuevo País -->
-    <x-admin.form-modal 
+    <x-admin.form-modal class="nunito-bold"
         modalName="isPaisModalOpen" 
         title="Nuevo País" 
         submitLabel="Guardar País"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 gap-4">
             <div>
-                <label for="nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
+                <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre País</label>
                 <input type="text" id="nombre_pais" name="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Nuevo Departamento -->
-    <x-admin.form-modal 
+    <x-admin.form-modal class="nunito-bold"
         modalName="isDepartamentoModalOpen" 
         title="Nuevo Departamento" 
         submitLabel="Guardar Departamento"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
+                <label for="nombre_departamento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
                 <input type="text" id="nombre_departamento" name="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
+                <label for="pais_departamento" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
                 <input type="text" id="pais_departamento" name="pais_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Nueva Ciudad -->
-    <x-admin.form-modal 
+        <!-- Modal Nueva Ciudad -->
+    <x-admin.form-modal class="nunito-bold"
         modalName="isCiudadModalOpen" 
         title="Nueva Ciudad" 
         submitLabel="Guardar Ciudad"
         maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
+                <label for="nombre_ciudad" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
                 <input type="text" id="nombre_ciudad" name="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="departamento_ciudad" class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
+                <input type="text" id="departamento_ciudad" name="departamento_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Nueva Dirección -->
-    <x-admin.form-modal 
+        <!-- Modal Nueva Dirección -->
+    <x-admin.form-modal class="nunito-bold"
         modalName="isDireccionModalOpen" 
         title="Nueva Dirección" 
         submitLabel="Guardar Dirección"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="nombre_direccion" class="block text-sm font-medium text-gray-700">Nombre Dirección</label>
-                <input type="text" id="nombre_direccion" name="nombre_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Dirección</label>
+                <input type="text" id="direccion" name="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
                 <input type="text" id="ciudad_direccion" name="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
         </div>

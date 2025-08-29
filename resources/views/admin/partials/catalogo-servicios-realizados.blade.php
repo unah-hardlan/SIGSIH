@@ -66,11 +66,11 @@
     </div>
 
     <!-- Modal Nuevo Servicio -->
-    <x-admin.form-modal modalName="isServicioModalOpen" title="Nuevo Servicio Realizado" submitLabel="Guardar Servicio"
+    <x-admin.form-modal class="nunito-bold" modalName="isServicioModalOpen" title="Nuevo Servicio Realizado" submitLabel="Guardar Servicio"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="tipo_servicio" class="block text-sm font-medium text-gray-700">Tipo de Servicio</label>
+                <label for="tipo_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Servicio</label>
                 <select id="tipo_servicio" name="tipo_servicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option>Mantenimiento</option>
@@ -79,12 +79,12 @@
                 </select>
             </div>
             <div class="col-span-2">
-                <label for="descripcion_servicio" class="block text-sm font-medium text-gray-700">Descripción</label>
+                <label for="descripcion_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="descripcion_servicio" name="descripcion_servicio" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
             <div>
-                <label for="fecha_servicio" class="block text-sm font-medium text-gray-700">Fecha</label>
+                <label for="fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
                 <input type="date" id="fecha_servicio" name="fecha_servicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
@@ -92,10 +92,10 @@
     </x-admin.form-modal>
 
     <!-- Modal Editar Servicio -->
-    <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Servicio Realizado" itemToEdit="servicioToEdit" maxWidth="max-w-2xl">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Servicio Realizado" itemToEdit="servicioToEdit" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="edit_tipo_servicio" class="block text-sm font-medium text-gray-700">Tipo de Servicio</label>
+                <label for="edit_tipo_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Servicio</label>
                 <select id="edit_tipo_servicio" name="edit_tipo_servicio" :value="servicioToEdit?.tipo_servicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option>Mantenimiento</option>
@@ -104,12 +104,12 @@
                 </select>
             </div>
             <div class="col-span-2">
-                <label for="edit_descripcion_servicio" class="block text-sm font-medium text-gray-700">Descripción</label>
+                <label for="edit_descripcion_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="edit_descripcion_servicio" name="edit_descripcion_servicio" rows="2" :value="servicioToEdit?.descripcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
             <div>
-                <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700">Fecha</label>
+                <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
                 <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio" :value="servicioToEdit?.fecha"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
@@ -117,6 +117,6 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación -->
-    <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="servicioToDelete"
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteModalOpen" itemToDelete="servicioToDelete"
         message="¿Estás seguro de que quieres eliminar este servicio?" />
 </div>

@@ -10,7 +10,7 @@
             // Puedes agregar más servicios aquí
         ]
     }" class="overflow-x-auto">
-    <x-admin.tabla-crud>
+    <x-admin.tabla-crud class="nunito-bold">
         <x-slot name="titulo">
             <h2 class="text-2xl text-gray-800 nunito-bold">Servicios</h2>
         </x-slot>
@@ -60,21 +60,21 @@
     </x-admin.tabla-crud>
 
     <!-- Modal Nuevo Servicio -->
-    <x-admin.form-modal modalName="isServicioModalOpen" title="Nuevo Servicio" submitLabel="Guardar Servicio"
+    <x-admin.form-modal class="nunito-bold" modalName="isServicioModalOpen" title="Nuevo Servicio" submitLabel="Guardar Servicio"
         maxWidth="max-w-md">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="id_servicio_nuevo" class="block text-sm font-medium text-gray-700">ID</label>
+                <label for="id_servicio_nuevo" class="block text-sm font-medium text-gray-700 nunito-bold">ID</label>
                 <input type="text" id="id_servicio_nuevo" name="id_servicio_nuevo"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="nombre_servicio" class="block text-sm font-medium text-gray-700">Nombre Servicio</label>
+                <label for="nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Servicio</label>
                 <input type="text" id="nombre_servicio" name="nombre_servicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="tarifa" class="block text-sm font-medium text-gray-700">Tarifa</label>
+                <label for="tarifa" class="block text-sm font-medium text-gray-700 nunito-bold">Tarifa</label>
                 <input type="number" id="tarifa" name="tarifa"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
@@ -82,22 +82,22 @@
     </x-admin.form-modal>
 
     <!-- Modal Editar Servicio -->
-    <x-admin.edit-modal modalName="isEditServicioModalOpen" title="Editar Servicio" itemToEdit="servicioToEdit"
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditServicioModalOpen" title="Editar Servicio" itemToEdit="servicioToEdit"
         maxWidth="max-w-md">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="edit_id_servicio" class="block text-sm font-medium text-gray-700">ID</label>
+                <label for="edit_id_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">ID</label>
                 <input type="text" id="edit_id_servicio" name="edit_id_servicio" :value="servicioToEdit.id"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="edit_nombre_servicio" class="block text-sm font-medium text-gray-700">Nombre
+                <label for="edit_nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                     Servicio</label>
                 <input type="text" id="edit_nombre_servicio" name="edit_nombre_servicio" :value="servicioToEdit.nombre"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="edit_tarifa" class="block text-sm font-medium text-gray-700">Tarifa</label>
+                <label for="edit_tarifa" class="block text-sm font-medium text-gray-700 nunito-bold">Tarifa</label>
                 <input type="number" id="edit_tarifa" name="edit_tarifa" :value="servicioToEdit.tarifa"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
@@ -105,6 +105,6 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Servicio -->
-    <x-admin.confirmation-modal modalName="isDeleteServicioModalOpen" itemToDelete="servicioToDelete"
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteServicioModalOpen" itemToDelete="servicioToDelete"
         message="¿Estás seguro de que quieres eliminar el servicio?" />
 </div>

@@ -6,7 +6,7 @@
     itemToDelete: {id: ''}, 
     searchPerfil: '' 
 }">
-    <x-admin.tabla-crud :titulo="'Gestión de Perfiles'">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Perfiles'">
         <x-slot name="filtros">
             <div class="flex flex-wrap gap-2 items-center">
                 <input type="text" x-model="searchPerfil" placeholder="Buscar perfil..."
@@ -24,7 +24,7 @@
         <div class="overflow-x-auto w-full">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100">
+                    <tr class="bg-gray-100 nunito-bold">
                         <th class="py-2 px-4 text-left">Id Perfil</th>
                         <th class="py-2 px-4 text-left">Nombre de Perfil</th>
                         <th class="py-2 px-4 text-left">Descripción</th>
@@ -32,7 +32,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b">
+                    <tr class="border-b nunito-regular">
                         <td class="py-2 px-4">1</td>
                         <td class="py-2 px-4">Administrador</td>
                         <td class="py-2 px-4">Acceso total al sistema</td>
@@ -45,7 +45,7 @@
                                 class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b">
+                    <tr class="border-b nunito-regular">
                         <td class="py-2 px-4">2</td>
                         <td class="py-2 px-4">Técnico</td>
                         <td class="py-2 px-4">Acceso limitado al sistema</td>
@@ -64,29 +64,29 @@
     </x-admin.tabla-crud>
 
     <!-- Modales Perfil -->
-    <x-admin.form-modal modalName="isModalOpenPerfil" title="Agregar Perfil" submitLabel="Guardar" maxWidth="max-w-md">
+    <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPerfil" title="Agregar Perfil" submitLabel="Guardar" maxWidth="max-w-md">
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Nombre del Perfil</label>
-            <input type="text" class="w-full border rounded px-3 py-2" placeholder="Ej: Administrador" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Nombre del Perfil</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Administrador" />
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Descripción del Perfil</label>
-            <textarea class="w-full border rounded px-3 py-2" placeholder="Ej: Acceso total al sistema"></textarea>
+            <label class="block text-sm font-medium mb-1 nunito-bold">Descripción del Perfil</label>
+            <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Acceso total al sistema"></textarea>
         </div>
     </x-admin.form-modal>
 
-    <x-admin.edit-modal modalName="isEditModalOpenPerfil" title="Editar Perfil" itemToEdit="itemToEdit"
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPerfil" title="Editar Perfil" itemToEdit="itemToEdit"
         maxWidth="max-w-md">
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Perfil</label>
-            <input type="text" class="w-full border rounded px-3 py-2" :value="itemToEdit?.perfil" />
+            <label class="block text-sm font-medium mb-1 nunito-bold">Perfil</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" :value="itemToEdit?.perfil" />
         </div>
         <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Descripción</label>
-            <textarea class="w-full border rounded px-3 py-2" :value="itemToEdit?.descripcion"></textarea>
+            <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+            <textarea class="w-full border rounded px-3 py-2 nunito-regular" :value="itemToEdit?.descripcion"></textarea>
         </div>
     </x-admin.edit-modal>
 
-    <x-admin.confirmation-modal modalName="isDeleteModalOpenPerfil" itemToDelete="itemToDelete"
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteModalOpenPerfil" itemToDelete="itemToDelete"
         message="¿Estás seguro de que deseas eliminar este perfil?" />
 </div>

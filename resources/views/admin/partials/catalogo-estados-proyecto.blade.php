@@ -6,7 +6,7 @@
     estadoToDelete: null,
     searchEstadoProyecto: '' 
 }">
-    <x-admin.tabla-crud :titulo="'Gestión de Estados de Proyecto'">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Estados de Proyecto'">
         <x-slot name="filtros">
             <div class="flex flex-wrap gap-2 items-center">
                 <input type="text" x-model="searchEstadoProyecto" placeholder="Buscar estado..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
@@ -72,18 +72,18 @@
     </x-admin.tabla-crud>
 
     <!-- Modal Nuevo Estado -->
-    <x-admin.form-modal 
+    <x-admin.form-modal class="nunito-bold"
         modalName="isEstadoModalOpen" 
         title="Nuevo Estado" 
         submitLabel="Guardar Estado">
         <div class="space-y-4">
             <div>
-                <label for="nombre_estado" class="block text-sm font-medium text-gray-700">Nombre del Estado</label>
+                <label for="nombre_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Estado</label>
                 <input type="text" id="nombre_estado" name="nombre_estado"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="descripcion_estado" class="block text-sm font-medium text-gray-700">Descripción</label>
+                <label for="descripcion_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="descripcion_estado" name="descripcion_estado" rows="3"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
@@ -91,17 +91,17 @@
     </x-admin.form-modal>
 
     <!-- Modal Editar Estado -->
-    <x-admin.edit-modal 
+    <x-admin.edit-modal class="nunito-bold"
         modalName="isEditEstadoModalOpen" 
         title="Editar Estado" 
         itemToEdit="estadoToEdit">
         <div>
-            <label for="edit_nombre_estado" class="block text-sm font-medium text-gray-700">Nombre del Estado</label>
+            <label for="edit_nombre_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Estado</label>
             <input type="text" id="edit_nombre_estado" name="edit_nombre_estado" :value="estadoToEdit.nombre"
                 class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
         </div>
         <div class="mt-4">
-            <label for="edit_descripcion_estado" class="block text-sm font-medium text-gray-700">Descripción</label>
+            <label for="edit_descripcion_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
             <textarea id="edit_descripcion_estado" name="edit_descripcion_estado" rows="3" 
                 class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" 
                 x-text="estadoToEdit.descripcion"></textarea>
@@ -109,7 +109,7 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Estado -->
-    <x-admin.confirmation-modal
+    <x-admin.confirmation-modal class="nunito-regular"
         modalName="isDeleteEstadoModalOpen"
         itemToDelete="estadoToDelete"
         message="¿Estás seguro de que quieres eliminar el estado?"
