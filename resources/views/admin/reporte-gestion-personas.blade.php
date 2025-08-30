@@ -10,7 +10,12 @@
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="GESTION DE PERSONAS" :logoSize="96" />
             <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Personas Registradas</h2>
-            <!-- Tabla de Gestión de Personas -->
+            <!-- Tabla de Gestión de Personas (dinámica) -->
+            <?php
+                // $rows viene del controlador PersonaController@reporte
+                // Fallback mínimo por si la ruta llama directamente la vista
+                if(!isset($rows)) { $rows = []; }
+            ?>
             <div class="overflow-x-auto mb-8">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
@@ -29,71 +34,24 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach(($rows ?? []) as $p)
                         <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Juan</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Carlos</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Pérez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Gómez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">12345678</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Analista</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Administrador</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Masculino</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Administrador</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">jgomez</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_persona_pk ?? $p['id'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_nombre ?? $p['primer_nombre'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_nombre ?? $p['segundo_nombre'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_apellido ?? $p['primer_apellido'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_apellido ?? $p['segundo_apellido'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->dni ?? $p['dni'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->cargo ?? $p['cargo'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->tipoPersona->nombre_tipo_persona ?? null) ?? ($p['tipo_persona']['nombre'] ?? '') }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->genero->genero ?? null) ?? ($p['genero']['genero'] ?? '') }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->perfil->nombre_perfil ?? null) ?? ($p['perfil']['nombre'] ?? '') }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_usuario_fk ?? $p['id_usuario_fk'] ?? '' }}</td>
                         </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">002</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">María</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Elena</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">López</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Martínez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">87654321</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Gerente</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Empleado</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Femenino</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Gerencia</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">mlopez</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">003</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Roberto</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">José</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Hernández</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Silva</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">11223344</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Desarrollador</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Empleado</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Masculino</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Técnico</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">rhernandez</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">004</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Ana</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Sofía</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Rodríguez</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Torres</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">55667788</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Contadora</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Empleado</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Femenino</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Finanzas</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">arodriguez</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">005</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Luis</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Alberto</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">García</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Mendoza</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">99887766</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Consultor</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Cliente</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Masculino</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Cliente</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">lgarcia</td>
-                        </tr>
+                        @endforeach
+                        @if(empty($rows))
+                        <tr><td colspan="11" class="border border-gray-300 py-4 px-3 text-center text-gray-500 nunito-regular">Sin resultados</td></tr>
+                        @endif
                     </tbody>
                 </table>
             </div>

@@ -125,13 +125,14 @@ Route::prefix('admin')
                 'facturas' => 'admin.reporte-facturas',
                 'cai' => 'admin.reporte-cai',
                 'bitacora' => 'admin.reporte-bitacora',
-                'gestion de personas' => 'admin.reporte-gestion-personas',
                 'productos' => 'admin.reporte-productos',
                 'kardex' => 'admin.reporte-kardex',
                 'proyectos' => 'admin.reporte-proyectos',
                 default => 'admin.reporte-generico',
             };
-
+            if ($moduloLower === 'gestion de personas') {
+                return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
+            }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
 

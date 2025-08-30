@@ -82,4 +82,58 @@ class PersonaController extends Controller
         $persona->delete();
         return response()->json(['message'=>'Persona eliminada']);
     }
+
+    // Reporte de Gestión de Personas (vista)
+    public function reporte(Request $request)
+    {
+        $q = $request->input('q');
+        $sort = $request->input('sort','nombre');
+        $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
+        $tipo = $request->input('tipo'); // puede ser nombre o id
+        $genero = $request->input('genero'); // puede ser nombre
+
+        $query = Persona::query()->with(['tipoPersona','genero','perfil']);
+        if($q){
+            $query->where(function($sub) use ($q){
+                $sub->where('primer_nombre','like',"%$q%")
+                    ->orWhere('segundo_nombre','like',"%$q%")
+                    ->orWhere('primer_apellido','like',"%$q%")
+                    ->orWhere('segundo_apellido','like',"%$q%")
+                    ->orWhere('dni','like',"%$q%")
+                    ->orWhere('cargo','like',"%$q%");
+            });
+        }
+        if($tipo){
+            if(is_numeric($tipo)){
+                $query->where('id_tipo_persona_fk',(int)$tipo);
+            } else {
+                $query->whereHas('tipoPersona', function($q2) use($tipo){
+                    $q2->whereRaw('LOWER(nombre_tipo_persona) = ?', [strtolower($tipo)]);
+                });
+            }
+        }
+        if($genero){
+            if(is_numeric($genero)){
+                $query->where('id_genero_fk',(int)$genero);
+            } else {
+                $query->whereHas('genero', function($q2) use($genero){
+                    $q2->whereRaw('LOWER(genero) = ?', [strtolower($genero)]);
+                });
+            }
+        }
+
+        $sortable = [
+            'nombre' => 'primer_nombre',
+            'apellido' => 'primer_apellido',
+            'dni' => 'dni',
+            'cargo' => 'cargo',
+        ];
+        $query->orderBy($sortable[$sort] ?? 'id_persona_pk', $direction);
+
+        $rows = $query->get();
+        $fecha = $request->query('fecha', now()->format('d-M-Y'));
+        $modulo = $request->query('modulo', 'Gestion de Personas');
+
+        return view('admin.reporte-gestion-personas', compact('fecha','modulo','rows'));
+    }
 }
