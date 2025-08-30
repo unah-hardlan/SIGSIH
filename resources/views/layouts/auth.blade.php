@@ -10,7 +10,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     @livewireStyles
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine se carga vía Vite en el layout principal; evitar doble carga por CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/login-guard.js" defer></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>

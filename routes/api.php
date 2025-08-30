@@ -33,6 +33,7 @@ use App\Http\Controllers\DetalleFacturaController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\DetalleOrdenProductoController;
 use App\Http\Controllers\ObjetoController;
+use App\Http\Controllers\TipoObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RolController;
@@ -73,10 +74,13 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
     Route::apiResource('roles', RolController::class);
+    // Upsert permisos por combinación rol-objeto (debe ir antes del apiResource para evitar colisiones)
+    Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
     Route::apiResource('permisos', PermisoController::class);
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
+    Route::apiResource('tipos-objeto', TipoObjetoController::class)->only(['index']);
 
     // MODULO DE PERSONAS
     Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
