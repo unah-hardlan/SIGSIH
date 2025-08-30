@@ -62,7 +62,7 @@
             <div x-data="{ open: false, logoutConfirm: false }" class="relative">
                 <button @click="open = !open"
                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold focus:outline-none">
-                    <span x-text="(($store.perfil.user?.nombre_usuario || $store.perfil.user?.usuario || 'U')+' ').trim().split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase()">U</span>
+                    <span>{{ substr(strtoupper(Auth::user()->usuario ?? 'U'), 0, 2) }}</span>
                 </button>
                 <div x-show="open" x-cloak @click.away="open = false" @header-link-click="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white border border-blue-200 shadow rounded-md py-1">
@@ -96,13 +96,15 @@
                             <button type="button" @click="logoutConfirm = false" class="transition duration-200 ease-in-out px-4 py-2 bg-gray-300 rounded text-sm md:text-base hover:bg-gray-400">Cancelar</button>
                             <button type="button" @click="logoutConfirm = false; (window.appLogout && window.appLogout())" class="transition duration-200 ease-in-out px-4 py-2 bg-red-600 text-white rounded text-sm md:text-base hover:bg-red-700">Confirmar</button>
                         </div>
-</div>
+                    </div>
                 </div>
             </div>
+
             <div class="hidden sm:flex flex-col items-start">
-                <span class="serif-bold text-gray-800 text-sm" x-text="$store.perfil.user?.nombre_usuario || $store.perfil.user?.usuario || 'Usuario'">Usuario</span>
-                <span class="text-xs nunito-regular text-gray-500" x-text="$store.perfil.persona?.cargo || ''"></span>
+                <span class="serif-bold text-gray-800 text-sm">{{ Auth::user()->usuario ?? 'Usuario' }}</span>
+                <span class="text-xs nunito-regular text-gray-500">{{ Auth::user()->rol?->rol ?? '' }}</span>
             </div>
+
         </div>
     </div>
 </header>
