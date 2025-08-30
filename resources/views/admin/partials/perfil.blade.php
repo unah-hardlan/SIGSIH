@@ -9,7 +9,7 @@
                 <div class="relative inline-block">
                     <img :src="avatarUrl || (personaAvatar ? personaAvatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayNameComputed) + '&background=0D8ABC&color=fff&size=128')"
                         alt="Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-white object-cover">
-                    <div class="absolute bottom-2 right-2 flex gap-2">
+                    <div class="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-1/2 flex gap-2">
                         <label
                             class="bg-blue-600 hover:bg-blue-700 text-white rounded-full h-8 w-8 flex items-center justify-center cursor-pointer shadow">
                             <i class="fas fa-camera"></i>
