@@ -1,4 +1,35 @@
-<div class="z-10">
+<div class="z-10" x-data="scrollPosition()" x-init="restoreScrollPosition()">
+    <script>
+        function scrollPosition() {
+            return {
+                saveScrollPosition() {
+                    localStorage.setItem('dashboardScrollPosition', window.scrollY);
+                },
+                restoreScrollPosition() {
+                    const savedPosition = localStorage.getItem('dashboardScrollPosition');
+                    if (savedPosition) {
+                        setTimeout(() => {
+                            window.scrollTo(0, parseInt(savedPosition));
+                        }, 100);
+                    }
+                },
+                init() {
+                    // Save scroll position before page unload
+                    window.addEventListener('beforeunload', this.saveScrollPosition);
+
+                    // Also save on visibility change (when tab becomes hidden)
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden) {
+                            this.saveScrollPosition();
+                        }
+                    });
+
+                    // Restore position on page load
+                    this.restoreScrollPosition();
+                }
+            }
+        }
+    </script>
 <div class="flex items-center my-1 mb-10">
         <div class="flex-grow border-t border-gray-200"></div>
         <div class="mx-4">
@@ -13,7 +44,7 @@
 
     <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Total Usuarios</h3>
@@ -25,7 +56,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Empresas Activas</h3>
@@ -37,7 +68,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Órdenes de Servicio</h3>
@@ -49,7 +80,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-indigo-500">
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-indigo-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600">Cotizaciones</h3>
@@ -61,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-teal-50 to-teal-100 p-6 rounded-xl shadow-lg border border-teal-200 relative overflow-hidden">
+            <div class="bg-gradient-to-br from-teal-50 to-teal-100 p-6 rounded-xl shadow-lg border border-teal-200 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-teal-200 rounded-full -translate-y-10 translate-x-10 opacity-20"></div>
                 <div class="relative z-10">
                     <div class="flex items-center justify-between mb-4">
@@ -87,7 +118,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-lg border border-orange-200 relative overflow-hidden">
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-lg border border-orange-200 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute top-0 right-0 w-16 h-16 bg-orange-200 rounded-full -translate-y-8 translate-x-8 opacity-30"></div>
                 <div class="absolute bottom-0 left-0 w-12 h-12 bg-orange-300 rounded-full translate-y-6 -translate-x-6 opacity-20"></div>
                 <div class="relative z-10">
@@ -116,7 +147,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-green-100 to-green-300 p-6 rounded-xl shadow-lg border border-emerald-200 relative overflow-hidden">
+            <div class="bg-gradient-to-br from-green-100 to-green-300 p-6 rounded-xl shadow-lg border border-emerald-200 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute top-0 left-0 w-24 h-24 bg-green-700 rounded-full -translate-y-12 -translate-x-12 opacity-25"></div>
                 <div class="relative z-10">
                     <div class="flex items-center justify-between mb-4">
@@ -138,7 +169,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-pink-50 to-rose-100 p-6 rounded-xl shadow-lg border border-pink-200 relative overflow-hidden">
+            <div class="bg-gradient-to-br from-pink-50 to-rose-100 p-6 rounded-xl shadow-lg border border-pink-200 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute bottom-0 right-0 w-20 h-20 bg-pink-200 rounded-full translate-y-10 translate-x-10 opacity-25"></div>
                 <div class="absolute top-0 left-1/2 w-8 h-8 bg-pink-300 rounded-full -translate-y-4 opacity-30"></div>
                 <div class="relative z-10">
@@ -233,7 +264,7 @@
 
 <div class="mb-12">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
             <div class="flex items-center px-4 py-3 bg-purple-50 rounded-t-xl border-b border-purple-100">
                 <i class="fas fa-clipboard-list text-purple-700 mr-2"></i>
                 <h3 class="text-sm nunito-bold text-purple-700">Órdenes de Servicio por Estado</h3>
@@ -245,7 +276,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
             <div class="flex items-center px-4 py-3 bg-indigo-50 rounded-t-xl border-b border-indigo-100">
                 <i class="fas fa-file-invoice-dollar text-indigo-700 mr-2"></i>
                 <h3 class="text-sm nunito-bold text-indigo-700">Cotizaciones por Mes</h3>
@@ -257,7 +288,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
             <div class="flex items-center px-4 py-3 bg-teal-50 rounded-t-xl border-b border-teal-100">
                 <i class="fas fa-project-diagram text-teal-700 mr-2"></i>
                 <h3 class="text-sm nunito-bold text-teal-700">Proyectos por Estado</h3>
@@ -283,7 +314,7 @@
     </div>
 
     <div class="mb-12">
-        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50">
+        <div class="bg-white rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-gray-500 transition-colors duration-300">
             <div class="flex items-center px-4 py-3 bg-slate-50 rounded-t-xl border-b border-slate-100">
                 <i class="fas fa-history text-slate-700 mr-2"></i>
                 <h3 class="text-base nunito-bold text-slate-700">Registro de acciones recientes de usuarios</h3>

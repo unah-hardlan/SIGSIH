@@ -21,5 +21,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // Cargar el helper SpaHelper
         require_once app_path('Helpers/SpaHelper.php');
+
+        if (!file_exists(public_path('storage'))) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('storage:link');
+            } catch (\Exception $e) {
+            }
+        }
     }
 }
