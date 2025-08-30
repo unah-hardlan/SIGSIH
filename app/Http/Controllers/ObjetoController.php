@@ -15,7 +15,7 @@ class ObjetoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Objeto::query();
+    $query = Objeto::query()->with('tipoObjeto');
 
         if ($q = $request->input('q')) {
             $query->where(function ($sub) use ($q) {

@@ -3,6 +3,8 @@ import "./usuarios";
 import "./parametros";
 import "./perfil";
 import "./dashboard";
+import "./seguridad";
+import "./objetos";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -161,7 +163,13 @@ dom.watch();
 
 // Alpine.js collapse plugin
 document.addEventListener("alpine:init", () => {
-    Alpine.plugin(collapse);
+    try {
+        // Evitar registrar el plugin 'collapse' múltiples veces
+        if (!window.__ALPINE_COLLAPSE_REGISTERED__) {
+            Alpine.plugin(collapse);
+            window.__ALPINE_COLLAPSE_REGISTERED__ = true;
+        }
+    } catch (_) {}
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -269,9 +277,30 @@ document.addEventListener("alpine:init", () => {
             // Destruir instancias de Chart.js antes de reemplazar el DOM
             try { if (typeof destroyExistingCharts === 'function') destroyExistingCharts(); } catch (_) {}
 
-            document.querySelector("main").innerHTML = html;
-            // Reinicializar Alpine.js en el nuevo contenido
-            Alpine.initTree(document.querySelector("main"));
+            const mainEl = document.querySelector("main");
+            // Intentar destruir árbol Alpine anterior (si aplica)
+            try { if (window.Alpine && Alpine.destroyTree) Alpine.destroyTree(mainEl); } catch(_) {}
+
+            // Sanitizar: evitar recargar Alpine desde vistas parciales (remueve scripts externos de Alpine)
+            let sanitized = html;
+            try {
+                sanitized = sanitized.replace(/<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi, '');
+            } catch(_) {}
+
+            mainEl.innerHTML = sanitized;
+            // Reinicializar Alpine sólo en raíces nuevas (evita redefinir $nextTick)
+            try {
+                if (window.Alpine) {
+                    // Limpieza defensiva: si alguna magia global quedó definida por doble carga, elimínala
+                    try { if ('$nextTick' in window) delete window.$nextTick; } catch(_) {}
+                    try { if ('$watch' in window) delete window.$watch; } catch(_) {}
+                    try { if ('$dispatch' in window) delete window.$dispatch; } catch(_) {}
+                    const roots = Array.from(mainEl.querySelectorAll('[x-data]')).filter(el => !el.__x);
+                    for (const root of roots) {
+                        try { Alpine.initTree(root); } catch(_) {}
+                    }
+                }
+            } catch (_) {}
 
             // Restaurar posición del scroll del sidebar después de cargar nuevo contenido
             this.restoreSidebarScrollPosition();
