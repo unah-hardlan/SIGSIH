@@ -47,7 +47,7 @@
                 <a href="/admin/reportes-header?modulo=configuracion-acceso&fecha={{ now()->format('d-M-Y') }}"
                     target="_blank"
                     class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                    <i class="fas fa-file-alt"></i> <span class="nunito-regular">Generar Reporte</span>
+                    <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
                 </a>
             </x-slot>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -152,7 +152,7 @@
     <div x-show="tab === 'crear'">
         <x-admin.tabla-crud class="nunito-bold" :titulo="'Lista de Roles'">
             <x-slot name="filtros">
-                <div class="flex flex-wrap gap-4 mb-4 items-center">
+                <div class="flex flex-wrap gap-4 items-center">
                     <input type="text" class="border rounded px-3 py-2 flex-1 min-w-[200px]"
                         placeholder="Buscar rol..." />
                     <select class="border rounded px-3 py-2">

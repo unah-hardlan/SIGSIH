@@ -45,7 +45,7 @@
             </x-slot>
             <x-slot name="boton">
                 <button @click="isModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nueva
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva
                     Orden</button>
             </x-slot>
             <div class="overflow-x-auto">
@@ -137,8 +137,9 @@
     </div>
 
     <!-- Modal Nueva Orden -->
-    <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Orden" submitLabel="Guardar Orden" maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Orden" submitLabel="Guardar Orden"
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">ID Solicitud</label>
                 <input type="text" id="id_solicitud" name="id_solicitud"
@@ -197,8 +198,9 @@
     </x-admin.form-modal>
 
     <!-- Modal Editar Orden -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Orden" itemToEdit="ordenToEdit" maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Orden" itemToEdit="ordenToEdit"
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">ID Solicitud</label>
                 <input type="text" id="edit_id_solicitud" name="edit_id_solicitud" x-model="ordenToEdit.id_solicitud"

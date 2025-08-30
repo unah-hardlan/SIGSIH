@@ -40,10 +40,10 @@
             </x-slot:filtros>
 
             <x-slot:boton>
-                                <button
-                                    @click="generateCotizacionModal = true"
-                                    class="text-sm w-full sm:w-32 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"
-                                >
+                <button
+                    @click="generateCotizacionModal = true"
+                    class="text-sm w-full sm:w-32 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"
+                    >
                   <i class="fas fa-plus"></i> Generar Cotización
                 </button>
             </x-slot:boton>

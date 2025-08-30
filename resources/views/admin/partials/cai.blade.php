@@ -17,9 +17,9 @@
             </x-slot>
             <x-slot name="boton">
                 <div class="flex gap-2 items-stretch">
-                    <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo CAI</button>
+                    <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo CAI</button>
                     <a href="/admin/reportes-header?modulo=CAI&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>

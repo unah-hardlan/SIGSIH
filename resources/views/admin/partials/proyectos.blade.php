@@ -51,10 +51,10 @@
             <x-slot name="boton">
                 <div class="flex flex-col sm:flex-row gap-2">
                     <a href="{{ url('/admin/reportes-header?modulo=Proyectos') }}" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
-                    <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo proyecto</button>
+                    <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo proyecto</button>
                 </div>
             </x-slot>
             <table class="min-w-full text-sm">
@@ -185,7 +185,7 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="isIngresoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar Ingreso</button>
+                <button @click="isIngresoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Ingreso</button>
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
@@ -241,7 +241,7 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="isGastoModalOpen = true" class="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar Gasto</button>
+                <button @click="isGastoModalOpen = true" class="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Gasto</button>
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
@@ -283,7 +283,7 @@
         title="Nuevo Proyecto"
         submitLabel="Guardar Proyecto"
         maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-4 md:grid md:grid-cols-2">
             <div>
                 <label for="nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                 <input type="text" id="nombre" name="nombre"
@@ -304,7 +304,7 @@
                 <input type="date" id="fecha_fin" name="fecha_fin"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="md:col-span-2">
                 <label for="descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="descripcion" name="descripcion" rows="3"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
@@ -337,8 +337,8 @@
         modalName="isEditIngresoModalOpen"
         title="Editar Ingreso"
         itemToEdit="ingresoToEdit"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_ingreso_proyecto" class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
                 <select id="edit_ingreso_proyecto" name="edit_ingreso_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -377,8 +377,8 @@
         modalName="isEditGastoModalOpen"
         title="Editar Gasto"
         itemToEdit="gastoToEdit"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_gasto_proyecto" class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
                 <select id="edit_gasto_proyecto" name="edit_gasto_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -418,8 +418,8 @@
         modalName="isIngresoModalOpen"
         title="Nuevo Ingreso"
         submitLabel="Guardar Ingreso"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="ingreso_proyecto" class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
                 <select id="ingreso_proyecto" name="ingreso_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -458,8 +458,8 @@
         modalName="isGastoModalOpen"
         title="Nuevo Gasto"
         submitLabel="Guardar Gasto"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="gasto_proyecto" class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
                 <select id="gasto_proyecto" name="gasto_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -518,7 +518,7 @@
         title="Editar Proyecto"
         itemToEdit="projectToEdit"
         maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-4 md:grid md:grid-cols-2">
             <div>
                 <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                 <input type="text" id="edit_nombre" name="edit_nombre" :value="projectToEdit.nombre"
@@ -539,7 +539,7 @@
                 <input type="date" id="edit_fecha_fin" name="edit_fecha_fin" :value="projectToEdit.fecha_fin"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="md:col-span-2">
                 <label for="edit_descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="edit_descripcion" name="edit_descripcion" rows="3" x-text="projectToEdit.descripcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>

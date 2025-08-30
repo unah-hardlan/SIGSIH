@@ -25,7 +25,7 @@
                     <button @click="isPaisModalOpen = true" 
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
-                        <span>Nuevo</span>
+                        <span class="text-sm">Nuevo</span>
                     </button>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                     <button @click="isDepartamentoModalOpen = true" 
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
-                        <span>Nuevo</span>
+                        <span class="text-sm">Nuevo</span>
                     </button>
                 </div>
             </div>
@@ -137,7 +137,7 @@
                     <button @click="isCiudadModalOpen = true" 
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
-                        <span>Nuevo</span>
+                        <span class="text-sm">Nuevo</span>
                     </button>
                 </div>
             </div>
@@ -192,7 +192,7 @@
                     <button @click="isDireccionModalOpen = true" 
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
-                        <span>Nuevo</span>
+                        <span class="text-sm">Nuevo</span>
                     </button>
                 </div>
             </div>

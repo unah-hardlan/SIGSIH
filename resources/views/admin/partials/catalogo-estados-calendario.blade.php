@@ -2,7 +2,7 @@
     <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
         <div class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
             <h2 class="text-2xl text-gray-800 nunito-bold">Estado Calendario</h2>
-            <button @click="isAddEstadoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo Estado</button>
+            <button @click="isAddEstadoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Estado</button>
         </div>
         <table class="min-w-full text-sm w-full">
             <thead class="bg-gray-100 nunito-bold">

@@ -64,10 +64,10 @@
             <x-slot name="boton">
                 <div class="flex flex-col gap-2 w-full sm:w-auto">
                     <button @click="isModalOpen = true"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nueva
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva
                         Solicitud</button>
                     <a href="/admin/reportes-header?modulo=Solicitudes&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>
@@ -130,7 +130,7 @@
             </x-slot>
             <x-slot name="boton">
                 <button @click="isContactoModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
                     Contacto</button>
             </x-slot>
             <div class="overflow-x-auto">
@@ -170,8 +170,8 @@
 
     <!-- Modal Nueva Solicitud -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Solicitud" submitLabel="Guardar Solicitud"
-        maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">ID Cliente</label>
                 <input type="text" id="id_cliente" name="id_cliente"
@@ -225,8 +225,8 @@
 
     <!-- Modal Editar Solicitud -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Solicitud" itemToEdit="solicitudToEdit"
-        maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">ID Cliente</label>
                 <input type="text" id="edit_id_cliente" name="edit_id_cliente" x-model="solicitudToEdit.id_cliente"
@@ -291,8 +291,8 @@
 
     <!-- Modal Nuevo Estado -->
     <x-admin.form-modal class="nunito-bold" modalName="isEstadoModalOpen" title="Nuevo Estado de Solicitud" submitLabel="Guardar Estado"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="nombre_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Estado</label>
                 <input type="text" id="nombre_estado" name="nombre_estado"
@@ -308,8 +308,8 @@
 
     <!-- Modal Editar Estado -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoModalOpen" title="Editar Estado de Solicitud" itemToEdit="estadoToEdit"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_nombre_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del
                     Estado</label>
@@ -331,8 +331,8 @@
 
     <!-- Modal Nuevo Contacto -->
     <x-admin.form-modal class="nunito-bold" modalName="isContactoModalOpen" title="Nuevo Contacto" submitLabel="Guardar Contacto"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Contacto</label>
                 <input type="text" id="tipo_contacto" name="tipo_contacto"
@@ -353,8 +353,8 @@
 
     <!-- Modal Editar Contacto -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditContactoModalOpen" title="Editar Contacto" itemToEdit="contactoToEdit"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Contacto</label>
                 <input type="text" id="edit_tipo_contacto" name="edit_tipo_contacto"

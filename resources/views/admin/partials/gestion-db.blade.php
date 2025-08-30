@@ -56,7 +56,7 @@
                     class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 min-w-[150px] nunito-regular"
                     :disabled="estadoConexion === 'cargando'" style="min-width:150px;">
                     <template x-if="estadoConexion === 'inicial'">
-                        <span class="nunito-regular">Probar conexión</span>
+                        <span class="nunito-regular text-sm">Probar conexión</span>
                     </template>
                     <template x-if="estadoConexion === 'cargando'">
                         <svg class="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -75,7 +75,7 @@
                 </button>
 
                 <button @click="openModal('¿Deseas confirmar el respaldo de la base de datos?')"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition nunito-regular">
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition nunito-regular text-sm">
                     Respaldar
                 </button>
             </div>
@@ -103,7 +103,7 @@
             </div>
             <div class="flex justify-end gap-3 mt-4">
                 <button @click="openModal('¿Deseas confirmar la restauración de la base de datos?')"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition nunito-regular">
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition nunito-regular text-sm">
                     Restaurar
                 </button>
             </div>

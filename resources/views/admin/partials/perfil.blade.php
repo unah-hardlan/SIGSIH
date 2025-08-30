@@ -129,7 +129,7 @@
 
             <!-- Sección de cambio de contraseña -->
             <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-400 border-opacity-50">
-                <h3 class="text-xl font-bold text-gray-800 mb-6 nunito-bold">Cambiar Contraseña</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-6 nunito-regular">Cambiar Contraseña</h3>
 
                 <!-- Alerta de éxito para contraseña -->
                 <div x-show="passwordSuccess" x-transition class="mb-4">
@@ -163,7 +163,7 @@
 
                 <div class="mt-8 text-right">
                     <button type="button" @click="cambiarPassword()" :disabled="changingPassword"
-                        class="bg-red-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-700 focus:ring-4 focus:ring-red-600 focus:ring-opacity-50 nunito-regular">
+                        class="bg-red-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-700 focus:ring-4 focus:ring-red-600 focus:ring-opacity-50 nunito-regular transition-colors duration-200 ease-in-out">
                         <span x-show="!changingPassword" class="nunito-regular">Cambiar Contraseña</span>
                         <span x-show="changingPassword" class="inline-flex items-center nunito-regular">
                             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"

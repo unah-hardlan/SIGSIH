@@ -29,11 +29,11 @@
         <x-slot name="boton">
             <div class="flex flex-col sm:flex-row gap-2">
                 <a href="{{ url('/admin/reportes-header?modulo=Kardex') }}" target="_blank"
-                    class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2 justify-center">
+                    class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center text-sm">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </a>
                 <button @click="isModalOpen = true"
-                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                     Nuevo movimiento
                 </button>
             </div>

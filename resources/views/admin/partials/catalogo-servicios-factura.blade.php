@@ -21,7 +21,7 @@
         <x-slot name="boton">
             <div class="w-full flex justify-center sm:justify-end">
                 <button @click="isServicioModalOpen = true"
-                    class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">
+                    class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center text-sm">
                     Nuevo Servicio
                 </button>
             </div>

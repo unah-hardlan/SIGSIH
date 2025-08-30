@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
             <h2 class="text-2xl font-bold text-gray-800 nunito-bold">Bitácora</h2>
             <a href="/admin/reportes-header?modulo=Bitacora&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-               class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2">
+               class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                 <i class="fas fa-file-alt"></i> Generar Reporte
             </a>
         </div>

@@ -1,4 +1,4 @@
-<div x-data="{ tab: 'calendario', isAddModalOpen: false, isEditModalOpen: false, isDetailModalOpen: false, isCancelModalOpen: false, isAddCalendarioModalOpen: false, selectedEvent: null }" @include('partials.persist-tab', ['tabKey' => 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
+<div x-data="{ tab: 'calendario', isAddModalOpen: false, isEditModalOpen: false, isDetailModalOpen: false, isCancelModalOpen: false, isAddCalendarioModalOpen: false, isEditCalendarioModalOpen: false, selectedEvent: null, calendarioToEdit: {fecha: '', descripcion: '', estado: '', cliente: '', agencia: '', tipo_mantenimiento: ''} }" @include('partials.persist-tab', ['tabKey' => 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
     <div class="w-full">
         <ul class="flex border-b nunito-bold">
             <li @click="tab='calendario'" :class="tab==='calendario' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Calendario</li>
@@ -9,11 +9,11 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3">Calendario</h2>
                 <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular" @click="isAddModalOpen = true">
+                    <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true ">
                         <i class="fas fa-plus mr-2"></i> Agregar
                     </button>
                     <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2">
+                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>
@@ -209,7 +209,7 @@
             <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
                 <div class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
                     <h2 class="text-2xl text-gray-800 nunito-bold">Calendario</h2>
-                    <button @click="isAddCalendarioModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo Calendario</button>
+                    <button @click="isAddCalendarioModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Calendario</button>
                 </div>
                 <table class="min-w-full text-sm w-full">
                     <thead class="bg-gray-100 nunito-bold">
@@ -234,12 +234,70 @@
                             <td class="py-2 px-4 nunito-regular">AG-001</td>
                             <td class="py-2 px-4 nunito-regular">TM-001</td>
                             <td class="py-2 px-4 flex gap-2">
-                                <a href="#" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></a>
+                                <a href="#" @click.prevent="isEditCalendarioModalOpen = true; calendarioToEdit = {fecha: '2025-07-08', descripcion: 'Reunión mensual', estado: 'E-001', cliente: 'CL-001', agencia: 'AG-001', tipo_mantenimiento: 'TM-001'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></a>
                                 <a href="#" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                        <!-- Modal Crear Calendario -->
+                        <x-admin.form-modal class="nunito-bold" modalName="isAddCalendarioModalOpen" title="Agregar Calendario" submitLabel="Guardar Calendario" maxWidth="max-w-xs xl:max-w-2xl 2xl:max-w-3xl">
+                            <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Fecha</label>
+                                    <input type="date" class="border rounded px-3 py-2 w-full nunito-regular" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                                    <textarea class="border rounded px-3 py-2 w-full nunito-regular"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Tipo Mantenimiento</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
+                                </div>
+                            </div>
+                        </x-admin.form-modal>
+                        <!-- Modal Editar Calendario -->
+                        <x-admin.edit-modal class="nunito-bold" modalName="isEditCalendarioModalOpen" title="Editar Calendario" itemToEdit="calendarioToEdit" maxWidth="max-w-xs xl:max-w-2xl 2xl:max-w-3xl">
+                            <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Fecha</label>
+                                    <input type="date" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.fecha" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                                    <textarea class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.descripcion"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.estado" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.cliente" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.agencia" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 nunito-bold">Tipo Mantenimiento</label>
+                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.tipo_mantenimiento" />
+                                </div>
+                            </div>
+                        </x-admin.edit-modal>
             </div>
         </div>
     </div>
