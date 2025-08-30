@@ -82,8 +82,8 @@
 
     <!-- Modal Nuevo Reporte -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nuevo Reporte" submitLabel="Guardar Reporte"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="id_reporte" class="block text-sm font-medium text-gray-700 nunito-bold">ID Reporte</label>
                 <input type="text" id="id_reporte" name="id_reporte"
@@ -125,8 +125,8 @@
 
     <!-- Modal Editar Reporte -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Reporte" itemToEdit="reporteToEdit"
-        maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_id_reporte" class="block text-sm font-medium text-gray-700 nunito-bold">ID Reporte</label>
                 <input type="text" id="edit_id_reporte" name="edit_id_reporte" :value="reporteToEdit?.id_reporte"

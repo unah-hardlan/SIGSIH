@@ -59,7 +59,7 @@
         <!-- Modal Agregar Tipo de Objeto -->
         <div x-show="isTipoModalOpen"
             class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
+            <div class="bg-white p-6 rounded-lg shadow max-w-xs xl:max-w-2xl 2xl:max-w-3xl min-h-[300px] xl:min-h-[600px] w-full relative">
                 <h2 class="text-xl font-bold mb-4 nunito-bold">Agregar Tipo de Objeto</h2>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
@@ -90,7 +90,7 @@
         <!-- Modal Editar Tipo de Objeto -->
         <div x-show="isTipoEditModalOpen"
             class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
+            <div class="bg-white p-6 rounded-lg shadow max-w-xs xl:max-w-2xl 2xl:max-w-3xl min-h-[300px] xl:min-h-[600px] w-full relative">
                 <h2 class="text-xl font-bold mb-4 nunito-bold">Editar Tipo de Objeto</h2>
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
