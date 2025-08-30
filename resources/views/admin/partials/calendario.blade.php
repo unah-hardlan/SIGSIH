@@ -9,11 +9,11 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3">Calendario</h2>
                 <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular" @click="isAddModalOpen = true">
+                    <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true ">
                         <i class="fas fa-plus mr-2"></i> Agregar
                     </button>
                     <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2">
+                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>
@@ -209,7 +209,7 @@
             <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
                 <div class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
                     <h2 class="text-2xl text-gray-800 nunito-bold">Calendario</h2>
-                    <button @click="isAddCalendarioModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo Calendario</button>
+                    <button @click="isAddCalendarioModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Calendario</button>
                 </div>
                 <table class="min-w-full text-sm w-full">
                     <thead class="bg-gray-100 nunito-bold">

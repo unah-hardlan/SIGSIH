@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="mt-6 flex items-center justify-end">
-            <button @click="guardarPersonalizacion()" type="button" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors nunito-regular">
+            <button @click="guardarPersonalizacion()" type="button" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors nunito-regular text-sm">
                 Guardar
             </button>
         </div>

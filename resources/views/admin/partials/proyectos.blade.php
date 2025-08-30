@@ -51,10 +51,10 @@
             <x-slot name="boton">
                 <div class="flex flex-col sm:flex-row gap-2">
                     <a href="{{ url('/admin/reportes-header?modulo=Proyectos') }}" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
-                    <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nuevo proyecto</button>
+                    <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo proyecto</button>
                 </div>
             </x-slot>
             <table class="min-w-full text-sm">
@@ -185,7 +185,7 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="isIngresoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar Ingreso</button>
+                <button @click="isIngresoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Ingreso</button>
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
@@ -241,7 +241,7 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="isGastoModalOpen = true" class="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Agregar Gasto</button>
+                <button @click="isGastoModalOpen = true" class="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Gasto</button>
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">

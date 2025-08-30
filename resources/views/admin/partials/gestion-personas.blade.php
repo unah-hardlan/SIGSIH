@@ -158,11 +158,11 @@
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 items-center mt-2 sm:mt-0 sm:ml-auto">
                         <button @click="openAdd()"
-                            class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center">
+                            class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center text-sm">
                             Agregar persona
                         </button>
                         <a :href="`/admin/reportes-header?modulo=Gestion de Personas&fecha={{ now()->format('d-M-Y') }}&q=${encodeURIComponent(searchPersonas||'')}&sort=nombre&direction=asc&tipo=${encodeURIComponent(filtroTipoPersona||'')}&genero=${encodeURIComponent(filtroGenero||'')}`" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center">
+                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center text-sm">
                             <i class="fas fa-file-alt"></i> Generar Reporte
                         </a>
                     </div>

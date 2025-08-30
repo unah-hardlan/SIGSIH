@@ -30,7 +30,7 @@
                 </select>
             </div>
             <button @click="isServicioModalOpen = true"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular    transition whitespace-nowrap text-sm">
                 Nuevo servicio
             </button>
         </div>

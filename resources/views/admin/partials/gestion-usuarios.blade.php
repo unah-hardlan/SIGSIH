@@ -15,12 +15,12 @@
                 <button @click="openCreate()"
                     class="duration-200 ease-in-out w-full sm:w-auto h-10 sm:h-8 inline-flex items-center justify-center gap-1.5 px-4 rounded-md bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-green-500">
                     <i class="fas fa-user-plus text-[11px]"></i>
-                    <span class="nunito-regular">Agregar usuario</span>
+                    <span class="nunito-regular text-sm">Agregar usuario</span>
                 </button>
                 <button @click="openReporte()"
                     class="duration-200 ease-in-out w-full sm:w-auto h-10 sm:h-8 inline-flex items-center justify-center gap-1.5 px-4 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs tracking-wide transition focus:outline-none focus:ring-1 focus:ring-blue-500">
                     <i class="fas fa-file-alt text-[11px]"></i>
-                    <span class="nunito-regular">Generar Reporte</span>
+                    <span class="nunito-regular text-sm">Generar Reporte</span>
                 </button>
             </div>
         </x-slot>

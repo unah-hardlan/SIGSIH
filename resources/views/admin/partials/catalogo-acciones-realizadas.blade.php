@@ -27,7 +27,7 @@
                 </select>
             </div>
             <button @click="isAccionModalOpen = true; nuevaAccion = {nombre:'', descripcion:''}"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 <i class="fas fa-plus mr-2"></i>Nueva acción
             </button>
         </div>

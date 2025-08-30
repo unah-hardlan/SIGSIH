@@ -49,7 +49,7 @@
                     </div>
 
                     <button
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2 w-full sm:w-auto">
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 w-full sm:w-auto text-sm">
                         <i class="fas fa-filter"></i>
                         Filtrar
                     </button>
@@ -58,9 +58,9 @@
             <x-slot name="boton">
                 <div class="flex flex-col gap-2 items-stretch">
                     <button @click="isFacturaModalOpen = true"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">Nueva Factura</button>
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva Factura</button>
                     <a href="/admin/reportes-header?modulo=Facturas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>
