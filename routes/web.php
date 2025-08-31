@@ -116,7 +116,7 @@ Route::prefix('admin')
             }
 
             $view = match ($moduloLower) {
-                'configuracion de accesos', 'configuracion-acceso' => 'admin.reporte-configuracion-accesos',
+                'configuracion de accesos', 'configuracion-acceso' => null,
                 'empresas' => 'admin.reporte-empresas',
                 'solicitudes' => 'admin.reporte-solicitudes',
                 'tickets' => 'admin.reporte-tickets',
@@ -130,6 +130,9 @@ Route::prefix('admin')
                 'proyectos' => 'admin.reporte-proyectos',
                 default => 'admin.reporte-generico',
             };
+            if ($moduloLower === 'configuracion de accesos' || $moduloLower === 'configuracion-acceso') {
+                return app(\App\Http\Controllers\ConfiguracionAccesoReporteController::class)->reporte($request);
+            }
             if ($moduloLower === 'gestion de personas') {
                 return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
             }

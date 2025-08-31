@@ -44,11 +44,12 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <a href="/admin/reportes-header?modulo=configuracion-acceso&fecha={{ now()->format('d-M-Y') }}"
-                    target="_blank"
-                    class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                    <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
-                </a>
+                <div class="w-full flex justify-end gap-2">
+                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','gestion'); const sel=$store.access.selectedRoleId; if(sel){ p.set('rol_id', sel); const rr=$store.access.roles.find(r=>r.id===sel); if(rr?.rol) p.set('rol', rr.rol); } const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()"
+                        class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                    </button>
+                </div>
             </x-slot>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
                 <!-- Roles -->
@@ -214,7 +215,12 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="$store.roles.openCreate()" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap"><span class="nunito-regular">Agregar rol</span></button>
+                <div class="w-full flex justify-end gap-2">
+                    <button @click="$store.roles.openCreate()" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap"><span class="nunito-regular">Agregar rol</span></button>
+                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','roles'); if($store.roles.q) p.set('q',$store.roles.q); if($store.roles.sort){ p.set('sort',$store.roles.sort); p.set('direction',$store.roles.direction||'asc'); } const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                    </button>
+                </div>
             </x-slot>
             <table class="min-w-full text-sm">
                 <thead>
@@ -290,10 +296,15 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="$store.objetos.openCreate()"
-                    class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
-                    <span class="nunito-regular">Agregar objeto</span>
-                </button>
+                <div class="w-full flex justify-end gap-2">
+                    <button @click="$store.objetos.openCreate()"
+                        class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                        <span class="nunito-regular">Agregar objeto</span>
+                    </button>
+                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','objetos'); if($store.objetos.q) p.set('q',$store.objetos.q); if($store.objetos.tipoId) p.set('id_tipo_objetos_fk',$store.objetos.tipoId); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                    </button>
+                </div>
             </x-slot>
             <div class="overflow-auto">
                 <table class="min-w-full text-sm">
@@ -405,9 +416,14 @@
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <button @click="$store.assignRoles.openAssign(null)" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
-                    <span class="nunito-regular">Asignar Rol</span>
-                </button>
+                <div class="w-full flex justify-end gap-2">
+                    <button @click="$store.assignRoles.openAssign(null)" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                        <span class="nunito-regular">Asignar Rol</span>
+                    </button>
+                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','asignar'); if($store.assignRoles.q) p.set('q',$store.assignRoles.q); if($store.assignRoles.filterRol) p.set('id_rol_fk',$store.assignRoles.filterRol); if($store.assignRoles.sort){ p.set('sort',$store.assignRoles.sort); p.set('direction',$store.assignRoles.direction||'asc'); } p.set('all','1'); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                        <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                    </button>
+                </div>
             </x-slot>
             <table class="min-w-full text-sm">
                 <thead>
