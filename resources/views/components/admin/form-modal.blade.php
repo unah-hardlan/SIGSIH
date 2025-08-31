@@ -25,7 +25,7 @@
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
         </div>
         
-        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-4 overflow-y-auto p-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
+        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-1 overflow-y-auto p-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
             {{ $slot }}
 
             <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 border-t p-4"> 
