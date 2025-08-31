@@ -9,7 +9,7 @@
     class="bg-white rounded-lg shadow p-6"
 >
     <div class="mb-6">
-        <h2 class="text-2xl text-gray-800 nunito-bold">Catálogo de Tipo de Visita</h2>
+        <h2 class="text-2xl text-gray-800 nunito-bold">Tipo de Visita</h2>
     </div>
     
     <div class="flex flex-col sm:flex-row justify-between gap-4 mb-6">

@@ -10,7 +10,7 @@
     estadoToDelete: null,
     searchEstadoSolicitud: '' 
 }">
-    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Estados de Solicitud'">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Estados de Solicitud'">
         <x-slot name="filtros">
             <div class="flex flex-wrap gap-2 items-center">
                 <input type="text" x-model="searchEstadoSolicitud" placeholder="Buscar estado..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />

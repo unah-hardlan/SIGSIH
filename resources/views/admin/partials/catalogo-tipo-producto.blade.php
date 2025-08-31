@@ -8,10 +8,10 @@
     }">
     <div class="bg-white rounded-lg shadow p-4">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Tipo de Producto</h2>
+            <h2 class="text-2xl text-gray-800 nunito-bold lg:whitespace-nowrap lg:block">Tipo de producto</h2>
             <div class="w-full flex justify-center sm:justify-end mt-2 sm:mt-0">
                 <button @click="isTipoModalOpen = true"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular w-11/12 sm:w-auto text-sm">Nuevo tipo
+                    class="bg-green-600 hover:bg-green-700 text-white sm:p-2 lg:px-4 lg:py-2 lg:text-base rounded-lg nunito-regular w-11/12 sm:w-auto text-sm transition-colors duration-200 ease-in-out">Nuevo tipo
                 </button>
             </div>
         </div>

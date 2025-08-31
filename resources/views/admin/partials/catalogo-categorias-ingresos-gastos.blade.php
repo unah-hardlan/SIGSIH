@@ -6,7 +6,7 @@
     categoriaToDelete: null,
     searchCategoria: '' 
 }">
-    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Categorías de Ingresos y Gastos'">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Categorías de Ingresos y Gastos'">
         <x-slot name="filtros">
             <div class="flex flex-wrap gap-2 items-center">
                 <input type="text" x-model="searchCategoria" placeholder="Buscar categoría..." class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />

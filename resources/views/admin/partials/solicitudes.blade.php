@@ -122,7 +122,7 @@
     <div x-show="tab==='contactos'" class="overflow-x-auto mt-6">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Contactos</h2>
+                <h2 class="text-2xl text-gray-800 nunito-bold">Lista de Contactos</h2>
             </x-slot>
             <x-slot name="filtros">
                 <input type="text" placeholder="Buscar contacto..."
