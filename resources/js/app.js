@@ -5,6 +5,8 @@ import "./perfil";
 import "./dashboard";
 import "./seguridad";
 import "./objetos";
+import "./roles";
+import "./asignar-roles";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
