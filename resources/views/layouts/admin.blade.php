@@ -70,7 +70,7 @@
     @livewireStyles
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col" 
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" 
       x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
@@ -92,15 +92,15 @@
 
         @include('partials.admin-sidebar')
 
-        <main class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white text-gray-900">
+        <main class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
             @include('partials.admin-header')
             @hasSection('page-header')
-            <div class="bg-white p-4 rounded shadow mb-6">
+            <div class="bg-white dark:bg-gray-900 p-4 rounded shadow mb-6">
                 @yield('page-header')
             </div>
             @endif
 
-            <div class="bg-white p-3 sm:p-6 rounded-lg shadow">
+            <div class="bg-white dark:bg-gray-800 p-3 sm:p-6 rounded-lg shadow">
                 @if(isset($partialView))
                 @include($partialView)
                 @else
@@ -109,6 +109,35 @@
             </div>
         </main>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeSwitch = document.getElementById('theme-switch');
+            const html = document.documentElement;
+
+            // Verificar tema guardado
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                html.classList.add('dark');
+                themeSwitch.checked = true;
+            } else {
+                html.classList.remove('dark');
+                themeSwitch.checked = false;
+            }
+
+            // Escuchar cambios
+            themeSwitch.addEventListener('change', function() {
+                if (this.checked) {
+                    html.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        });
+    </script>
+
     @livewireScripts
 </body>
 
