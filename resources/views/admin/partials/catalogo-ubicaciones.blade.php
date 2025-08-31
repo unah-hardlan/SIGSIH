@@ -5,7 +5,7 @@
     isDireccionModalOpen: false 
 }">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 nunito-bold mb-2">Gestión de Ubicaciones de Agencias</h1>
+        <h1 class="text-3xl font-bold text-gray-900 nunito-bold mb-2">Ubicaciones de Agencias</h1>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
