@@ -77,18 +77,27 @@
             {id: 3, nombre: 'Sucursal Sur'}
         ]
     }" @include('partials.persist-tab', ['tabKey' => 'admin-gestion-empresas-tab'])
-    @keydown.window.escape="isEmpresaModalOpen = false; isEmpresaRegistradaModalOpen = false; isOficinaModalOpen = false; isDeleteEmpresaModalOpen = false; isDeleteEmpresaRegistradaModalOpen = false; isDeleteOficinaModalOpen = false">
+    @keydown.window.escape="isEmpresaModalOpen = false; isEmpresaRegistradaModalOpen = false; isOficinaModalOpen = false; isDeleteEmpresaModalOpen = false; isDeleteEmpresaRegistradaModalOpen = false; isDeleteOficinaModalOpen = false"
+    @confirm-delete.window="
+        if (isDeleteEmpresaModalOpen) {
+            deleteEmpresa();
+        } else if (isDeleteEmpresaRegistradaModalOpen) {
+            deleteEmpresaRegistrada();
+        } else if (isDeleteOficinaModalOpen) {
+            deleteOficina();
+        }
+    ">
 
     <!-- Tabs -->
     <ul class="flex border-b nunito-bold mb-6 flex-wrap gap-2">
         <li @click="tab='empresas'"
-            :class="tab==='empresas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 cursor-pointer'"
+            :class="tab==='empresas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="pb-2 mr-4 nunito-bold">Empresas</li>
         <li @click="tab='form-nombre'"
-            :class="tab==='form-nombre' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 cursor-pointer'"
+            :class="tab==='form-nombre' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="pb-2 mr-4 nunito-bold">Empresas Registradas</li>
         <li @click="tab='oficinas'"
-            :class="tab==='oficinas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 cursor-pointer'"
+            :class="tab==='oficinas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="pb-2 nunito-bold">Oficinas Empresa</li>
     </ul>
 
@@ -347,78 +356,30 @@
     </x-admin.form-modal>
 
     <!-- Confirmation Modals -->
-    <div x-show="isDeleteEmpresaModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-         @click.away="isDeleteEmpresaModalOpen = false"
-         style="display: none;">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-gray-700 nunito-bold">Eliminar Empresa Cliente</h3>
-                <button @click="isDeleteEmpresaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="mt-4">
-                <p class="nunito-regular">¿Estás seguro de que deseas eliminar la empresa cliente <strong class="nunito-regular" x-text="empresaToDelete ? empresaToDelete.nombre_empresa : ''"></strong>? Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button type="button" @click="isDeleteEmpresaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2 nunito-regular">Cancelar</button>
-                <button type="submit" @click="deleteEmpresa()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 nunito-regular">Eliminar</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de confirmación para eliminar empresa cliente -->
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteEmpresaModalOpen"
+        title="Eliminar Empresa Cliente"
+        item-to-delete="empresaToDelete"
+        item-name-property="nombre_empresa"
+        message="¿Estás seguro de que deseas eliminar la empresa cliente"
+    />
 
-    <div x-show="isDeleteEmpresaRegistradaModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-         @click.away="isDeleteEmpresaRegistradaModalOpen = false"
-         style="display: none;">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-gray-700 nunito-bold">Eliminar Empresa Registrada</h3>
-                <button @click="isDeleteEmpresaRegistradaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="mt-4">
-                <p class="nunito-regular">¿Estás seguro de que deseas eliminar la empresa registrada <strong class="nunito-regular" x-text="empresaRegistradaToDelete ? empresaRegistradaToDelete.nombre_empresa : ''"></strong>? Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button type="button" @click="isDeleteEmpresaRegistradaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2 nunito-regular">Cancelar</button>
-                <button type="submit" @click="deleteEmpresaRegistrada()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 nunito-regular">Eliminar</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de confirmación para eliminar empresa registrada -->
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteEmpresaRegistradaModalOpen"
+        title="Eliminar Empresa Registrada"
+        item-to-delete="empresaRegistradaToDelete"
+        item-name-property="nombre_empresa"
+        message="¿Estás seguro de que deseas eliminar la empresa registrada"
+    />
 
-    <div x-show="isDeleteOficinaModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-         @click.away="isDeleteOficinaModalOpen = false"
-         style="display: none;">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-gray-700 nunito-bold">Eliminar Oficina</h3>
-                <button @click="isDeleteOficinaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="mt-4">
-                <p class="nunito-regular">¿Estás seguro de que deseas eliminar la oficina <strong class="nunito-regular" x-text="oficinaToDelete ? oficinaToDelete.nombre : ''"></strong>? Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button type="button" @click="isDeleteOficinaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2 nunito-regular">Cancelar</button>
-                <button type="submit" @click="deleteOficina()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 nunito-regular">Eliminar</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de confirmación para eliminar oficina -->
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteOficinaModalOpen"
+        title="Eliminar Oficina"
+        item-to-delete="oficinaToDelete"
+        item-name-property="nombre"
+        message="¿Estás seguro de que deseas eliminar la oficina"
+    />
 </div>
