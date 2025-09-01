@@ -20,7 +20,13 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $result = $this->authService->attempt($data['usuario'], $data['contrasena']);
+        // Normalizar: mayúsculas y trim, rechazar espacios
+        $usuario = strtoupper(trim($data['usuario']));
+        $password = $data['contrasena'];
+        if (preg_match('/\s/', $usuario) || preg_match('/\s/', $password)) {
+            return response()->json(['error' => 'Usuario/contraseña inválidos'], 401);
+        }
+        $result = $this->authService->attempt($usuario, $password);
         if (isset($result['error'])) {
             return response()->json(['error' => $result['error']], $result['code']);
         }
@@ -64,8 +70,10 @@ class AuthController extends Controller
             }
         }
 
-        $usuario = new Usuario();
+    $usuario = new Usuario();
         $usuario->fill($data);
+    // Forzar usuario en mayúsculas al persistir
+    $usuario->usuario = strtoupper(trim($usuario->usuario));
         $usuario->contrasena = Hash::make($data['contrasena']);
     // Forzar primer_ingreso = 1 (nuevo usuario debe completar perfil)
     $usuario->primer_ingreso = 1;

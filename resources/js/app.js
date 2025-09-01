@@ -5,6 +5,8 @@ import "./perfil";
 import "./dashboard";
 import "./seguridad";
 import "./objetos";
+import "./roles";
+import "./asignar-roles";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -203,7 +205,7 @@ document.addEventListener("alpine:init", () => {
         loadedViews: {},
         currentView: null,
 
-        async navigate(url, viewName) {
+    async navigate(url, viewName) {
             // Si el usuario debe completar su perfil, forzar navegación a 'perfil'
             try {
                 const store = window.Alpine?.store('perfil');
@@ -212,16 +214,25 @@ document.addEventListener("alpine:init", () => {
                     this.isTransitioning = true;
                     this.showLoader();
                     try {
-                        const res = await fetch(`/load-view?view=perfil`);
-                        if (res.ok) {
-                            const html = await res.text();
-                            this.loadedViews['perfil'] = html;
-                            this.setContent(html);
-                            this.updateState('/admin/perfil', 'perfil');
-                        } else {
-                            // Fallback duro si el endpoint devuelve 403/otros
-                            window.location.assign('/admin/perfil');
+                        const res = await fetch(`/load-view?view=perfil`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html'
+                            },
+                            credentials: 'same-origin'
+                        });
+                        if (res.status === 401 || res.status === 419 || res.redirected || (res.url && res.url.includes('/login'))) {
+                            window.location.assign('/login');
+                            return;
                         }
+                        if (!res.ok) {
+                            window.location.assign('/admin/perfil');
+                            return;
+                        }
+                        const html = await res.text();
+                        this.loadedViews['perfil'] = html;
+                        this.setContent(html);
+                        this.updateState('/admin/perfil', 'perfil');
                     } catch (_) {
                         window.location.assign('/admin/perfil');
                     } finally {
@@ -229,9 +240,7 @@ document.addEventListener("alpine:init", () => {
                     }
                     return;
                 }
-            } catch(_) {}
-            // Prevenir múltiples navegaciones simultáneas
-            if (this.isTransitioning) return;
+            } catch (_) {}
 
             // Si ya estamos en esta vista, no hacer nada
             if (this.currentView === viewName) return;
@@ -245,26 +254,32 @@ document.addEventListener("alpine:init", () => {
 
             this.isTransitioning = true;
             this.showLoader();
-
             try {
-                const response = await fetch(`/load-view?view=${viewName}`);
-                if (!response.ok) {
-                    // Si el backend bloquea por perfil incompleto, redirigir a perfil
-                    if (response.status === 403) {
-                        return this.navigate('/admin/perfil', 'perfil');
-                    }
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const res = await fetch(`/load-view?view=${viewName}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    },
+                    credentials: 'same-origin'
+                });
+                if (res.status === 401 || res.status === 419 || res.redirected || (res.url && res.url.includes('/login'))) {
+                    window.location.assign('/login');
+                    return;
                 }
-
-                const html = await response.text();
+                if (!res.ok) {
+                    if (res.status === 403) {
+                        await this.navigate('/admin/perfil', 'perfil');
+                        return;
+                    }
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                const html = await res.text();
                 this.loadedViews[viewName] = html;
                 this.setContent(html);
                 this.updateState(url, viewName);
             } catch (error) {
-                console.error("Error loading view:", error);
-                this.showError(
-                    "Error al cargar la vista. Por favor, intenta de nuevo."
-                );
+                console.error('Error loading view:', error);
+                this.showError('Error al cargar la vista. Por favor, intenta de nuevo.');
             } finally {
                 this.isTransitioning = false;
             }
