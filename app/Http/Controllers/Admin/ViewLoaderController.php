@@ -85,7 +85,7 @@ class ViewLoaderController extends Controller
             $headerHtml = view('partials.admin-header')->render();
             $contentHtml = view($partialView)->render();
 
-            return $headerHtml . '<div class="bg-white p-6 rounded-lg shadow">' . $contentHtml . '</div>';
+            return $headerHtml . '<div class="p-6 rounded-lg shadow">' . $contentHtml . '</div>';
         }
 
         // Si no existe vista parcial, intentar cargar la vista completa y extraer contenido
