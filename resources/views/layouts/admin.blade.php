@@ -100,7 +100,7 @@
             </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-800 p-3 sm:p-6 rounded-lg shadow">
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg shadow">
                 @if(isset($partialView))
                 @include($partialView)
                 @else

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
-    <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-800">
+    <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900">
     <!-- Botón colapsar sidebar -->
     <button @click="sidebarOpen = !sidebarOpen"
         class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
