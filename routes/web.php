@@ -52,6 +52,10 @@ Route::middleware(['auth.jwt.web'])->group(function () {
     Route::get('/api-web/servicios-realizados', [\App\Http\Controllers\ServicioRealizadoController::class, 'index']);
     Route::get('/api-web/acciones-realizadas', [\App\Http\Controllers\AccionRealizadaController::class, 'index']);
     Route::get('/api-web/ordenes-servicio', [\App\Http\Controllers\OrdenServicioController::class, 'index']);
+
+    // System settings (logo/name)
+    Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show']);
+    Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update']);
 });
 
 // Partial view loading for SPA (protegido)

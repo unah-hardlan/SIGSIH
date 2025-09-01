@@ -1,6 +1,6 @@
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
     <div class="flex items-center gap-4">
-        <img src="/images/logo.png" alt="Logo" class="w-auto" style="height: 8em;">
+    <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo w-auto" style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
         <div class="text-xs text-gray-700 leading-tight">
             <div class="nunito-regular">Col. Centro América Oeste, Zona 4, Bloque G, Casa 17</div>
             <div class="nunito-regular">Comayagüela, M.D.C. Francisco Morazán</div>

@@ -24,7 +24,7 @@
 
     <!-- Encabezado -->
     <div class="flex flex-row items-center border-b-2 border-blue-900 pb-2 mb-6 w-full">
-        <img src="{{ asset('images/LOGO.png') }}" alt="Logo" class="h-20 mb-2 mr-4">
+    <img src="{{ $appLogoUrl ?? asset('images/LOGO.png') }}" alt="Logo" class="app-logo mb-2 mr-4" style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
         <div class="flex-1 flex justify-center">
             <div class="text-xl font-bold text-blue-900 uppercase tracking-wider text-center">Reporte de Servicio
             </div>
