@@ -404,38 +404,42 @@
         <!-- Modal Asignar Rol -->
         <x-admin.form-modal modalName="isModalOpen" title="Asignar Rol a Usuario" submitLabel="Asignar Rol"
             maxWidth="max-w-md">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Usuario</label>
-                <select class="w-full border rounded px-3 py-2">
-                    <option>juan.perez</option>
-                    <option>ana.lopez</option>
-                    <option>admin</option>
-                </select>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Rol</label>
-                <select class="w-full border rounded px-3 py-2">
-                    <option>Administrador</option>
-                    <option>Supervisor</option>
-                    <option>Cliente</option>
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Usuario</label>
+                    <select class="w-full border rounded px-3 py-2">
+                        <option>juan.perez</option>
+                        <option>ana.lopez</option>
+                        <option>admin</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Rol</label>
+                    <select class="w-full border rounded px-3 py-2">
+                        <option>Administrador</option>
+                        <option>Supervisor</option>
+                        <option>Cliente</option>
+                    </select>
+                </div>
             </div>
         </x-admin.form-modal>
         <!-- Modal Editar Asignación -->
         <x-admin.edit-modal modalName="isEditRoleModalOpen" title="Editar Asignación" itemToEdit="roleToEdit"
             maxWidth="max-w-md">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Usuario</label>
-                <input type="text" class="w-full border rounded px-3 py-2 bg-gray-100" :value="roleToEdit?.usuario"
-                    readonly />
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Rol</label>
-                <select class="w-full border rounded px-3 py-2" x-model="roleToEdit.rol">
-                    <option>Administrador</option>
-                    <option>Supervisor</option>
-                    <option>Cliente</option>
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Usuario</label>
+                    <input type="text" class="w-full border rounded px-3 py-2 bg-gray-100" :value="roleToEdit?.usuario"
+                        readonly />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Rol</label>
+                    <select class="w-full border rounded px-3 py-2" x-model="roleToEdit.rol">
+                        <option>Administrador</option>
+                        <option>Supervisor</option>
+                        <option>Cliente</option>
+                    </select>
+                </div>
             </div>
         </x-admin.edit-modal>
         <x-admin.confirmation-modal modalName="isDeleteRoleModalOpen" itemToDelete="roleToDelete"

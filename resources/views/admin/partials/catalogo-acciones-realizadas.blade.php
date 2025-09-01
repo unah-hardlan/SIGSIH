@@ -65,70 +65,39 @@
         </table>
     </div>
 
-    <!-- MODAL AGREGAR ACCIÓN -->
-    <div x-show="isAccionModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-        <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-            <h2 class="text-xl font-bold mb-4">Agregar Acción Realizada</h2>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" x-model="nuevaAccion.nombre" class="w-full border rounded px-3 py-2"
-                    placeholder="Ej: Revisión">
+    <!-- Modal Agregar Acción -->
+    <x-admin.form-modal modalName="isAccionModalOpen" title="Agregar Acción Realizada" submitLabel="Guardar Acción"
+        maxWidth="max-w-md">
+        <div class="space-y-4">
+            <div>
+                <label for="nombre_accion" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input type="text" id="nombre_accion" name="nombre_accion" x-model="nuevaAccion.nombre"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Ej: Revisión">
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea x-model="nuevaAccion.descripcion" class="w-full border rounded px-3 py-2"
-                    placeholder="Describe la acción..."></textarea>
+            <div>
+                <label for="descripcion_accion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea id="descripcion_accion" name="descripcion_accion" x-model="nuevaAccion.descripcion" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Describe la acción..."></textarea>
             </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button @click="isAccionModalOpen = false; nuevaAccion = {nombre:'', descripcion:''}"
-                    class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                <button @click="
-                    if(nuevaAccion.nombre && nuevaAccion.descripcion){
-                        acciones.push({
-                            id_accion: 'AC-' + String(acciones.length+1).padStart(3,'0'),
-                            nombre: nuevaAccion.nombre,
-                            descripcion: nuevaAccion.descripcion
-                        });
-                        isAccionModalOpen = false;
-                        nuevaAccion = {nombre:'', descripcion:''};
-                    }
-                " class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Guardar Acción</button>
-            </div>
-            <button @click="isAccionModalOpen = false"
-                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
         </div>
-    </div>
+    </x-admin.form-modal>
 
-    <!-- MODAL EDITAR ACCIÓN -->
-    <div x-show="isEditAccionModalOpen"
-        class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-        <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-            <h2 class="text-xl font-bold mb-4">Editar Acción Realizada</h2>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" x-model="accionToEdit.nombre" class="w-full border rounded px-3 py-2">
+    <!-- Modal Editar Acción -->
+    <x-admin.edit-modal modalName="isEditAccionModalOpen" title="Editar Acción Realizada" itemToEdit="accionToEdit"
+        maxWidth="max-w-md">
+        <div class="space-y-4">
+            <div>
+                <label for="edit_nombre_accion" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input type="text" id="edit_nombre_accion" name="edit_nombre_accion" x-model="accionToEdit.nombre"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" >
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea x-model="accionToEdit.descripcion" class="w-full border rounded px-3 py-2"></textarea>
+            <div>
+                <label for="edit_descripcion_accion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea id="edit_descripcion_accion" name="edit_descripcion_accion" x-model="accionToEdit.descripcion" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular"></textarea>
             </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button @click="isEditAccionModalOpen = false" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                <button @click="
-                    let i = acciones.findIndex(a => a.id_accion === accionToEdit.id_accion);
-                    if(i !== -1){
-                        acciones[i].nombre = accionToEdit.nombre;
-                        acciones[i].descripcion = accionToEdit.descripcion;
-                    }
-                    isEditAccionModalOpen = false;
-                " class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar Cambios</button>
-            </div>
-            <button @click="isEditAccionModalOpen = false"
-                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
         </div>
-
-
-    </div>
+    </x-admin.edit-modal>
     <!-- MODAL ELIMINAR ACCIÓN REALIZADA -->
     <x-admin.confirmation-modal 
         modalName="isDeleteAccionModalOpen"

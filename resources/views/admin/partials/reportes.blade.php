@@ -84,17 +84,17 @@
     <x-admin.form-modal modalName="isModalOpen" title="Nuevo Reporte" submitLabel="Guardar Reporte"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div class="col-span-1">
                 <label for="id_reporte" class="block text-sm font-medium text-gray-700">ID Reporte</label>
                 <input type="text" id="id_reporte" name="id_reporte"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="fecha_reporte" class="block text-sm font-medium text-gray-700">Fecha de Reporte</label>
                 <input type="date" id="fecha_reporte" name="fecha_reporte"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="observaciones" class="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea id="observaciones" name="observaciones" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
@@ -138,7 +138,7 @@
                     :value="reporteToEdit?.fecha_reporte"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="edit_observaciones" class="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea id="edit_observaciones" name="edit_observaciones" rows="2"
                     :value="reporteToEdit?.observaciones"

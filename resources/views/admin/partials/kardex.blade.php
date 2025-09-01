@@ -70,9 +70,9 @@
                             <td class="py-2 px-4" x-text="movimiento.motivo"></td>
                             <td class="py-2 px-4" x-text="movimiento.id_tecnico_fk"></td>
                             <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditModalOpen = true; movimientoToEdit = {...movimiento}"
+                                <a href="#" @click="isEditModalOpen = true; movimientoToEdit = {id_kardex_pk: movimiento.id_kardex_pk, id_producto_fk: movimiento.id_producto_fk, id_tipo_movimiento_fk: movimiento.id_tipo_movimiento_fk, cantidad: movimiento.cantidad, fecha_movimiento: movimiento.fecha_movimiento, motivo: movimiento.motivo, id_tecnico_fk: movimiento.id_tecnico_fk}; isModalOpen = false; isDeleteModalOpen = false;"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteModalOpen = true; movimientoToDelete = {...movimiento}"
+                                <a href="#" @click="isDeleteModalOpen = true; movimientoToDelete = {id_kardex_pk: movimiento.id_kardex_pk, id_producto_fk: movimiento.id_producto_fk}; isModalOpen = false; isEditModalOpen = false;"
                                     class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
@@ -83,69 +83,79 @@
     </x-admin.tabla-crud>
 
     <!-- Modal Nuevo Movimiento -->
-    <x-admin.form-modal modalName="isModalOpen" title="Nuevo Movimiento" submitLabel="Guardar" maxWidth="max-w-md">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">ID Producto</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="ID Producto" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Tipo Movimiento</label>
-            <select class="w-full border rounded px-3 py-2">
-                <option value="Entrada">Entrada</option>
-                <option value="Salida">Salida</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Cantidad</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="Cantidad" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Fecha Movimiento</label>
-            <input type="date" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Motivo</label>
-            <input type="text" class="w-full border rounded px-3 py-2" placeholder="Motivo" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">ID Técnico</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="ID Técnico" />
-        </div>
-    </x-admin.form-modal>
+    <template x-if="isModalOpen">
+        <x-admin.form-modal modalName="isModalOpen" title="Nuevo Movimiento" submitLabel="Guardar" maxWidth="max-w-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">ID Producto</label>
+                    <input type="number" class="w-full border rounded px-3 py-2" placeholder="ID Producto" />
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Tipo Movimiento</label>
+                    <select class="w-full border rounded px-3 py-2">
+                        <option value="Entrada">Entrada</option>
+                        <option value="Salida">Salida</option>
+                    </select>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Cantidad</label>
+                    <input type="number" class="w-full border rounded px-3 py-2" placeholder="Cantidad" />
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Fecha Movimiento</label>
+                    <input type="date" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium mb-1">Motivo</label>
+                    <input type="text" class="w-full border rounded px-3 py-2" placeholder="Motivo" />
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium mb-1">ID Técnico</label>
+                    <input type="number" class="w-full border rounded px-3 py-2" placeholder="ID Técnico" />
+                </div>
+            </div>
+        </x-admin.form-modal>
+    </template>
 
     <!-- Modal Editar Movimiento -->
-    <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Movimiento" itemToEdit="movimientoToEdit"
-        maxWidth="max-w-md">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">ID Producto</label>
-            <input type="number" x-model="movimientoToEdit.id_producto_fk" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Tipo Movimiento</label>
-            <select x-model="movimientoToEdit.id_tipo_movimiento_fk" class="w-full border rounded px-3 py-2">
-                <option value="Entrada">Entrada</option>
-                <option value="Salida">Salida</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Cantidad</label>
-            <input type="number" x-model="movimientoToEdit.cantidad" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Fecha Movimiento</label>
-            <input type="date" x-model="movimientoToEdit.fecha_movimiento" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Motivo</label>
-            <input type="text" x-model="movimientoToEdit.motivo" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">ID Técnico</label>
-            <input type="number" x-model="movimientoToEdit.id_tecnico_fk" class="w-full border rounded px-3 py-2" />
-        </div>
-    </x-admin.edit-modal>
+    <template x-if="isEditModalOpen">
+        <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Movimiento" itemToEdit="movimientoToEdit"
+            maxWidth="max-w-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">ID Producto</label>
+                    <input type="number" x-model="movimientoToEdit.id_producto_fk" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Tipo Movimiento</label>
+                    <select x-model="movimientoToEdit.id_tipo_movimiento_fk" class="w-full border rounded px-3 py-2">
+                        <option value="Entrada">Entrada</option>
+                        <option value="Salida">Salida</option>
+                    </select>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Cantidad</label>
+                    <input type="number" x-model="movimientoToEdit.cantidad" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Fecha Movimiento</label>
+                    <input type="date" x-model="movimientoToEdit.fecha_movimiento" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium mb-1">Motivo</label>
+                    <input type="text" x-model="movimientoToEdit.motivo" class="w-full border rounded px-3 py-2" />
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-medium mb-1">ID Técnico</label>
+                    <input type="number" x-model="movimientoToEdit.id_tecnico_fk" class="w-full border rounded px-3 py-2" />
+                </div>
+            </div>
+        </x-admin.edit-modal>
+    </template>
 
     <!-- Modal Eliminar Movimiento -->
-    <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="movimientoToDelete"
-        message="¿Seguro que deseas eliminar este movimiento?" />
+    <template x-if="isDeleteModalOpen">
+        <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="movimientoToDelete"
+            message="¿Seguro que deseas eliminar este movimiento?" />
+    </template>
 </div>

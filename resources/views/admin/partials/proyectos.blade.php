@@ -284,42 +284,42 @@
         submitLabel="Guardar Proyecto"
         maxWidth="max-w-4xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div class="col-span-1">
                 <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
                 <input type="text" id="nombre" name="nombre"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="fecha_inicio" class="block text-sm font-medium text-gray-700">Fecha Inicial del Proyecto</label>
                 <input type="date" id="fecha_inicio" name="fecha_inicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="fecha_estimada_fin" class="block text-sm font-medium text-gray-700">Fecha Estimada de Finalización</label>
                 <input type="date" id="fecha_estimada_fin" name="fecha_estimada_fin"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="fecha_fin" class="block text-sm font-medium text-gray-700">Fecha de Finalización</label>
                 <input type="date" id="fecha_fin" name="fecha_fin"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="descripcion" name="descripcion" rows="3"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="actividades" class="block text-sm font-medium text-gray-700">Actividades</label>
                 <input type="text" id="actividades" name="actividades"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="orden_servicio" class="block text-sm font-medium text-gray-700">Orden de Servicio</label>
                 <input type="text" id="orden_servicio" name="orden_servicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="estado_proyecto" class="block text-sm font-medium text-gray-700">Estado de Proyecto</label>
                 <select id="estado_proyecto" name="estado_proyecto"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -339,7 +339,7 @@
         itemToEdit="ingresoToEdit"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div class="col-span-1">
                 <label for="edit_ingreso_proyecto" class="block text-sm font-medium text-gray-700">Proyecto</label>
                 <select id="edit_ingreso_proyecto" name="edit_ingreso_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option :selected="ingresoToEdit.proyecto === 'Proyecto Alpha'">Proyecto Alpha</option>
@@ -347,7 +347,7 @@
                     <option :selected="ingresoToEdit.proyecto === 'Proyecto BAC'">Proyecto BAC</option>
                 </select>
             </div>
-            <div>
+            <div class="col-span-1">
                 <label for="edit_ingreso_nombre" class="block text-sm font-medium text-gray-700">Nombre del Ingreso</label>
                 <input type="text" id="edit_ingreso_nombre" name="edit_ingreso_nombre" :value="ingresoToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
@@ -359,13 +359,13 @@
                 <label for="edit_ingreso_monto" class="block text-sm font-medium text-gray-700">Monto</label>
                 <input type="number" id="edit_ingreso_monto" name="edit_ingreso_monto" :value="ingresoToEdit.monto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="edit_ingreso_categoria" class="block text-sm font-medium text-gray-700">Categoría</label>
                 <select id="edit_ingreso_categoria" name="edit_ingreso_categoria" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option :selected="ingresoToEdit.categoria === 'Salarios'">Salarios</option>
                 </select>
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="edit_ingreso_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="edit_ingreso_descripcion" name="edit_ingreso_descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" x-text="ingresoToEdit.descripcion"></textarea>
             </div>
@@ -399,14 +399,14 @@
                 <label for="edit_gasto_monto" class="block text-sm font-medium text-gray-700">Monto</label>
                 <input type="number" id="edit_gasto_monto" name="edit_gasto_monto" :value="gastoToEdit.monto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="edit_gasto_categoria" class="block text-sm font-medium text-gray-700">Categoría</label>
                 <select id="edit_gasto_categoria" name="edit_gasto_categoria" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option :selected="gastoToEdit.categoria === 'Alquiler'">Alquiler</option>
                     <option :selected="gastoToEdit.categoria === 'Licencias'">Licencias</option>
                 </select>
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="edit_gasto_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="edit_gasto_descripcion" name="edit_gasto_descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" x-text="gastoToEdit.descripcion"></textarea>
             </div>
@@ -440,13 +440,13 @@
                 <label for="ingreso_monto" class="block text-sm font-medium text-gray-700">Monto</label>
                 <input type="number" id="ingreso_monto" name="ingreso_monto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="ingreso_categoria" class="block text-sm font-medium text-gray-700">Categoría</label>
                 <select id="ingreso_categoria" name="ingreso_categoria" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option>Salarios</option>
                 </select>
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="ingreso_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="ingreso_descripcion" name="ingreso_descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
@@ -480,14 +480,14 @@
                 <label for="gasto_monto" class="block text-sm font-medium text-gray-700">Monto</label>
                 <input type="number" id="gasto_monto" name="gasto_monto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="gasto_categoria" class="block text-sm font-medium text-gray-700">Categoría</label>
                 <select id="gasto_categoria" name="gasto_categoria" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option>Alquiler</option>
                     <option>Licencias</option>
                 </select>
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="gasto_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="gasto_descripcion" name="gasto_descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
@@ -539,7 +539,7 @@
                 <input type="date" id="edit_fecha_fin" name="edit_fecha_fin" :value="projectToEdit.fecha_fin"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 md:col-span-2">
                 <label for="edit_descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
                 <textarea id="edit_descripcion" name="edit_descripcion" rows="3" x-text="projectToEdit.descripcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>

@@ -1,9 +1,9 @@
 <div x-data="{
-        isModalOpen: false,
-        isEditModalOpen: false,
-        productoToEdit: {id: '', nombre: '', categoria: '', precio: '', stock: ''},
-        isDeleteModalOpen: false,
-        productoToDelete: {id: '', nombre: ''},
+    isModalOpen: false,
+    isEditModalOpen: false,
+    productoToEdit: {id: '', nombre: '', categoria: '', precio: '', stock: ''},
+    isDeleteModalOpen: false,
+    productoToDelete: {id: '', nombre: ''},
         searchProducto: '',
         searchCategoria: '',
         searchStock: ''
@@ -74,9 +74,9 @@
                             <td class="py-2 px-4">L.<span x-text="producto.precio.toFixed(2)"></span></td>
                             <td class="py-2 px-4" x-text="producto.stock"></td>
                             <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditModalOpen = true; productoToEdit = {...producto}"
+                                    <a href="#" @click="isEditModalOpen = true; productoToEdit = {id: producto.id, nombre: producto.nombre, categoria: producto.categoria, precio: producto.precio, stock: producto.stock}; isModalOpen = false; isDeleteModalOpen = false;"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteModalOpen = true; productoToDelete = {...producto}"
+                                    <a href="#" @click="isDeleteModalOpen = true; productoToDelete = {id: producto.id, nombre: producto.nombre}; isModalOpen = false; isEditModalOpen = false;"
                                     class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
@@ -87,63 +87,71 @@
     </x-admin.tabla-crud>
 
     <!-- Modal Nuevo Producto -->
-    <x-admin.form-modal modalName="isModalOpen" title="Nuevo Producto" submitLabel="Guardar" maxWidth="max-w-md">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nombre" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Categoría</label>
-            <select class="w-full border rounded px-3 py-2">
-                <option>Computadoras</option>
-                <option>Accesorios</option>
-                <option>Redes</option>
-                <option>Impresoras</option>
-                <option>Software</option>
-                <option>Componentes</option>
-                <option>Licencias</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Precio</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="Precio" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Stock</label>
-            <input type="number" class="w-full border rounded px-3 py-2" placeholder="Stock" />
-        </div>
-    </x-admin.form-modal>
+    <template x-if="isModalOpen">
+        <x-admin.form-modal modalName="isModalOpen" title="Nuevo Producto" submitLabel="Guardar" maxWidth="max-w-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Nombre</label>
+                    <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nombre" />
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Categoría</label>
+                    <select class="w-full border rounded px-3 py-2">
+                        <option>Computadoras</option>
+                        <option>Accesorios</option>
+                        <option>Redes</option>
+                        <option>Impresoras</option>
+                        <option>Software</option>
+                        <option>Componentes</option>
+                        <option>Licencias</option>
+                    </select>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Precio</label>
+                    <input type="number" class="w-full border rounded px-3 py-2" placeholder="Precio" />
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium mb-1">Stock</label>
+                    <input type="number" class="w-full border rounded px-3 py-2" placeholder="Stock" />
+                </div>
+            </div>
+        </x-admin.form-modal>
+    </template>
 
     <!-- Modal Editar Producto -->
-    <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Producto" itemToEdit="productoToEdit"
-        maxWidth="max-w-md">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input type="text" x-model="productoToEdit.nombre" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Categoría</label>
-            <select x-model="productoToEdit.categoria" class="w-full border rounded px-3 py-2">
-                <option>Computadoras</option>
-                <option>Accesorios</option>
-                <option>Redes</option>
-                <option>Impresoras</option>
-                <option>Software</option>
-                <option>Componentes</option>
-                <option>Licencias</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Precio</label>
-            <input type="number" x-model="productoToEdit.precio" class="w-full border rounded px-3 py-2" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Stock</label>
-            <input type="number" x-model="productoToEdit.stock" class="w-full border rounded px-3 py-2" />
-        </div>
-    </x-admin.edit-modal>
+    <template x-if="isEditModalOpen">
+        <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Producto" itemToEdit="productoToEdit"
+            maxWidth="max-w-md">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Nombre</label>
+                <input type="text" x-model="productoToEdit.nombre" class="w-full border rounded px-3 py-2" />
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Categoría</label>
+                <select x-model="productoToEdit.categoria" class="w-full border rounded px-3 py-2">
+                    <option>Computadoras</option>
+                    <option>Accesorios</option>
+                    <option>Redes</option>
+                    <option>Impresoras</option>
+                    <option>Software</option>
+                    <option>Componentes</option>
+                    <option>Licencias</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Precio</label>
+                <input type="number" x-model="productoToEdit.precio" class="w-full border rounded px-3 py-2" />
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Stock</label>
+                <input type="number" x-model="productoToEdit.stock" class="w-full border rounded px-3 py-2" />
+            </div>
+        </x-admin.edit-modal>
+    </template>
 
     <!-- Modal Eliminar Producto -->
-    <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="productoToDelete"
-        message="¿Seguro que deseas eliminar este producto?" />
+    <template x-if="isDeleteModalOpen">
+        <x-admin.confirmation-modal modalName="isDeleteModalOpen" itemToDelete="productoToDelete"
+            message="¿Seguro que deseas eliminar este producto?" />
+    </template>
 </div>

@@ -251,43 +251,45 @@
             <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
             <h2 class="text-xl font-bold mb-4" x-text="empresaToEdit ? 'Editar Empresa' : 'Agregar Empresa'"></h2>
             <form @submit.prevent="isEmpresaModalOpen = false">
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Empresa Registrada <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" required>
-                        <option value="">Seleccionar empresa registrada...</option>
-                        <template x-for="empresa in empresasRegistradas" :key="empresa.id">
-                            <option :value="empresa.id" x-text="empresa.nombre_empresa"
-                                :selected="empresaToEdit && empresaToEdit.id === empresa.id"></option>
-                        </template>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Empresa Registrada <span class="text-red-500">*</span></label>
+                        <select class="border rounded px-3 py-2 w-full" required>
+                            <option value="">Seleccionar empresa registrada...</option>
+                            <template x-for="empresa in empresasRegistradas" :key="empresa.id">
+                                <option :value="empresa.id" x-text="empresa.nombre_empresa"
+                                    :selected="empresaToEdit && empresaToEdit.id === empresa.id"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Dirección <span class="text-red-500">*</span></label>
+                        <input type="text" class="border rounded px-3 py-2 w-full" maxlength="255"
+                            :value="empresaToEdit ? empresaToEdit.direccion : ''"
+                            :placeholder="empresaToEdit ? '' : 'Ejemplo: Av. Principal 123'" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Oficina <span class="text-red-500">*</span></label>
+                        <select class="border rounded px-3 py-2 w-full" required>
+                            <option value="">Seleccionar oficina...</option>
+                            <template x-for="oficina in oficinas" :key="oficina.id">
+                                <option :value="oficina.id" x-text="oficina.nombre"
+                                    :selected="empresaToEdit && empresaToEdit.oficina_id === oficina.id"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Estado <span class="text-red-500">*</span></label>
+                        <select class="border rounded px-3 py-2 w-full" maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                            required>
+                            <option value="">Seleccionar estado</option>
+                            <option :selected="empresaToEdit && empresaToEdit.estado_empresa === 'Activo'">Activo</option>
+                            <option :selected="empresaToEdit && empresaToEdit.estado_empresa === 'Inactivo'">Inactivo
+                            </option>
+                        </select>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Dirección <span class="text-red-500">*</span></label>
-                    <input type="text" class="border rounded px-3 py-2 w-full" maxlength="255"
-                        :value="empresaToEdit ? empresaToEdit.direccion : ''"
-                        :placeholder="empresaToEdit ? '' : 'Ejemplo: Av. Principal 123'" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Oficina <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" required>
-                        <option value="">Seleccionar oficina...</option>
-                        <template x-for="oficina in oficinas" :key="oficina.id">
-                            <option :value="oficina.id" x-text="oficina.nombre"
-                                :selected="empresaToEdit && empresaToEdit.oficina_id === oficina.id"></option>
-                        </template>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Estado <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                        required>
-                        <option value="">Seleccionar estado</option>
-                        <option :selected="empresaToEdit && empresaToEdit.estado_empresa === 'Activo'">Activo</option>
-                        <option :selected="empresaToEdit && empresaToEdit.estado_empresa === 'Inactivo'">Inactivo
-                        </option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2">
+                <div class="flex justify-end gap-2 mt-4">
                     <button type="button" @click="isEmpresaModalOpen = false"
                         class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
@@ -309,34 +311,36 @@
             <h2 class="text-xl font-bold mb-4"
                 x-text="empresaRegistradaToEdit ? 'Editar Empresa Registrada' : 'Agregar Empresa Registrada'"></h2>
             <form @submit.prevent="isEmpresaRegistradaModalOpen = false">
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Nombre de Empresa <span class="text-red-500">*</span></label>
-                    <input type="text" class="border rounded px-3 py-2 w-full" maxlength="100"
-                        pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                        :value="empresaRegistradaToEdit ? empresaRegistradaToEdit.nombre_empresa : ''"
-                        :placeholder="empresaRegistradaToEdit ? '' : 'Ejemplo S.A.'" required>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Nombre de Empresa <span class="text-red-500">*</span></label>
+                        <input type="text" class="border rounded px-3 py-2 w-full" maxlength="100"
+                            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                            :value="empresaRegistradaToEdit ? empresaRegistradaToEdit.nombre_empresa : ''"
+                            :placeholder="empresaRegistradaToEdit ? '' : 'Ejemplo S.A.'" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Descripción</label>
+                        <textarea class="border rounded px-3 py-2 w-full" rows="2" maxlength="255"
+                            :placeholder="empresaRegistradaToEdit ? '' : 'Descripción de la empresa'"
+                            x-text="empresaRegistradaToEdit ? empresaRegistradaToEdit.descripcion_empresa : ''"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Estado <span class="text-red-500">*</span></label>
+                        <select class="border rounded px-3 py-2 w-full" maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                            required>
+                            <option value="">Seleccionar estado</option>
+                            <option
+                                :selected="empresaRegistradaToEdit && empresaRegistradaToEdit.estado_empresa === 'Activo'">
+                                Activo</option>
+                            <option
+                                :selected="empresaRegistradaToEdit && empresaRegistradaToEdit.estado_empresa === 'Inactivo'">
+                                Inactivo
+                            </option>
+                        </select>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Descripción</label>
-                    <textarea class="border rounded px-3 py-2 w-full" rows="2" maxlength="255"
-                        :placeholder="empresaRegistradaToEdit ? '' : 'Descripción de la empresa'"
-                        x-text="empresaRegistradaToEdit ? empresaRegistradaToEdit.descripcion_empresa : ''"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Estado <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                        required>
-                        <option value="">Seleccionar estado</option>
-                        <option
-                            :selected="empresaRegistradaToEdit && empresaRegistradaToEdit.estado_empresa === 'Activo'">
-                            Activo</option>
-                        <option
-                            :selected="empresaRegistradaToEdit && empresaRegistradaToEdit.estado_empresa === 'Inactivo'">
-                            Inactivo
-                        </option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2">
+                <div class="flex justify-end gap-2 mt-4">
                     <button type="button" @click="isEmpresaRegistradaModalOpen = false"
                         class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
@@ -357,13 +361,15 @@
             <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
             <h2 class="text-xl font-bold mb-4" x-text="oficinaToEdit ? 'Editar Oficina' : 'Agregar Oficina'"></h2>
             <form @submit.prevent="isOficinaModalOpen = false">
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Nombre de Oficina</label>
-                    <input type="text" class="border rounded px-3 py-2 w-full"
-                        :value="oficinaToEdit ? oficinaToEdit.nombre : ''"
-                        :placeholder="oficinaToEdit ? '' : 'Oficina Central'">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Nombre de Oficina</label>
+                        <input type="text" class="border rounded px-3 py-2 w-full"
+                            :value="oficinaToEdit ? oficinaToEdit.nombre : ''"
+                            :placeholder="oficinaToEdit ? '' : 'Oficina Central'">
+                    </div>
                 </div>
-                <div class="flex justify-end gap-2">
+                <div class="flex justify-end gap-2 mt-4">
                     <button type="button" @click="isOficinaModalOpen = false"
                         class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"

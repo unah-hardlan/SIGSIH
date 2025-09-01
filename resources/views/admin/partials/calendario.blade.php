@@ -119,33 +119,33 @@
             </x-admin.edit-modal>
             <!-- Modal Crear Evento -->
             <x-admin.form-modal modalName="isAddModalOpen" title="Agregar Evento" submitLabel="Guardar">
-                <div class="space-y-4">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Agencia</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option>Agencia Central</option>
                             <option>Agencia Norte</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Cliente</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option>Juan Pérez</option>
                             <option>Ana López</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Tipo de mantenimiento</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option>Preventivo</option>
                             <option>Correctivo</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Fecha y hora</label>
                         <input type="datetime-local" class="border rounded px-3 py-2 w-full" />
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Estado</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option>Programado</option>
@@ -153,7 +153,7 @@
                             <option>Cancelado</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1 md:col-span-2">
                         <label class="block text-sm font-medium mb-1">Observaciones</label>
                         <textarea class="border rounded px-3 py-2 w-full"></textarea>
                     </div>
@@ -161,33 +161,33 @@
             </x-admin.form-modal>
             <!-- Modal Editar Evento -->
             <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Evento" itemToEdit="selectedEvent">
-                <div class="space-y-4">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Agencia</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option :selected="selectedEvent?.agencia === 'Agencia Central'">Agencia Central</option>
                             <option :selected="selectedEvent?.agencia === 'Agencia Norte'">Agencia Norte</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Cliente</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option :selected="selectedEvent?.cliente === 'Juan Pérez'">Juan Pérez</option>
                             <option :selected="selectedEvent?.cliente === 'Ana López'">Ana López</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Tipo de mantenimiento</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option :selected="selectedEvent?.tipo === 'Preventivo'">Preventivo</option>
                             <option :selected="selectedEvent?.tipo === 'Correctivo'">Correctivo</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Fecha y hora</label>
                         <input type="datetime-local" class="border rounded px-3 py-2 w-full" />
                     </div>
-                    <div>
+                    <div class="col-span-1">
                         <label class="block text-sm font-medium mb-1">Estado</label>
                         <select class="border rounded px-3 py-2 w-full">
                             <option :selected="selectedEvent?.estado === 'Programado'">Programado</option>
@@ -195,7 +195,7 @@
                             <option :selected="selectedEvent?.estado === 'Cancelado'">Cancelado</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-1 md:col-span-2">
                         <label class="block text-sm font-medium mb-1">Observaciones</label>
                         <textarea class="border rounded px-3 py-2 w-full" x-text="selectedEvent?.observaciones"></textarea>
                     </div>

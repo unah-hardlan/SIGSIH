@@ -171,7 +171,8 @@
     <!-- Modal Nueva Solicitud -->
     <x-admin.form-modal modalName="isModalOpen" title="Nueva Solicitud" submitLabel="Guardar Solicitud"
         maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <!-- Cada elemento ocupa toda la fila en móviles, dos columnas en md+ -->
             <div>
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700">ID Cliente</label>
                 <input type="text" id="id_cliente" name="id_cliente"
@@ -183,14 +184,12 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="num_solicitud_cliente" class="block text-sm font-medium text-gray-700">N° Solicitud
-                    Cliente</label>
+                <label for="num_solicitud_cliente" class="block text-sm font-medium text-gray-700">N° Solicitud Cliente</label>
                 <input type="text" id="num_solicitud_cliente" name="num_solicitud_cliente"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
-                <label for="descripcion_problema" class="block text-sm font-medium text-gray-700">Descripción del
-                    Problema</label>
+            <div class="md:col-span-2">
+                <label for="descripcion_problema" class="block text-sm font-medium text-gray-700">Descripción del Problema</label>
                 <textarea id="descripcion_problema" name="descripcion_problema" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
@@ -226,33 +225,30 @@
     <!-- Modal Editar Solicitud -->
     <x-admin.edit-modal modalName="isEditModalOpen" title="Editar Solicitud" itemToEdit="solicitudToEdit"
         maxWidth="max-w-4xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="edit_id_cliente" class="block text-sm font-medium text-gray-700">ID Cliente</label>
-                <input type="text" id="edit_id_cliente" name="edit_id_cliente" x-model="solicitudToEdit.id_cliente"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_num_solicitud_acf" class="block text-sm font-medium text-gray-700">N° Solicitud
-                    ACF</label>
-                <input type="text" id="edit_num_solicitud_acf" name="edit_num_solicitud_acf"
-                    x-model="solicitudToEdit.num_solicitud_acf"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_num_solicitud_cliente" class="block text-sm font-medium text-gray-700">N° Solicitud
-                    Cliente</label>
-                <input type="text" id="edit_num_solicitud_cliente" name="edit_num_solicitud_cliente"
-                    x-model="solicitudToEdit.num_solicitud_cliente"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div class="col-span-2">
-                <label for="edit_descripcion_problema" class="block text-sm font-medium text-gray-700">Descripción del
-                    Problema</label>
-                <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
-                    x-model="solicitudToEdit.descripcion_problema"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
-            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label for="edit_id_cliente" class="block text-sm font-medium text-gray-700">ID Cliente</label>
+            <input type="text" id="edit_id_cliente" name="edit_id_cliente" x-model="solicitudToEdit.id_cliente"
+                class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+        </div>
+        <div>
+            <label for="edit_num_solicitud_acf" class="block text-sm font-medium text-gray-700">N° Solicitud ACF</label>
+            <input type="text" id="edit_num_solicitud_acf" name="edit_num_solicitud_acf"
+                x-model="solicitudToEdit.num_solicitud_acf"
+                class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+        </div>
+        <div>
+            <label for="edit_num_solicitud_cliente" class="block text-sm font-medium text-gray-700">N° Solicitud Cliente</label>
+            <input type="text" id="edit_num_solicitud_cliente" name="edit_num_solicitud_cliente"
+                x-model="solicitudToEdit.num_solicitud_cliente"
+                class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+        </div>
+        <div class="md:col-span-2">
+            <label for="edit_descripcion_problema" class="block text-sm font-medium text-gray-700">Descripción del Problema</label>
+            <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
+                x-model="solicitudToEdit.descripcion_problema"
+                class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+        </div>
             <div>
                 <label for="edit_fecha_creacion" class="block text-sm font-medium text-gray-700">Fecha de
                     Creación</label>
@@ -292,7 +288,7 @@
     <!-- Modal Nuevo Estado -->
     <x-admin.form-modal modalName="isEstadoModalOpen" title="Nuevo Estado de Solicitud" submitLabel="Guardar Estado"
         maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="nombre_estado" class="block text-sm font-medium text-gray-700">Nombre del Estado</label>
                 <input type="text" id="nombre_estado" name="nombre_estado"
@@ -309,7 +305,7 @@
     <!-- Modal Editar Estado -->
     <x-admin.edit-modal modalName="isEditEstadoModalOpen" title="Editar Estado de Solicitud" itemToEdit="estadoToEdit"
         maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="edit_nombre_estado" class="block text-sm font-medium text-gray-700">Nombre del
                     Estado</label>
@@ -332,7 +328,7 @@
     <!-- Modal Nuevo Contacto -->
     <x-admin.form-modal modalName="isContactoModalOpen" title="Nuevo Contacto" submitLabel="Guardar Contacto"
         maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="tipo_contacto" class="block text-sm font-medium text-gray-700">Tipo de Contacto</label>
                 <input type="text" id="tipo_contacto" name="tipo_contacto"
@@ -354,7 +350,7 @@
     <!-- Modal Editar Contacto -->
     <x-admin.edit-modal modalName="isEditContactoModalOpen" title="Editar Contacto" itemToEdit="contactoToEdit"
         maxWidth="max-w-2xl">
-        <div class="grid grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="edit_tipo_contacto" class="block text-sm font-medium text-gray-700">Tipo de Contacto</label>
                 <input type="text" id="edit_tipo_contacto" name="edit_tipo_contacto"

@@ -57,63 +57,36 @@
             </table>
         </x-admin.tabla-crud>
         <!-- Modal Agregar Tipo de Objeto -->
-        <div x-show="isTipoModalOpen"
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-                <h2 class="text-xl font-bold mb-4">Agregar Tipo de Objeto</h2>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2"
-                        placeholder="Ej: Analítica">
+        <x-admin.form-modal modalName="isTipoModalOpen" title="Agregar Tipo de Objeto" submitLabel="Guardar Tipo" maxWidth="max-w-md">
+            <div class="space-y-4">
+                <div>
+                    <label for="nombre_tipo" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                    <input type="text" id="nombre_tipo" name="nombre_tipo" x-model="tipoToEdit.nombre"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Ej: Analítica">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2"
-                        placeholder="Describe el tipo..."></textarea>
+                <div>
+                    <label for="descripcion_tipo" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea id="descripcion_tipo" name="descripcion_tipo" x-model="tipoToEdit.descripcion" rows="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Describe el tipo..."></textarea>
                 </div>
-                <div class="flex justify-end gap-2 mt-6">
-                    <button @click="isTipoModalOpen = false; tipoToEdit = {nombre:'', descripcion:''}"
-                        class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                    <button @click="
-                    if(tipoToEdit.nombre && tipoToEdit.descripcion){
-                        tipos.push({nombre: tipoToEdit.nombre, descripcion: tipoToEdit.descripcion});
-                        isTipoModalOpen = false;
-                        tipoToEdit = {nombre:'', descripcion:''};
-                    }
-                " class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Guardar Tipo</button>
-                </div>
-                <button @click="isTipoModalOpen = false"
-                    class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
             </div>
-        </div>
+        </x-admin.form-modal>
 
         <!-- Modal Editar Tipo de Objeto -->
-        <div x-show="isTipoEditModalOpen"
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-                <h2 class="text-xl font-bold mb-4">Editar Tipo de Objeto</h2>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2">
+        <x-admin.edit-modal modalName="isTipoEditModalOpen" title="Editar Tipo de Objeto" itemToEdit="tipoToEdit" maxWidth="max-w-md">
+            <div class="space-y-4">
+                <div>
+                    <label for="edit_nombre_tipo" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                    <input type="text" id="edit_nombre_tipo" name="edit_nombre_tipo" x-model="tipoToEdit.nombre"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2"></textarea>
+                <div>
+                    <label for="edit_descripcion_tipo" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea id="edit_descripcion_tipo" name="edit_descripcion_tipo" x-model="tipoToEdit.descripcion" rows="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular"></textarea>
                 </div>
-                <div class="flex justify-end gap-2 mt-6">
-                    <button @click="isTipoEditModalOpen = false" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                    <button @click="
-                    let i = tipos.findIndex(t => t.nombre === tipoToEdit.nombre);
-                    if(i !== -1){
-                        tipos[i].descripcion = tipoToEdit.descripcion;
-                    }
-                    isTipoEditModalOpen = false;
-                " class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar Cambios</button>
-                </div>
-                <button @click="isTipoEditModalOpen = false"
-                    class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
             </div>
-        </div>
+        </x-admin.edit-modal>
 
 
     </div>

@@ -55,7 +55,7 @@
       submitLabel="Guardar Agencia"
       maxWidth="max-w-2xl">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
+  <div class="col-span-1">
           <label for="nombre_agencia" class="block text-sm font-medium text-gray-700">Nombre de la agencia</label>
           <input type="text" id="nombre_agencia" name="nombre_agencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
         </div>

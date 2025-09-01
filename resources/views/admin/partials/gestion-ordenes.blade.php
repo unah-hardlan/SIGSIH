@@ -160,31 +160,27 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="fecha_finalizacion" class="block text-sm font-medium text-gray-700">Fecha
-                    Finalización</label>
+                <label for="fecha_finalizacion" class="block text-sm font-medium text-gray-700">Fecha Finalización</label>
                 <input type="date" id="fecha_finalizacion" name="fecha_finalizacion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="md:col-span-2">
                 <label for="observaciones" class="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea id="observaciones" name="observaciones" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
-            <div class="col-span-2">
-                <label for="diagnostico_tecnico" class="block text-sm font-medium text-gray-700">Diagnóstico del
-                    Técnico</label>
+            <div class="md:col-span-2">
+                <label for="diagnostico_tecnico" class="block text-sm font-medium text-gray-700">Diagnóstico del Técnico</label>
                 <textarea id="diagnostico_tecnico" name="diagnostico_tecnico" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
-            <div class="col-span-2">
-                <label for="diagnostico_cliente" class="block text-sm font-medium text-gray-700">Diagnóstico del
-                    Cliente</label>
+            <div class="md:col-span-2">
+                <label for="diagnostico_cliente" class="block text-sm font-medium text-gray-700">Diagnóstico del Cliente</label>
                 <textarea id="diagnostico_cliente" name="diagnostico_cliente" rows="2"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
             <div>
-                <label for="calificacion_servicio" class="block text-sm font-medium text-gray-700">Calificación del
-                    Servicio</label>
+                <label for="calificacion_servicio" class="block text-sm font-medium text-gray-700">Calificación del Servicio</label>
                 <input type="number" id="calificacion_servicio" name="calificacion_servicio" min="1" max="5"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
@@ -210,8 +206,7 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="edit_fecha_recepcion" class="block text-sm font-medium text-gray-700">Fecha
-                    Recepción</label>
+                <label for="edit_fecha_recepcion" class="block text-sm font-medium text-gray-700">Fecha Recepción</label>
                 <input type="date" id="edit_fecha_recepcion" name="edit_fecha_recepcion"
                     x-model="ordenToEdit.fecha_recepcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -222,34 +217,30 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
-                <label for="edit_fecha_finalizacion" class="block text-sm font-medium text-gray-700">Fecha
-                    Finalización</label>
+                <label for="edit_fecha_finalizacion" class="block text-sm font-medium text-gray-700">Fecha Finalización</label>
                 <input type="date" id="edit_fecha_finalizacion" name="edit_fecha_finalizacion"
                     x-model="ordenToEdit.fecha_finalizacion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div class="col-span-2">
+            <div class="md:col-span-2">
                 <label for="edit_observaciones" class="block text-sm font-medium text-gray-700">Observaciones</label>
                 <textarea id="edit_observaciones" name="edit_observaciones" rows="2" x-model="ordenToEdit.observaciones"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
-            <div class="col-span-2">
-                <label for="edit_diagnostico_tecnico" class="block text-sm font-medium text-gray-700">Diagnóstico del
-                    Técnico</label>
+            <div class="md:col-span-2">
+                <label for="edit_diagnostico_tecnico" class="block text-sm font-medium text-gray-700">Diagnóstico del Técnico</label>
                 <textarea id="edit_diagnostico_tecnico" name="edit_diagnostico_tecnico" rows="2"
                     x-model="ordenToEdit.diagnostico_tecnico"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
-            <div class="col-span-2">
-                <label for="edit_diagnostico_cliente" class="block text-sm font-medium text-gray-700">Diagnóstico del
-                    Cliente</label>
+            <div class="md:col-span-2">
+                <label for="edit_diagnostico_cliente" class="block text-sm font-medium text-gray-700">Diagnóstico del Cliente</label>
                 <textarea id="edit_diagnostico_cliente" name="edit_diagnostico_cliente" rows="2"
                     x-model="ordenToEdit.diagnostico_cliente"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
             <div>
-                <label for="edit_calificacion_servicio" class="block text-sm font-medium text-gray-700">Calificación del
-                    Servicio</label>
+                <label for="edit_calificacion_servicio" class="block text-sm font-medium text-gray-700">Calificación del Servicio</label>
                 <input type="number" id="edit_calificacion_servicio" name="edit_calificacion_servicio" min="1" max="5"
                     x-model="ordenToEdit.calificacion_servicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
