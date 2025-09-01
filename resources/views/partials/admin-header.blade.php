@@ -20,8 +20,11 @@
 
     <!-- Logo -->
     <div class="flex items-center gap-2 ml-24 sm:gap-3">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-16 sm:h-20 md:h-24 lg:h-28 ml-2 sm:ml-8 md:ml-16 lg:ml-24">
-        <!-- Removed 'Mi App' text -->
+    <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
+         class="app-logo ml-2 sm:ml-8 md:ml-16 lg:ml-24"
+         style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
+        <!-- Optional app name display -->
+        {{-- <span class="hidden sm:block text-xl nunito-bold ml-2">{{ $appName ?? '' }}</span> --}}
     </div>
 
     <!-- Acciones derecha -->

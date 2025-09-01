@@ -139,6 +139,14 @@
                         <span class="block sm:inline nunito-regular">Tu contraseña se cambió correctamente.</span>
                     </div>
                 </div>
+                <!-- Alerta de error para contraseña -->
+                <div x-show="passwordError" x-transition class="mb-4">
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                        role="alert">
+                        <strong class="font-bold nunito-bold">No se pudo actualizar</strong>
+                        <span class="block sm:inline nunito-regular" x-text="passwordError"></span>
+                    </div>
+                </div>
 
                 <div class="grid grid-cols-1 gap-6">
                     <div>

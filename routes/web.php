@@ -52,6 +52,14 @@ Route::middleware(['auth.jwt.web'])->group(function () {
     Route::get('/api-web/servicios-realizados', [\App\Http\Controllers\ServicioRealizadoController::class, 'index']);
     Route::get('/api-web/acciones-realizadas', [\App\Http\Controllers\AccionRealizadaController::class, 'index']);
     Route::get('/api-web/ordenes-servicio', [\App\Http\Controllers\OrdenServicioController::class, 'index']);
+
+    // System settings (logo/name)
+    Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show']);
+    Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update']);
+
+    // Password (usuario autenticado)
+    Route::post('/api-web/me/password', [\App\Http\Controllers\API\PasswordController::class, 'updateMyPassword'])
+        ->name('api.me.password.update');
 });
 
 // Partial view loading for SPA (protegido)
@@ -116,7 +124,7 @@ Route::prefix('admin')
             }
 
             $view = match ($moduloLower) {
-                'configuracion de accesos', 'configuracion-acceso' => 'admin.reporte-configuracion-accesos',
+                'configuracion de accesos', 'configuracion-acceso' => null,
                 'empresas' => 'admin.reporte-empresas',
                 'solicitudes' => 'admin.reporte-solicitudes',
                 'tickets' => 'admin.reporte-tickets',
@@ -130,6 +138,9 @@ Route::prefix('admin')
                 'proyectos' => 'admin.reporte-proyectos',
                 default => 'admin.reporte-generico',
             };
+            if ($moduloLower === 'configuracion de accesos' || $moduloLower === 'configuracion-acceso') {
+                return app(\App\Http\Controllers\ConfiguracionAccesoReporteController::class)->reporte($request);
+            }
             if ($moduloLower === 'gestion de personas') {
                 return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
             }

@@ -107,4 +107,10 @@ class Usuario extends Authenticatable
     {
         $this->attributes['primer_ingreso'] = in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true) ? 1 : 0;
     }
+
+    // Mutator: garantizar que el nombre de usuario se almacene en MAYÚSCULAS sin espacios extremos
+    public function setUsuarioAttribute($value)
+    {
+        $this->attributes['usuario'] = strtoupper(trim((string)$value));
+    }
 }
