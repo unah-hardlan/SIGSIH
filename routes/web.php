@@ -56,6 +56,10 @@ Route::middleware(['auth.jwt.web'])->group(function () {
     // System settings (logo/name)
     Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show']);
     Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update']);
+
+    // Password (usuario autenticado)
+    Route::post('/api-web/me/password', [\App\Http\Controllers\API\PasswordController::class, 'updateMyPassword'])
+        ->name('api.me.password.update');
 });
 
 // Partial view loading for SPA (protegido)

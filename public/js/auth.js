@@ -1,4 +1,97 @@
-document.addEventListener("alpine:init", () => {
+window.authPage = function () {
+  return {
+    isLogin: true,
+    username: '',
+    password: '',
+    nombre_usuario: '',
+    email: '',
+    confirmPassword: '',
+    loading: false,
+    showPassword: false,
+    showConfirmPassword: false,
+    isDark: false,
+    init() {
+      // Tema almacenado
+      this.isDark = localStorage.getItem('theme') === 'dark';
+      // Fuerza MAYÚSCULAS en usuario y evita espacios
+      this.$watch('username', (v) => {
+        if (typeof v === 'string') {
+          const up = v.toUpperCase().replace(/\s+/g, '');
+          if (up !== v) this.username = up.slice(0, 50);
+          else if (v.length > 50) this.username = v.slice(0, 50);
+        }
+      });
+      // Evitar espacios en password, limitar longitud
+      this.$watch('password', (v) => {
+        if (typeof v === 'string') {
+          const noSpace = v.replace(/\s+/g, '');
+          if (noSpace !== v) this.password = noSpace.slice(0, 100);
+          else if (v.length > 100) this.password = v.slice(0, 100);
+        }
+      });
+      this.$watch('confirmPassword', (v) => {
+        if (typeof v === 'string') {
+          const noSpace = v.replace(/\s+/g, '');
+          if (noSpace !== v) this.confirmPassword = noSpace.slice(0, 100);
+          else if (v.length > 100) this.confirmPassword = v.slice(0, 100);
+        }
+      });
+    },
+    toggleTheme() {
+      this.isDark = !this.isDark;
+      localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+    },
+        validatePassword(pw) {
+            if (!pw || pw.length < 8) return false;
+            // Sin espacios
+            return /^\S{8,100}$/.test(pw);
+        },
+    validateConfirmPassword() {
+      return this.password && this.password === this.confirmPassword;
+    },
+    async handleSubmit() {
+      const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      if (!this.username) { alert('Debe ingresar el usuario.'); return; }
+      if (!this.password) { alert('Debe ingresar la contraseña.'); return; }
+      if (/\s/.test(this.username) || /\s/.test(this.password)) { alert('Los espacios no están permitidos.'); return; }
+      if (!this.validatePassword(this.password)) { alert('La contraseña no cumple la política.'); return; }
+      this.loading = true;
+      try {
+        if (this.isLogin) {
+          const res = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ usuario: this.username, contrasena: this.password })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) { alert(data.error || 'Usuario/contraseña inválidos'); return; }
+          window.location.assign('/admin/dashboard');
+        } else {
+          if (!this.nombre_usuario || !this.email || !this.validateConfirmPassword()) {
+            alert('Complete los campos requeridos.'); return;
+          }
+          const res = await fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              usuario: this.username,
+              nombre_usuario: this.nombre_usuario,
+              correo_electronico: this.email,
+              contrasena: this.password
+            })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) { alert(data.error || 'No se pudo registrar.'); return; }
+          window.location.assign('/admin/dashboard');
+        }
+      } finally { this.loading = false; }
+    },
+    handleRecover() { alert('Recuperación no implementada aún.'); },
+    handleGoogle() { alert('Google Sign-In no implementado.'); }
+  };
+};document.addEventListener("alpine:init", () => {
     Alpine.data("authPage", () => ({
         isLogin: true,
         showPassword: false,

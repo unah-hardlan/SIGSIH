@@ -13,6 +13,7 @@ function perfilPage(){
         },
         changingPassword: false,
         passwordSuccess: false,
+    passwordError: '',
         form: {
             primer_nombre: '',
             segundo_nombre: '',
@@ -244,13 +245,16 @@ function perfilPage(){
                     return;
                 }
                 this.changingPassword = true;
-                const token = localStorage.getItem('authToken');
-                const res = await fetch('/api/perfil/password', {
+                this.passwordError = '';
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const res = await fetch('/api-web/me/password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        'Accept': 'application/json',
+                        ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         current_password: this.passwordForm.current_password,
                         password: this.passwordForm.password,
@@ -258,15 +262,28 @@ function perfilPage(){
                     })
                 });
                 if(!res.ok){
-                    const err = await res.json().catch(()=>({message:'Error'}));
-                    alert(err.message || 'Error al cambiar la contraseña');
+                    let message = 'Error al cambiar la contraseña';
+                    try {
+                        const err = await res.json();
+                        // Laravel validation (422) or custom message
+                        if (err?.message) message = err.message;
+                        else if (err?.errors) {
+                            const first = Object.values(err.errors)[0];
+                            if (Array.isArray(first) && first.length) message = first[0];
+                        }
+                    } catch(_) { /* noop */ }
+                    this.passwordError = message;
+                    alert(message);
                     return;
                 }
                 this.passwordForm = { current_password: '', password: '', password_confirmation: '' };
                 this.passwordSuccess = true;
+                this.passwordError = '';
                 setTimeout(() => { this.passwordSuccess = false; }, 3000);
             } catch(e){
-                alert('Error al cambiar la contraseña');
+                const msg = 'Error al cambiar la contraseña';
+                this.passwordError = msg;
+                alert(msg);
             } finally {
                 this.changingPassword = false;
             }
