@@ -45,6 +45,8 @@
   pending: {},
   // debounce timers per cell
   commitTimers: {},
+  // lightweight throttle for toasts on frequent toggles
+  _toastTimer: null,
       // permisos por objeto para el rol seleccionado: map de objId -> { id, permiso_consultar, permiso_insercion, permiso_actualizar, permiso_eliminacion }
       permsByObj: {},
       permColumns: [
@@ -165,6 +167,7 @@
               rec.permiso_insercion = !!data.permiso_insercion;
               rec.permiso_actualizar = !!data.permiso_actualizar;
               rec.permiso_eliminacion = !!data.permiso_eliminacion;
+              this._toastOnce(`Permiso "${this.columnLabel(field)}" ${desired?'habilitado':'deshabilitado'}`, 'success');
             }
           } else {
             // Intentar upsert atómico por rol/objeto
@@ -178,6 +181,7 @@
                 rec.permiso_insercion = !!data.permiso_insercion;
                 rec.permiso_actualizar = !!data.permiso_actualizar;
                 rec.permiso_eliminacion = !!data.permiso_eliminacion;
+                this._toastOnce(`Permiso "${this.columnLabel(field)}" ${desired?'habilitado':'deshabilitado'}`, 'success');
               }
             } catch(err){
               // Fallback seguro: buscar existente o crear
@@ -197,6 +201,7 @@
                     rec.id = foundId;
                     rec.permiso_consultar = !!d2.permiso_consultar; rec.permiso_insercion = !!d2.permiso_insercion;
                     rec.permiso_actualizar = !!d2.permiso_actualizar; rec.permiso_eliminacion = !!d2.permiso_eliminacion;
+          this._toastOnce(`Permiso "${this.columnLabel(field)}" ${desired?'habilitado':'deshabilitado'}`, 'success');
                   }
                 } else {
                   await this.loadPermisosForRole(roleId);
@@ -212,7 +217,7 @@
                 };
                 const created = await apiSend(API.permisos, 'POST', createPayload, { signal: controller.signal });
                 const cd = created?.data || created;
-                if(cd?.id && this.pending[key]?.token === token) rec.id = cd.id;
+        if(cd?.id && this.pending[key]?.token === token){ rec.id = cd.id; this._toastOnce(`Permiso "${this.columnLabel(field)}" ${desired?'habilitado':'deshabilitado'}`, 'success'); }
               }
             }
           }
@@ -227,6 +232,7 @@
             rec[field] = !desired;
           }
           this.error = parseErr(e);
+          try{ window.showToast?.(`Error al actualizar permiso: ${this.error}`,'error'); }catch(_){}
           setTimeout(()=>{ this.error=''; }, 2500);
         } finally {
           // clear pending only if still current
@@ -234,6 +240,13 @@
             delete this.pending[key];
           }
         }
+      },
+      columnLabel(field){ return (this.permColumns.find(c=>c.field===field)?.label)||field; },
+      _toastOnce(msg, type){
+        // reduce spam during rapid toggles
+        if(this._toastTimer) return; // wait window
+        try{ window.showToast?.(msg, type); }catch(_){ }
+        this._toastTimer = setTimeout(()=>{ this._toastTimer = null; }, 600);
       },
     };
   }

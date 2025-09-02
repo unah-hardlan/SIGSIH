@@ -116,7 +116,8 @@
           const idx = this.items.findIndex(u => u.id === id);
           if (idx > -1) this.items[idx].id_rol_fk = this.form.id_rol_fk ? Number(this.form.id_rol_fk) : null;
           this.isAssignOpen = false;
-        } catch(e){ this.error = (e && e.message) ? e.message : 'Error asignando rol'; }
+          try{ window.showToast?.('Rol asignado correctamente', 'success'); }catch(_){ }
+        } catch(e){ this.error = (e && e.message) ? e.message : 'Error asignando rol'; try{ window.showToast?.(`Error al asignar rol: ${this.error}`, 'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 

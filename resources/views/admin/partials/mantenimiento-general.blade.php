@@ -8,7 +8,10 @@
         logoHeight: Number("{{ (int) ($appLogoHeight ?? 96) }}"),
         selectedLogoFile: null,
         savedMessagePersonalizacion: "",
-        savedMessageParametros: "",
+    savedMessageParametros: "",
+    timezone: "UTC",
+    dateFormat: "Y-m-d",
+    sessionsLimit: 1,
         async init(){
             try{
                 const res = await fetch("/api-web/system-settings", { credentials: "same-origin" });
@@ -17,6 +20,9 @@
                     this.nombreSistema = data.appName || this.nombreSistema;
                     this.logoUrl = data.logoUrl || this.logoUrl;
                     this.logoHeight = data.logoHeight || this.logoHeight;
+                    this.timezone = data.timezone || this.timezone;
+                    this.dateFormat = data.dateFormat || this.dateFormat;
+                    this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
                 }
             }catch(_){ }
         },
@@ -59,9 +65,29 @@
                 setTimeout(() => this.savedMessagePersonalizacion = "", 2500);
             }
         },
-        guardarParametros(){
-            this.savedMessageParametros = "Parámetros guardados correctamente";
-            setTimeout(() => this.savedMessageParametros = "", 2500);
+        async guardarParametros(){
+            const fd = new FormData();
+            if(this.timezone) fd.append("timezone", this.timezone);
+            if(this.dateFormat) fd.append("date_format", this.dateFormat);
+            if(this.sessionsLimit) fd.append("sessions_limit", String(this.sessionsLimit));
+            try{
+                const res = await fetch("/api-web/system-settings", {
+                    method: "POST",
+                    body: fd,
+                    credentials: "same-origin",
+                    headers: { "X-CSRF-TOKEN": document.querySelector("meta[name=\"csrf-token\"]")?.getAttribute("content") || "" }
+                });
+                if(!res.ok) throw new Error("bad");
+                const data = await res.json();
+                this.timezone = data.timezone || this.timezone;
+                this.dateFormat = data.dateFormat || this.dateFormat;
+                this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
+                this.savedMessageParametros = "Parámetros guardados correctamente";
+                setTimeout(() => this.savedMessageParametros = "", 2500);
+            }catch(e){
+                this.savedMessageParametros = "No se pudo guardar";
+                setTimeout(() => this.savedMessageParametros = "", 2500);
+            }
         }
      }' x-init="init()">
     <h1 class="text-2xl font-bold mb-6 nunito-bold">Personalización del Sistema</h1>
@@ -111,15 +137,15 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block font-medium mb-1 nunito-bold">Zona horaria</label>
-                <select class="border rounded px-3 py-2 w-full nunito-regular">
-                    <option class="nunito-regular">America/Tegucigalpa</option>
-                    <option class="nunito-regular">America/Mexico_City</option>
-                    <option class="nunito-regular">UTC</option>
+                <select class="border rounded px-3 py-2 w-full nunito-regular" x-model="timezone">
+                    <option class="nunito-regular" value="America/Tegucigalpa">America/Tegucigalpa</option>
+                    <option class="nunito-regular" value="America/Mexico_City">America/Mexico_City</option>
+                    <option class="nunito-regular" value="UTC">UTC</option>
                 </select>
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold">Formato de fecha</label>
-                <select class="border rounded px-3 py-2 w-full nunito-regular">
+                <select class="border rounded px-3 py-2 w-full nunito-regular" x-model="dateFormat">
                     <option class="nunito-regular" value="d/m/Y">dd/mm/yyyy</option>
                     <option class="nunito-regular" value="m/d/Y">mm/dd/yyyy</option>
                     <option class="nunito-regular" value="Y-m-d">yyyy-mm-dd</option>
@@ -127,10 +153,11 @@
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold">Límite de sesiones</label>
-                <input type="number" min="1" max="5" value="2" class="border rounded px-3 py-2 w-full nunito-regular">
+                <input type="number" min="1" max="10" x-model.number="sessionsLimit" class="border rounded px-3 py-2 w-full nunito-regular">
             </div>
         </div>
         <div class="mt-6 flex items-center justify-end">
+            <span x-show="savedMessageParametros" x-text="savedMessageParametros" class="text-green-700 bg-green-100 px-3 py-1 rounded mr-3 text-sm"></span>
             <button @click="guardarParametros()" type="button" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors nunito-regular">
                 Guardar
             </button>

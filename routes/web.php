@@ -144,6 +144,44 @@ Route::prefix('admin')
             if ($moduloLower === 'gestion de personas') {
                 return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
             }
+            if ($moduloLower === 'bitacora') {
+                // Cargar items con los mismos filtros disponibles en el listado
+                $q = \App\Models\Bitacora::query()->with(['usuario','objeto'])->orderByDesc('fecha_evento');
+                if ($s = $request->query('search')) {
+                    $q->where(function($w) use ($s){ $w->where('descripcion','like',"%$s%")->orWhere('accion','like',"%$s%"); });
+                }
+                if ($a = $request->query('accion')) $q->where('accion',$a);
+                if ($u = $request->query('usuario')) {
+                    $u = strtoupper(trim($u));
+                    $q->whereHas('usuario', fn($w)=>$w->where('usuario','like',"%$u%")
+                        ->orWhere('nombre_usuario','like',"%$u%"));
+                }
+                if ($o = $request->query('objeto')) {
+                    $q->whereHas('objeto', fn($w)=>$w->where('nombre_objeto','like',"%$o%"));
+                }
+                if ($d = $request->query('desde')) $q->whereDate('fecha_evento','>=',$d);
+                if ($h = $request->query('hasta')) $q->whereDate('fecha_evento','<=',$h);
+                                // Orden en reporte igual que en la UI
+                                $sort = $request->query('sort', 'fecha_evento');
+                                $direction = strtolower($request->query('direction','desc')) === 'asc' ? 'asc' : 'desc';
+                                $sortable = [
+                                        'fecha_evento' => 'tbl_ms_bitacora.fecha_evento',
+                                        'accion' => 'tbl_ms_bitacora.accion',
+                                        'fecha_creacion' => 'tbl_ms_bitacora.fecha_creacion',
+                                        'usuario' => 'u.usuario',
+                                        'objeto' => 'o.nombre_objeto',
+                                ];
+                                if ($sort === 'usuario') {
+                                        $q->leftJoin('tbl_ms_usuario as u','u.id_usuario_pk','=','tbl_ms_bitacora.id_usuario_fk')
+                                            ->select('tbl_ms_bitacora.*');
+                                } elseif ($sort === 'objeto') {
+                                        $q->leftJoin('tbl_objetos as o','o.id_objetos_pk','=','tbl_ms_bitacora.id_objetos_fk')
+                                            ->select('tbl_ms_bitacora.*');
+                                }
+                                $q->orderBy($sortable[$sort] ?? 'tbl_ms_bitacora.fecha_evento', $direction);
+                                $items = $q->limit(1000)->get();
+                return view($view, compact('fecha','modulo','items'));
+            }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
 

@@ -238,7 +238,7 @@
                             <td class="py-2 px-4 nunito-regular" x-text="role.rol"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="role.descripcion_rol || ''"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="role.creado_por || ''"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="role.fecha_creacion || ''"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="role.fecha_creacion_formatted || role.fecha_creacion || ''"></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click.prevent="$store.roles.openEdit(role)" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click.prevent="$store.roles.openDelete(role)" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
@@ -325,7 +325,7 @@
                                 <td class="py-2 px-4 nunito-regular" x-text="item.descripcion_objeto || ''"></td>
                                 <td class="py-2 px-4 nunito-regular" x-text="$store.objetos.tipoNombre(item.id_tipo_objetos_fk)"></td>
                                 <td class="py-2 px-4 nunito-regular" x-text="item.creado_por || ''"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="item.fecha_creacion || ''"></td>
+                                <td class="py-2 px-4 nunito-regular" x-text="item.fecha_creacion_formatted || item.fecha_creacion || ''"></td>
                                 <td class="py-2 px-4 flex gap-2">
                                     <a href="#" @click.prevent="$store.objetos.openEdit(item)"
                                         class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>

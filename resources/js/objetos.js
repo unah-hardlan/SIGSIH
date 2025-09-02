@@ -170,8 +170,9 @@
           this.isCreateOpen = false;
           await this.fetchList(1);
           this.syncAccessStore();
+          try{ window.showToast?.('Objeto creado correctamente', 'success'); }catch(_){ }
           return res;
-        } catch(e){ this.error = parseErr(e); }
+        } catch(e){ this.error = parseErr(e); try{ window.showToast?.(`Error al crear objeto: ${this.error}`,'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 
@@ -188,8 +189,9 @@
           this.isEditOpen = false; this.current = null;
           await this.fetchList(this.meta.page);
           this.syncAccessStore();
+          try{ window.showToast?.('Objeto actualizado correctamente', 'success'); }catch(_){ }
           return res;
-        } catch(e){ this.error = parseErr(e); }
+        } catch(e){ this.error = parseErr(e); try{ window.showToast?.(`Error al actualizar objeto: ${this.error}`,'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 
@@ -204,7 +206,8 @@
           const page = (this.items.length === 1 && this.meta.page > 1) ? this.meta.page - 1 : this.meta.page;
           await this.fetchList(page);
           this.syncAccessStore();
-        } catch(e){ this.error = parseErr(e); }
+          try{ window.showToast?.('Objeto eliminado correctamente', 'success'); }catch(_){ }
+        } catch(e){ this.error = parseErr(e); try{ window.showToast?.(`Error al eliminar objeto: ${this.error}`,'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 

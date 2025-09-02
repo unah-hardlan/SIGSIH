@@ -42,6 +42,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            'log.crud',
         ],
     ];
 
@@ -72,7 +73,8 @@ class Kernel extends HttpKernel
         // JWT (WEB) - NUEVO alias para proteger /admin/*
         'auth.jwt.web' => \App\Http\Middleware\JwtWebAuth::class,
         'jwt.refresh' => \App\Http\Middleware\JwtRefresh::class,
-        'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
+    'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
+    'log.crud' => \App\Http\Middleware\LogCrudActions::class,
     'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
     ];
 }

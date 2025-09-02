@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ParametroAuthSeeder::class,
+            ParametroSystemSeeder::class,
+            CoreObjetosSeeder::class,
         ]);
     }
 }
