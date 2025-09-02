@@ -102,3 +102,25 @@ aside {
     scrollbar-width: thin;
     scrollbar-color: #facc15 #1f2937;
 }
+
+/* Estilos globales para el modo oscuro */
+.dark body {
+    background-color: #090d15 !important; /* gray-900 */
+    color: #e2e8f0; /* gray-200 */
+}
+
+.dark a {
+    color: #63b3ed; /* blue-400 */
+}
+
+.dark .border {
+    border-color: #1a1c1f; /* gray-600 */
+}
+
+.dark .bg-white {
+    background-color: #20232a !important; /* gray-800 */
+}
+
+.dark .text-gray-800 {
+    color: #e2e8f0 !important; /* gray-200 */
+}
