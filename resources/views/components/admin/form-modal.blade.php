@@ -2,7 +2,7 @@
     'modalName',
     'title',
     'submitLabel',
-    'maxWidth' => 'max-w-md',
+  'maxWidth' => 'max-w-xl',
     'formId' => ''
 ])
 
@@ -18,24 +18,21 @@
   @keydown.window.escape="{{ $modalName }} = false"
   x-cloak>
     
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
-        
-        <div class="flex justify-between items-center pb-1 px-4 pt-4">
-            <h3 class="text-xl font-bold text-gray-700 dark:text-white">{{ $title }}</h3>
-            <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"><i class="fas fa-times"></i></button>
-        </div>
-        
-        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-1 overflow-y-auto p-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
-            {{ $slot }}
-
-            <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 p-4"> 
-        <button type="button" @click="{{ $modalName }} = false"
-          class="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-500 w-full sm:w-auto transition-colors duration-200 ease-in-out">Cancelar</button>
-        <button type="submit"
-          class="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-600 dark:hover:bg-blue-700 w-full sm:w-auto transition-colors duration-200 ease-in-out">{{ $submitLabel }}</button>
-            </div>
-        </form>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
+    <div class="flex justify-between items-center pb-1 px-6 pt-6">
+      <h3 class="text-2xl font-bold text-gray-700 dark:text-white">{{ $title }}</h3>
+      <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"><i class="fas fa-times"></i></button>
     </div>
+    <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-4 overflow-y-auto px-6 py-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
+      {{ $slot }}
+      <div class="flex flex-col sm:flex-row justify-end pt-6 gap-3">
+        <button type="button" @click="{{ $modalName }} = false"
+          class="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white px-5 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-500 min-w-[120px] w-full sm:w-auto text-base font-semibold transition-colors duration-200 ease-in-out">Cancelar</button>
+        <button type="submit"
+          class="bg-blue-500 dark:bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-600 dark:hover:bg-blue-700 min-w-[120px] w-full sm:w-auto text-base font-semibold transition-colors duration-200 ease-in-out">{{ $submitLabel }}</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <style>
@@ -68,6 +65,9 @@ form select,
 form textarea {
   border-color: #A1A1A1 !important;
   border-width: 1px;
+  font-size: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.5rem !important;
 }
 
 form input:focus,
@@ -79,6 +79,9 @@ form textarea:focus {
 
 form label {
   color: #374151;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .dark form input,
@@ -87,6 +90,9 @@ form label {
   border-color: #9ca3af !important;
   background-color: #1f2937 !important;
   color: white !important;
+  font-size: 1rem !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.5rem !important;
 }
 
 .dark form input:focus,

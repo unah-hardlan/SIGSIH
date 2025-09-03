@@ -1,61 +1,67 @@
 <div x-data="{ tab: 'calendario', isAddModalOpen: false, isEditModalOpen: false, isDetailModalOpen: false, isCancelModalOpen: false, isAddCalendarioModalOpen: false, isEditCalendarioModalOpen: false, selectedEvent: null, calendarioToEdit: {fecha: '', descripcion: '', estado: '', cliente: '', agencia: '', tipo_mantenimiento: ''} }" @include('partials.persist-tab', ['tabKey' => 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
     <div class="w-full">
         <ul class="flex border-b nunito-bold">
-            <li @click="tab='calendario'" :class="tab==='calendario' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Calendario</li>
-            <li @click="tab='calendarioCampos'" :class="tab==='calendarioCampos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Tabla Calendario</li>
+            <li @click="tab='calendario'" :class="tab==='calendario' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Calendario</li>
+            <li @click="tab='eventosLista'" :class="tab==='eventosLista' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Lista de Eventos</li>
         </ul>
 
-        <div x-show="tab==='calendario'" class="py-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3">Calendario</h2>
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true ">
-                        <i class="fas fa-plus mr-2"></i> Agregar
-                    </button>
-                    <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
-                        <i class="fas fa-file-alt"></i> Generar Reporte
-                    </a>
-                </div>
-            </div>
-            <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                <select class="border rounded px-3 py-2 text-sm nunito-regular">
-                    <option class="nunito-regular" value="">Filtrar por agencia</option>
-                    <option class="nunito-regular">Agencia Central</option>
-                    <option class="nunito-regular">Agencia Norte</option>
-                </select>
-                <select class="border rounded px-3 py-2 text-sm nunito-regular">
-                    <option class="nunito-regular" value="">Filtrar por estado</option>
-                    <option class="nunito-regular">Programado</option>
-                    <option class="nunito-regular">Realizado</option>
-                    <option class="nunito-regular">Cancelado</option>
-                </select>
-                <select class="border rounded px-3 py-2 text-sm nunito-regular">
-                    <option class="nunito-regular" value="">Filtrar por tipo de mantenimiento</option>
-                    <option class="nunito-regular">Preventivo</option>
-                    <option class="nunito-regular">Correctivo</option>
-                </select>
-                <select class="border rounded px-3 py-2 text-sm nunito-regular">
-                    <option class="nunito-regular" value="">Filtrar por cliente</option>
-                    <option class="nunito-regular">Juan Pérez</option>
-                    <option class="nunito-regular">Ana López</option>
-                </select>
-            </div>
+                <div x-show="tab==='calendario'" class="py-8">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                                <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">Calendario</h2>
+                                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                        <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true ">
+                                                <i class="fas fa-plus mr-2"></i> Agregar
+                                        </button>
+                                        <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                                             class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                                                <i class="fas fa-file-alt"></i> Generar Reporte
+                                        </a>
+                                </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                                @include('partials.filtros-generales', [
+                                    'searchModel' => 'searchCalendario',
+                                    'filtrosSelect' => [
+                                        'agenciaFiltro' => [
+                                            'label' => 'Agencias',
+                                            'options' => ['Agencia Central', 'Agencia Norte']
+                                        ],
+                                        'estadoFiltro' => [
+                                            'label' => 'Estados',
+                                            'options' => ['Programado', 'Realizado', 'Cancelado']
+                                        ],
+                                        'tipoFiltro' => [
+                                            'label' => 'Tipo de mantenimiento',
+                                            'options' => ['Preventivo', 'Correctivo']
+                                        ],
+                                        'clienteFiltro' => [
+                                            'label' => 'Clientes',
+                                            'options' => ['Juan Pérez', 'Ana López']
+                                        ]
+                                    ],
+                                    'ordenarOptions' => [
+                                        'fecha' => 'Fecha',
+                                        'estado' => 'Estado',
+                                        'agencia' => 'Agencia',
+                                        'cliente' => 'Cliente'
+                                    ]
+                                ])
+                        </div>
             <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                <div class="inline-block min-w-full shadow rounded-lg overflow-hidden bg-white p-6">
+                <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <button class="text-blue-500 hover:text-blue-700 font-semibold"><i class="fas fa-chevron-left"></i></button>
-                        <span class="text-lg font-semibold text-gray-700 nunito-bold">Julio 2025</span>
+                        <span class="text-lg font-semibold text-gray-700 dark:text-white nunito-bold">Julio 2025</span>
                         <button class="text-blue-500 hover:text-blue-700 font-semibold"><i class="fas fa-chevron-right"></i></button>
                     </div>
-                    <div class="grid grid-cols-7 gap-2 text-center">
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Dom</div>
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Lun</div>
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Mar</div>
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Mié</div>
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Jue</div>
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Vie</div>
-                        <div class="text-sm font-bold text-gray-600 nunito-bold">Sáb</div>
+                        <div class="grid p-4 grid-cols-7 gap-2 rounded-lg text-center dark:bg-gray-800 ">
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Dom</div>
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Lun</div>
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Mar</div>
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Mié</div>
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Jue</div>
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Vie</div>
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Sáb</div>
                         <div class="py-3 text-base nunito-regular"></div>
                         <div class="py-3 text-base nunito-regular"></div>
                         <div class="py-3 text-base nunito-regular"></div>
@@ -205,100 +211,222 @@
             <x-admin.confirmation-modal class="nunito-bold" modalName="isCancelModalOpen" itemToDelete="selectedEvent" message="¿Está seguro que desea cancelar este evento? El estado cambiará a 'Cancelado'." />
         </div>
 
-        <div x-show="tab==='calendarioCampos'" class="overflow-x-auto w-full">
-            <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
-                <div class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-                    <h2 class="text-2xl text-gray-800 nunito-bold">Calendario</h2>
-                    <button @click="isAddCalendarioModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Calendario</button>
+        <div x-show="tab==='eventosLista'" class="py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">Lista de Eventos</h2>
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true">
+                        <i class="fas fa-plus mr-2"></i> Agregar Evento
+                    </button>
+                    <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                       class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-file-alt"></i> Generar Reporte
+                    </a>
                 </div>
-                <table class="min-w-full text-sm w-full">
-                    <thead class="bg-gray-100 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Calendario</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Fecha</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Estado</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Cliente</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Agencia</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Tipo Mantenimiento</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4 nunito-regular">CAL-001</td>
-                            <td class="py-2 px-4 nunito-regular">2025-07-08</td>
-                            <td class="py-2 px-4 nunito-regular">Reunión mensual</td>
-                            <td class="py-2 px-4 nunito-regular">E-001</td>
-                            <td class="py-2 px-4 nunito-regular">CL-001</td>
-                            <td class="py-2 px-4 nunito-regular">AG-001</td>
-                            <td class="py-2 px-4 nunito-regular">TM-001</td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click.prevent="isEditCalendarioModalOpen = true; calendarioToEdit = {fecha: '2025-07-08', descripcion: 'Reunión mensual', estado: 'E-001', cliente: 'CL-001', agencia: 'AG-001', tipo_mantenimiento: 'TM-001'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></a>
-                                <a href="#" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                        <!-- Modal Crear Calendario -->
-                        <x-admin.form-modal class="nunito-bold" modalName="isAddCalendarioModalOpen" title="Agregar Calendario" submitLabel="Guardar Calendario" maxWidth="max-w-xs xl:max-w-2xl 2xl:max-w-3xl">
-                            <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Fecha</label>
-                                    <input type="date" class="border rounded px-3 py-2 w-full nunito-regular" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                                    <textarea class="border rounded px-3 py-2 w-full nunito-regular"></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Tipo Mantenimiento</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" />
-                                </div>
-                            </div>
-                        </x-admin.form-modal>
-                        <!-- Modal Editar Calendario -->
-                        <x-admin.edit-modal class="nunito-bold" modalName="isEditCalendarioModalOpen" title="Editar Calendario" itemToEdit="calendarioToEdit" maxWidth="max-w-xs xl:max-w-2xl 2xl:max-w-3xl">
-                            <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Fecha</label>
-                                    <input type="date" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.fecha" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                                    <textarea class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.descripcion"></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.estado" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.cliente" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.agencia" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 nunito-bold">Tipo Mantenimiento</label>
-                                    <input type="text" class="border rounded px-3 py-2 w-full nunito-regular" x-model="calendarioToEdit.tipo_mantenimiento" />
-                                </div>
-                            </div>
-                        </x-admin.edit-modal>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2 mb-6">
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchEventos',
+                    'filtrosSelect' => [
+                        'estadoEventoFiltro' => [
+                            'label' => 'Estados',
+                            'options' => ['Programado', 'Realizado', 'Cancelado']
+                        ],
+                        'agenciaEventoFiltro' => [
+                            'label' => 'Agencias',
+                            'options' => ['Agencia Central', 'Agencia Norte']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'fecha' => 'Fecha',
+                        'estado' => 'Estado',
+                        'cliente' => 'Cliente'
+                    ]
+                ])
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Evento 1 -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white nunito-bold">Reunión Mensual</h3>
+                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full text-xs font-semibold">Programado</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>8 de Julio, 2025</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>10:00 AM</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>Juan Pérez</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-building mr-2"></i>
+                            <span>Agencia Central</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-wrench mr-2"></i>
+                            <span>Mantenimiento Preventivo</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t dark:border-gray-600 flex gap-2">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isDetailModalOpen = true; selectedEvent = {titulo: 'Reunión Mensual', hora: '10:00 am', estado: 'Programado', agencia: 'Agencia Central', direccion: 'Col. Centro, Tegucigalpa', cliente: 'Juan Pérez', tipo: 'Preventivo', orden: 'OS-00123', observaciones: 'Revisión general', diagnostico: 'Sin novedad'}">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isEditModalOpen = true">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isCancelModalOpen = true">
+                            <i class="fas fa-ban"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Evento 2 -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white nunito-bold">Mantenimiento Correctivo</h3>
+                        <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full text-xs font-semibold">Realizado</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>5 de Julio, 2025</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>2:00 PM</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>Ana López</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-building mr-2"></i>
+                            <span>Agencia Norte</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-tools mr-2"></i>
+                            <span>Mantenimiento Correctivo</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t dark:border-gray-600 flex gap-2">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isDetailModalOpen = true; selectedEvent = {titulo: 'Mantenimiento Correctivo', hora: '2:00 pm', estado: 'Realizado', agencia: 'Agencia Norte', direccion: 'Col. Norte, SPS', cliente: 'Ana López', tipo: 'Correctivo', orden: 'OS-00124', observaciones: 'Reparación urgente', diagnostico: 'Problema resuelto'}">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isEditModalOpen = true">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Evento 3 -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4 border-red-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white nunito-bold">Inspección Técnica</h3>
+                        <span class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-2 py-1 rounded-full text-xs font-semibold">Cancelado</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>3 de Julio, 2025</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>9:00 AM</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>Carlos Mendoza</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-building mr-2"></i>
+                            <span>Agencia Central</span>
+                        </div>
+                        <div class="flex items-center text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-search mr-2"></i>
+                            <span>Inspección Técnica</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t dark:border-gray-600 flex gap-2">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isDetailModalOpen = true; selectedEvent = {titulo: 'Inspección Técnica', hora: '9:00 am', estado: 'Cancelado', agencia: 'Agencia Central', direccion: 'Col. Centro, Tegucigalpa', cliente: 'Carlos Mendoza', tipo: 'Inspección', orden: 'OS-00125', observaciones: 'Cancelado por cliente', diagnostico: 'No realizado'}">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1" @click="isEditModalOpen = true">
+                            <i class="fas fa-redo"></i> Reprogramar
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Modal Ver Detalles del Evento -->
+        <x-admin.form-modal modalName="isDetailModalOpen" title="Detalles del Evento" submitLabel="" hideActions="true" maxWidth="max-w-2xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-white nunito-bold">Información General</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Título del Evento</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.titulo"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Hora</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.hora"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Estado</label>
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold nunito-bold" 
+                                  :class="{
+                                      'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300': selectedEvent.estado === 'Programado',
+                                      'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300': selectedEvent.estado === 'Realizado',
+                                      'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': selectedEvent.estado === 'Cancelado'
+                                  }" 
+                                  x-text="selectedEvent.estado">
+                            </span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Agencia</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.agencia"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Dirección</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.direccion"></p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-white nunito-bold">Detalles del Servicio</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Cliente</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.cliente"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Tipo de Mantenimiento</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.tipo"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Orden de Servicio</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.orden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Observaciones</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.observaciones"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico</label>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.diagnostico"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </x-admin.form-modal>
     </div>
 </div>
