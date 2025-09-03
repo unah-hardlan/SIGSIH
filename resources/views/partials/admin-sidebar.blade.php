@@ -23,7 +23,7 @@
       'relative w-72': !isMobile && sidebarOpen,
       'relative w-20': !isMobile && !sidebarOpen
   }"
-  class="bg-gray-900 text-gray-200 h-screen flex flex-col p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
+    class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 h-screen flex flex-col p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
   style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">
 
     <!-- Banner removido para forzar flujo sin aviso visual -->
@@ -42,8 +42,8 @@
 
             {{-- Seguridad --}}
             <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-shield-alt w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Seguridad</span>
@@ -80,8 +80,8 @@
 
             {{-- Clientes --}}
             <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-users w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Clientes</span>
@@ -124,8 +124,8 @@
 
             {{-- Proyectos --}}
             <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-project-diagram w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Proyectos</span>
@@ -154,8 +154,8 @@
 
             {{-- Tickets --}}
             <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-ticket-alt w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Tickets</span>
@@ -177,8 +177,8 @@
 
             {{-- Calendario --}}
             <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-calendar-alt w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Calendario</span>
@@ -206,8 +206,8 @@
 
             {{-- Facturación --}}
             <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Facturación</span>
@@ -235,8 +235,8 @@
 
             {{-- Reportes --}}
             <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-chart-bar w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Reportes</span>
@@ -258,8 +258,8 @@
 
             {{-- Inventario --}}
             <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-boxes w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Inventario</span>
@@ -287,8 +287,8 @@
 
             {{-- Administración --}}
             <li class="mt-2" x-data="sidebarDropdown('administracion', false)" x-init="init()">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-cogs w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'"
@@ -329,8 +329,8 @@
 
             {{-- Mantenimiento --}}
             <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-tools w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'"
@@ -359,8 +359,8 @@
 
             {{-- Catalogo --}}
             <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400' : 'text-gray-400'"
-                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors">
+                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                    class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-book-open w-5 text-center"></i>
                         <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Catalogo</span>
@@ -505,9 +505,9 @@
     </nav>
 
     <!-- Botón salir sticky -->
-    <div class="p-4 border-t border-gray-800 sticky bottom-0 left-0 bg-gray-900 z-20">
+    <div class="p-4 border-t border-gray-800 dark:border-gray-700 sticky bottom-0 left-0 bg-gray-900 dark:bg-gray-800 z-20">
         <button type="button" onclick="window.location.href='/login'"
-            class="w-full flex items-center gap-3 px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors"
+            class="w-full flex items-center gap-3 px-4 py-2 rounded bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-semibold transition-colors"
             :class="!sidebarOpen && 'justify-center'">
             <i class="fas fa-sign-out-alt"></i>
             <span :class="!sidebarOpen && 'hidden'">Cerrar sesión</span>

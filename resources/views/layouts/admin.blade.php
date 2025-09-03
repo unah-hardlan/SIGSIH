@@ -113,31 +113,43 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeSwitch = document.getElementById('theme-switch');
+        (function(){
             const html = document.documentElement;
 
-            // Verificar tema guardado
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                html.classList.add('dark');
-                themeSwitch.checked = true;
-            } else {
-                html.classList.remove('dark');
-                themeSwitch.checked = false;
+            function applyThemeFromStorage() {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved === 'dark';
+                html.classList.toggle('dark', isDark);
+                const sw = document.getElementById('theme-switch');
+                if (sw) sw.checked = isDark;
             }
 
-            // Escuchar cambios
-            themeSwitch.addEventListener('change', function() {
-                if (this.checked) {
-                    html.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    html.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                }
-            });
-        });
+            function onToggle(e) {
+                const isDark = !!e.target.checked;
+                html.classList.toggle('dark', isDark);
+                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(_) {}
+            }
+
+            function bindSwitch() {
+                const sw = document.getElementById('theme-switch');
+                if (!sw) return;
+                // Evitar múltiples bindings al reinsertar el header
+                if (sw.__themeBound) return;
+                sw.addEventListener('change', onToggle);
+                sw.__themeBound = true;
+            }
+
+            function initTheme() {
+                applyThemeFromStorage();
+                bindSwitch();
+            }
+
+            document.addEventListener('DOMContentLoaded', initTheme);
+            // Re-vincular después de navegación SPA
+            document.addEventListener('app:view-loaded', initTheme);
+            // Sincronizar entre pestañas
+            window.addEventListener('storage', (e) => { if (e.key === 'theme') applyThemeFromStorage(); });
+        })();
     </script>
 
     @livewireScripts
