@@ -20,15 +20,15 @@
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
         
-        <div class="flex justify-between items-center border-b dark:border-gray-600 pb-3 p-4">
+        <div class="flex justify-between items-center pb-1 px-4 pt-4">
             <h3 class="text-xl font-bold text-gray-700 dark:text-white">{{ $title }}</h3>
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"><i class="fas fa-times"></i></button>
         </div>
         
-        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-4 space-y-1 overflow-y-auto p-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
+        <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-1 overflow-y-auto p-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
             {{ $slot }}
 
-            <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 border-t dark:border-gray-600 p-4"> 
+            <div class="flex flex-col sm:flex-row justify-end pt-4 gap-2 p-4"> 
         <button type="button" @click="{{ $modalName }} = false"
           class="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-500 w-full sm:w-auto transition-colors duration-200 ease-in-out">Cancelar</button>
         <button type="submit"
