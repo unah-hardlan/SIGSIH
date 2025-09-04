@@ -5,12 +5,21 @@
     isDireccionModalOpen: false 
 }">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 nunito-bold mb-2">Ubicaciones de Agencias</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-2">Ubicaciones de Agencias</h1>
+        <div class="flex flex-wrap gap-2 items-center mb-6">
+            @include('partials.filtros-generales', [
+                'searchModel' => 'filtroUbicaciones',
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'id' => 'ID'
+                ]
+            ])
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Card Países -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-900 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -30,29 +39,25 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="mb-4">
-                    <input type="text" placeholder="Buscar país..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular">
-                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 nunito-bold">
+                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Acciones</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr class="hover:bg-gray-50 nunito-regular">
-                                <td class="px-4 py-3 text-gray-900">1</td>
-                                <td class="px-4 py-3 text-gray-900">Honduras</td>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="nunito-regular">
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">Honduras</td>
                                 <td class="px-4 py-3">
                                     <div class="flex space-x-2">
-                                        <button class="text-blue-600 hover:text-blue-800 p-1 rounded">
+                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                             <i class="fas fa-edit text-sm"></i>
                                         </button>
-                                        <button class="text-red-600 hover:text-red-800 p-1 rounded">
+                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -65,7 +70,7 @@
         </div>
 
         <!-- Card Departamentos -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="bg-gradient-to-r from-green-700 to-green-900 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -85,31 +90,27 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="mb-4">
-                    <input type="text" placeholder="Buscar departamento..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent nunito-regular">
-                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 nunito-bold">
+                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700">País</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Acciones</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr class="hover:bg-gray-50 nunito-regular">
-                                <td class="px-4 py-3 text-gray-900">1</td>
-                                <td class="px-4 py-3 text-gray-900">Francisco Morazán</td>
-                                <td class="px-4 py-3 text-gray-600">Honduras</td>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="nunito-regular">
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">Francisco Morazán</td>
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Honduras</td>
                                 <td class="px-4 py-3">
                                     <div class="flex space-x-2">
-                                        <button class="text-blue-600 hover:text-blue-800 p-1 rounded">
+                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                             <i class="fas fa-edit text-sm"></i>
                                         </button>
-                                        <button class="text-red-600 hover:text-red-800 p-1 rounded">
+                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -122,7 +123,7 @@
         </div>
 
         <!-- Card Ciudades -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -142,29 +143,25 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="mb-4">
-                    <input type="text" placeholder="Buscar ciudad..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent nunito-regular">
-                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 nunito-bold">
+                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Acciones</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr class="hover:bg-gray-50 nunito-regular">
-                                <td class="px-4 py-3 text-gray-900">1</td>
-                                <td class="px-4 py-3 text-gray-900">Tegucigalpa</td>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="nunito-regular">
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">Tegucigalpa</td>
                                 <td class="px-4 py-3">
                                     <div class="flex space-x-2">
-                                        <button class="text-blue-600 hover:text-blue-800 p-1 rounded">
+                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                             <i class="fas fa-edit text-sm"></i>
                                         </button>
-                                        <button class="text-red-600 hover:text-red-800 p-1 rounded">
+                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
                                     </div>
@@ -177,7 +174,7 @@
         </div>
 
         <!-- Card Direcciones -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="bg-gradient-to-r from-orange-700 to-orange-900 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -197,31 +194,27 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="mb-4">
-                    <input type="text" placeholder="Buscar dirección..." 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent nunito-regular">
-                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 nunito-bold">
+                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Ciudad</th>
-                                <th class="px-4 py-3 text-left text-gray-700">Acciones</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr class="hover:bg-gray-50 nunito-regular">
-                                <td class="px-4 py-3 text-gray-900">1</td>
-                                <td class="px-4 py-3 text-gray-900">Col. Centro</td>
-                                <td class="px-4 py-3 text-gray-600">Tegucigalpa</td>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="nunito-regular">
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                <td class="px-4 py-3 text-gray-900 dark:text-white">Col. Centro</td>
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Tegucigalpa</td>
                                 <td class="px-4 py-3">
                                     <div class="flex space-x-2">
-                                        <button class="text-blue-600 hover:text-blue-800 p-1 rounded">
+                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                             <i class="fas fa-edit text-sm"></i>
                                         </button>
-                                        <button class="text-red-600 hover:text-red-800 p-1 rounded">
+                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
                                     </div>

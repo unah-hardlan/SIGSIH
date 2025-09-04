@@ -15,19 +15,25 @@
         filtroServicio: '',
         filtroTipo: ''
     }" class="overflow-x-auto">
-    <div class="bg-white rounded-lg shadow p-6 mt-6">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6">
         <div
-            class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Servicio Realizado</h2>
+            class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Servicio Realizado</h2>
             <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
-                <input type="text" x-model="filtroServicio" placeholder="Buscar servicio..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-                <select x-model="filtroTipo" class="border rounded px-1 py-2 text-sm w-full sm:w-40">
-                    <option value="">Todos los tipos</option>
-                    <option>Mantenimiento</option>
-                    <option>Instalación</option>
-                    <option>Reparación</option>
-                </select>
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'filtroServicio',
+                    'filtrosSelect' => [
+                        'filtroTipo' => [
+                            'label' => 'Tipo de Servicio',
+                            'options' => ['Mantenimiento', 'Instalación', 'Reparación']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'descripcion' => 'Descripción',
+                        'tipo_servicio' => 'Tipo de Servicio',
+                        'id_servicio' => 'ID Servicio'
+                    ]
+                ])
             </div>
             <button @click="isServicioModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular    transition whitespace-nowrap text-sm">
@@ -35,7 +41,7 @@
             </button>
         </div>
         <table class="min-w-full text-sm">
-            <thead class="bg-gray-100 nunito-bold">
+            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                 <tr>
                     <th class="py-2 px-4 text-left">ID Servicio</th>
                     <th class="py-2 px-4 text-left">Tipo de Servicio</th>
@@ -50,12 +56,12 @@
                         (!filtroServicio || s.descripcion.toLowerCase().includes(filtroServicio.toLowerCase()))
                         && (!filtroTipo || s.tipo_servicio === filtroTipo)
                     )" :key="servicio.id_servicio">
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4" x-text="servicio.id_servicio"></td>
-                        <td class="py-2 px-4" x-text="servicio.tipo_servicio"></td>
-                        <td class="py-2 px-4" x-text="servicio.descripcion"></td>
-                        <td class="py-2 px-4" x-text="servicio.fecha"></td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white" x-text="servicio.id_servicio"></td>
+                        <td class="py-2 px-4 dark:text-white" x-text="servicio.tipo_servicio"></td>
+                        <td class="py-2 px-4 dark:text-white" x-text="servicio.descripcion"></td>
+                        <td class="py-2 px-4 dark:text-white" x-text="servicio.fecha"></td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click.prevent="isEditModalOpen = true; servicioToEdit = servicio" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click.prevent="isDeleteModalOpen = true; servicioToDelete = servicio" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>

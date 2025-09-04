@@ -12,9 +12,19 @@
 }">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Estados de Solicitud'">
         <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" x-model="searchEstadoSolicitud" placeholder="Buscar estado..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchEstadoSolicitud',
+                'filtrosSelect' => [
+                    'estadoSolicitud' => [
+                        'label' => 'Estado',
+                        'options' => ['Abierta', 'En Proceso', 'Cerrada']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'nombre_estado' => 'Nombre',
+                    'id' => 'ID'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="w-full flex justify-center sm:justify-end">
@@ -26,7 +36,7 @@
         <div class="overflow-x-auto w-full">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100 nunito-bold">
+                    <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <th class="py-2 px-4 text-left">ID</th>
                         <th class="py-2 px-4 text-left">Nombre Estado</th>
                         <th class="py-2 px-4 text-left">Descripción</th>
@@ -34,11 +44,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">1</td>
-                        <td class="py-2 px-4">Abierta</td>
-                        <td class="py-2 px-4">Solicitud recién creada</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">1</td>
+                        <td class="py-2 px-4 dark:text-white">Abierta</td>
+                        <td class="py-2 px-4 dark:text-white">Solicitud recién creada</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {
                                 id: 1,
                                 nombre_estado: 'Abierta',
@@ -49,11 +59,11 @@
                                 class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">2</td>
-                        <td class="py-2 px-4">En Proceso</td>
-                        <td class="py-2 px-4">Solicitud siendo procesada</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">2</td>
+                        <td class="py-2 px-4 dark:text-white">En Proceso</td>
+                        <td class="py-2 px-4 dark:text-white">Solicitud siendo procesada</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {
                                 id: 2,
                                 nombre_estado: 'En Proceso',
@@ -64,11 +74,11 @@
                                 class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">3</td>
-                        <td class="py-2 px-4">Cerrada</td>
-                        <td class="py-2 px-4">Solicitud completada y cerrada</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">3</td>
+                        <td class="py-2 px-4 dark:text-white">Cerrada</td>
+                        <td class="py-2 px-4 dark:text-white">Solicitud completada y cerrada</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {
                                 id: 3,
                                 nombre_estado: 'Cerrada',

@@ -6,25 +6,20 @@
         isDeleteModalOpen: false,
         tipoVisitaToDelete: null
     }"
-    class="bg-white rounded-lg shadow p-6"
+    class="bg-white dark:bg-gray-900 rounded-lg shadow p-6"
 >
-    <div class="mb-6">
-        <h2 class="text-2xl text-gray-800 nunito-bold">Tipo de Visita</h2>
-    </div>
-    
-    <div class="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-        <div class="flex flex-col sm:flex-row gap-2 flex-1">
-            <input 
-                type="text" 
-                placeholder="Buscar tipo de visita..." 
-                class="border rounded px-3 py-2 text-sm w-full sm:w-48"
-            />
-            <select class="border rounded px-3 py-2 text-sm w-full sm:w-40 nunito-regular">
-                <option value="">Todos los tipos</option>
-                <option>Técnica</option>
-                <option>Supervisión</option>
-                <option>Capacitación</option>
-            </select>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Tipo de Visita</h2>
+            <div class="flex flex-wrap gap-2 items-center ml-0 sm:ml-4">
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'filtroTipoVisita',
+                    'ordenarOptions' => [
+                        'nombre' => 'Nombre',
+                        'id' => 'ID Tipo'
+                    ]
+                ])
+            </div>
         </div>
         <button 
             @click="isTipoVisitaModalOpen = true"
@@ -36,20 +31,20 @@
 
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
-            <thead class="bg-gray-100 nunito-bold">
+            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                 <tr>
-                    <th class="py-2 px-4 text-left">ID Tipo</th>
-                    <th class="py-2 px-4 text-left">Nombre</th>
-                    <th class="py-2 px-4 text-left">Descripción</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
+                    <th class="py-2 px-4 text-left dark:text-white">ID Tipo</th>
+                    <th class="py-2 px-4 text-left dark:text-white">Nombre</th>
+                    <th class="py-2 px-4 text-left dark:text-white">Descripción</th>
+                    <th class="py-2 px-4 text-left dark:text-white">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4">TV-001</td>
-                    <td class="py-2 px-4">Técnica</td>
-                    <td class="py-2 px-4">Visita para revisión técnica de equipos</td>
-                    <td class="py-2 px-4 flex gap-2">
+                <tr class="border-b nunito-regular dark:border-gray-700">
+                    <td class="py-2 px-4 dark:text-white">TV-001</td>
+                    <td class="py-2 px-4 dark:text-white">Técnica</td>
+                    <td class="py-2 px-4 dark:text-white">Visita para revisión técnica de equipos</td>
+                    <td class="py-2 px-4 flex gap-2 dark:text-white">
                         <a href="#" @click.prevent="isEditModalOpen = true; tipoVisitaToEdit = {id: 'TV-001', nombre: 'Técnica', descripcion: 'Visita para revisión técnica de equipos'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                         <a href="#" @click.prevent="isDeleteModalOpen = true; tipoVisitaToDelete = {id: 'TV-001'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                     </td>

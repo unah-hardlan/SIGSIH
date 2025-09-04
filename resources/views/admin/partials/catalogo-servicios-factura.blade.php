@@ -12,11 +12,16 @@
     }" class="overflow-x-auto">
     <x-admin.tabla-crud class="nunito-bold">
         <x-slot name="titulo">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Servicios</h2>
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Servicios</h2>
         </x-slot>
         <x-slot name="filtros">
-            <input type="text" x-model="filtroServicio" placeholder="Buscar servicio..."
-                class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
+            @include('partials.filtros-generales', [
+                'searchModel' => 'filtroServicio',
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre Servicio',
+                    'id' => 'ID'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="w-full flex justify-center sm:justify-end">
@@ -28,7 +33,7 @@
         </x-slot>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left">ID</th>
                         <th class="py-2 px-4 text-left">Nombre Servicio</th>
@@ -40,11 +45,11 @@
                     <template
                         x-for="servicio in servicios.filter(s => !filtroServicio || s.nombre.toLowerCase().includes(filtroServicio.toLowerCase()))"
                         :key="servicio.id">
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4" x-text="servicio.id"></td>
-                            <td class="py-2 px-4" x-text="servicio.nombre"></td>
-                            <td class="py-2 px-4" x-text="servicio.tarifa"></td>
-                            <td class="py-2 px-4 flex gap-2">
+                        <tr class="border-b dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4 dark:text-white" x-text="servicio.id"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="servicio.nombre"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="servicio.tarifa"></td>
+                            <td class="py-2 px-4 flex gap-2 dark:text-white">
                                 <a href="#"
                                     @click.prevent="isEditServicioModalOpen = true; servicioToEdit = {...servicio}"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>

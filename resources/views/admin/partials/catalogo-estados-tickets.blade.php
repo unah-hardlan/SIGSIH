@@ -8,16 +8,19 @@
 }">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Estados de Tickets'">
         <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" x-model="searchEstadoTicket" placeholder="Buscar estado..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-                <select class="border rounded px-3 py-2 text-sm nunito-regular">
-                    <option value="">Prioridad</option>
-                    <option value="baja">Baja</option>
-                    <option value="media">Media</option>
-                    <option value="alta">Alta</option>
-                    <option value="critica">Crítica</option>
-                </select>
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchEstadoTicket',
+                'filtrosSelect' => [
+                    'prioridad' => [
+                        'label' => 'Prioridad',
+                        'options' => ['Baja', 'Media', 'Alta', 'Crítica']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'id' => 'ID Estado'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="w-full flex justify-center sm:justify-end">
@@ -28,7 +31,7 @@
         </x-slot>
         <div class="overflow-x-auto w-full">
             <table class="min-w-full text-sm w-full">
-                <thead class="bg-gray-100 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left">ID Estado</th>
                         <th class="py-2 px-4 text-left">Nombre</th>
@@ -37,29 +40,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">E-001</td>
-                        <td class="py-2 px-4">Pendiente</td>
-                        <td class="py-2 px-4">Ticket en espera de atención</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">E-001</td>
+                        <td class="py-2 px-4 dark:text-white">Pendiente</td>
+                        <td class="py-2 px-4 dark:text-white">Ticket en espera de atención</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditModalOpenEstadoTicket = true; itemToEdit = {id: 'E-001', nombre: 'Pendiente', descripcion: 'Ticket en espera de atención'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenEstadoTicket = true; itemToDelete = {id: 'E-001', nombre: 'Pendiente'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">E-002</td>
-                        <td class="py-2 px-4">En proceso</td>
-                        <td class="py-2 px-4">Ticket siendo atendido activamente</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">E-002</td>
+                        <td class="py-2 px-4 dark:text-white">En proceso</td>
+                        <td class="py-2 px-4 dark:text-white">Ticket siendo atendido activamente</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditModalOpenEstadoTicket = true; itemToEdit = {id: 'E-002', nombre: 'En proceso', descripcion: 'Ticket siendo atendido activamente'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenEstadoTicket = true; itemToDelete = {id: 'E-002', nombre: 'En proceso'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">E-003</td>
-                        <td class="py-2 px-4">Finalizado</td>
-                        <td class="py-2 px-4">Ticket resuelto completamente</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">E-003</td>
+                        <td class="py-2 px-4 dark:text-white">Finalizado</td>
+                        <td class="py-2 px-4 dark:text-white">Ticket resuelto completamente</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditModalOpenEstadoTicket = true; itemToEdit = {id: 'E-003', nombre: 'Finalizado', descripcion: 'Ticket resuelto completamente'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenEstadoTicket = true; itemToDelete = {id: 'E-003', nombre: 'Finalizado'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
