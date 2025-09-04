@@ -38,8 +38,8 @@
     estadoToDelete: null 
     }" @include('partials.persist-tab', ['tabKey' => 'admin-proyectos-tab'])>
     <ul class="flex border-b border-gray-200 dark:border-gray-700 nunito-bold">
-        <li @click="tab='proyectos'" :class="tab==='proyectos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Proyectos</li>
-        <li @click="tab='movimientos'" :class="tab==='movimientos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Movimientos</li>
+        <li @click="tab='proyectos'" :class="tab==='proyectos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Proyectos</li>
+        <li @click="tab='movimientos'" :class="tab==='movimientos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Movimientos</li>
     </ul>
 
     <div x-show="tab==='proyectos'" class="overflow-x-auto">

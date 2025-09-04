@@ -37,7 +37,7 @@
         if (isDeleteModalOpen) {
             deleteOrden();
         }
-    ">>
+    ">
     <ul class="flex border-b border-gray-200 dark:border-gray-700 nunito-bold">
         <li @click="tab='ordenes'"
             :class="tab==='ordenes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"

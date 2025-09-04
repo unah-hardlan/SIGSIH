@@ -1,11 +1,11 @@
 {{-- resources/views/admin/partials/perfil.blade.php --}}
 
-<div class="container mx-auto py-8" x-data="perfilPage()" x-init="init()">
+<div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="perfilPage()" x-init="init()">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
         <!-- Panel lateral con avatar -->
         <div class="md:col-span-1">
-            <div class="bg-white shadow-xl rounded-2xl border border-gray-400 border-opacity-50 p-6 text-center">
+            <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-400 dark:border-gray-700 border-opacity-50 p-6 text-center">
                 <div class="relative inline-block">
                     <img :src="avatarUrl || (personaAvatar ? personaAvatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayNameComputed) + '&background=0D8ABC&color=fff&size=128')"
                         alt="Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-white object-cover">
@@ -21,9 +21,9 @@
                         </button>
                     </div>
                 </div>
-                <h3 class="text-xl font-bold mt-4 text-gray-800 nunito-bold" x-text="displayNameComputed"></h3>
-                <p class="text-sm text-gray-500 nunito-regular" x-text="form.cargo || '-' "></p>
-                <p class="text-sm text-gray-500 mt-1 nunito-regular" x-text="email"></p>
+                <h3 class="text-xl font-bold mt-4 text-gray-800 dark:text-white nunito-bold" x-text="displayNameComputed"></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-300 nunito-regular" x-text="form.cargo || '-' "></p>
+                <p class="text-sm text-gray-500 dark:text-gray-300 mt-1 nunito-regular" x-text="email"></p>
 
                 <!-- Botón de guardar para cambios de avatar -->
                 <div class="mt-6" x-show="hasChanges">
@@ -47,11 +47,11 @@
 
         <!-- Sección editable -->
         <div class="md:col-span-2 space-y-8">
-            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-400 border-opacity-50">
-                <h3 class="text-xl font-bold text-gray-800 mb-6 nunito-bold">Completa tu Información Personal</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 nunito-bold">Completa tu Información Personal</h3>
                 <!-- Alerta de éxito -->
                 <div x-show="success" x-transition class="mb-4">
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                    <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative"
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Información actualizada!</strong>
                         <span class="block sm:inline nunito-regular">Tus datos se guardaron correctamente.</span>
@@ -60,7 +60,7 @@
 
                 <!-- Alerta de cambios no guardados -->
                 <div x-show="hasChanges" x-transition class="mb-4">
-                    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
+                    <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded relative"
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Hay cambios sin guardar!</strong>
                         <span class="block sm:inline nunito-regular">Guarde los cambios para que surtan efecto.</span>
@@ -68,57 +68,57 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Primer Nombre</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Primer Nombre</label>
                         <input type="text" x-model="form.primer_nombre" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Segundo Nombre</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Segundo Nombre</label>
                         <input type="text" x-model="form.segundo_nombre" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Primer Apellido</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Primer Apellido</label>
                         <input type="text" x-model="form.primer_apellido" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Segundo Apellido</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Segundo Apellido</label>
                         <input type="text" x-model="form.segundo_apellido" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Género</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Género</label>
                         <select x-model="form.id_genero_fk" @change="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
                             <option class="nunito-regular" value="1">Masculino</option>
                             <option class="nunito-regular" value="2">Femenino</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">DNI</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">DNI</label>
                         <input type="text" x-model="form.dni" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Cargo</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Cargo</label>
                         <input type="text" x-model="form.cargo" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Tipo Persona</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Tipo Persona</label>
                         <select x-model="form.id_tipo_persona_fk" @change="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
                             <option class="nunito-regular" value="1">Empleado</option>
                             <option class="nunito-regular" value="2">Cliente</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Perfil</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Perfil</label>
                         <select x-model="form.id_perfil_fk" @change="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
                             <option class="nunito-regular" value="1">General</option>
                             <option class="nunito-regular" value="2">Técnico</option>
@@ -128,12 +128,12 @@
             </div>
 
             <!-- Sección de cambio de contraseña -->
-            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-400 border-opacity-50">
-                <h3 class="text-xl font-bold text-gray-800 mb-6 nunito-regular">Cambiar Contraseña</h3>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 nunito-regular">Cambiar Contraseña</h3>
 
                 <!-- Alerta de éxito para contraseña -->
                 <div x-show="passwordSuccess" x-transition class="mb-4">
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+                    <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative"
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Contraseña actualizada!</strong>
                         <span class="block sm:inline nunito-regular">Tu contraseña se cambió correctamente.</span>
@@ -141,7 +141,7 @@
                 </div>
                 <!-- Alerta de error para contraseña -->
                 <div x-show="passwordError" x-transition class="mb-4">
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                    <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative"
                         role="alert">
                         <strong class="font-bold nunito-bold">No se pudo actualizar</strong>
                         <span class="block sm:inline nunito-regular" x-text="passwordError"></span>
@@ -150,21 +150,21 @@
 
                 <div class="grid grid-cols-1 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Contraseña Actual</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white mb-2 nunito-bold">Contraseña Actual</label>
                         <input type="password" x-model="passwordForm.current_password"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular"
                             placeholder="Ingresa tu contraseña actual">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Nueva Contraseña</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white mb-2 nunito-bold">Nueva Contraseña</label>
                         <input type="password" x-model="passwordForm.password"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular"
                             placeholder="Mínimo 8 caracteres">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 nunito-bold">Confirmar Nueva Contraseña</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white mb-2 nunito-bold">Confirmar Nueva Contraseña</label>
                         <input type="password" x-model="passwordForm.password_confirmation"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 nunito-regular"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular"
                             placeholder="Repite la nueva contraseña">
                     </div>
                 </div>

@@ -144,60 +144,38 @@
     }" x-init="init()" @modal-submit.window="onModalSubmit()">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Personas'">
         <x-slot name="filtros">
-            <div class="w-full">
-                <!-- On mobile: stack vertically; on sm+ keep a single row with filters then buttons at the end -->
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
-                    <div class="flex-1 flex items-center gap-2">
-                        <!-- Búsqueda mínima visible -->
-                        <input type="text" x-model="searchPersonas" placeholder="Buscar..."
-                            class="border rounded px-3 py-2 text-sm w-full sm:w-64 nunito-regular" />
-                        <button type="button" @click="showMoreFilters = !showMoreFilters"
-                            class="px-3 py-2 border rounded text-sm nunito-regular bg-white hover:bg-gray-50">
-                            <i class="fas fa-filter mr-1"></i> Más filtros
-                        </button>
-                    </div>
-                    <div class="flex flex-col sm:flex-row gap-2 items-center mt-2 sm:mt-0 sm:ml-auto">
-                        <button @click="openAdd()"
-                            class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center text-sm">
-                            Agregar persona
-                        </button>
-                        <a :href="`/admin/reportes-header?modulo=Gestion de Personas&fecha={{ now()->format('d-M-Y') }}&q=${encodeURIComponent(searchPersonas||'')}&sort=nombre&direction=asc&tipo=${encodeURIComponent(filtroTipoPersona||'')}&genero=${encodeURIComponent(filtroGenero||'')}`" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center text-sm">
-                            <i class="fas fa-file-alt"></i> Generar Reporte
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Bloque de filtros extendidos -->
-                <div x-show="showMoreFilters" x-transition class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                    <select x-model="filtroTipoPersona" class="border rounded px-3 py-2 text-sm w-full nunito-regular">
-                        <option class="nunito-regular" value="">Todos los tipo de persona</option>
-                        <option class="nunito-regular" value="Técnico">Tecnico</option>
-                        <option class="nunito-regular" value="Cliente">Cliente</option>
-                        <option class="nunito-regular" value="Administrador">Administrador</option>
-                    </select>
-                    <select x-model="filtroGenero" class="border rounded px-3 py-2 text-sm w-full nunito-regular">
-                        <option class="nunito-regular" value="">Todos los género</option>
-                        <option class="nunito-regular">Masculino</option>
-                        <option class="nunito-regular">Femenino</option>
-                    </select>
-                    <!-- Controles de orden y paginación removidos -->
-                </div>
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchPersonas',
+                'filtrosSelect' => [
+                    'tipoPersonaFiltro' => [
+                        'label' => 'Tipo de Persona',
+                        'options' => ['Técnico', 'Cliente', 'Administrador']
+                    ],
+                    'generoPersonaFiltro' => [
+                        'label' => 'Género',
+                        'options' => ['Masculino', 'Femenino']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'dni' => 'DNI',
+                    'cargo' => 'Cargo'
+                ]
+            ])
         </x-slot>
 
         <!-- Tabla de personas -->
         <div class="overflow-x-auto w-full">
             <div x-show="loading" class="p-3 text-sm text-gray-600 nunito-regular">Cargando…</div>
             <table class="min-w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-100 nunito-bold">
-                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Primer Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Segundo Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Primer Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Segundo Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold">DNI</th>
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
                         <th class="py-2 px-4 text-left nunito-bold">Cargo</th>
                         <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
                         <th class="py-2 px-4 text-left nunito-bold">Género</th>
