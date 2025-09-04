@@ -37,7 +37,7 @@
 
     <!-- TAB: Gestión de Roles y Permisos -->
     <div x-show="tab === 'gestion'" x-data="{ ready: false }" x-init="$store.access.init(); ready = true;">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Permisos'">
+        <x-admin.tabla-crud class="nunito-bold bg-white dark:bg-gray-900 rounded-lg shadow" :titulo="'Gestión de Permisos'">
             <x-slot name="filtros">
                 <div class="flex flex-wrap gap-4 items-center">
                     <div class="text-sm text-red-600" x-text="$store.access.error"></div>
@@ -53,20 +53,20 @@
             </x-slot>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
                 <!-- Roles -->
-                <div class="md:col-span-1 bg-white rounded-2xl shadow-lg ring-1 ring-gray-200 p-4" x-data="{ roleQ: '' }">
+                <div class="md:col-span-1 bg-white dark:bg-gray-900 rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-4" x-data="{ roleQ: '' }">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-semibold text-gray-800">Roles</h3>
-                        <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600" x-text="$store.access.roles.length + ' totales'"></span>
+                        <h3 class="font-semibold text-gray-800 dark:text-white">Roles</h3>
+                        <span class="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" x-text="$store.access.roles.length + ' totales'"></span>
                     </div>
                     <div class="relative mb-3">
-                        <input type="text" x-model="roleQ" class="w-full border rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Buscar rol..." />
-                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" x-model="roleQ" class="w-full border rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Buscar rol..." />
+                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300 text-sm"></i>
                     </div>
                     <ul class="space-y-1 max-h-[420px] overflow-auto pr-1">
                         <template x-for="r in $store.access.roles.filter(rr => !roleQ || (rr.rol||'').toLowerCase().includes(roleQ.toLowerCase()))" :key="r.id">
                             <li>
-                                <button class="w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-2 hover:bg-gray-50"
-                                    :class="$store.access.selectedRoleId===r.id ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200' : 'text-gray-700'"
+                                <button class="w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-2"
+                                    :class="$store.access.selectedRoleId===r.id ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 ring-1 ring-blue-200 dark:ring-blue-800' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
                                     @click="$store.access.selectRole(r.id)">
                                     <i class="fas fa-user-shield"></i>
                                     <span class="truncate" x-text="r.rol"></span>
@@ -76,7 +76,7 @@
                     </ul>
                 </div>
                 <!-- Matriz -->
-                <div class="md:col-span-3 bg-white rounded-2xl shadow-lg ring-1 ring-gray-200 p-4 overflow-auto" x-data="{ objQ: '' }">
+                <div class="md:col-span-3 bg-white dark:bg-gray-900 rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-4 overflow-auto" x-data="{ objQ: '' }">
                     <template x-if="!$store.access.selectedRoleId">
                         <div class="text-gray-500">Selecciona un rol para configurar sus permisos.</div>
                     </template>
@@ -84,27 +84,27 @@
                         <div>
                             <div class="flex items-center justify-between mb-3 gap-3">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm text-gray-500">Rol:</span>
-                                    <span class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
-                                        <i class="fas fa-shield-alt"></i>
-                                        <span x-text="($store.access.roles.find(r=>r.id===$store.access.selectedRoleId)?.rol)||'—'"></span>
-                                    </span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-300">Rol:</span>
+                                        <span class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span x-text="($store.access.roles.find(r=>r.id===$store.access.selectedRoleId)?.rol)||'—'"></span>
+                                        </span>
                                 </div>
                                 <div class="relative w-64 max-w-full">
-                                    <input type="text" x-model="objQ" class="w-full border rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Filtrar objetos..." />
-                                    <i class="fas fa-filter absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    <input type="text" x-model="objQ" class="w-full border rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Filtrar objetos..." />
+                                    <i class="fas fa-filter absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300 text-sm"></i>
                                 </div>
                             </div>
                             <div class="overflow-auto max-h-[600px]">
                                 <table class="min-w-full text-sm">
-                                    <thead class="sticky top-0 z-20 bg-white shadow-sm">
-                                        <tr class="border-b">
-                                            <th class="text-left p-3 sticky left-0 z-20 bg-white">Objeto</th>
+                                    <thead class="sticky top-0 z-20 bg-white dark:bg-gray-900 shadow-sm">
+                                        <tr class="border-b dark:border-gray-700">
+                                            <th class="text-left p-3 sticky left-0 z-20 bg-white dark:bg-gray-900 dark:text-white">Objeto</th>
                                             <template x-for="col in $store.access.permColumns" :key="col.field">
-                                                <th class="p-3">
-                                                    <div class="flex items-center justify-center gap-2 text-gray-700">
+                                                <th class="p-3 dark:text-white">
+                                                    <div class="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-200">
                                                         <span x-text="col.label"></span>
-                                                        <button type="button" title="Marcar/Desmarcar todos" class="text-[11px] px-2 py-0.5 rounded-full border border-gray-300 hover:bg-gray-100"
+                                                        <button type="button" title="Marcar/Desmarcar todos" class="text-[11px] px-2 py-0.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
                                                             @click.prevent="(() => { const objs=$store.access.objetos; const allOn = objs.length && objs.every(o => $store.access.isChecked(o.id, col.field)); const target=!allOn; for(const o of objs){ if(!$store.access.selectedRoleId) break; if(objQ && !(o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())) continue; if($store.access.isChecked(o.id,col.field) !== target){ $store.access.toggle(o.id,col.field); } } })()">
                                                             Todos
                                                         </button>
@@ -115,18 +115,18 @@
                                     </thead>
                                     <tbody>
                                         <template x-for="o in $store.access.objetos" :key="o.id">
-                                            <tr class="border-b odd:bg-gray-50 hover:bg-blue-50/50">
-                                                <td class="p-3 sticky left-0 z-10 bg-inherit" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())" x-text="o.nombre_objeto"></td>
+                                            <tr class="border-b dark:border-gray-700 odd:bg-gray-50 dark:bg-gray-900">
+                                                <td class="p-3 sticky left-0 z-10 bg-inherit dark:bg-gray-900 dark:text-white" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())" x-text="o.nombre_objeto"></td>
                                                 <template x-for="col in $store.access.permColumns" :key="col.field">
-                                                    <td class="p-3 text-center" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())">
+                                                    <td class="p-3 text-center dark:text-white" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())">
                                                         <button type="button"
-                                                            class="h-6 w-6 rounded-full border flex items-center justify-center hover:border-blue-500"
-                                                            :class="$store.access.isChecked(o.id,col.field) ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'"
+                                                            class="h-6 w-6 rounded-full border flex items-center justify-center hover:border-blue-500 dark:hover:border-blue-400"
+                                                            :class="$store.access.isChecked(o.id,col.field) ? 'bg-blue-600 border-blue-600 dark:bg-blue-800 dark:border-blue-400' : 'bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-600'"
                                                             :title="$store.access.isChecked(o.id,col.field) ? 'Permitido' : 'No permitido'"
                                                             @click="$store.access.toggle(o.id, col.field)"
                                                             :aria-pressed="$store.access.isChecked(o.id,col.field) ? 'true' : 'false'">
                                                             <span class="sr-only" x-text="'Cambiar ' + col.label"></span>
-                                                            <span class="h-2.5 w-2.5 rounded-full bg-white" x-show="$store.access.isChecked(o.id,col.field)"></span>
+                                                            <span class="h-2.5 w-2.5 rounded-full bg-white dark:bg-blue-200" x-show="$store.access.isChecked(o.id,col.field)"></span>
                                                         </button>
                                                     </td>
                                                 </template>

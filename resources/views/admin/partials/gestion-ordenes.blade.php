@@ -38,13 +38,7 @@
             deleteOrden();
         }
     ">
-    <ul class="flex border-b border-gray-200 dark:border-gray-700 nunito-bold">
-        <li @click="tab='ordenes'"
-            :class="tab==='ordenes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
-            class="mr-6 pb-2 nunito-bold">Gestión Órdenes de Servicio</li>
-    </ul>
-    
-    <div x-show="tab==='ordenes'" class="overflow-x-auto">
+    <div class="overflow-x-auto">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
                 <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Lista de Órdenes de Servicio</h2>

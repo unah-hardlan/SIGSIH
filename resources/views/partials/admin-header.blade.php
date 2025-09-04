@@ -19,16 +19,16 @@
     </button>
 
     <!-- Logo -->
-    <div class="flex items-center gap-2 ml-24 sm:gap-3">
+    <div class="flex items-center gap-2 ml-2 sm:ml-4 md:ml-16 lg:ml-24 sm:gap-3">
     <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
-         class="app-logo ml-2 sm:ml-8 md:ml-16 lg:ml-24"
+         class="app-logo ml-2 sm:ml-20 md:ml-16 lg:ml-24"
          style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
         <!-- Optional app name display -->
         {{-- <span class="hidden sm:block text-xl nunito-bold ml-2">{{ $appName ?? '' }}</span> --}}
     </div>
 
     <!-- Acciones derecha -->
-    <div class="flex items-center gap-2 sm:gap-4 md:gap-6 z-50">
+    <div class="flex items-center gap-3 md:gap-6 z-50">
         <label class="switch">
             <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
             <span class="slider"></span>

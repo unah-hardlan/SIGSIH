@@ -10,8 +10,8 @@
 }">
 <div class="w-full">
     <div class="overflow-x-auto w-full">
-      <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6 w-full">
-        <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 mb-4 border-b dark:border-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
+  <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-2 w-full">
+        <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 border-b dark:border-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
           <h2 class="text-2xl dark:bg-gray-900 text-gray-800 dark:text-white nunito-bold">Gestión de Tickets</h2>
           <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
             @include('partials.filtros-generales', [
@@ -30,7 +30,7 @@
               ]
             ])
           </div>
-          <div class="flex flex-col gap-2 w-full sm:w-auto">
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo ticket</button>
             <a href="/admin/reportes-header?modulo=Tickets&fecha={{ now()->format('d-M-Y') }}" target="_blank"
                class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
