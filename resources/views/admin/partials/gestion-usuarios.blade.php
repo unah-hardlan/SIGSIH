@@ -57,7 +57,7 @@
                                     :class="u.estado_usuario==='ACTIVO'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'"
                                     class="px-2 py-1 rounded nunito-regular" x-text="u.estado_usuario"></span></td>
                             <td class="py-2 px-4 nunito-regular" x-text="u.creado_por||'-'"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="u.fecha_creacion||'-'"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="u.fecha_creacion_formatted || u.fecha_creacion || '-' "></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <button @click="openEdit(u)" class="text-blue-600 hover:text-blue-800"><i
                                         class="fas fa-edit"></i></button>

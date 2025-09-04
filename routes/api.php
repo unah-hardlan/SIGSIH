@@ -64,8 +64,8 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::post('register', [AuthController::class, 'register']);
 
-// Protegidas con JWT (Authorization: Bearer <token>)
-Route::middleware('jwt.auth')->group(function () {
+// Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
+Route::middleware(['jwt.auth','auto.permiso'])->group(function () {
     // Perfil del usuario autenticado
     Route::get('me', [ProfileController::class, 'me']);
     Route::post('perfil/persona', [ProfileController::class, 'savePersona']);

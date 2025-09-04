@@ -32,9 +32,9 @@
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->parametro }}</td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->valor }}</td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->creado_por ?? '-' }}</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->fecha_creacion ?? '-' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($p->fecha_creacion)</td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->modificado_por ?? '-' }}</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->fecha_modificacion ?? '-' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($p->fecha_modificacion)</td>
                             </tr>
                             @endif
                         @empty

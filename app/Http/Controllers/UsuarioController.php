@@ -10,17 +10,18 @@ use App\Http\Requests\UpdateUsuarioRequest;
 use App\Http\Resources\UsuarioResource;
 use App\Http\Resources\RolResource;
 use App\Models\Rol;
+use App\Services\BitacoraService;
 
 class UsuarioController extends Controller
 {
-    public function __construct()
+    public function __construct(private BitacoraService $bitacora)
     {
-    // DB-backed permisos por objeto/acción
-    $this->middleware('permiso:usuarios,consultar')->only(['index','show']);
-    $this->middleware('permiso:usuarios,insercion')->only(['store']);
-    $this->middleware('permiso:usuarios,actualizacion')->only(['update','setRol']);
-    $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
-    $this->middleware('permiso:usuarios,consultar')->only(['rol']);
+        // DB-backed permisos por objeto/acción
+        $this->middleware('permiso:usuarios,consultar')->only(['index','show']);
+        $this->middleware('permiso:usuarios,insercion')->only(['store']);
+        $this->middleware('permiso:usuarios,actualizacion')->only(['update','setRol']);
+        $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
+        $this->middleware('permiso:usuarios,consultar')->only(['rol']);
     }
     public function index()
     {
@@ -34,7 +35,7 @@ class UsuarioController extends Controller
         if ($estado = request('estado')) {
             $query->where('estado_usuario', $estado);
         }
-        if ($q = request('q')) {
+    if ($q = request('q')) {
             $query->where(function($sub) use ($q) {
                 $sub->where('usuario', 'like', "%$q%")
                     ->orWhere('nombre_usuario', 'like', "%$q%")
@@ -43,7 +44,7 @@ class UsuarioController extends Controller
         }
 
         // Ordenamiento dinámico
-        $sortable = [
+    $sortable = [
             'nombre_usuario' => 'nombre_usuario',
             'usuario' => 'usuario',
             'correo_electronico' => 'correo_electronico',
@@ -79,6 +80,7 @@ class UsuarioController extends Controller
         $data = $request->validated();
         $data['contrasena'] = Hash::make($data['contrasena']);
         $usuario = Usuario::create($data);
+    try { $this->bitacora->logFor('Usuarios', 'Insertar', 'Creación de usuario '.$usuario->usuario); } catch (\Throwable $e) {}
         return (new UsuarioResource($usuario))->response()->setStatusCode(201);
     }
 
@@ -104,6 +106,7 @@ class UsuarioController extends Controller
             $data['contrasena'] = Hash::make($data['contrasena']);
         }
         $usuario->update($data);
+    try { $this->bitacora->logFor('Usuarios', 'Actualizar', 'Actualización de usuario '.$usuario->usuario); } catch (\Throwable $e) {}
         return (new UsuarioResource($usuario))->response();
     }
 
@@ -118,6 +121,7 @@ class UsuarioController extends Controller
         }
         $usuario->estado_usuario = 'INACTIVO';
         $usuario->save();
+    try { $this->bitacora->logFor('Usuarios', 'Eliminar', 'Inactivación de usuario '.$usuario->usuario); } catch (\Throwable $e) {}
         return response()->json(['message' => 'Usuario inactivado'], 200);
     }
 
@@ -139,6 +143,11 @@ class UsuarioController extends Controller
         ]);
         $usuario->id_rol_fk = $validated['id_rol_fk'];
         $usuario->save();
+        // Log de asignación de rol
+        try {
+            $rolNombre = \App\Models\Rol::where('id_rol_pk', $validated['id_rol_fk'])->value('rol');
+            $this->bitacora->logFor('Usuarios', 'Actualizar', 'Asignación de rol a usuario '.$usuario->usuario.' -> '.$rolNombre, $usuario->id_usuario_pk);
+        } catch (\Throwable $e) {}
         return response()->json(['message' => 'Rol asignado']);
     }
 

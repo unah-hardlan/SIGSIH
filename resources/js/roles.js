@@ -1,5 +1,4 @@
 // Alpine store for CRUD de Roles
-(function(){
   const API = { roles: '/api/roles' };
 
   const authHeaders = () => {
@@ -138,4 +137,4 @@
   document.addEventListener('alpine:init', ()=>{
     Alpine.store('roles', createRolesStore());
   });
-})();
+

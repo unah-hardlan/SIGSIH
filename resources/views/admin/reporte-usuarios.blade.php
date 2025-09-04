@@ -39,7 +39,7 @@
                                         <span class="text-red-700 nunito-bold">Inactivo</span>
                                     @endif
                                 </td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ optional($u->fecha_creacion)->format('d/m/Y') }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($u->fecha_creacion)</td>
                             </tr>
                         @empty
                             <tr><td colspan="6" class="border border-gray-300 py-4 px-3 text-center text-gray-500">Sin datos</td></tr>

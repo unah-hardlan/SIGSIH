@@ -11,10 +11,12 @@ use App\Models\Persona;
 use App\Models\Usuario;
 use App\Http\Requests\StorePersonaRequest;
 use App\Http\Requests\UpdatePersonaRequest;
+use App\Services\BitacoraService;
 use function response;
 
 class ProfileController extends Controller
 {
+    public function __construct(private BitacoraService $bitacora) {}
     // Devuelve si falta completar perfil y la persona (si existe)
     public function me()
     {
@@ -69,6 +71,14 @@ class ProfileController extends Controller
         $user->primer_ingreso = 0;
         $user->save();
 
+        // Bitácora: creación/actualización de perfil
+        try {
+            $nombre = trim(($persona->primer_nombre ?? '').' '.($persona->primer_apellido ?? ''));
+            $accion = $existing ? 'Actualizar' : 'Insertar';
+            $msg = ($existing ? 'Actualización de perfil' : 'Creación de perfil') . ($nombre ? (': '.$nombre) : '');
+            $this->bitacora->logFor('Perfil', $accion, $msg, $user->getKey());
+        } catch (\Throwable $e) {}
+
         return response()->json(['ok' => true, 'persona' => $persona]);
     }
 
@@ -87,6 +97,9 @@ class ProfileController extends Controller
         if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
         }
+
+        // Bitácora: subida de avatar
+        try { $this->bitacora->logFor('Perfil', 'Actualizar', 'Actualizó foto de perfil', $user->getKey()); } catch (\Throwable $e) {}
 
         return response()->json([
             'ok' => true,
@@ -108,6 +121,8 @@ class ProfileController extends Controller
         }
         $persona->avatar_path = null;
         $persona->save();
+    // Bitácora: eliminación de avatar
+    try { $this->bitacora->logFor('Perfil', 'Actualizar', 'Eliminó foto de perfil', $user->getKey()); } catch (\Throwable $e) {}
         return response()->json(['ok' => true]);
     }
 
@@ -139,6 +154,9 @@ class ProfileController extends Controller
         // Cambiar la contraseña
         $user->contrasena = Hash::make($request->password);
         $user->save();
+
+    // Bitácora: cambio de contraseña (sin datos sensibles)
+    try { $this->bitacora->logFor('Perfil', 'Actualizar', 'Cambio de contraseña', $user->getKey()); } catch (\Throwable $e) {}
 
         return response()->json([
             'ok' => true,

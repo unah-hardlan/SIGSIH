@@ -1,5 +1,4 @@
 // Alpine store for CRUD de Objetos del sistema
-(function(){
   const API = {
     objetos: '/api/objetos',
   tipos: '/api/tipos-objeto',
@@ -238,4 +237,4 @@
   document.addEventListener('alpine:init', ()=>{
     Alpine.store('objetos', createObjetosStore());
   });
-})();
+
