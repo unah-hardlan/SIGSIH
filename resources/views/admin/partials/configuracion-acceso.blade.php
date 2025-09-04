@@ -60,7 +60,7 @@
                     </div>
                     <div class="relative mb-3">
                         <input type="text" x-model="roleQ" class="w-full border rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Buscar rol..." />
-                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300 text-sm"></i>
+                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300 text-sm"></i>
                     </div>
                     <ul class="space-y-1 max-h-[420px] overflow-auto pr-1">
                         <template x-for="r in $store.access.roles.filter(rr => !roleQ || (rr.rol||'').toLowerCase().includes(roleQ.toLowerCase()))" :key="r.id">
