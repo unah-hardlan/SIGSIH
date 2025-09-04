@@ -1,4 +1,4 @@
-<aside :class="sidebarOpen ? 'w-72' : 'w-20'" x-data x-init="
+<aside :class="sidebarOpen ? 'w-72' : 'w-20'" x-data="{ logoutConfirm: false }" x-init="
     $nextTick(() => {
         if (window.sidebarScrollManager) {
             const savedScrollTop = localStorage.getItem('sidebar-scroll-position');
@@ -505,12 +505,26 @@
     </nav>
 
     <!-- Botón salir sticky -->
-    <div class="p-4 border-t border-gray-800 dark:border-gray-700 sticky bottom-0 left-0 bg-gray-900 dark:bg-gray-800 z-20">
-        <button type="button" onclick="window.location.href='/login'"
+    <div x-data="{ logoutConfirm: false }" class="p-4 border-t border-gray-800 dark:border-gray-700 sticky bottom-0 left-0 bg-gray-900 dark:bg-gray-800 z-20">
+        <button type="button" @click="logoutConfirm = true"
             class="w-full flex items-center gap-3 px-4 py-2 rounded bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-semibold transition-colors"
-            :class="!sidebarOpen && 'justify-center'">
+            :class="!sidebarOpen ? 'justify-center w-12' : 'w-full'">
             <i class="fas fa-sign-out-alt"></i>
             <span :class="!sidebarOpen && 'hidden'">Cerrar sesión</span>
         </button>
+
+        <!-- Modal de confirmación de cierre de sesión -->
+        <div x-show="logoutConfirm" x-cloak
+            class="fixed inset-0 bg-gray-900 dark:bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">¿Estás seguro de que deseas cerrar sesión?</h2>
+                <div class="flex justify-end gap-4">
+                    <button type="button" @click="logoutConfirm = false"
+                        class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm md:text-base text-black hover:bg-gray-400 dark:hover:bg-gray-500">Cancelar</button>
+                    <button type="button" @click="logoutConfirm = false; (window.appLogout && window.appLogout())"
+                        class="px-4 py-2 bg-red-600 text-white rounded text-sm md:text-base hover:bg-red-700">Confirmar</button>
+                </div>
+            </div>
+        </div>
     </div>
 </aside>
