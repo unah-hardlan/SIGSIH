@@ -183,19 +183,25 @@ function perfilPage(){
             } finally { this.removing = false; }
         },
 
-        async onAvatarChange(ev){
+        async onAvatarChange(ev) {
             const file = ev.target.files?.[0];
-            if(!file) return;
-            if (this.avatarUrl || this.personaAvatar) {
-                if (!confirm('¿Desea cambiar la foto de perfil actual? La imagen anterior será reemplazada.')) {
-                    ev.target.value = '';
-                    return;
-                }
+            if (!file) return;
+
+            // Mostrar el mensaje de confirmación antes de cualquier acción
+            const confirmChange = confirm('¿Desea cambiar la foto de perfil actual? La imagen anterior será reemplazada.');
+            if (!confirmChange) {
+                ev.target.value = ''; // Restablecer el input si se cancela
+                return;
             }
+
+            // Leer y mostrar la vista previa de la imagen
             const reader = new FileReader();
-            reader.onload = (e) => { this.avatarUrl = e.target.result; };
+            reader.onload = (e) => {
+                this.avatarUrl = e.target.result;
+            };
             reader.readAsDataURL(file);
 
+            // Subir la imagen al servidor
             const fd = new FormData();
             fd.append('avatar', file);
             const token = localStorage.getItem('authToken');
@@ -204,19 +210,55 @@ function perfilPage(){
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                 body: fd
             });
-            if(res.ok){
+
+            if (res.ok) {
                 const data = await res.json();
                 const finalUrl = data?.url || this.avatarUrl;
                 this.avatarUrl = finalUrl;
                 const store = Alpine.store('perfil');
                 if (!store.persona) store.persona = {};
                 if (data?.path) store.persona.avatar_path = data.path;
-                try { localStorage.setItem('authPersona', JSON.stringify(store.persona)); } catch(_){ }
-                // update personaAvatar and baseline (server accepted)
+                try {
+                    localStorage.setItem('authPersona', JSON.stringify(store.persona));
+                } catch (_) {}
+                // Actualizar personaAvatar y baseline (servidor aceptado)
                 this.personaAvatar = finalUrl;
                 this.originalAvatar = finalUrl;
                 this.checkForChanges();
                 this.hasChanges = false;
+            }
+        },
+
+        async actualizarAvatar(nuevaFoto) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const formData = new FormData();
+                formData.append('avatar', nuevaFoto);
+
+                const res = await fetch('/api/perfil/avatar', {
+                    method: 'POST',
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: 'Error' }));
+                    alert(err.message || 'Error al actualizar la foto de perfil');
+                    return;
+                }
+
+                const data = await res.json();
+                const store = Alpine.store('perfil');
+                store.persona.avatar_path = data.avatar_path;
+                this.personaAvatar = data.avatar_path.startsWith('http')
+                    ? data.avatar_path
+                    : `${window.location.origin}/storage/${data.avatar_path}`;
+                alert('Foto de perfil actualizada correctamente');
+            } catch (e) {
+                console.error('Error al actualizar la foto de perfil:', e);
+                alert('Error al actualizar la foto de perfil');
             }
         },
 
