@@ -34,22 +34,22 @@
             </x-slot>
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100 nunito-bold">
-                        <th class="py-2 px-4 text-left">Nombre</th>
-                        <th class="py-2 px-4 text-left">Descripción</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
+                    <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                        <th class="py-2 px-4 text-left dark:text-white">Nombre</th>
+                        <th class="py-2 px-4 text-left dark:text-white">Descripción</th>
+                        <th class="py-2 px-4 text-left dark:text-white">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="tipo in tipos" :key="tipo.nombre">
-                        <tr class="nunito-regular">
-                            <td class="py-2 px-4" x-text="tipo.nombre"></td>
-                            <td class="py-2 px-4" x-text="tipo.descripcion"></td>
-                            <td class="py-2 px-4 flex gap-2">
+                        <tr class="nunito-regular border-b dark:border-gray-700">
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.nombre"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.descripcion"></td>
+                            <td class="py-2 px-4 flex gap-2 dark:text-white">
                                 <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = tipo"
-                                    class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = tipo"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
+                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>

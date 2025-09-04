@@ -6,27 +6,34 @@
         tipoToDelete: {id_tipo_producto_pk: '', nombre_tipo_producto: ''}, 
         filtroNombre: ''
     }">
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-            <h2 class="text-2xl text-gray-800 nunito-bold lg:whitespace-nowrap lg:block">Tipo de producto</h2>
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+                <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold lg:whitespace-nowrap lg:block">Tipo de producto</h2>
+                <div class="flex flex-wrap gap-2 items-center ml-0 sm:ml-4">
+                    @include('partials.filtros-generales', [
+                        'searchModel' => 'filtroNombre',
+                        'ordenarOptions' => [
+                            'nombre_tipo_producto' => 'Nombre',
+                            'id_tipo_producto_pk' => 'ID Tipo Producto'
+                        ]
+                    ])
+                </div>
+            </div>
             <div class="w-full flex justify-center sm:justify-end mt-2 sm:mt-0">
                 <button @click="isTipoModalOpen = true"
                     class="bg-green-600 hover:bg-green-700 text-white sm:p-2 lg:px-4 lg:py-2 lg:text-base rounded-lg nunito-regular w-11/12 sm:w-auto text-sm transition-colors duration-200 ease-in-out">Nuevo tipo
                 </button>
             </div>
         </div>
-        <div class="flex flex-wrap gap-2 items-center mb-4">
-            <input type="text" x-model="filtroNombre" placeholder="Buscar por nombre..."
-                class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-        </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left">ID Tipo Producto</th>
-                        <th class="py-2 px-4 text-left">Nombre</th>
-                        <th class="py-2 px-4 text-left">Descripción</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
+                        <th class="py-2 px-4 text-left dark:text-white">ID Tipo Producto</th>
+                        <th class="py-2 px-4 text-left dark:text-white">Nombre</th>
+                        <th class="py-2 px-4 text-left dark:text-white">Descripción</th>
+                        <th class="py-2 px-4 text-left dark:text-white">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,12 +41,12 @@
                         {id_tipo_producto_pk: 1, nombre_tipo_producto: 'Hardware', descripcion_tipo_producto: 'Dispositivos físicos como computadoras, impresoras, etc.'},
                         {id_tipo_producto_pk: 2, nombre_tipo_producto: 'Software', descripcion_tipo_producto: 'Aplicaciones y licencias.'}
                         ]" :key="tipo.id_tipo_producto_pk">
-                        <tr class="border-b nunito-regular"
+                        <tr class="border-b nunito-regular dark:border-gray-700"
                             x-show="!filtroNombre || tipo.nombre_tipo_producto.toLowerCase().includes(filtroNombre.toLowerCase())">
-                            <td class="py-2 px-4" x-text="tipo.id_tipo_producto_pk"></td>
-                            <td class="py-2 px-4" x-text="tipo.nombre_tipo_producto"></td>
-                            <td class="py-2 px-4" x-text="tipo.descripcion_tipo_producto"></td>
-                            <td class="py-2 px-4 flex gap-2">
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.id_tipo_producto_pk"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.nombre_tipo_producto"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.descripcion_tipo_producto"></td>
+                            <td class="py-2 px-4 flex gap-2 dark:text-white">
                                 <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = {...tipo}"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = {...tipo}"
