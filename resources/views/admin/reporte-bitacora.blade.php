@@ -25,51 +25,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-08-07 10:00</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">usuarios</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Login</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Inicio de sesión exitoso</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-08-07 09:30</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">soporte</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">roles</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Insertar</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Creación de nuevo rol</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">soporte</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">3</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-08-06 15:45</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">facturas</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Actualizar</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Modificación de factura #0001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">4</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-08-06 14:20</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">soporte</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">tickets</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Eliminar</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Eliminación de ticket #TK-001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">soporte</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">5</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-08-05 11:15</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">empresas</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Insertar</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Registro de nueva empresa</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                        </tr>
+                        @isset($items)
+                            @forelse($items as $b)
+                                <tr>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['id'] ?? $b->id_bitacora_pk ?? '' }}</td>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($b['fecha_evento'] ?? $b->fecha_evento)</td>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['usuario']['usuario'] ?? $b->usuario->usuario ?? '-' }}</td>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['objeto']['nombre_objeto'] ?? $b->objeto->nombre_objeto ?? '-' }}</td>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['accion'] ?? $b->accion }}</td>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['descripcion'] ?? $b->descripcion ?? '-' }}</td>
+                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['creado_por'] ?? $b->creado_por ?? ($b['usuario']['usuario'] ?? $b->usuario->usuario ?? '-') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="border border-gray-300 py-2 px-3 text-center text-gray-500 nunito-regular">Sin datos</td></tr>
+                            @endforelse
+                        @else
+                            <tr><td colspan="7" class="border border-gray-300 py-2 px-3 text-center text-gray-500 nunito-regular">Sin datos</td></tr>
+                        @endisset
                     </tbody>
                 </table>
             </div>

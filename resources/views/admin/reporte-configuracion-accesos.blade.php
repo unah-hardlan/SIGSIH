@@ -93,7 +93,7 @@
                                         <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->rol }}</td>
                                         <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->descripcion_rol }}</td>
                                         <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->creado_por }}</td>
-                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->fecha_creacion }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($r->fecha_creacion)</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -159,7 +159,7 @@
                                         <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $o->descripcion_objeto }}</td>
                                         <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ optional($o->tipoObjeto)->nombre_tipo_objeto }}</td>
                                         <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $o->creado_por }}</td>
-                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $o->fecha_creacion }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($o->fecha_creacion)</td>
                                     </tr>
                                 @empty
                                     <tr>

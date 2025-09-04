@@ -9,6 +9,9 @@
         selectedLogoFile: null,
         savedMessagePersonalizacion: "",
         savedMessageParametros: "",
+        timezone: "UTC",
+        dateFormat: "Y-m-d",
+        sessionsLimit: 1,
         async init(){
             try{
                 const res = await fetch("/api-web/system-settings", { credentials: "same-origin" });
@@ -17,6 +20,9 @@
                     this.nombreSistema = data.appName || this.nombreSistema;
                     this.logoUrl = data.logoUrl || this.logoUrl;
                     this.logoHeight = data.logoHeight || this.logoHeight;
+                    this.timezone = data.timezone || this.timezone;
+                    this.dateFormat = data.dateFormat || this.dateFormat;
+                    this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
                 }
             }catch(_){ }
         },
@@ -59,9 +65,29 @@
                 setTimeout(() => this.savedMessagePersonalizacion = "", 2500);
             }
         },
-        guardarParametros(){
-            this.savedMessageParametros = "Parámetros guardados correctamente";
-            setTimeout(() => this.savedMessageParametros = "", 2500);
+        async guardarParametros(){
+            const fd = new FormData();
+            if(this.timezone) fd.append("timezone", this.timezone);
+            if(this.dateFormat) fd.append("date_format", this.dateFormat);
+            if(this.sessionsLimit) fd.append("sessions_limit", String(this.sessionsLimit));
+            try{
+                const res = await fetch("/api-web/system-settings", {
+                    method: "POST",
+                    body: fd,
+                    credentials: "same-origin",
+                    headers: { "X-CSRF-TOKEN": document.querySelector("meta[name=\"csrf-token\"]")?.getAttribute("content") || "" }
+                });
+                if(!res.ok) throw new Error("bad");
+                const data = await res.json();
+                this.timezone = data.timezone || this.timezone;
+                this.dateFormat = data.dateFormat || this.dateFormat;
+                this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
+                this.savedMessageParametros = "Parámetros guardados correctamente";
+                setTimeout(() => this.savedMessageParametros = "", 2500);
+            }catch(e){
+                this.savedMessageParametros = "No se pudo guardar";
+                setTimeout(() => this.savedMessageParametros = "", 2500);
+            }
         }
      }' x-init="init()">
     <h1 class="text-2xl font-bold mb-6 nunito-bold text-gray-800 dark:text-white">Personalización del Sistema</h1>
@@ -82,19 +108,21 @@
             <div>
                 <label class="block font-medium mb-4 nunito-bold text-gray-700 dark:text-gray-300">Logo del sistema</label>
                 <img :src="logoUrl" alt="Logo actual" class="mb-4" :style="'height:' + logoHeight + 'px; width:auto'">
-                <input type="file" @change="onLogoSelected($event)" accept="image/*" class="block mb-2 nunito-regular dark:bg-gray-900 dark:text-white dark:border-gray-700">
+                <input type="file" @change="onLogoSelected($event)" accept="image/*" class="block mb-2 nunito-regular
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Altura del logo (px)</label>
-                <input type="number" min="24" max="256" x-model.number="logoHeight" class="border rounded px-3 py-2 w-32 nunito-regular dark:bg-gray-900 dark:text-white dark:border-gray-700">
+                <input type="number" min="24" max="256" x-model.number="logoHeight" class="border rounded px-3 py-2 w-32 nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 nunito-regular">Se aplica globalmente (header, reportes, login).</p>
             </div>
-
         </div>
         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Nombre del sistema</label>
-                <input type="text" x-model="nombreSistema" class="border rounded px-3 py-2 w-full nunito-regular dark:bg-gray-900 dark:text-white dark:border-gray-700" placeholder="Nombre del sistema">
+                <input type="text" x-model="nombreSistema" class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Nombre del sistema">
             </div>
         </div>
         <div class="mt-6 flex items-center justify-end">
@@ -111,15 +139,17 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Zona horaria</label>
-                <select class="border rounded px-3 py-2 w-full nunito-regular dark:bg-gray-900 dark:text-white dark:border-gray-700">
-                    <option class="nunito-regular">America/Tegucigalpa</option>
-                    <option class="nunito-regular">America/Mexico_City</option>
-                    <option class="nunito-regular">UTC</option>
+                <select class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500" x-model="timezone">
+                    <option class="nunito-regular" value="America/Tegucigalpa">America/Tegucigalpa</option>
+                    <option class="nunito-regular" value="America/Mexico_City">America/Mexico_City</option>
+                    <option class="nunito-regular" value="UTC">UTC</option>
                 </select>
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Formato de fecha</label>
-                <select class="border rounded px-3 py-2 w-full nunito-regular dark:bg-gray-900 dark:text-white dark:border-gray-700">
+                <select class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500" x-model="dateFormat">
                     <option class="nunito-regular" value="d/m/Y">dd/mm/yyyy</option>
                     <option class="nunito-regular" value="m/d/Y">mm/dd/yyyy</option>
                     <option class="nunito-regular" value="Y-m-d">yyyy-mm-dd</option>
@@ -127,11 +157,13 @@
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Límite de sesiones</label>
-                <input type="number" min="1" max="5" value="2" class="border rounded px-3 py-2 w-full nunito-regular dark:bg-gray-900 dark:text-white dark:border-gray-700">
+                <input type="number" min="1" max="10" x-model.number="sessionsLimit" class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
         </div>
         <div class="mt-6 flex items-center justify-end">
-            <button @click="guardarParametros()" type="button" class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 transition-colors nunito-regular">
+            <span x-show="savedMessageParametros" x-text="savedMessageParametros" class="text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900 px-3 py-1 rounded mr-3 text-sm"></span>
+            <button @click="guardarParametros()" type="button" class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 transition-colors nunito-regular text-sm">
                 Guardar
             </button>
         </div>

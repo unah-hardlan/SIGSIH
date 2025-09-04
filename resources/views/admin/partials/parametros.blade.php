@@ -40,7 +40,7 @@
                             <td class="py-2 px-4 nunito-regular" x-text="p.parametro"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="p.valor"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="p.creado_por||'-'"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="p.fecha_creacion||'-'"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="p.fecha_creacion_formatted || p.fecha_creacion || '-' "></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <button @click="openEdit(p)" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
                                 <button @click="openDelete(p)" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>

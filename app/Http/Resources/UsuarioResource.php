@@ -18,11 +18,15 @@ class UsuarioResource extends JsonResource
             'id_rol_fk' => $this->id_rol_fk,
             'primer_ingreso' => (bool) $this->primer_ingreso,
             'fecha_ultima_conexion' => optional($this->fecha_ultima_conexion)->toDateTimeString(),
+            'fecha_ultima_conexion_formatted' => \App\Helpers\DateHelper::format($this->fecha_ultima_conexion),
             'fecha_vencimiento' => optional($this->fecha_vencimiento)->toDateString(),
+            'fecha_vencimiento_formatted' => \App\Helpers\DateHelper::format($this->fecha_vencimiento),
             'creado_por' => $this->creado_por,
             'fecha_creacion' => optional($this->fecha_creacion)->toDateTimeString(),
+            'fecha_creacion_formatted' => \App\Helpers\DateHelper::format($this->fecha_creacion),
             'modificado_por' => $this->modificado_por,
             'fecha_modificacion' => optional($this->fecha_modificacion)->toDateTimeString(),
+            'fecha_modificacion_formatted' => \App\Helpers\DateHelper::format($this->fecha_modificacion),
         ];
     }
 }

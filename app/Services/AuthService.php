@@ -64,6 +64,25 @@ class AuthService
         // reset intentos al éxito
         cache()->forget($cacheKey);
 
+        // Enforce concurrent sessions limit (limpiar expiradas antes de contar)
+        $limit = (int) (Parametro::where('parametro', 'auth.sessions_limit')->value('valor') ?? 1);
+        $sessionsKey = 'user_sessions:' . $user->getKey();
+        $sessions = cache()->get($sessionsKey, []);
+        if (!is_array($sessions)) { $sessions = []; }
+        $nowTs = time();
+        // limpiar expiradas previas
+        $sessions = array_filter($sessions, fn($exp) => (int)$exp > $nowTs);
+        cache()->put($sessionsKey, $sessions, now()->addHours(1));
+        if ($limit > 0 && count($sessions) >= $limit) {
+            // Política: si se alcanzó el límite, expulsar la sesión que expira primero (más antigua)
+            asort($sessions); // orden por exp asc
+            $firstKey = array_key_first($sessions);
+            if ($firstKey !== null) {
+                unset($sessions[$firstKey]);
+                cache()->put($sessionsKey, $sessions, now()->addHours(1));
+            }
+        }
+
         $payload = [
             'sub'  => $user->getKey(),
             'name' => $user->nombre_usuario,
@@ -72,6 +91,16 @@ class AuthService
         ];
 
         $token = JWT::encode($payload, $secret, 'HS256');
+
+        // Registrar la sesión (token hash) en cache por 1h
+        try {
+            $tokenId = substr(hash('sha256', $token), 0, 32);
+            $sessions[$tokenId] = time() + 3600;
+            // Limpiar expiradas post-inserción
+            $now = time();
+            $sessions = array_filter($sessions, fn($exp) => $exp > $now);
+            cache()->put($sessionsKey, $sessions, now()->addHours(1));
+        } catch (\Throwable $e) {}
 
         return [
             'token' => $token,

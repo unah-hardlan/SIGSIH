@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Http\Resources\ParametroResource;
 use App\Http\Requests\StoreParametroRequest;
 use App\Http\Requests\UpdateParametroRequest;
+use App\Services\BitacoraService;
 
 class ParametroController extends Controller
 {
+    public function __construct(private BitacoraService $bitacora) {}
     /**
      * Display a listing of the resource.
      */
@@ -51,6 +53,7 @@ class ParametroController extends Controller
         $data['creado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_creacion'] = now();
         $parametro = Parametro::create($data);
+    try { $this->bitacora->logFor('Parámetros', 'Insertar', 'Creación de parámetro '.$parametro->parametro); } catch (\Throwable $e) {}
         return (new ParametroResource($parametro))->response()->setStatusCode(201);
     }
 
@@ -78,6 +81,7 @@ class ParametroController extends Controller
         $data['modificado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_modificacion'] = now();
         $parametro->update($data);
+    try { $this->bitacora->logFor('Parámetros', 'Actualizar', 'Actualización de parámetro '.$parametro->parametro); } catch (\Throwable $e) {}
         return (new ParametroResource($parametro))->response();
     }
 
@@ -89,6 +93,7 @@ class ParametroController extends Controller
         $parametro = Parametro::find($id);
         if (!$parametro) return response()->json(['error'=>'Parámetro no encontrado'],404);
         $parametro->delete();
+    try { $this->bitacora->logFor('Parámetros', 'Eliminar', 'Eliminación de parámetro '.$parametro->parametro); } catch (\Throwable $e) {}
         return response()->json(['message'=>'Parámetro eliminado']);
     }
 

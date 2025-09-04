@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreObjetoRequest;
 use App\Http\Requests\UpdateObjetoRequest;
 use App\Http\Resources\ObjetoResource;
+use App\Services\BitacoraService;
 
 class ObjetoController extends Controller
 {
+    public function __construct(private BitacoraService $bitacora) {}
     /**
      * Listado con búsqueda, orden y paginación.
      */
@@ -71,6 +73,7 @@ class ObjetoController extends Controller
         $data['creado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_creacion'] = now();
         $objeto = Objeto::create($data);
+    try { $this->bitacora->log('Insertar', 'Creación de objeto '.$objeto->nombre_objeto, $objeto->id_objetos_pk); } catch (\Throwable $e) {}
         return (new ObjetoResource($objeto))->response()->setStatusCode(201);
     }
 
@@ -91,6 +94,7 @@ class ObjetoController extends Controller
         $data['modificado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_modificacion'] = now();
         $objeto->update($data);
+    try { $this->bitacora->log('Actualizar', 'Actualización de objeto '.$objeto->nombre_objeto, $objeto->id_objetos_pk); } catch (\Throwable $e) {}
         return (new ObjetoResource($objeto))->response();
     }
 
@@ -99,7 +103,17 @@ class ObjetoController extends Controller
     {
         $objeto = Objeto::find($id);
         if (!$objeto) return response()->json(['error' => 'Objeto no encontrado'], 404);
-        $objeto->delete();
+        try {
+            $objeto->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json([
+                    'error' => 'conflict',
+                    'message' => 'No se puede eliminar el objeto porque tiene registros asociados (Bitácora o Permisos).'], 409);
+            }
+            throw $e;
+        }
+    try { $this->bitacora->log('Eliminar', 'Eliminación de objeto '.$objeto->nombre_objeto, $objeto->id_objetos_pk); } catch (\Throwable $e) {}
         return response()->json(['message' => 'Objeto eliminado']);
     }
 }

@@ -11,11 +11,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use function response;
+use App\Services\BitacoraService;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 
 class AuthController extends Controller
 {
-    public function __construct(private AuthService $authService) {}
+    public function __construct(private AuthService $authService, private BitacoraService $bitacora) {}
 
     public function login(LoginRequest $request): JsonResponse
     {
@@ -30,14 +33,39 @@ class AuthController extends Controller
         if (isset($result['error'])) {
             return response()->json(['error' => $result['error']], $result['code']);
         }
-        $response = response()->json($result, 200);
+    // Registrar en bitácora
+    try { $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null); } catch (\Throwable $e) {}
+    $response = response()->json($result, 200);
         $response->cookie('auth_token', $result['token'], 60, '/', null, false, true, false, 'Lax');
         return $response;
     }
 
     public function logout(): JsonResponse
     {
-        return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, false, true, false, 'Lax');
+        // Intentar identificar usuario desde Authorization Bearer para loguear correctamente y liberar slot de sesión.
+        $userId = null; $tokenId = null;
+        try {
+            $auth = request()->header('Authorization');
+            if ($auth && str_starts_with($auth, 'Bearer ')) {
+                $token = substr($auth, 7);
+                $payload = JWT::decode($token, new Key(config('jwt.secret'), 'HS256'));
+                $userId = (int) ($payload->sub ?? null);
+                $tokenId = substr(hash('sha256', $token), 0, 32);
+            }
+        } catch (\Throwable $e) {}
+        // Remover token actual del registro de sesiones concurrentes
+        try {
+            if ($userId && $tokenId) {
+                $sessionsKey = 'user_sessions:' . $userId;
+                $sessions = cache()->get($sessionsKey, []);
+                if (is_array($sessions) && isset($sessions[$tokenId])) {
+                    unset($sessions[$tokenId]);
+                    cache()->put($sessionsKey, $sessions, now()->addHours(1));
+                }
+            }
+        } catch (\Throwable $e) {}
+    try { $this->bitacora->logFor('Login', 'Logout', 'Cierre de sesión', $userId); } catch (\Throwable $e) {}
+    return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, false, true, false, 'Lax');
     }
 
     // Registro que crea un usuario usando las mismas reglas que StoreUsuarioRequest.

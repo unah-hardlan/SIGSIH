@@ -3,14 +3,17 @@
   const API = {
     roles: '/api/roles',
     objetos: '/api/objetos',
-  permisos: '/api/permisos',
-  upsertPerm: (rolId, objId) => `/api/permisos/roles/${rolId}/objetos/${objId}`,
+    permisos: '/api/permisos',
+    upsertPerm: (rolId, objId) => `/api/permisos/roles/${rolId}/objetos/${objId}`,
   };
 
   const authHeaders = () => {
     const t = localStorage.getItem('authToken');
-    return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type':'application/json' } : { 'Content-Type':'application/json' };
+    const h = { 'Content-Type': 'application/json' };
+    if (t) h['Authorization'] = `Bearer ${t}`;
+    return h;
   };
+
   async function apiGet(url, opts = {}){
     const res = await fetch(url, { headers: authHeaders(), credentials: 'same-origin', signal: opts.signal });
     if(!res.ok) throw new Error(await res.text().catch(()=>res.statusText));
@@ -38,14 +41,11 @@
     return {
       loading: false,
       error: '',
-      roles: [], // [{id, rol, descripcion_rol, ...}]
-      objetos: [], // [{id, nombre_objeto, ...}]
+      roles: [],
+      objetos: [],
       selectedRoleId: null,
-  // pending operations per cell: key `${objId}:${field}` -> { controller, token }
-  pending: {},
-  // debounce timers per cell
-  commitTimers: {},
-      // permisos por objeto para el rol seleccionado: map de objId -> { id, permiso_consultar, permiso_insercion, permiso_actualizar, permiso_eliminacion }
+      pending: {},
+      commitTimers: {},
       permsByObj: {},
       permColumns: [
         { field: 'permiso_consultar', label: 'Ver' },
@@ -80,7 +80,6 @@
           this.loading = true; this.error = '';
           const res = await apiGet(`${API.permisos}?all=1&id_rol_fk=${encodeURIComponent(roleId)}`);
           const list = normalizeCollection(res);
-          // construir mapa base con falsos
           const byObj = {};
           for(const o of this.objetos){
             byObj[o.id] = {
@@ -130,7 +129,6 @@
         const rec = this.permsByObj[objId]; if(!rec) return;
         const prev = rec[field];
         rec[field] = !prev; // optimistic flip
-        // Debounce commit to avoid lag and coalesce rapid toggles
         this.scheduleCommit(objId, field);
       },
 
@@ -148,7 +146,6 @@
         const rec = this.permsByObj[objId]; if(!rec) return;
         const desired = !!rec[field];
         const key = this.keyFor(objId, field);
-        // cancel any in-flight for this cell
         const old = this.pending[key];
         if(old){ try { old.controller.abort(); } catch(_){} }
         const controller = new AbortController();
@@ -158,7 +155,6 @@
           if(rec.id){
             const payload = { [field]: desired };
             const updated = await apiSend(`${API.permisos}/${rec.id}`, 'PUT', payload, { signal: controller.signal });
-            // reflect booleans in case backend normalizes
             const data = updated?.data || updated;
             if(data && this.pending[key]?.token === token){
               rec.permiso_consultar = !!data.permiso_consultar;
@@ -167,7 +163,6 @@
               rec.permiso_eliminacion = !!data.permiso_eliminacion;
             }
           } else {
-            // Intentar upsert atómico por rol/objeto
             const payload = { [field]: desired };
             try{
               const updated = await apiSend(API.upsertPerm(roleId, objId), 'PUT', payload, { signal: controller.signal });
@@ -180,7 +175,6 @@
                 rec.permiso_eliminacion = !!data.permiso_eliminacion;
               }
             } catch(err){
-              // Fallback seguro: buscar existente o crear
               const existing = await apiGetList(`${API.permisos}?all=1&id_rol_fk=${encodeURIComponent(roleId)}&id_objeto_fk=${encodeURIComponent(objId)}`, { signal: controller.signal });
               const first = existing[0];
               if (first) {
@@ -195,8 +189,10 @@
                   const upd = await apiSend(`${API.permisos}/${foundId}`, 'PUT', full, { signal: controller.signal });
                   const d2 = upd?.data || upd; if(this.pending[key]?.token === token){
                     rec.id = foundId;
-                    rec.permiso_consultar = !!d2.permiso_consultar; rec.permiso_insercion = !!d2.permiso_insercion;
-                    rec.permiso_actualizar = !!d2.permiso_actualizar; rec.permiso_eliminacion = !!d2.permiso_eliminacion;
+                    rec.permiso_consultar = !!d2.permiso_consultar;
+                    rec.permiso_insercion = !!d2.permiso_insercion;
+                    rec.permiso_actualizar = !!d2.permiso_actualizar;
+                    rec.permiso_eliminacion = !!d2.permiso_eliminacion;
                   }
                 } else {
                   await this.loadPermisosForRole(roleId);
@@ -217,19 +213,15 @@
             }
           }
         } catch(e){
-          // if request was aborted due to a newer toggle, ignore
           if (e && (e.name === 'AbortError' || /aborted|abort/i.test(e.message||''))) {
             return;
           }
-          // revert on error
-          // revert to server-synced state only if this is still the latest operation for this cell
           if(this.pending[key]?.token === token){
             rec[field] = !desired;
           }
           this.error = parseErr(e);
           setTimeout(()=>{ this.error=''; }, 2500);
         } finally {
-          // clear pending only if still current
           if(this.pending[key]?.token === token){
             delete this.pending[key];
           }
@@ -246,4 +238,6 @@
   document.addEventListener('alpine:init', () => {
     Alpine.store('access', createAccessStore());
   });
+
 })();
+ 

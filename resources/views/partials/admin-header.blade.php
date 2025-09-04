@@ -65,7 +65,12 @@
             <div x-data="{ open: false, logoutConfirm: false }" class="relative">
                 <button @click="open = !open"
                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold focus:outline-none">
-                    <span>{{ substr(strtoupper(Auth::user()->usuario ?? 'U'), 0, 2) }}</span>
+                    <template x-if="$store.perfil.persona?.avatar_path">
+                        <img :src="`${window.location.origin}/storage/${$store.perfil.persona.avatar_path}`" alt="Foto de perfil" class="w-full h-full rounded-full object-cover">
+                    </template>
+                    <template x-if="!$store.perfil.persona?.avatar_path">
+                        <span>{{ substr(strtoupper(Auth::user()->usuario ?? 'U'), 0, 2) }}</span>
+                    </template>
                 </button>
                 <div x-show="open" x-cloak @click.away="open = false" @header-link-click="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-blue-200 shadow rounded-md py-1">

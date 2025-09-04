@@ -1,5 +1,4 @@
 // Alpine store to assign roles to users
-(function(){
   const API = { users: '/api/usuarios', roles: '/api/roles' };
 
   const authHeaders = () => {
@@ -125,4 +124,3 @@
       debouncedFetch(){ if (this._debounceTimer) clearTimeout(this._debounceTimer); this._debounceTimer = setTimeout(()=> this.fetchUsers(1), 350); },
     });
   });
-})();
