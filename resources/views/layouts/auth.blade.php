@@ -16,19 +16,19 @@
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
 </head>
 
-<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
-    <div class="fixed top-4 right-4">
-        <label @click.prevent="toggleTheme()" class="switch cursor-pointer">
-            <input type="checkbox" class="hidden" :checked="isDark">
-            <span class="slider"></span>
-        </label>
-    </div>
+<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
+        <div class="fixed top-4 right-4">
+            <label @click.prevent="toggleTheme()" class="switch cursor-pointer rounded-full border border-gray-300 dark:border-gray-500">
+                <input type="checkbox" class="hidden" :checked="isDark">
+                <span class="slider"></span>
+            </label>
+        </div>
 
-    <div class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-sm mx-auto">
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
+            <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
                 <div class="text-center mb-4">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-200 transition-colors">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-500 transition-colors">
                         <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo" style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-boldy">
