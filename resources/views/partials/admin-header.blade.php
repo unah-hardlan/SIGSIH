@@ -73,10 +73,10 @@
                     </template>
                 </button>
                 <div x-show="open" x-cloak @click.away="open = false" @header-link-click="open = false"
-                    class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-blue-200 shadow rounded-md py-1">
+                    class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-blue-200 dark:border-gray-700 shadow-lg rounded-md py-1 backdrop-blur-md/0">
                     <x-admin.header-menu-link view-name="perfil"
                         class="">
-                        <i class="fas fa-user-edit text-blue-500"></i>
+                        <i class="fas fa-user-edit text-blue-500 dark:text-white"></i>
                         Editar perfil
                     </x-admin.header-menu-link>
                     <x-admin.header-menu-link @click="logoutConfirm = true">
