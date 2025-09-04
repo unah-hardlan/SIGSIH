@@ -19,7 +19,7 @@
         <x-admin.tabla-crud class="nunito-bold" titulo="Cotizaciones">
             <x-slot:filtros>
                 <div class="w-full">
-                    <div class="flex mb-4">
+                    <div class="flex">
                         <div class="flex-1 relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-2">
                                 <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
@@ -27,7 +27,7 @@
                                 </svg>
                             </span>
                             <input placeholder="Buscar por ID o cliente" 
-                                class="appearance-none rounded-md border border-gray-300 block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:border-blue-500 focus:outline-none nunito-regular" />
+                                class="appearance-none rounded-md border border-gray-300 dark:border-gray-700 block pl-8 pr-6 py-2 w-full bg-white dark:bg-gray-900 text-sm placeholder-gray-400 dark:placeholder-gray-400 text-gray-700 dark:text-gray-200 focus:border-blue-500 focus:outline-none nunito-regular" />
                         </div>
                         <button @click="showFilters = !showFilters" class="ml-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm flex items-center nunito-regular">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,20 +48,20 @@
                 </button>
             </x-slot:boton>
 
-            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="bg-gray-50 p-4 rounded-md shadow-sm mb-4">
+            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-sm mb-4">
                 <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
                     <div class="w-full md:w-1/2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Rango de fechas</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white mb-1 nunito-bold">Rango de fechas</label>
                         <div class="flex space-x-2">
-                            <input type="date" placeholder="dd/mm/aaaa" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
-                            <input type="date" placeholder="dd/mm/aaaa" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
+                            <input type="date" placeholder="dd/mm/aaaa" class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-white [&::-webkit-calendar-picker-indicator]:dark:filter [&::-webkit-calendar-picker-indicator]:dark:invert" />
+                            <input type="date" placeholder="dd/mm/aaaa" class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-white [&::-webkit-calendar-picker-indicator]:dark:filter [&::-webkit-calendar-picker-indicator]:dark:invert" />
                         </div>
                     </div>
 
                     <!-- Cliente -->
                     <div class="w-full md:w-1/2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Cliente</label>
-                        <select class="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Cliente</label>
+                        <select class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
                             <option value="">Todos los clientes</option>
                             <option value="CLI-1234">Juan Orlando Hernandez</option>
                             <option value="CLI-5678">Rocky</option>
@@ -70,15 +70,15 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Rango de montos</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Rango de montos</label>
                     <div class="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-2 space-y-2 md:space-y-0">
-                        <input type="number" placeholder="Monto mínimo" class="w-full md:w-1/2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
-                        <input type="number" placeholder="Monto máximo" class="w-full md:w-1/2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
+                        <input type="number" placeholder="Monto mínimo" class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-white" />
+                        <input type="number" placeholder="Monto máximo" class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-white" />
                     </div>
                 </div>
                 
                 <div class="flex justify-end space-x-2">
-                    <button class="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 text-sm nunito-regular">
+                    <button class="px-4 py-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 text-sm nunito-regular">
                         Limpiar
                     </button>
                     <button class="px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm nunito-regular">
@@ -91,13 +91,13 @@
                 <table class="min-w-full text-sm">
                     <thead class="nunito-bold">
                         <tr>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">ID</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">ID Cliente</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Fecha Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Válida Hasta</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Subtotal</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Total</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Acciones</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID Cliente</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha Cotización</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida Hasta</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Subtotal</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="nunito-regular">

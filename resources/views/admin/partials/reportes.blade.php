@@ -18,35 +18,41 @@
         filtroReporte: '',
         filtroEstado: ''
     }" class="overflow-x-auto">
-    <div class="bg-white rounded-lg shadow p-6 mt-6">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6">
         <div
-            class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Reportes</h2>
-            <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
-                <input type="text" x-model="filtroReporte" placeholder="Buscar reporte..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-                <select x-model="filtroEstado" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                    <option value="" class="nunito-regular">Todos los estados</option>
-                    <option class="nunito-regular">Generado</option>
-                    <option class="nunito-regular">Pendiente</option>
-                    <option class="nunito-regular">Archivado</option>
-                </select>
+            class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Reportes</h2>
+            <div class="flex-1 md:ml-6">
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchReportes',
+                    'filtrosSelect' => [
+                        'estadoReporteFiltro' => [
+                            'label' => 'Estado',
+                            'options' => ['Generado', 'Pendiente', 'Archivado']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'fecha_reporte' => 'Fecha de Reporte',
+                        'tipo_visita' => 'Tipo de Visita',
+                        'servicio_realizado' => 'Servicio Realizado'
+                    ]
+                ])
             </div>
             <button @click="isModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
                 reporte</button>
         </div>
         <table class="min-w-full text-sm">
-            <thead class="bg-gray-100 nunito-bold">
+            <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                 <tr>
-                    <th class="py-2 px-4 text-left nunito-bold">ID Reporte</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Fecha de Reporte</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Observaciones</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Tipo de Visita</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Servicio Realizado</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Acción Realizada</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Orden de Servicio</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Reporte</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha de Reporte</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Observaciones</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Tipo de Visita</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Servicio Realizado</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acción Realizada</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Orden de Servicio</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,14 +61,14 @@
                         (!filtroReporte || r.observaciones.toLowerCase().includes(filtroReporte.toLowerCase()))
                         && (!filtroEstado || filtroEstado === 'Generado') // Solo a modo ejemplo
                     )" :key="reporte.id_reporte">
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.id_reporte"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.fecha_reporte"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.observaciones"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.tipo_visita"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.servicio_realizado"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.accion_realizada"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="reporte.orden_servicio"></td>
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.id_reporte"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.fecha_reporte"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.observaciones"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.tipo_visita"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.servicio_realizado"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.accion_realizada"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="reporte.orden_servicio"></td>
                         <td class="py-2 px-4 flex gap-2">
                             <a :href="`{{ route('admin.formato-reporte') }}?id_reporte=${reporte.id_reporte}&fecha_reporte=${reporte.fecha_reporte}&observaciones=${reporte.observaciones}&tipo_visita=${reporte.tipo_visita}&servicio_realizado=${reporte.servicio_realizado}&accion_realizada=${reporte.accion_realizada}&orden_servicio=${reporte.orden_servicio}`"
                                 target="_blank"
@@ -70,9 +76,9 @@
                                 <i class="fas fa-eye mr-1"></i> Ver detalles
                             </a>
                             <a href="#" @click.prevent="isEditModalOpen = true; reporteToEdit = reporte"
-                                class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></a>
+                                class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
                             <a href="#" @click.prevent="isDeleteModalOpen = true; reporteToDelete = reporte"
-                                class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></a>
+                                class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 </template>

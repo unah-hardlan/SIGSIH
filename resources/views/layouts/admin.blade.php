@@ -72,7 +72,7 @@
     @livewireStyles
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col" 
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" 
       x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
@@ -94,15 +94,15 @@
 
         @include('partials.admin-sidebar')
 
-        <main class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white text-gray-900">
+        <main class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
             @include('partials.admin-header')
             @hasSection('page-header')
-            <div class="bg-white p-4 rounded shadow mb-6">
+            <div class="bg-white dark:bg-gray-900 p-4 rounded shadow mb-6">
                 @yield('page-header')
             </div>
             @endif
 
-            <div class="bg-white p-3 sm:p-6 rounded-lg shadow">
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg shadow">
                 @if(isset($partialView))
                 @include($partialView)
                 @else
@@ -111,6 +111,47 @@
             </div>
         </main>
     </div>
+
+    <script>
+        (function(){
+            const html = document.documentElement;
+
+            function applyThemeFromStorage() {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved === 'dark';
+                html.classList.toggle('dark', isDark);
+                const sw = document.getElementById('theme-switch');
+                if (sw) sw.checked = isDark;
+            }
+
+            function onToggle(e) {
+                const isDark = !!e.target.checked;
+                html.classList.toggle('dark', isDark);
+                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(_) {}
+            }
+
+            function bindSwitch() {
+                const sw = document.getElementById('theme-switch');
+                if (!sw) return;
+                // Evitar múltiples bindings al reinsertar el header
+                if (sw.__themeBound) return;
+                sw.addEventListener('change', onToggle);
+                sw.__themeBound = true;
+            }
+
+            function initTheme() {
+                applyThemeFromStorage();
+                bindSwitch();
+            }
+
+            document.addEventListener('DOMContentLoaded', initTheme);
+            // Re-vincular después de navegación SPA
+            document.addEventListener('app:view-loaded', initTheme);
+            // Sincronizar entre pestañas
+            window.addEventListener('storage', (e) => { if (e.key === 'theme') applyThemeFromStorage(); });
+        })();
+    </script>
+
     @livewireScripts
 </body>
 

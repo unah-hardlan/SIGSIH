@@ -12,19 +12,24 @@
     filtroAccion: '',
     filtroTipo: ''
 }">
-    <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6 w-full">
         <!-- HEADER Y FILTROS -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full pb-4 mb-4 border-b">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Acciones Realizadas</h2>
-            <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
-                <input type="text" x-model="filtroAccion" placeholder="Buscar acción..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-                <select x-model="filtroTipo" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                    <option class="nunito-regular" value="">Todas las acciones</option>
-                    <option class="nunito-regular">Revisión</option>
-                    <option class="nunito-regular">Mantenimiento</option>
-                    <option class="nunito-regular">Capacitación</option>
-                </select>
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Acciones Realizadas</h2>
+            <div class="flex-1 md:ml-6">
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchAccion',
+                    'filtrosSelect' => [
+                        'tipoAccionFiltro' => [
+                            'label' => 'Tipo de Acción',
+                            'options' => ['Revisión', 'Mantenimiento', 'Capacitación']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'nombre' => 'Nombre',
+                        'descripcion' => 'Descripción'
+                    ]
+                ])
             </div>
             <button @click="isAccionModalOpen = true; nuevaAccion = {nombre:'', descripcion:''}"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
@@ -33,12 +38,12 @@
         </div>
         <!-- TABLA -->
         <table class="min-w-full text-sm w-full">
-            <thead class="bg-gray-100 nunito-bold">
+            <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                 <tr>
-                    <th class="py-2 px-4 text-left nunito-bold">ID Acción</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Acción</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descripción</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,17 +52,17 @@
                         (!filtroAccion || a.descripcion.toLowerCase().includes(filtroAccion.toLowerCase()))
                         && (!filtroTipo || a.nombre === filtroTipo)
                     )" :key="accion.id_accion">
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4 nunito-regular" x-text="accion.id_accion"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="accion.nombre"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="accion.descripcion"></td>
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.id_accion"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.nombre"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.descripcion"></td>
                         <td class="py-2 px-4 flex gap-2 nunito-regular">
                             <a href="#"
                                 @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
-                                class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
+                                class="text-blue-600 hover:text-blue-800 dark:text-blue-300"><i class="fas fa-edit"></i></a>
                             <a href="#"
                                 @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
+                                class="text-red-600 hover:text-red-800 dark:text-red-400"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 </template>

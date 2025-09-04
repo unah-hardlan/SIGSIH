@@ -1,6 +1,9 @@
 <div
     x-data="{ 
         tab: 'ordenes', 
+        searchOrden: '',
+        tecnicoOrden: '',
+        ordenarPor: 'id',
         expandedRows: {},
         isModalOpen: false, 
         isEditModalOpen: false, 
@@ -21,27 +24,47 @@
         ordenToDelete: null,
         toggleRow(rowId) {
             this.expandedRows[rowId] = !this.expandedRows[rowId];
+        },
+        deleteOrden() {
+            if (this.ordenToDelete) {
+                console.log('Eliminando orden:', this.ordenToDelete);
+                this.isDeleteModalOpen = false;
+                this.ordenToDelete = null;
+            }
         }
-    }">
-    <ul class="flex border-b nunito-bold">
+    }"
+    @confirm-delete.window="
+        if (isDeleteModalOpen) {
+            deleteOrden();
+        }
+    ">
+    <ul class="flex border-b border-gray-200 dark:border-gray-700 nunito-bold">
         <li @click="tab='ordenes'"
-            :class="tab==='ordenes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
+            :class="tab==='ordenes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="mr-6 pb-2 nunito-bold">Gestión Órdenes de Servicio</li>
     </ul>
     
     <div x-show="tab==='ordenes'" class="overflow-x-auto">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Lista de Órdenes de Servicio</h2>
+                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Lista de Órdenes de Servicio</h2>
             </x-slot>
             <x-slot name="filtros">
-                <input type="text" placeholder="Buscar orden..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-                <select class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                    <option class="nunito-regular" value="">Todos los técnicos</option>
-                    <option class="nunito-regular">Técnico 1</option>
-                    <option class="nunito-regular">Técnico 2</option>
-                </select>
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchOrden',
+                    'filtrosSelect' => [
+                        'tecnicoOrden' => [
+                            'label' => 'técnicos',
+                            'options' => ['Técnico 1', 'Técnico 2', 'Técnico 3']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'id' => 'ID',
+                        'fecha_recepcion' => 'Fecha Recepción',
+                        'fecha_inicio' => 'Fecha Inicio',
+                        'fecha_finalizacion' => 'Fecha Finalización'
+                    ]
+                ])
             </x-slot>
             <x-slot name="boton">
                 <button @click="isModalOpen = true"
@@ -50,24 +73,24 @@
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 nunito-bold">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Orden</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Solicitud</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Técnico</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Fecha Recepción</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Calificación</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Orden</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Solicitud</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Técnico</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Recepción</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Calificación</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b nunito-regular hover:bg-gray-50">
-                            <td class="py-2 px-4 nunito-regular">1</td>
-                            <td class="py-2 px-4 nunito-regular">1001</td>
-                            <td class="py-2 px-4 nunito-regular">T-001</td>
-                            <td class="py-2 px-4 nunito-regular">2025-07-01</td>
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">T-001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-01</td>
                             <td class="py-2 px-4">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs nunito-regular">5/5</span>
+                                <span class="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs nunito-regular">5/5</span>
                             </td>
                             <td class="py-2 px-4">
                                 <div class="flex gap-2 items-center">
@@ -100,32 +123,32 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr x-show="expandedRows[1]" x-transition class="bg-gray-50 border-b">
+                        <tr x-show="expandedRows[1]" x-transition class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                             <td colspan="6" class="py-3 px-4">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                                     <div>
-                                        <span class="font-semibold text-gray-600 nunito-bold">Fecha Inicio:</span>
-                                        <span class="ml-2 nunito-regular">2025-07-02</span>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha Inicio:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-02</span>
                                     </div>
                                     <div>
-                                        <span class="font-semibold text-gray-600 nunito-bold">Fecha Finalización:</span>
-                                        <span class="ml-2 nunito-regular">2025-07-05</span>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha Finalización:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-05</span>
                                     </div>
                                     <div>
-                                        <span class="font-semibold text-gray-600 nunito-bold">ID Cotización:</span>
-                                        <span class="ml-2 nunito-regular">C-001</span>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">ID Cotización:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">C-001</span>
                                     </div>
                                     <div class="md:col-span-2 lg:col-span-3">
-                                        <span class="font-semibold text-gray-600 nunito-bold">Observaciones:</span>
-                                        <span class="ml-2 nunito-regular">Sin observaciones</span>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Observaciones:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Sin observaciones</span>
                                     </div>
                                     <div class="md:col-span-2 lg:col-span-3">
-                                        <span class="font-semibold text-gray-600 nunito-bold">Diagnóstico Técnico:</span>
-                                        <span class="ml-2 nunito-regular">Diagnóstico técnico ejemplo</span>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico Técnico:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Diagnóstico técnico ejemplo</span>
                                     </div>
                                     <div class="md:col-span-2 lg:col-span-3">
-                                        <span class="font-semibold text-gray-600 nunito-bold">Diagnóstico Cliente:</span>
-                                        <span class="ml-2 nunito-regular">Diagnóstico cliente ejemplo</span>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico Cliente:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Diagnóstico cliente ejemplo</span>
                                     </div>
                                 </div>
                             </td>
@@ -265,6 +288,10 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Orden -->
-    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpen" itemToDelete="ordenToDelete"
-        message="¿Estás seguro de que quieres eliminar la orden?" />
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteModalOpen" 
+        title="Eliminar Orden de Servicio"
+        item-to-delete="ordenToDelete"
+        item-name-property="id"
+        message="¿Estás seguro de que deseas eliminar la orden ID" />
 </div>

@@ -332,6 +332,9 @@ document.addEventListener("alpine:init", () => {
                     initializeDashboardChartsWithRetry();
                 }, 100);
             }
+
+            // Notificar a listeners (p.ej., re-vincular el switch de tema) que la vista se cargó
+            try { document.dispatchEvent(new CustomEvent('app:view-loaded')); } catch(_) {}
         },
 
         saveSidebarScrollPosition() {

@@ -10,21 +10,27 @@
     }">
     <x-admin.tabla-crud class="nunito-bold">
         <x-slot name="titulo">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Kardex (Movimientos)</h2>
+            <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Kardex (Movimientos)</h2>
         </x-slot>
         <x-slot name="filtros">
-            <input type="text" x-model="searchMovimiento" placeholder="Buscar movimiento..."
-                class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-            <select x-model="searchProducto" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                <option value="" class="nunito-regular">Todos los productos</option>
-                <option class="nunito-regular">Producto Ejemplo</option>
-                <option class="nunito-regular">Producto 2</option>
-            </select>
-            <select x-model="searchTipo" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                <option value="" class="nunito-regular">Todos los tipos</option>
-                <option value="Entrada" class="nunito-regular">Entrada</option>
-                <option value="Salida" class="nunito-regular">Salida</option>
-            </select>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchMovimiento',
+                'filtrosSelect' => [
+                    'productoKardexFiltro' => [
+                        'label' => 'Producto',
+                        'options' => ['Producto Ejemplo', 'Producto 2']
+                    ],
+                    'tipoKardexFiltro' => [
+                        'label' => 'Tipo Movimiento',
+                        'options' => ['Entrada', 'Salida']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'fecha_movimiento' => 'Fecha Movimiento',
+                    'cantidad' => 'Cantidad',
+                    'motivo' => 'Motivo'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="flex flex-col sm:flex-row gap-2">
@@ -40,16 +46,16 @@
         </x-slot>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left nunito-bold">ID Kardex</th>
-                        <th class="py-2 px-4 text-left nunito-bold">ID Producto</th>
-                        <th class="py-2 px-4 text-left nunito-bold">ID Tipo Movimiento</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Cantidad</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Fecha Movimiento</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Motivo</th>
-                        <th class="py-2 px-4 text-left nunito-bold">ID Técnico</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Kardex</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Producto</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Tipo Movimiento</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Cantidad</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha Movimiento</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Motivo</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Técnico</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,23 +63,23 @@
                         {id_kardex_pk: 1, id_producto_fk: 101, id_tipo_movimiento_fk: 'Entrada', cantidad: 10, fecha_movimiento: '2025-07-26', motivo: 'Inventario inicial', id_tecnico_fk: 5},
                         {id_kardex_pk: 2, id_producto_fk: 102, id_tipo_movimiento_fk: 'Salida', cantidad: 3, fecha_movimiento: '2025-08-01', motivo: 'Venta', id_tecnico_fk: 4}
                     ]" :key="movimiento.id_kardex_pk">
-                        <tr class="border-b nunito-regular" x-show="
+                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900" x-show="
                                 (!searchMovimiento || movimiento.motivo.toLowerCase().includes(searchMovimiento.toLowerCase())) &&
                                 (!searchProducto || String(movimiento.id_producto_fk) === searchProducto) &&
                                 (!searchTipo || movimiento.id_tipo_movimiento_fk === searchTipo)
                             ">
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.id_kardex_pk"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.id_producto_fk"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.id_tipo_movimiento_fk"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.cantidad"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.fecha_movimiento"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.motivo"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="movimiento.id_tecnico_fk"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.id_kardex_pk"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.id_producto_fk"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.id_tipo_movimiento_fk"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.cantidad"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.fecha_movimiento"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.motivo"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="movimiento.id_tecnico_fk"></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click="isEditModalOpen = true; movimientoToEdit = {...movimiento}"
-                                    class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></a>
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteModalOpen = true; movimientoToDelete = {...movimiento}"
-                                    class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></a>
+                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
