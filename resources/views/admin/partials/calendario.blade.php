@@ -6,7 +6,7 @@
         </ul>
 
                 <div x-show="tab==='calendario'" class="py-8">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">Calendario</h2>
                                 <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                         <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true ">
@@ -17,35 +17,6 @@
                                                 <i class="fas fa-file-alt"></i> Generar Reporte
                                         </a>
                                 </div>
-                        </div>
-                        <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                                @include('partials.filtros-generales', [
-                                    'searchModel' => 'searchCalendario',
-                                    'filtrosSelect' => [
-                                        'agenciaFiltro' => [
-                                            'label' => 'Agencias',
-                                            'options' => ['Agencia Central', 'Agencia Norte']
-                                        ],
-                                        'estadoFiltro' => [
-                                            'label' => 'Estados',
-                                            'options' => ['Programado', 'Realizado', 'Cancelado']
-                                        ],
-                                        'tipoFiltro' => [
-                                            'label' => 'Tipo de mantenimiento',
-                                            'options' => ['Preventivo', 'Correctivo']
-                                        ],
-                                        'clienteFiltro' => [
-                                            'label' => 'Clientes',
-                                            'options' => ['Juan Pérez', 'Ana López']
-                                        ]
-                                    ],
-                                    'ordenarOptions' => [
-                                        'fecha' => 'Fecha',
-                                        'estado' => 'Estado',
-                                        'agencia' => 'Agencia',
-                                        'cliente' => 'Cliente'
-                                    ]
-                                ])
                         </div>
             <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
                 <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-6">
