@@ -42,7 +42,6 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            'log.crud',
         ],
     ];
 
@@ -74,7 +73,7 @@ class Kernel extends HttpKernel
         'auth.jwt.web' => \App\Http\Middleware\JwtWebAuth::class,
         'jwt.refresh' => \App\Http\Middleware\JwtRefresh::class,
     'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
-    'log.crud' => \App\Http\Middleware\LogCrudActions::class,
+    'auto.permiso' => \App\Http\Middleware\AutoPermissionMiddleware::class,
     'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
     ];
 }

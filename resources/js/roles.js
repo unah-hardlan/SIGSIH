@@ -1,5 +1,4 @@
 // Alpine store for CRUD de Roles
-(function(){
   const API = { roles: '/api/roles' };
 
   const authHeaders = () => {
@@ -90,9 +89,8 @@
             const all = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' }).then(r=>r.json()).catch(()=>null);
             if(all){ access.roles = normalizeList(all); }
           }
-          try{ window.showToast?.('Rol creado correctamente', 'success'); }catch(_){ }
           return res;
-        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); try{ window.showToast?.(`Error al crear rol: ${this.error}`, 'error'); }catch(_){} }
+        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); }
         finally{ this.loading = false; }
       },
       async update(){
@@ -107,9 +105,8 @@
             const all = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' }).then(r=>r.json()).catch(()=>null);
             if(all){ access.roles = normalizeList(all); }
           }
-          try{ window.showToast?.('Rol actualizado correctamente', 'success'); }catch(_){ }
           return res;
-        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); try{ window.showToast?.(`Error al actualizar rol: ${this.error}`, 'error'); }catch(_){} }
+        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); }
         finally{ this.loading = false; }
       },
       async remove(){
@@ -124,8 +121,7 @@
             const all = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' }).then(r=>r.json()).catch(()=>null);
             if(all){ access.roles = normalizeList(all); }
           }
-          try{ window.showToast?.('Rol eliminado correctamente', 'success'); }catch(_){ }
-        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); try{ window.showToast?.(`Error al eliminar rol: ${this.error}`, 'error'); }catch(_){} }
+        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); }
         finally{ this.loading = false; }
       },
 
@@ -141,4 +137,4 @@
   document.addEventListener('alpine:init', ()=>{
     Alpine.store('roles', createRolesStore());
   });
-})();
+

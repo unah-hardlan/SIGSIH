@@ -1,5 +1,4 @@
 // Alpine store to assign roles to users
-(function(){
   const API = { users: '/api/usuarios', roles: '/api/roles' };
 
   const authHeaders = () => {
@@ -116,8 +115,7 @@
           const idx = this.items.findIndex(u => u.id === id);
           if (idx > -1) this.items[idx].id_rol_fk = this.form.id_rol_fk ? Number(this.form.id_rol_fk) : null;
           this.isAssignOpen = false;
-          try{ window.showToast?.('Rol asignado correctamente', 'success'); }catch(_){ }
-        } catch(e){ this.error = (e && e.message) ? e.message : 'Error asignando rol'; try{ window.showToast?.(`Error al asignar rol: ${this.error}`, 'error'); }catch(_){} }
+        } catch(e){ this.error = (e && e.message) ? e.message : 'Error asignando rol'; }
         finally { this.loading = false; }
       },
 
@@ -126,4 +124,3 @@
       debouncedFetch(){ if (this._debounceTimer) clearTimeout(this._debounceTimer); this._debounceTimer = setTimeout(()=> this.fetchUsers(1), 350); },
     });
   });
-})();

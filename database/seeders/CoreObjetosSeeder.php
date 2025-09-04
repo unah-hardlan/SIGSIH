@@ -27,6 +27,10 @@ class CoreObjetosSeeder extends Seeder
             ['nombre_objeto' => 'Parámetros', 'descripcion_objeto' => 'Parámetros del sistema'],
             ['nombre_objeto' => 'Objetos', 'descripcion_objeto' => 'Catálogo de objetos'],
             ['nombre_objeto' => 'Bitácora', 'descripcion_objeto' => 'Registro de eventos'],
+            // Nuevos objetos solicitados
+            ['nombre_objeto' => 'Mantenimiento del sistema', 'descripcion_objeto' => 'Operaciones de mantenimiento del sistema'],
+            ['nombre_objeto' => 'Gestión de personas', 'descripcion_objeto' => 'Módulos para administrar personas y sus catálogos'],
+            ['nombre_objeto' => 'Gestión de base de datos', 'descripcion_objeto' => 'Herramientas de gestión de base de datos'],
         ];
 
         foreach ($objetos as $obj) {
