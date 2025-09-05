@@ -19,12 +19,6 @@
             <div class="flex-1 md:ml-6">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchAccion',
-                    'filtrosSelect' => [
-                        'tipoAccionFiltro' => [
-                            'label' => 'Tipo de Acción',
-                            'options' => ['Revisión', 'Mantenimiento', 'Capacitación']
-                        ]
-                    ],
                     'ordenarOptions' => [
                         'nombre' => 'Nombre',
                         'descripcion' => 'Descripción'

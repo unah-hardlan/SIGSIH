@@ -20,18 +20,18 @@
     <!-- Tabs -->
     <div class="flex border-b mb-6 flex-wrap gap-2">
         <button @click="tab = 'gestion'"
-            :class="tab === 'gestion' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-200'"
+            :class="tab === 'gestion' ? 'text-blue-600 border-b-2 border-blue-600' : 'dark:text-gray-200'"
             class="px-4 py-2 font-semibold focus:outline-none nunito-bold">Gestión de Permisos</button>
         <button @click="tab = 'crear'"
-            :class="tab === 'crear' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-200'"
+            :class="tab === 'crear' ? 'text-blue-600 border-b-2 border-blue-600' : 'dark:text-gray-200'"
             class="px-4 py-2 font-semibold focus:outline-none nunito-bold">Roles</button>
 
         <button @click="tab = 'asignar'"
-            :class="tab === 'asignar' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-200'"
+            :class="tab === 'asignar' ? 'text-blue-600 border-b-2 border-blue-600' : 'dark:text-gray-200'"
             class="px-4 py-2 font-semibold focus:outline-none nunito-bold">Asignar a Usuarios</button>
 
         <button @click="tab = 'objetos'"
-            :class="tab === 'objetos' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-200'"
+            :class="tab === 'objetos' ? 'text-blue-600 border-b-2 border-blue-600' : 'dark:text-gray-200'"
             class="px-4 py-2 font-semibold focus:outline-none nunito-bold">Objetos</button>
     </div>
 

@@ -1,4 +1,92 @@
-<div x-data="{ tab: 'calendario', isAddModalOpen: false, isEditModalOpen: false, isDetailModalOpen: false, isCancelModalOpen: false, isAddCalendarioModalOpen: false, isEditCalendarioModalOpen: false, selectedEvent: null, calendarioToEdit: {fecha: '', descripcion: '', estado: '', cliente: '', agencia: '', tipo_mantenimiento: ''} }" @include('partials.persist-tab', ['tabKey' => 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
+<div x-data="{ 
+    tab: 'calendario', 
+    isAddModalOpen: false, 
+    isEditModalOpen: false, 
+    isDetailModalOpen: false, 
+    isCancelModalOpen: false, 
+    isAddCalendarioModalOpen: false, 
+    isEditCalendarioModalOpen: false, 
+    selectedEvent: null, 
+    calendarioToEdit: {fecha: '', descripcion: '', estado: '', cliente: '', agencia: '', tipo_mantenimiento: ''},
+    // Calendar variables
+    currentYear: new Date().getFullYear(),
+    currentMonth: new Date().getMonth(),
+    isMonthModalOpen: false,
+    selectedMonth: new Date().getMonth(),
+    selectedYear: new Date().getFullYear(),
+    monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+    dayNames: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+    events: {
+    // Evento de prueba para hoy (visualización de colores)
+    '2025-09-05': [{titulo: 'Visita Técnica (Hoy)', hora: '11:00 am', estado: 'Programado', agencia: 'Agencia Central', direccion: 'Col. Centro, Tegucigalpa', cliente: 'Cliente Demo', tipo: 'Preventivo', orden: 'OS-00999', observaciones: 'Evento de prueba para colores', diagnostico: 'N/A'}],
+        '2025-07-08': [{titulo: 'Reunión', hora: '10:00 am', estado: 'Programado', agencia: 'Agencia Central', direccion: 'Col. Centro, Tegucigalpa', cliente: 'Juan Pérez', tipo: 'Preventivo', orden: 'OS-00123', observaciones: 'Revisión general', diagnostico: 'Sin novedad'}],
+        '2025-07-15': [{titulo: 'Mantenimiento', hora: '2:00 pm', estado: 'Realizado', agencia: 'Agencia Norte', direccion: 'Col. Norte, SPS', cliente: 'María López', tipo: 'Correctivo', orden: 'OS-00124', observaciones: 'Reparación urgente', diagnostico: 'Resuelto'}]
+    },
+    
+    // Calendar methods
+    getDaysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+    },
+    
+    getFirstDayOfMonth(year, month) {
+        return new Date(year, month, 1).getDay();
+    },
+    
+    getCalendarDays() {
+        const daysInMonth = this.getDaysInMonth(this.currentYear, this.currentMonth);
+        const firstDay = this.getFirstDayOfMonth(this.currentYear, this.currentMonth);
+        const days = [];
+        
+        // Add empty days for previous month
+        for (let i = 0; i < firstDay; i++) {
+            days.push({ day: '', isEmpty: true });
+        }
+        
+        // Add days of current month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            days.push({ 
+                day: day, 
+                isEmpty: false, 
+                dateStr: dateStr,
+                events: this.events[dateStr] || []
+            });
+        }
+        
+        return days;
+    },
+    
+    previousMonth() {
+        if (this.currentMonth === 0) {
+            this.currentMonth = 11;
+            this.currentYear--;
+        } else {
+            this.currentMonth--;
+        }
+    },
+    
+    nextMonth() {
+        if (this.currentMonth === 11) {
+            this.currentMonth = 0;
+            this.currentYear++;
+        } else {
+            this.currentMonth++;
+        }
+    },
+    
+    goToToday() {
+        const today = new Date();
+        this.currentYear = today.getFullYear();
+        this.currentMonth = today.getMonth();
+    },
+    
+    isToday(day) {
+        const today = new Date();
+        return day === today.getDate() && 
+               this.currentMonth === today.getMonth() && 
+               this.currentYear === today.getFullYear();
+    }
+}" @include('partials.persist-tab', ['tabKey' => 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
     <div class="w-full">
         <ul class="flex border-b nunito-bold">
             <li @click="tab='calendario'" :class="tab==='calendario' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 cursor-pointer'" class="mr-6 pb-2 nunito-bold">Calendario</li>
@@ -9,9 +97,6 @@
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">Calendario</h2>
                                 <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                                        <button class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm" @click="isAddModalOpen = true ">
-                                                <i class="fas fa-plus mr-2"></i> Agregar
-                                        </button>
                                         <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}" target="_blank"
                                              class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                                                 <i class="fas fa-file-alt"></i> Generar Reporte
@@ -20,59 +105,76 @@
                         </div>
             <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
                 <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <button class="text-blue-500 hover:text-blue-700 font-semibold"><i class="fas fa-chevron-left"></i></button>
-                        <span class="text-lg font-semibold text-gray-700 dark:text-white nunito-bold">Julio 2025</span>
-                        <button class="text-blue-500 hover:text-blue-700 font-semibold"><i class="fas fa-chevron-right"></i></button>
+                    <div class="flex items-center justify-between mb-6">
+                        <button @click="previousMonth()" class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
+                            <i class="fas fa-chevron-left text-lg"></i>
+                        </button>
+                        <span class="text-xl font-semibold text-gray-700 dark:text-white nunito-bold cursor-pointer hover:underline" @click="isMonthModalOpen = true" x-text="monthNames[currentMonth] + ' ' + currentYear"></span>
+                        <button @click="nextMonth()" class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
+                            <i class="fas fa-chevron-right text-lg"></i>
+                        </button>
                     </div>
-                        <div class="grid p-4 grid-cols-7 gap-2 rounded-lg text-center dark:bg-gray-800 ">
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Dom</div>
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Lun</div>
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Mar</div>
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Mié</div>
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Jue</div>
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Vie</div>
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2">Sáb</div>
-                        <div class="py-3 text-base nunito-regular"></div>
-                        <div class="py-3 text-base nunito-regular"></div>
-                        <div class="py-3 text-base nunito-regular"></div>
-                        <div class="py-3 text-base nunito-regular"></div>
-                        <div class="py-3 text-base nunito-regular">1</div>
-                        <div class="py-3 text-base nunito-regular">2</div>
-                        <div class="py-3 text-base nunito-regular">3</div>
-                        <div class="py-3 text-base nunito-regular">4</div>
-                        <div class="py-3 text-base nunito-regular">5</div>
-                        <div class="py-3 text-base nunito-regular">6</div>
-                        <div class="py-3 text-base nunito-regular">7</div>
-                        <div class="py-3 text-base nunito-regular">
-                            <div class="font-bold nunito-bold">8</div>
-                            <div class="mt-1 bg-blue-100 text-blue-700 rounded px-2 py-1 text-xs whitespace-nowrap flex items-center gap-1 cursor-pointer nunito-regular" @click="isDetailModalOpen = true; selectedEvent = {titulo: 'Reunión', hora: '10:00 am', estado: 'Programado', agencia: 'Agencia Central', direccion: 'Col. Centro, Tegucigalpa', cliente: 'Juan Pérez', tipo: 'Preventivo', orden: 'OS-00123', observaciones: 'Revisión general', diagnostico: 'Sin novedad'}">
-                                <i class="fas fa-calendar-check mr-1"></i> Reunión<br><span class="font-normal">10:00 am</span>
+                    <div class="flex justify-end mb-2">
+                        <button @click="goToToday()" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular transition-colors shadow">
+                            <i class="fas fa-calendar-day mr-2"></i> Hoy
+                        </button>
+                    </div>
+                    
+                    <div class="grid p-4 grid-cols-7 gap-2 rounded-lg text-center dark:bg-gray-800">
+                        <template x-for="dayName in dayNames" :key="dayName">
+                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2" x-text="dayName"></div>
+                        </template>
+                        
+                        <template x-for="dayData in getCalendarDays()" :key="dayData.dateStr || Math.random()">
+                            <div class="text-base nunito-regular min-h-24 relative"
+                                 :class="dayData.isEmpty ? '' : [
+                                     isToday(dayData.day) ? 'bg-blue-50 dark:bg-blue-900/40 ring-2 ring-blue-500 dark:ring-blue-400/70' : 'hover:bg-blue-50 dark:hover:bg-blue-800/40',
+                                     'rounded-lg cursor-pointer transition-all px-1 pt-1 pb-2 flex flex-col gap-1 dark:border dark:border-gray-700/40'
+                                 ].join(' ')"
+                                 @click="if(!dayData.isEmpty){ isAddModalOpen = true; calendarioToEdit.fecha = dayData.dateStr; }">
+                                <template x-if="!dayData.isEmpty">
+                                    <div class="flex flex-col h-full">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="font-bold nunito-bold text-gray-700 dark:text-gray-200 text-sm"
+                                                  :class="isToday(dayData.day) ? 'text-blue-700 dark:text-blue-300' : ''" x-text="dayData.day"></span>
+                                        </div>
+                                        <div class="flex flex-col gap-1 overflow-hidden">
+                                            <template x-for="event in dayData.events" :key="event.titulo">
+                                                <div @click.stop="isEditModalOpen = true; selectedEvent = event"
+                                                     class="relative group w-full rounded-md pl-3 pr-2 py-1.5 text-[11px] leading-tight flex items-center gap-2 cursor-pointer transition-all backdrop-blur-sm overflow-hidden border shadow-sm dark:shadow-none"
+                                                     :class="{
+                                                         'bg-indigo-50/90 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-200 border-indigo-200/70 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50': event.estado==='Programado',
+                                                         'bg-emerald-50/90 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-200 border-emerald-200/70 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50': event.estado==='Realizado',
+                                                         'bg-rose-50/90 dark:bg-rose-950/30 text-rose-700 dark:text-rose-200 border-rose-200/70 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-900/50': event.estado==='Cancelado'
+                                                     }">
+                                                    <span class="absolute left-0 top-0 h-full w-1"
+                                                          :class="{
+                                                             'bg-indigo-500': event.estado==='Programado',
+                                                             'bg-emerald-500': event.estado==='Realizado',
+                                                             'bg-rose-500': event.estado==='Cancelado'
+                                                          }"></span>
+                                                    <span class="w-2 h-2 rounded-full flex-shrink-0"
+                                                          :class="{
+                                                             'bg-indigo-500': event.estado==='Programado',
+                                                             'bg-emerald-500': event.estado==='Realizado',
+                                                             'bg-rose-500': event.estado==='Cancelado'
+                                                          }"></span>
+                                                    <div class="flex-1 min-w-0 flex items-center gap-1">
+                                                        <span class="truncate font-medium tracking-tight" x-text="event.titulo"></span>
+                                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md ml-auto font-semibold ring-1 ring-inset"
+                                                              :class="{
+                                                                 'bg-indigo-100/70 dark:bg-indigo-800/40 text-indigo-700 dark:text-indigo-200 ring-indigo-300/60 dark:ring-indigo-500/40': event.estado==='Programado',
+                                                                 'bg-emerald-100/70 dark:bg-emerald-800/40 text-emerald-700 dark:text-emerald-200 ring-emerald-300/60 dark:ring-emerald-500/40': event.estado==='Realizado',
+                                                                 'bg-rose-100/70 dark:bg-rose-800/40 text-rose-700 dark:text-rose-200 ring-rose-300/60 dark:ring-rose-500/40': event.estado==='Cancelado'
+                                                              }" x-text="event.hora"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-                        </div>
-                        <div class="py-3 text-base nunito-regular">9</div>
-                        <div class="py-3 text-base nunito-regular">10</div>
-                        <div class="py-3 text-base nunito-regular">11</div>
-                        <div class="py-3 text-base nunito-regular">12</div>
-                        <div class="py-3 text-base nunito-regular">13</div>
-                        <div class="py-3 text-base nunito-regular">14</div>
-                        <div class="py-3 text-base nunito-regular">15</div>
-                        <div class="py-3 text-base nunito-regular">16</div>
-                        <div class="py-3 text-base nunito-regular">17</div>
-                        <div class="py-3 text-base nunito-regular">18</div>
-                        <div class="py-3 text-base nunito-regular">19</div>
-                        <div class="py-3 text-base nunito-regular">20</div>
-                        <div class="py-3 text-base nunito-regular">21</div>
-                        <div class="py-3 text-base nunito-regular">22</div>
-                        <div class="py-3 text-base nunito-regular">23</div>
-                        <div class="py-3 text-base nunito-regular">24</div>
-                        <div class="py-3 text-base nunito-regular">25</div>
-                        <div class="py-3 text-base nunito-regular">26</div>
-                        <div class="py-3 text-base nunito-regular">27</div>
-                        <div class="py-3 text-base nunito-regular">28</div>
-                        <div class="py-3 text-base nunito-regular">29</div>
-                        <div class="py-3 text-base nunito-regular">30</div>
-                        <div class="py-3 text-base nunito-regular">31</div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -368,7 +470,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Dirección</label>
-                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.direccion"></p>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x_text="selectedEvent.direccion"></p>
                         </div>
                     </div>
                 </div>
@@ -377,27 +479,62 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Cliente</label>
-                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.cliente"></p>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x_text="selectedEvent.cliente"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Tipo de Mantenimiento</label>
-                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.tipo"></p>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x_text="selectedEvent.tipo"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Orden de Servicio</label>
-                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.orden"></p>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x_text="selectedEvent.orden"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Observaciones</label>
-                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.observaciones"></p>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x_text="selectedEvent.observaciones"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico</label>
-                            <p class="text-gray-800 dark:text-white nunito-regular" x-text="selectedEvent.diagnostico"></p>
+                            <p class="text-gray-800 dark:text-white nunito-regular" x_text="selectedEvent.diagnostico"></p>
                         </div>
                     </div>
                 </div>
             </div>
         </x-admin.form-modal>
+    </div>
+
+    <!-- Modal Selección de Mes/Año -->
+    <div x-show="isMonthModalOpen" 
+         x-transition:enter="transition ease-out duration-200" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="transition ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0"
+         style="display: none;" 
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-md">
+        <div x-transition:enter="transition ease-out duration-300 transform" 
+             x-transition:enter-start="opacity-0 scale-95" 
+             x-transition:enter-end="opacity-100 scale-100" 
+             x-transition:leave="transition ease-in duration-200 transform" 
+             x-transition:leave-start="opacity-100 scale-100" 
+             x-transition:leave-end="opacity-0 scale-95"
+             class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-xs mx-auto">
+            <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-white nunito-bold">Seleccionar mes y año</h3>
+            <div class="mb-4">
+                <select x-model="selectedMonth" class="w-full border rounded px-3 py-2 nunito-regular bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700">
+                    <template x-for="(name, idx) in monthNames" :key="idx">
+                        <option :value="idx" x-text="name"></option>
+                    </template>
+                </select>
+            </div>
+            <div class="mb-4">
+                <input type="number" x-model="selectedYear" min="1900" max="2100" class="w-full border rounded px-3 py-2 nunito-regular bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700" />
+            </div>
+            <div class="flex justify-end gap-2">
+                <button @click="isMonthModalOpen = false" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg nunito-regular hover:bg-gray-300 dark:hover:bg-gray-600">Cancelar</button>
+                <button @click="currentMonth = selectedMonth; currentYear = selectedYear; isMonthModalOpen = false" class="px-4 py-2 bg-blue-600 text-white rounded-lg nunito-regular hover:bg-blue-700">Seleccionar</button>
+            </div>
+        </div>
     </div>
 </div>
