@@ -24,7 +24,7 @@
       'relative w-20': !isMobile && !sidebarOpen
   }"
     class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 h-screen flex flex-col p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
-  style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">
+  style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 25;">
 
     <!-- Banner removido para forzar flujo sin aviso visual -->
 

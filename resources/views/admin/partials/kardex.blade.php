@@ -12,38 +12,44 @@
         <x-slot name="titulo">
             <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Kardex (Movimientos)</h2>
         </x-slot>
-        <x-slot name="filtros">
-            @include('partials.filtros-generales', [
-                'searchModel' => 'searchMovimiento',
-                'filtrosSelect' => [
-                    'productoKardexFiltro' => [
-                        'label' => 'Producto',
-                        'options' => ['Producto Ejemplo', 'Producto 2']
-                    ],
-                    'tipoKardexFiltro' => [
-                        'label' => 'Tipo Movimiento',
-                        'options' => ['Entrada', 'Salida']
-                    ]
+        <div class="flex flex-col gap-4"> 
+
+    <x-slot name="filtros">
+        @include('partials.filtros-generales', [
+            'searchModel' => 'searchMovimiento',
+            'filtrosSelect' => [
+                'productoKardexFiltro' => [
+                    'label' => 'Producto',
+                    'options' => ['Producto Ejemplo', 'Producto 2']
                 ],
-                'ordenarOptions' => [
-                    'fecha_movimiento' => 'Fecha Movimiento',
-                    'cantidad' => 'Cantidad',
-                    'motivo' => 'Motivo'
+                'tipoKardexFiltro' => [
+                    'label' => 'Tipo Movimiento',
+                    'options' => ['Entrada', 'Salida']
                 ]
-            ])
-        </x-slot>
-        <x-slot name="boton">
-            <div class="flex flex-col sm:flex-row gap-2">
-                <a href="{{ url('/admin/reportes-header?modulo=Kardex') }}" target="_blank"
-                    class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center text-sm">
-                    <i class="fas fa-file-alt"></i> Generar Reporte
-                </a>
-                <button @click="isModalOpen = true"
-                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
-                    Nuevo movimiento
-                </button>
-            </div>
-        </x-slot>
+            ],
+            'ordenarOptions' => [
+                'fecha_movimiento' => 'Fecha Movimiento',
+                'cantidad' => 'Cantidad',
+                'motivo' => 'Motivo'
+            ]
+        ])
+    </x-slot>
+
+    <x-slot name="boton">
+        <div class="flex flex-col gap-2"> {{-- Ajuste para que los botones internos también estén en 2 filas --}}
+            <a href="{{ url('/admin/reportes-header?modulo=Kardex') }}" target="_blank"
+                class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center text-sm">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </a>
+            <button @click="isModalOpen = true"
+                class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+                Nuevo movimiento
+            </button>
+        </div>
+    </x-slot>
+
+</div>
+        
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">

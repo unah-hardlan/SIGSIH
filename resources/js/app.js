@@ -87,6 +87,8 @@ import {
     faClock,
     faBan,
     faRedo,
+    faInfoCircle,
+    faCalendarDay,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -165,7 +167,9 @@ library.add(
     faSearch,
     faClock,
     faBan,
-    faRedo
+    faRedo,
+    faInfoCircle,
+    faCalendarDay
 );
 dom.watch();
 

@@ -24,19 +24,13 @@
             <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Reportes</h2>
             <div class="flex-1 md:ml-6">
                 @include('partials.filtros-generales', [
-                    'searchModel' => 'searchReportes',
-                    'filtrosSelect' => [
-                        'estadoReporteFiltro' => [
-                            'label' => 'Estado',
-                            'options' => ['Generado', 'Pendiente', 'Archivado']
+                        'searchModel' => 'searchReportes',
+                        'ordenarOptions' => [
+                            'fecha_reporte' => 'Fecha de Reporte',
+                            'tipo_visita' => 'Tipo de Visita',
+                            'servicio_realizado' => 'Servicio Realizado'
                         ]
-                    ],
-                    'ordenarOptions' => [
-                        'fecha_reporte' => 'Fecha de Reporte',
-                        'tipo_visita' => 'Tipo de Visita',
-                        'servicio_realizado' => 'Servicio Realizado'
-                    ]
-                ])
+                    ])
             </div>
             <button @click="isModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
