@@ -103,82 +103,86 @@
 
     <!-- TAB 1: Empresas Cliente -->
     <div x-show="tab==='empresas'" class="overflow-x-auto">
-        <h2 class="text-lg font-semibold mb-4 nunito-bold">Empresas</h2>
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full mb-4">
-            <div class="flex flex-row items-center space-x-4 w-full md:w-auto">
+        <x-admin.tabla-crud class="nunito-bold" :titulo="'Empresas'">
+            <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchEmpresa',
                     'filtrosSelect' => [
-                        'tipoEmpresa' => ['label' => 'Tipo', 'options' => ['Pública', 'Privada']]
+                        'estadoEmpresa' => [
+                            'label' => 'Estados',
+                            'options' => ['Activo', 'Inactivo']
+                        ]
                     ],
                     'ordenarOptions' => [
+                        'id' => 'ID',
                         'nombre_empresa' => 'Nombre',
-                        'fecha_registro' => 'Fecha Registro'
+                        'estado_empresa' => 'Estado'
                     ]
                 ])
-            </div>
-            <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto justify-end">
-                <button @click="openEmpresaModal(false)"
-                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg nunito-regular transition whitespace-nowrap w-full md:w-auto text-sm">
-                    Nueva Empresa
-                </button>
-                <a href="/admin/reportes-header?modulo=Empresas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                   class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
-                    <i class="fas fa-file-alt"></i> Generar Reporte
-                </a>
-            </div>
-        </div>
+            </x-slot>
+            <x-slot name="boton">
+                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                    <button @click="openEmpresaModal(false)"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva
+                        Empresa</button>
+                    <a href="/admin/reportes-header?modulo=Empresas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                       class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+                        <i class="fas fa-file-alt"></i> Generar Reporte
+                    </a>
+                </div>
+            </x-slot>
         <table class="min-w-full text-sm">
             <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                 <tr>
                     <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">ID</th>
-                    <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Registro</th>
                     <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Nombre Empresa</th>
-                    <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Dirección</th>
-                    <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Oficina</th>
+                    <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Descripción</th>
+                    <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Estado</th>
                     <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4 nunito-regular">1</td>
-                    <td class="py-2 px-4 nunito-regular">2025-08-03</td>
-                    <td class="py-2 px-4 nunito-regular">Empresa Ejemplo</td>
-                    <td class="py-2 px-4 nunito-regular">Av. Principal 123</td>
-                    <td class="py-2 px-4 nunito-regular">Oficina Central</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click.prevent="openEmpresaModal(true, {id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'})"
-                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click.prevent="openDeleteEmpresaModal({id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
+                <template x-for="e in empresas" :key="e.id">
+                    <tr class="border-b nunito-regular">
+                        <td class="py-2 px-4 nunito-regular">1</td>
+                        <td class="py-2 px-4 nunito-regular" x-text="e.nombre_empresa"></td>
+                        <td class="py-2 px-4 nunito-regular" x-text="e.descripcion_empresa"></td>
+                        <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular" :class="e.estado_empresa==='Activo' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'" x-text="e.estado_empresa"></span></td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click.prevent="openEmpresaModal(true, e)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click.prevent="openDeleteEmpresaModal(e)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                </template>
             </tbody>
         </table>
+        </x-admin.tabla-crud>
     </div>
 
     <!-- TAB 2: Empresas Registradas -->
     <div x-show="tab==='form-nombre'" class="overflow-x-auto">
-        <h2 class="text-lg font-semibold mb-4 nunito-bold">Empresas Registradas</h2>
-        <!-- Filtros -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full mb-4">
-            <div class="flex flex-row items-center space-x-4 w-full md:w-auto">
+        <x-admin.tabla-crud class="nunito-bold" :titulo="'Empresas Registradas'">
+            <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchEmpresaRegistrada',
                     'filtrosSelect' => [
-                        'estadoEmpresa' => ['label' => 'Estado', 'options' => ['Activo', 'Inactivo']]
+                        'estadoEmpresa' => [
+                            'label' => 'Estados',
+                            'options' => ['Activo', 'Inactivo']
+                        ]
                     ],
                     'ordenarOptions' => [
-                        'nombre_empresa' => 'Nombre',
-                        'id' => 'ID'
+                        'id' => 'ID',
+                        'nombre_empresa' => 'Nombre'
                     ]
                 ])
-            </div>
-            <button @click="openEmpresaRegistradaModal(false)"
-                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg nunito-regular transition whitespace-nowrap w-full md:w-auto text-sm">
-                Agregar empresa registrada
-            </button>
-        </div>
+            </x-slot>
+            <x-slot name="boton">
+                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                    <button @click="openEmpresaRegistradaModal(false)"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar empresa registrada</button>
+                </div>
+            </x-slot>
         <table class="min-w-full text-sm mt-2">
             <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                 <tr>
@@ -209,29 +213,28 @@
                 </template>
             </tbody>
         </table>
+        </x-admin.tabla-crud>
     </div>
 
     <!-- TAB 3: Oficinas Empresa -->
     <div x-show="tab==='oficinas'" class="overflow-x-auto">
-        <h2 class="text-lg font-semibold mb-4 nunito-bold">Oficinas de las Empresas</h2>
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full mb-4">
-            <div class="flex flex-row items-center space-x-4 w-full md:w-auto">
+        <x-admin.tabla-crud class="nunito-bold" :titulo="'Oficinas de las Empresas'">
+            <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchOficina',
-                    'filtrosSelect' => [
-                        'departamento' => ['label' => 'Departamento', 'options' => ['Ventas', 'Soporte']]
-                    ],
+                    'filtrosSelect' => [],
                     'ordenarOptions' => [
-                        'nombre' => 'Nombre',
-                        'id' => 'ID Oficina'
+                        'id' => 'ID Oficina',
+                        'nombre' => 'Nombre'
                     ]
                 ])
-            </div>
-            <button @click="openOficinaModal(false)"
-                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg nunito-regular transition whitespace-nowrap font-bold w-full md:w-auto text-sm">
-                Nueva Oficina
-            </button>
-        </div>
+            </x-slot>
+            <x-slot name="boton">
+                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                    <button @click="openOficinaModal(false)"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap font-bold text-sm">Nueva Oficina</button>
+                </div>
+            </x-slot>
         <table class="min-w-full text-sm">
             <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                 <tr>
@@ -254,6 +257,7 @@
                 </template>
             </tbody>
         </table>
+        </x-admin.tabla-crud>
     </div>
 
     <!-- Modal Empresas Cliente -->

@@ -45,6 +45,14 @@
                 margin-bottom: 10px;
             }
 
+            .app-logo {
+                width: 150px;
+                height: 100px;
+                object-fit: contain;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
             .company-info p {
                 margin: 0;
                 line-height: 1.4;

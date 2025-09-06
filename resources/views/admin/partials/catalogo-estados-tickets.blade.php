@@ -11,9 +11,9 @@
             @include('partials.filtros-generales', [
                 'searchModel' => 'searchEstadoTicket',
                 'filtrosSelect' => [
-                    'prioridad' => [
-                        'label' => 'Prioridad',
-                        'options' => ['Baja', 'Media', 'Alta', 'Crítica']
+                    'estado' => [
+                        'label' => 'Estados',
+                        'options' => ['Pendiente', 'En proceso', 'Finalizado']
                     ]
                 ],
                 'ordenarOptions' => [

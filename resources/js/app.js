@@ -85,6 +85,11 @@ import {
     faTimes,
     faSignInAlt,
     faSearch,
+    faClock,
+    faBan,
+    faRedo,
+    faInfoCircle,
+    faCalendarDay,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -160,7 +165,12 @@ library.add(
     faChevronDown,
     faTimes,
     faSignInAlt,
-    faSearch
+    faSearch,
+    faClock,
+    faBan,
+    faRedo,
+    faInfoCircle,
+    faCalendarDay
 );
 dom.watch();
 

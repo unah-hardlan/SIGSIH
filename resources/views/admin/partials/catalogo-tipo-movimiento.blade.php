@@ -4,7 +4,8 @@
         tipoToEdit: {id_tipo_movimiento_pk: '', nombre_tipo_movimiento: '', descipcion_tipo_movimiento: ''},
         isTipoDeleteModalOpen: false,
         tipoToDelete: {id_tipo_movimiento_pk: '', nombre_tipo_movimiento: ''},
-        filtroNombre: ''
+        filtroNombre: '',
+        filtroTipoMovimiento: ''
     }">
     <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -13,6 +14,12 @@
                 <div class="flex flex-wrap gap-2 items-center ml-0 sm:ml-4">
                     @include('partials.filtros-generales', [
                         'searchModel' => 'filtroNombre',
+                        'filtrosSelect' => [
+                            'filtroTipoMovimiento' => [
+                                'label' => 'Tipo de Movimiento',
+                                'options' => ['Entrada', 'Salida']
+                            ]
+                        ],
                         'ordenarOptions' => [
                             'nombre_tipo_movimiento' => 'Nombre',
                             'id_tipo_movimiento_pk' => 'ID Tipo Movimiento'
@@ -40,7 +47,8 @@
                         {id_tipo_movimiento_pk: 2, nombre_tipo_movimiento: 'Salida', descipcion_tipo_movimiento: 'Movimiento de egreso de productos'}
                         ]" :key="tipo.id_tipo_movimiento_pk">
                         <tr class="border-b dark:border-gray-700 nunito-regular"
-                            x-show="!filtroNombre || tipo.nombre_tipo_movimiento.toLowerCase().includes(filtroNombre.toLowerCase())">
+                            x-show="(!filtroNombre || tipo.nombre_tipo_movimiento.toLowerCase().includes(filtroNombre.toLowerCase())) && 
+                                   (!filtroTipoMovimiento || tipo.nombre_tipo_movimiento === filtroTipoMovimiento)">>
                             <td class="py-2 px-4 dark:text-white" x-text="tipo.id_tipo_movimiento_pk"></td>
                             <td class="py-2 px-4 dark:text-white" x-text="tipo.nombre_tipo_movimiento"></td>
                             <td class="py-2 px-4 dark:text-white" x-text="tipo.descipcion_tipo_movimiento"></td>

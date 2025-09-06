@@ -15,10 +15,10 @@
     <div class="mb-6">
         <ul class="flex border-b nunito-bold">
             <li @click="tab='facturas'"
-                :class="tab==='facturas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-200 hover:text-blue-500 cursor-pointer'"
+                :class="tab==='facturas' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
                 class="mr-6 pb-2 nunito-bold">Facturas</li>
             <li @click="tab='detalle'"
-                :class="tab==='detalle' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-200 hover:text-blue-500 cursor-pointer'"
+                :class="tab==='detalle' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
                 class="pb-2 nunito-bold">Detalle de Factura</li>
         </ul>
     </div>
