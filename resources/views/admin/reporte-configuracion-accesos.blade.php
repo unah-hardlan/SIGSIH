@@ -28,6 +28,16 @@
             @endphp
             <div class="grid grid-cols-1 gap-4 mb-6">
                 <div class="rounded-lg p-5 text-center flex flex-col items-center justify-center space-y-1 {{ $theme['bg'] }} border {{ $theme['border'] }}">
+                    @php
+                        if(($seccion ?? '')==='gestion' && isset($matriz)){
+                            // Contar solo filas de objeto (ignorar cabeceras) con al menos un permiso
+                            $theme['value'] = collect($matriz)->filter(function($r){
+                                return !empty($r['objeto']) && (
+                                    !empty($r['permiso_insercion']) || !empty($r['permiso_consultar']) || !empty($r['permiso_actualizar']) || !empty($r['permiso_eliminacion'])
+                                );
+                            })->count();
+                        }
+                    @endphp
                     <div class="text-4xl nunito-bold {{ $theme['num'] }}">{{ $theme['value'] }}</div>
                     <div class="text-sm nunito-bold tracking-wide {{ $theme['label'] }}">{{ $theme['labelText'] }}</div>
                 </div>
@@ -53,15 +63,22 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $cols = 1 + count(($permColumns ?? [])); @endphp
                                 @forelse(($matriz ?? collect()) as $row)
-                                    <tr>
-                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $row['objeto'] }}</td>
-                                        @foreach(($permColumns ?? []) as $c)
-                                            <td class="border border-gray-300 py-2 px-3 text-center">
-                                                {!! !empty($row[$c['field']]) ? '<span class="text-green-600">✔</span>' : '<span class="text-gray-400">—</span>' !!}
-                                            </td>
-                                        @endforeach
-                                    </tr>
+                                    @if(!empty($row['is_header']))
+                                        <tr>
+                                            <td colspan="{{ $cols }}" class="bg-gray-50 border border-gray-300 py-2 px-3 text-gray-700 nunito-bold uppercase">{{ $row['title'] ?? '' }}</td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $row['objeto'] }}</td>
+                                            @foreach(($permColumns ?? []) as $c)
+                                                <td class="border border-gray-300 py-2 px-3 text-center">
+                                                    {!! !empty($row[$c['field']]) ? '<span class="text-green-600">✔</span>' : '<span class="text-gray-400">—</span>' !!}
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endif
                                 @empty
                                     <tr>
                                         <td colspan="5" class="py-6 text-center text-gray-500">Sin datos</td>
@@ -186,10 +203,10 @@
                         <p>Matriz de permisos para el rol @if(isset($rol) && $rol) <strong>{{ $rol->rol }}</strong> @else <em>no seleccionado</em> @endif.</p>
                         @if(isset($rol) && $rol)
                             <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <li>Objetos con permiso de Inserción: <strong>{{ $stats['permResumen']['insercion'] }}</strong></li>
-                                <li>Objetos con permiso de Consulta: <strong>{{ $stats['permResumen']['consultar'] }}</strong></li>
-                                <li>Objetos con permiso de Actualización: <strong>{{ $stats['permResumen']['actualizar'] }}</strong></li>
-                                <li>Objetos con permiso de Eliminación: <strong>{{ $stats['permResumen']['eliminacion'] }}</strong></li>
+                                <li>Objetos con permiso de Crear: <strong>{{ $stats['permResumen']['insercion'] }}</strong></li>
+                                <li>Objetos con permiso de Ver: <strong>{{ $stats['permResumen']['consultar'] }}</strong></li>
+                                <li>Objetos con permiso de Editar: <strong>{{ $stats['permResumen']['actualizar'] }}</strong></li>
+                                <li>Objetos con permiso de Eliminar: <strong>{{ $stats['permResumen']['eliminacion'] }}</strong></li>
                                 <li>Objetos con todos los permisos: <strong>{{ $stats['permResumen']['todo'] }}</strong></li>
                                 <li>Objetos sin ningún permiso: <strong>{{ $stats['permResumen']['ninguno'] }}</strong></li>
                             </ul>

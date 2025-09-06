@@ -89,8 +89,9 @@
             const all = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' }).then(r=>r.json()).catch(()=>null);
             if(all){ access.roles = normalizeList(all); }
           }
+          try{ window.showToast && window.showToast('Rol creado correctamente', 'success'); }catch(_){}
           return res;
-        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); }
+        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); try{ window.showToast && window.showToast('Error al crear el rol', 'error'); }catch(_){} }
         finally{ this.loading = false; }
       },
       async update(){
@@ -105,8 +106,9 @@
             const all = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' }).then(r=>r.json()).catch(()=>null);
             if(all){ access.roles = normalizeList(all); }
           }
+          try{ window.showToast && window.showToast('Rol actualizado', 'success'); }catch(_){}
           return res;
-        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); }
+        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); try{ window.showToast && window.showToast('Error al actualizar el rol', 'error'); }catch(_){} }
         finally{ this.loading = false; }
       },
       async remove(){
@@ -121,7 +123,8 @@
             const all = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' }).then(r=>r.json()).catch(()=>null);
             if(all){ access.roles = normalizeList(all); }
           }
-        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); }
+          try{ window.showToast && window.showToast('Rol eliminado', 'success'); }catch(_){}
+        }catch(e){ this.error = (e && e.message) ? e.message : String(e||'Error'); try{ window.showToast && window.showToast('Error al eliminar el rol', 'error'); }catch(_){} }
         finally{ this.loading = false; }
       },
 

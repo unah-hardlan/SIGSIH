@@ -8,6 +8,7 @@ import "./objetos";
 import "./roles";
 import "./asignar-roles";
 import "./bitacora";
+import "./toast";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {

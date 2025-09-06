@@ -115,6 +115,7 @@
           const idx = this.items.findIndex(u => u.id === id);
           if (idx > -1) this.items[idx].id_rol_fk = this.form.id_rol_fk ? Number(this.form.id_rol_fk) : null;
           this.isAssignOpen = false;
+          try{ window.showToast && window.showToast('Rol asignado al usuario', 'success'); }catch(_){}
         } catch(e){ this.error = (e && e.message) ? e.message : 'Error asignando rol'; }
         finally { this.loading = false; }
       },
