@@ -42,6 +42,13 @@ class AutoPermissionMiddleware
                     return $next($request);
                 }
                 // fall-through to standard check sobre el mismo recurso
+                // Permitir listar roles si el usuario puede consultar Usuarios (para asignación de roles)
+                if (preg_match('#^api/roles#i', $path)) {
+                    $perm = app(PermissionService::class);
+                    if ($perm->can($user, ['Usuarios'], 'consultar')) {
+                        return $next($request);
+                    }
+                }
             }
         }
 

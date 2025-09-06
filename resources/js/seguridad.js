@@ -1,8 +1,29 @@
 // Access management store for roles, objects and permissions (Permiso booleans)
 (function(){
+  // Sidebar-driven module ordering and submodule labels for grouping/ordering
+  const SIDEBAR_ORDER = [
+    { id:'seguridad', title:'Seguridad', items:[ 'Usuarios','Parámetros','Parametros','Configuración de accesos','Configuracion de accesos' ] },
+    { id:'clientes', title:'Clientes', items:[ 'Empresas','Cotizaciones','Solicitudes','Órdenes de Servicios','Ordenes de Servicios' ] },
+  { id:'proyectos', title:'Proyectos', items:[ 'Proyectos','Gestión de proyectos','Gestion de proyectos','Vista de proyectos' ] },
+    { id:'tickets', title:'Tickets', items:[ 'Gestión de tickets','Gestion de tickets','Tickets' ] },
+  { id:'calendario', title:'Calendario', items:[ 'Agencias','Calendario','Gestión de Calendario','Gestion de Calendario' ] },
+    { id:'facturacion', title:'Facturación', items:[ 'Facturas','CAI' ] },
+    { id:'reportes', title:'Reportes', items:[ 'Gestión de Reportes','Gestion de Reportes','Reportes' ] },
+    { id:'inventario', title:'Inventario', items:[ 'Productos','Kardex' ] },
+  { id:'administracion', title:'Administración', items:[ 'Gestión de personas','Gestion de personas','Mi perfil','Perfil','Profile','Bitácora','Bitacora','Gestión de base de datos','Gestion de base de datos' ] },
+    { id:'mantenimiento', title:'Mantenimiento', items:[ 'Mantenimiento del Sistema','Mantenimiento del sistema' ] },
+    { id:'catalogo', title:'Catalogo', items:[
+      'Acciones Realizadas','Administración de Facturas','Categorias de Ingresos y Gastos','Categorías de Ingresos y Gastos','Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del Calendario','Género','Genero','Perfiles','Servicio Factura','Servicios Realizados','Tipo de Movimiento','Tipo de Objeto','Tipo de Personas','Tipo de Producto','Tipo de Visita','Ubicaciones'
+    ] },
+  ];
+
+  const norm = (s) => (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  // Tipo/grupo de fallback que no deben mostrarse en la matriz
+  const HIDDEN_FALLBACK_GROUPS = new Set(['configuracion','modulo']);
   const API = {
     roles: '/api/roles',
     objetos: '/api/objetos',
+  tipos: '/api/tipos-objeto',
     permisos: '/api/permisos',
     upsertPerm: (rolId, objId) => `/api/permisos/roles/${rolId}/objetos/${objId}`,
   };
@@ -43,6 +64,7 @@
       error: '',
       roles: [],
       objetos: [],
+  tipos: [],
       selectedRoleId: null,
       pending: {},
       commitTimers: {},
@@ -57,12 +79,14 @@
       async init(){
         try{
           this.loading = true; this.error = '';
-          const [rolesRes, objetosRes] = await Promise.all([
+          const [rolesRes, objetosRes, tiposRes] = await Promise.all([
             apiGet(`${API.roles}?all=1`),
             apiGet(`${API.objetos}?all=1`),
+            apiGet(`${API.tipos}?all=1`),
           ]);
           this.roles = normalizeCollection(rolesRes);
           this.objetos = normalizeCollection(objetosRes);
+          this.tipos = normalizeCollection(tiposRes);
           if(this.roles.length && !this.selectedRoleId){
             await this.selectRole(this.roles[0].id);
           }
@@ -73,6 +97,106 @@
       async selectRole(roleId){
         this.selectedRoleId = roleId;
         await this.loadPermisosForRole(roleId);
+      },
+
+      // Grouping helpers for module/submodule UX
+      objetosByTipo(tipoId){
+        const tid = tipoId ?? 0;
+        return this.objetos.filter(o => (o.id_tipo_objetos_fk ?? 0) === tid);
+      },
+      grupos(){
+        // Build groups following sidebar order first
+        const assigned = new Set();
+        const groups = [];
+        const objetosByName = this.objetos.slice();
+        const nameMap = new Map();
+        for(const o of objetosByName){ nameMap.set(o.id, norm(o.nombre_objeto)); }
+
+        for(const mod of SIDEBAR_ORDER){
+          const labelOrder = mod.items.map(s => norm(s));
+          const bucket = [];
+          // Intentar localizar el Objeto del MÓDULO (p.ej. "Seguridad", "Clientes", etc.)
+          // Preferir SIEMPRE coincidencia exacta con el título del módulo, no con los submódulos
+          const moduleTitle = norm(mod.title);
+          let moduleObjId = null;
+          for (const [id, n] of nameMap.entries()){
+            if (n === moduleTitle) { moduleObjId = id; break; }
+          }
+          // First pass: push objetos that match any submódulo label exactly (normalized)
+          for(const o of objetosByName){
+            if(assigned.has(o.id)) continue;
+            const n = nameMap.get(o.id);
+            if(labelOrder.includes(n)){
+              // Evitar incluir el Objeto del módulo como submódulo
+              if (moduleObjId != null && o.id === moduleObjId) continue;
+              bucket.push(o); assigned.add(o.id);
+            }
+          }
+          // Order bucket by the order in labelOrder, then alpha
+          bucket.sort((a,b)=>{
+            const ia = labelOrder.indexOf(nameMap.get(a.id));
+            const ib = labelOrder.indexOf(nameMap.get(b.id));
+            if(ia !== ib) return ia - ib;
+            return (a.nombre_objeto||'').localeCompare(b.nombre_objeto||'');
+          });
+          groups.push({ id: mod.id, nombre: mod.title, objetos: bucket, moduleObjId });
+        }
+
+        // Unassigned objetos → fallback grouping by tipo or into "Otros"
+        const restantes = this.objetos.filter(o => !assigned.has(o.id));
+        if(restantes.length){
+          // Try to cluster by tipo names (if available)
+          const byTipo = new Map();
+          for(const o of restantes){
+            const tname = (o.tipo?.nombre || o.tipo_nombre || 'Otros') + '';
+            if(!byTipo.has(tname)) byTipo.set(tname, []);
+            byTipo.get(tname).push(o);
+          }
+          for(const [tname, arr] of byTipo){
+            // Omitir grupos de fallback no deseados (p.ej. "Configuración", "Módulo")
+            if (HIDDEN_FALLBACK_GROUPS.has(norm(tname))) continue;
+            arr.sort((a,b)=> (a.nombre_objeto||'').localeCompare(b.nombre_objeto||''));
+            groups.push({ id: `otros-${norm(tname)}`, nombre: tname || 'Otros', objetos: arr });
+          }
+        }
+        return groups;
+      },
+      moduloTieneAcceso(groupId){
+        const g = this.grupos().find(x => x.id === groupId);
+        if(!g) return false;
+        // Si existe un Objeto para el Módulo, usarlo como fuente de verdad
+        if (g.moduleObjId != null){
+          return this.isChecked(g.moduleObjId, 'permiso_consultar');
+        }
+        // Fallback: si cualquier submódulo tiene Ver
+        const objs = g.objetos || [];
+        for(const o of objs){ if(this.isChecked(o.id, 'permiso_consultar')) return true; }
+        return false;
+      },
+      async toggleModulo(groupId, desired){
+        const g = this.grupos().find(x => x.id === groupId);
+        if(!g) return;
+        // Preferir togglear el Objeto del Módulo si existe
+        if (g.moduleObjId != null){
+          const cur = this.isChecked(g.moduleObjId, 'permiso_consultar');
+          if(cur !== desired){
+            // set explicit desired value
+            const rec = this.permsByObj[g.moduleObjId];
+            if (rec) {
+              rec.permiso_consultar = !!desired;
+              this.scheduleCommit(g.moduleObjId, 'permiso_consultar');
+            } else {
+              await this.toggle(g.moduleObjId, 'permiso_consultar');
+            }
+          }
+          return;
+        }
+        // Fallback: aplicar sobre todos los submódulos visibles del grupo
+        const objs = g.objetos || [];
+        for(const o of objs){
+          const cur = this.isChecked(o.id, 'permiso_consultar');
+          if(cur !== desired){ await this.toggle(o.id, 'permiso_consultar'); }
+        }
       },
 
       async loadPermisosForRole(roleId){
@@ -220,12 +344,14 @@
             rec[field] = !desired;
           }
           this.error = parseErr(e);
+          try{ window.showToast && window.showToast('No se pudo guardar el cambio de permiso', 'error'); }catch(_){}
           setTimeout(()=>{ this.error=''; }, 2500);
         } finally {
           if(this.pending[key]?.token === token){
             delete this.pending[key];
           }
         }
+        try{ window.showToast && window.showToast('Permiso actualizado', 'success', { duration: 2500 }); }catch(_){}
       },
     };
   }
@@ -236,7 +362,17 @@
   }
 
   document.addEventListener('alpine:init', () => {
-    Alpine.store('access', createAccessStore());
+    const store = createAccessStore();
+    Alpine.store('access', store);
+    // Cargar perezoso: sólo auto-init si estamos en la vista de Configuración de accesos
+    try {
+      const main = document.querySelector('main');
+      const isAccessView = main && /admin\.partials\.configuracion-acceso|configuracion-acceso/i.test(main.innerHTML || '');
+      if (isAccessView) {
+        // defer para dar tiempo a Alpine a hidratar
+        setTimeout(() => { store.init().catch(()=>{}); }, 0);
+      }
+    } catch(_){}
   });
 
 })();
