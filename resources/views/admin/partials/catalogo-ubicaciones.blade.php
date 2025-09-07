@@ -2,8 +2,20 @@
     isPaisModalOpen: false, 
     isDepartamentoModalOpen: false, 
     isCiudadModalOpen: false, 
-    isDireccionModalOpen: false 
-}">
+    isDireccionModalOpen: false,
+    isEditModalOpen: false,
+    isDeleteModalOpen: false,
+    itemToEdit: null,
+    itemToDelete: null,
+    isCiudadEditModalOpen: false,
+    isCiudadDeleteModalOpen: false,
+    isDireccionEditModalOpen: false,
+    isDireccionDeleteModalOpen: false,
+    isPaisEditModalOpen: false,
+    isPaisDeleteModalOpen: false,
+    isDepartamentoEditModalOpen: false,
+    isDepartamentoDeleteModalOpen: false,
+}" @keydown.escape.window="isEditModalOpen = false; isDeleteModalOpen = false; isCiudadEditModalOpen = false; isCiudadDeleteModalOpen = false; isDireccionEditModalOpen = false; isDireccionDeleteModalOpen = false">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-2">Ubicaciones de Agencias</h1>
         <div class="flex flex-wrap gap-2 items-center mb-6">
@@ -40,31 +52,55 @@
             </div>
             <div class="p-6">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Honduras</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex space-x-2">
-                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
+                    <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900">
+                        <x-slot name="filtros">
+                        </x-slot>
+                        <x-slot name="mobileTemplate">
+                            <div class="space-y-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold">Honduras</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">ID: 1</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isPaisEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Honduras'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
-                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
+                                        <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: 1}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </x-slot>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr class="nunito-regular">
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">Honduras</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-end gap-2">
+                                            <button @click="isPaisEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Honduras'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </x-admin.tabla-mobile>
                 </div>
             </div>
         </div>
@@ -91,33 +127,59 @@
             </div>
             <div class="p-6">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Francisco Morazán</td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Honduras</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex space-x-2">
-                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
+                    <x-admin.tabla-mobile  class="nunito-bold bg-white dark:bg-gray-900">
+                        <x-slot name="filtros">
+                            <!-- Aquí puedes incluir filtros si son necesarios -->
+                        </x-slot>
+                        <x-slot name="mobileTemplate">
+                            <div class="space-y-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold">Francisco Morazán</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">ID: 1</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">País: Honduras</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Francisco Morazán', pais: 'Honduras'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
-                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
+                                        <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: 1}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </x-slot>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr class="nunito-regular">
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">Francisco Morazán</td>
+                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Honduras</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-end gap-2">
+                                            <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Francisco Morazán', pais: 'Honduras'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </x-admin.tabla-mobile>
                 </div>
             </div>
         </div>
@@ -144,31 +206,56 @@
             </div>
             <div class="p-6">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Tegucigalpa</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex space-x-2">
-                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
+                    <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900">
+                        <x-slot name="filtros">
+                            <!-- Aquí puedes incluir filtros si son necesarios -->
+                        </x-slot>
+                        <x-slot name="mobileTemplate">
+                            <div class="space-y-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold">Tegucigalpa</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">ID: 1</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Tegucigalpa'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
-                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
+                                        <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: 1}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </x-slot>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr class="nunito-regular">
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white">Tegucigalpa</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-end gap-2">
+                                            <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </x-admin.tabla-mobile>
                 </div>
             </div>
         </div>
@@ -195,33 +282,65 @@
             </div>
             <div class="p-6">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Col. Centro</td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Tegucigalpa</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex space-x-2">
-                                        <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
-                                        </button>
-                                        <button class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                    <x-admin.tabla-mobile titulo="Direcciones" class="nunito-bold bg-white dark:bg-gray-900">
+             <x-slot name="filtros">
+                <!-- Aquí puedes incluir filtros si son necesarios -->
+             </x-slot>
+             <x-slot name="mobileTemplate">
+               <div class="space-y-4">
+                   <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                       <div class="flex justify-between items-start mb-2">
+                           <div>
+                               <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold">Col. Centro</h3>
+                               <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">ID: 1</p>
+                               <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">Ciudad: Tegucigalpa</p>
+                           </div>
+                       </div>
+                       <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                          <button 
+                                @click="isDireccionEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Col. Centro', ciudad: 'Tegucigalpa'}" 
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                               <i class="fas fa-edit"></i> Editar
+                           </button>
+                           <button 
+                                  @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: 1}" 
+                                  class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                  <i class="fas fa-trash"></i> Eliminar
+                           </button>
+                       </div>
+                    </div>
+                 </div>
+               </x-slot>
+                   <table class="w-full text-sm">
+                       <thead class="bg-gray-50 dark:bg-gray-700 nunito-bold">
+                           <tr>
+                              <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                              <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                              <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
+                              <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                           </tr>
+                       </thead>
+                       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                          <tr class="nunito-regular">
+                               <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
+                               <td class="px-4 py-3 text-gray-900 dark:text-white">Col. Centro</td>
+                               <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Tegucigalpa</td>
+                               <td class="px-4 py-3">
+                                 <div class="flex justify-end gap-2">
+                                   <button 
+                                       class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                       <i class="fas fa-edit text-sm"></i>
+                                   </button>
+                                   <button 
+                                     class="text-red-500 hover:text-red-700 p-1 rounded">
+                                     <i class="fas fa-trash text-sm"></i>
+                                   </button>
+                                </div>
+                              </td>
+                           </tr>
                         </tbody>
-                    </table>
+                     </table>
+                  </x-admin.tabla-mobile>
                 </div>
             </div>
         </div>
@@ -296,4 +415,68 @@
             </div>
         </div>
     </x-admin.form-modal>
+
+    <!-- Modales -->
+    <x-admin.form-modal modalName="isEditModalOpen" title="Editar País" submitLabel="Guardar Cambios">
+        <div>
+            <label for="nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
+            <input type="text" id="nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.form-modal>
+
+    <x-admin.form-modal modalName="isDeleteModalOpen" title="Eliminar País" submitLabel="Confirmar Eliminación">
+        <p>¿Estás seguro de que deseas eliminar el país <span x-text="itemToDelete.nombre"></span>?</p>
+    </x-admin.form-modal>
+
+    <!-- Modales Departamentos -->
+    <x-admin.form-modal modalName="isEditModalOpen" title="Editar Departamento" submitLabel="Guardar Cambios">
+        <div>
+            <label for="nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
+            <input type="text" id="nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.form-modal>
+
+    <x-admin.form-modal modalName="isDeleteModalOpen" title="Eliminar Departamento" submitLabel="Confirmar Eliminación">
+        <p>¿Estás seguro de que deseas eliminar el departamento <span x-text="itemToDelete.nombre"></span>?</p>
+    </x-admin.form-modal>
+
+    <!-- Modales Países -->
+    <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
+        <div>
+            <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
+            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.edit-modal>
+
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
+
+    <!-- Modales Departamentos -->
+    <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
+        <div>
+            <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
+            <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.edit-modal>
+
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDepartamentoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este departamento?" />
+
+    <!-- Modales Ciudades -->
+    <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
+        <div>
+            <label for="edit_nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
+            <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.edit-modal>
+
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
+
+    <!-- Modales Direcciones -->
+    <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
+        <div>
+            <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input type="text" id="edit_direccion" name="edit_direccion" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.edit-modal>
+
+    <x-admin.confirmation-modal class="nunito-regular" modalName="isDireccionDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta dirección?" />
 </div>
