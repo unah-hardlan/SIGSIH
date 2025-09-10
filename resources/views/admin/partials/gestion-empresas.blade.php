@@ -147,7 +147,7 @@
                         <td class="py-2 px-4 nunito-regular">1</td>
                         <td class="py-2 px-4 nunito-regular" x-text="e.nombre_empresa"></td>
                         <td class="py-2 px-4 nunito-regular" x-text="e.descripcion_empresa"></td>
-                        <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular" :class="e.estado_empresa==='Activo' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'" x-text="e.estado_empresa"></span></td>
+                        <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular" :class="e.estado_empresa==='Activo' ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-100' : 'bg-red-700 text-red-100'" x-text="e.estado_empresa"></span></td>
                         <td class="py-2 px-4 flex gap-2">
                             <a href="#" @click.prevent="openEmpresaModal(true, e)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click.prevent="openDeleteEmpresaModal(e)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>

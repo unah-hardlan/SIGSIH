@@ -54,7 +54,7 @@
                     </tr>
                     <tr class="border-b dark:border-gray-700 nunito-regular">
                         <td class="py-2 px-4 nunito-regular dark:text-white">2</td>
-                        <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-400 px-2 py-1 rounded nunito-regular">Gasto</span></td>
+                        <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span></td>
                         <td class="py-2 px-4 nunito-regular dark:text-white">Alquiler</td>
                         <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
                             <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 2, tipo: 'Gasto', nombre: 'Alquiler'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
@@ -72,7 +72,7 @@
                     </tr>
                     <tr class="border-b dark:border-gray-700 nunito-regular">
                         <td class="py-2 px-4 nunito-regular dark:text-white">4</td>
-                        <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-400 px-2 py-1 rounded nunito-regular">Gasto</span></td>
+                        <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span></td>
                         <td class="py-2 px-4 nunito-regular dark:text-white">Gastos Operativos</td>
                         <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
                             <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 4, tipo: 'Gasto', nombre: 'Gastos Operativos'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>

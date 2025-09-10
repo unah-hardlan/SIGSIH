@@ -80,7 +80,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -88,7 +88,7 @@
                                     <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white">Honduras</td>
                                     <td class="px-4 py-3">
-                                        <div class="flex justify-end gap-2">
+                                        <div class="flex justify-center gap-2">
                                             <button @click="isPaisEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Honduras'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
@@ -158,7 +158,7 @@
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -167,7 +167,7 @@
                                     <td class="px-4 py-3 text-gray-900 dark:text-white">Francisco Morazán</td>
                                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Honduras</td>
                                     <td class="px-4 py-3">
-                                        <div class="flex justify-end gap-2">
+                                        <div class="flex justify-center gap-2">
                                             <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Francisco Morazán', pais: 'Honduras'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
@@ -235,7 +235,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -243,11 +243,11 @@
                                     <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white">Tegucigalpa</td>
                                     <td class="px-4 py-3">
-                                        <div class="flex justify-end gap-2">
-                                            <button class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Tegucigalpa'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
-                                            <button class="text-red-500 hover:text-red-700 p-1 rounded">
+                                            <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -317,7 +317,7 @@
                               <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
                               <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
                               <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                              <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Acciones</th>
+                              <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                            </tr>
                        </thead>
                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -326,12 +326,12 @@
                                <td class="px-4 py-3 text-gray-900 dark:text-white">Col. Centro</td>
                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Tegucigalpa</td>
                                <td class="px-4 py-3">
-                                 <div class="flex justify-end gap-2">
-                                   <button 
+                                 <div class="flex justify-center gap-2">
+                                   <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Col. Centro', ciudad: 'Tegucigalpa'}" 
                                        class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                        <i class="fas fa-edit text-sm"></i>
                                    </button>
-                                   <button 
+                                   <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: 1}" 
                                      class="text-red-500 hover:text-red-700 p-1 rounded">
                                      <i class="fas fa-trash text-sm"></i>
                                    </button>
