@@ -58,7 +58,7 @@
                             <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">000-001-01-000000200</td>
                             <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-12-31</td>
                             <td class="py-2 px-4 nunito-regular">
-                                <span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">Activo</span>
+                                <span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-100">Activo</span>
                             </td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click.prevent="isEditModalOpen = true; itemToEdit = {id: 1, codigo: 'ABC123456789', rango_inicio: '0001', rango_fin: '1000', fecha_limite: '2025-12-31', estado_cai: 'Activo'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></a>

@@ -113,7 +113,7 @@
                         <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">3 tareas</td>
                         <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">OS-00124</td>
                         <td class="py-2 px-4">
-                            <span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded nunito-regular">En Proceso</span>
+                            <span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-1 py-1 rounded nunito-regular">En Proceso</span>
                         </td>
                         <td class="py-2 px-4 flex gap-2">
                             <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 2, nombre: 'Proyecto Beta', fecha_inicio: '2025-02-01', fecha_estimada_fin: '2025-08-20', fecha_fin: '', descripcion: 'Planificación y diseño preliminar', actividades: '3 tareas', orden_servicio: 'OS-00124', estado: 'En Proceso'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
