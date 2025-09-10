@@ -73,13 +73,13 @@
                     </ul>
                 </div>
                 <!-- Matriz -->
-                <div class="md:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-4 overflow-auto" x-data="{ objQ: '' }">
+                <div class="md:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-4" x-data="{ objQ: '' }">
                     <template x-if="!$store.access.selectedRoleId">
                         <div class="text-gray-500 dark:text-gray-400">Selecciona un rol para configurar sus permisos.</div>
                     </template>
                     <template x-if="$store.access.selectedRoleId">
                         <div>
-                            <div class="flex items-center justify-between mb-3 gap-3">
+                            <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm text-gray-500 dark:text-gray-400">Rol:</span>
                                     <span class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
@@ -87,12 +87,14 @@
                                         <span x-text="($store.access.roles.find(r=>r.id===$store.access.selectedRoleId)?.rol)||'—'"></span>
                                     </span>
                                 </div>
-                                <div class="relative w-64 max-w-full">
-                                    <input type="text" x-model="objQ" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 dark:placeholder-gray-400" placeholder="Filtrar objetos..." />
-                                    <i class="fas fa-filter absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <div class="relative w-60 max-w-full">
+                                        <input type="text" x-model="objQ" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 pr-9 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 dark:placeholder-gray-400" placeholder="Filtrar objetos..." />
+                                        <i class="fas a-filter absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="overflow-auto max-h-[600px]">
+                            <div class="space-y-5">
                                 <!-- Grupos por módulo (tipo de objeto) -->
                                 <template x-for="g in $store.access.grupos()" :key="'grp-'+g.id">
                                     <div class="mb-5 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
@@ -118,47 +120,41 @@
                                         </div>
                                         <!-- Submódulos: se muestran sólo si el módulo tiene acceso (Ver) -->
                                         <div class="p-3" x-show="$store.access.moduloTieneAcceso(g.id)">
-                                            <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
-                                                <thead class="bg-gray-100 dark:bg-gray-700">
-                                                    <tr>
-                                                        <th class="text-left p-3 sticky left-0 z-10 bg-gray-100 dark:bg-gray-700">Submódulo</th>
-                                                        <template x-for="col in $store.access.permColumns" :key="col.field">
-                                                            <th class="p-3 text-center">
-                                                                <div class="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300">
-                                                                    <span x-text="col.label"></span>
-                                                                    <button type="button" title="Marcar/Desmarcar todos del módulo" class="text-[11px] px-2 py-0.5 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                                        @click.prevent="(() => { const objs=g.objetos||[]; const visibles = objs.filter(o => !objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())); const allOn = visibles.length && visibles.every(o => $store.access.isChecked(o.id, col.field)); const target=!allOn; for(const o of visibles){ if($store.access.isChecked(o.id,col.field) !== target){ $store.access.toggle(o.id,col.field); } } })()">
-                                                                        Todos
-                                                                    </button>
-                                                                </div>
-                                                            </th>
+                                            <!-- Diseño Compacto Único -->
+                                                <div class="space-y-1 text-sm">
+                                                    <!-- Encabezados -->
+                                                    <div class="grid border-b border-gray-200 dark:border-gray-700 pb-2 mb-2" :style="'grid-template-columns: 1fr repeat(' + $store.access.permColumns.length + ', 66px)';">
+                                                        <div class="px-2 text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Submódulo</div>
+                                                        <template x-for="col in $store.access.permColumns" :key="'h-'+col.field">
+                                                            <div class="px-1 flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300">
+                                                                <span class="text-[12px] font-semibold" x-text="col.label"></span>
+                                                                <button type="button" class="text-[10px] px-2 py-0.5 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                    title="Marcar/Desmarcar todos del módulo"
+                                                                    @click.prevent="(() => { const objs=g.objetos||[]; const visibles = objs.filter(o => !objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())); const allOn = visibles.length && visibles.every(o => $store.access.isChecked(o.id, col.field)); const target=!allOn; for(const o of visibles){ if($store.access.isChecked(o.id,col.field) !== target){ $store.access.toggle(o.id,col.field); } } })()">
+                                                                    Todos
+                                                                </button>
+                                                            </div>
                                                         </template>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <template x-for="o in g.objetos" :key="o.id">
-                                                        <tr class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())">
-                                                            <td class="p-3 sticky left-0 z-10 bg-inherit" x-text="o.nombre_objeto"></td>
-                                                            <template x-for="col in $store.access.permColumns" :key="col.field">
-                                                                <td class="p-3 text-center">
-                                                                    <button type="button"
-                                                                        class="h-6 w-6 rounded-full border flex items-center justify-center transition"
+                                                    </div>
+                                                    <!-- Filas -->
+                                                    <template x-for="o in g.objetos" :key="'c-'+o.id">
+                                                        <div x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())" class="grid items-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-600 transition" :style="'grid-template-columns: 1fr repeat(' + $store.access.permColumns.length + ', 66px)';">
+                                                            <div class="px-3 py-2 text-[13px]" x-text="o.nombre_objeto"></div>
+                                                            <template x-for="col in $store.access.permColumns" :key="'c-'+o.id+'-'+col.field">
+                                                                <div class="flex items-center justify-center py-2">
+                                                                    <button type="button" class="h-6 w-6 rounded-full border flex items-center justify-center transition"
                                                                         :class="$store.access.isChecked(o.id,col.field) ? 'bg-blue-600 border-blue-600' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'"
                                                                         :title="$store.access.isChecked(o.id,col.field) ? 'Permitido' : 'No permitido'"
                                                                         @click="$store.access.toggle(o.id, col.field)"
                                                                         :aria-pressed="$store.access.isChecked(o.id,col.field) ? 'true' : 'false'">
-                                                                        <span class="sr-only" x-text="'Cambiar ' + col.label"></span>
                                                                         <span class="h-2.5 w-2.5 rounded-full bg-white" x-show="$store.access.isChecked(o.id,col.field)"></span>
                                                                     </button>
-                                                                </td>
+                                                                </div>
                                                             </template>
-                                                        </tr>
+                                                        </div>
                                                     </template>
-                                                    <tr x-show="(g.objetos||[]).filter(o => !objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())).length === 0">
-                                                        <td :colspan="$store.access.permColumns.length + 1" class="p-4 text-center text-gray-500 dark:text-gray-400">Sin submódulos visibles</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                                    <div x-show="(g.objetos||[]).filter(o => !objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())).length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">Sin submódulos visibles</div>
+                                                </div>
                                         </div>
                                     </div>
                                 </template>
