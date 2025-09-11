@@ -70,6 +70,11 @@
       objetos: [],
   tipos: [],
       selectedRoleId: null,
+  // Control anti-ráfaga
+  _roleLoadPromise: null,
+  _roleLoadingId: null,
+  _selectRoleDebounce: null,
+  _fetchPermRetries: 3,
       pending: {},
       commitTimers: {},
       permsByObj: {},
@@ -100,7 +105,13 @@
 
       async selectRole(roleId){
         this.selectedRoleId = roleId;
-        await this.loadPermisosForRole(roleId);
+        if(this._selectRoleDebounce) clearTimeout(this._selectRoleDebounce);
+        this._selectRoleDebounce = setTimeout(()=>{ this.ensureRolePerms(roleId); },120);
+      },
+
+      async ensureRolePerms(roleId){
+        if(!roleId) return;
+        try{ await this.loadPermisosForRole(roleId); }catch(_){ }
       },
 
       // Grouping helpers for module/submodule UX
@@ -204,39 +215,61 @@
       },
 
       async loadPermisosForRole(roleId){
-        try{
-          this.loading = true; this.error = '';
-          const res = await apiGet(`${API.permisos}?all=1&id_rol_fk=${encodeURIComponent(roleId)}`);
-          const list = normalizeCollection(res);
-          const byObj = {};
-          for(const o of this.objetos){
-            byObj[o.id] = {
-              id: null,
-              id_rol_fk: roleId,
-              id_objeto_fk: o.id,
-              permiso_consultar: false,
-              permiso_insercion: false,
-              permiso_actualizar: false,
-              permiso_eliminacion: false,
-            };
-          }
-          for(const p of list){
-            const objId = p.id_objeto_fk || p.objeto?.id;
-            if(objId && byObj[objId]){
-              byObj[objId] = {
-                id: p.id ?? p.id_permiso_pk ?? null,
-                id_rol_fk: p.id_rol_fk ?? roleId,
-                id_objeto_fk: objId,
-                permiso_consultar: !!p.permiso_consultar,
-                permiso_insercion: !!p.permiso_insercion,
-                permiso_actualizar: !!p.permiso_actualizar,
-                permiso_eliminacion: !!p.permiso_eliminacion,
-              };
+        if(this._roleLoadPromise && this._roleLoadingId === roleId){
+          return this._roleLoadPromise;
+        }
+        this._roleLoadingId = roleId;
+        const attemptFetch = async () => {
+          for(let i=0;i<this._fetchPermRetries;i++){
+            try{
+              const res = await fetch(`${API.permisos}?all=1&id_rol_fk=${encodeURIComponent(roleId)}`, { headers: authHeaders(), credentials:'same-origin' });
+              if(res.status === 429){
+                await new Promise(r=>setTimeout(r, 250 * (i+1)));
+                continue;
+              }
+              if(!res.ok) throw new Error(res.status+': '+res.statusText);
+              return await res.json();
+            }catch(err){
+              if(i === this._fetchPermRetries-1) throw err;
             }
           }
-          this.permsByObj = byObj;
-        } catch(e){ this.error = parseErr(e); }
-        finally { this.loading = false; }
+          throw new Error('No se pudieron cargar permisos');
+        };
+        this.loading = true; this.error='';
+        this._roleLoadPromise = attemptFetch()
+          .then(payload => {
+            const list = normalizeCollection(payload);
+            const byObj = {};
+            for(const o of this.objetos){
+              byObj[o.id] = {
+                id: null,
+                id_rol_fk: roleId,
+                id_objeto_fk: o.id,
+                permiso_consultar: false,
+                permiso_insercion: false,
+                permiso_actualizar: false,
+                permiso_eliminacion: false,
+              };
+            }
+            for(const p of list){
+              const objId = p.id_objeto_fk || p.objeto?.id;
+              if(objId && byObj[objId]){
+                byObj[objId] = {
+                  id: p.id ?? p.id_permiso_pk ?? null,
+                  id_rol_fk: p.id_rol_fk ?? roleId,
+                  id_objeto_fk: objId,
+                  permiso_consultar: !!p.permiso_consultar,
+                  permiso_insercion: !!p.permiso_insercion,
+                  permiso_actualizar: !!p.permiso_actualizar,
+                  permiso_eliminacion: !!p.permiso_eliminacion,
+                };
+              }
+            }
+            this.permsByObj = byObj;
+          })
+          .catch(e=>{ this.error = parseErr(e); throw e; })
+          .finally(()=>{ this.loading=false; this._roleLoadPromise=null; });
+        return this._roleLoadPromise;
       },
 
       isChecked(objId, field){
@@ -262,11 +295,12 @@
 
       scheduleCommit(objId, field){
         const key = this.keyFor(objId, field);
-        if(this.commitTimers[key]){ clearTimeout(this.commitTimers[key]); }
+        // No recrear timer si ya existe: coalesce toggles rápidos
+        if(this.commitTimers[key]) return;
         this.commitTimers[key] = setTimeout(() => {
           delete this.commitTimers[key];
           this.commitNow(objId, field);
-        }, 180);
+        }, 280); // ligero aumento para reducir ráfagas
       },
 
       async commitNow(objId, field){
