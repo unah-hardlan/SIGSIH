@@ -44,6 +44,14 @@ Route::post('/api-web/me/password', [ProfileController::class, 'changePassword']
     ->middleware(['auth.jwt.web'])
     ->name('perfil.password.web');
 
+// API-like para configuración del sistema (parámetros generales)
+Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show'])
+    ->middleware(['auth.jwt.web'])
+    ->name('system.settings.show.web');
+Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update'])
+    ->middleware(['auth.jwt.web'])
+    ->name('system.settings.update.web');
+
 // API-like fallbacks para Reportes (cookie-based auth)
 Route::middleware(['auth.jwt.web'])->group(function () {
     // Reportes de visita CRUD básico

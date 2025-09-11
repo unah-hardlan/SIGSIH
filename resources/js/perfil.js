@@ -25,6 +25,8 @@ function perfilPage(){
             id_genero_fk: '',
             id_perfil_fk: '',
         },
+    tiposPersona: [],
+    perfiles: [],
         email: '',
         displayName: 'Mi Perfil',
         cargo: '',
@@ -90,6 +92,26 @@ function perfilPage(){
                 // noop
             }
             this.cargarDatos();
+            this.cargarCatalogos();
+        },
+
+        async cargarCatalogos(){
+            try {
+                const token = localStorage.getItem('authToken');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const [tpRes, perfRes] = await Promise.all([
+                    fetch('/api/tipos-persona?all=1', { headers }),
+                    fetch('/api/perfiles?all=1', { headers })
+                ]);
+                if(tpRes.ok){
+                    const data = await tpRes.json();
+                    this.tiposPersona = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+                }
+                if(perfRes.ok){
+                    const data = await perfRes.json();
+                    this.perfiles = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+                }
+            } catch(e){ /* noop */ }
         },
 
         async cargarDatos(){

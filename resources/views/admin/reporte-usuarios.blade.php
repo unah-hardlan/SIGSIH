@@ -21,6 +21,7 @@
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Nombre</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Usuario</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Correo</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Rol</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Estado</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Fecha Creación</th>
                         </tr>
@@ -32,9 +33,12 @@
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->nombre_usuario }}</td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->usuario }}</td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->correo_electronico }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->rol->rol ?? '—' }}</td>
                                 <td class="border border-gray-300 py-2 px-3 text-center">
                                     @if($u->estado_usuario==='ACTIVO')
                                         <span class="text-green-700 nunito-bold">Activo</span>
+                                    @elseif($u->estado_usuario==='BLOQUEADO')
+                                        <span class="text-yellow-700 nunito-bold">Bloqueado</span>
                                     @else
                                         <span class="text-red-700 nunito-bold">Inactivo</span>
                                     @endif
@@ -42,7 +46,7 @@
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($u->fecha_creacion)</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="border border-gray-300 py-4 px-3 text-center text-gray-500">Sin datos</td></tr>
+                            <tr><td colspan="7" class="border border-gray-300 py-4 px-3 text-center text-gray-500">Sin datos</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -62,6 +66,10 @@
                     <div class="text-center">
                         <span class="nunito-bold text-red-700">Inactivos: </span>
                         <span class="nunito-regular">{{ $inactivos }}</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="nunito-bold text-yellow-700">Bloqueados: </span>
+                        <span class="nunito-regular">{{ $bloqueados }}</span>
                     </div>
                 </div>
             </div>

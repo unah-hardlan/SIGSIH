@@ -16,18 +16,18 @@ class ParametroSystemSeeder extends Seeder
             ['parametro' => 'auth.sessions_limit', 'valor' => '1'],
         ];
         foreach ($rows as $r) {
-        $param = Parametro::updateOrCreate(
+            $param = Parametro::updateOrCreate(
                 ['parametro' => $r['parametro']],
                 [
                     'valor' => $r['valor'],
                     'id_usuario_fk' => 1,
-            'creado_por' => 'system',
-            'fecha_creacion' => $now,
+                    'creado_por' => 'system',
+                    'fecha_creacion' => $now,
                     'modificado_por' => 'system',
                     'fecha_modificacion' => $now,
                 ]
             );
-        // keep creado_por/fecha_creacion intact on existing rows
+            // keep creado_por/fecha_creacion intact on existing rows
         }
     }
 }

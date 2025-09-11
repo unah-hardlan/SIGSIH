@@ -25,7 +25,7 @@ class UsuarioController extends Controller
     }
     public function index()
     {
-        $query = Usuario::query();
+    $query = Usuario::with('rol');
 
         // Si no se especifica estado ni ?all=1, sólo activos
         if (!request()->has('estado') && request('all') != 1) {
@@ -60,8 +60,8 @@ class UsuarioController extends Controller
             $query->orderBy('id_usuario_pk', 'desc');
         }
 
-        $perPage = (int) request('per_page', 15);
-        $usuarios = $query->paginate($perPage);
+    $perPage = (int) request('per_page', 15);
+    $usuarios = $query->with('rol')->paginate($perPage);
 
         return UsuarioResource::collection($usuarios)->additional([
             'meta' => [
@@ -185,14 +185,15 @@ class UsuarioController extends Controller
             $query->orderBy('id_usuario_pk', 'desc');
         }
 
-        $usuarios = $query->get();
+    $usuarios = $query->get();
         $total = $usuarios->count();
-        $activos = $usuarios->where('estado_usuario','ACTIVO')->count();
-        $inactivos = $usuarios->where('estado_usuario','INACTIVO')->count();
+    $activos = $usuarios->where('estado_usuario','ACTIVO')->count();
+    $inactivos = $usuarios->where('estado_usuario','INACTIVO')->count();
+    $bloqueados = $usuarios->where('estado_usuario','BLOQUEADO')->count();
 
         $fecha = now()->format('d/m/Y');
         $modulo = 'usuarios';
 
-        return view('admin.reporte-usuarios', compact('usuarios','total','activos','inactivos','fecha','modulo','sort','direction'));
+    return view('admin.reporte-usuarios', compact('usuarios','total','activos','inactivos','bloqueados','fecha','modulo','sort','direction'));
     }
 }
