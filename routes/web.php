@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
+Route::post('/password/search', [AuthController::class, 'searchAccount'])->name('password.search');
 Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
 
 // Redirect root to admin dashboard
