@@ -43,7 +43,11 @@
                 </div>
             </div>
 
-            <!-- Sección 1: Gestión de Roles y Permisos -->
+          <!-- Sección 1: Gestión de Roles y Permisos -->
+          {{-- MARCADOR-DISENO-COMPACTO-PERMISOS
+              Referencia: Diseño compacto de matriz de permisos (checkboxes condensados por objeto y encabezados de módulo).
+              Si se necesita recrear el commit perdido, volver a aplicar estilos/estructura a esta sección.
+              Mantener este comentario para futuras reconstrucciones. --}}
             @if(($seccion ?? '')==='gestion')
                 <div class="mb-6">
                     <h3 class="text-lg nunito-bold text-gray-800 mb-3">Gestión de Roles y Permisos</h3>

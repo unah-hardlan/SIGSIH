@@ -1,4 +1,8 @@
 // Access management store for roles, objects and permissions (Permiso booleans)
+// MARCADOR-DISENO-COMPACTO-PERMISOS
+// Referencia: Este archivo fue parte del commit de "diseño compacto" que reorganiza la matriz
+// de permisos (agrupación por módulo, encabezado de módulo con toggle y columnas condensadas).
+// Si se pierde el commit, usar este bloque como punto de anclaje para reconstruir.
 (function(){
   // Sidebar-driven module ordering and submodule labels for grouping/ordering
   const SIDEBAR_ORDER = [
