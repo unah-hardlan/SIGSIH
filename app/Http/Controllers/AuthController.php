@@ -82,20 +82,18 @@ class AuthController extends Controller
             return response()->json(['error' => 'El usuario o correo ya existe'], 409);
         }
 
-        // Asignar rol por defecto si no se envía
-        if (empty($data['id_rol_fk'])) {
-            $rolPk = Rol::where('rol', 'Cliente')->value('id_rol_pk');
-            if (!$rolPk) {
-                // fallback al primer rol disponible
-                $rolPk = Rol::orderBy('id_rol_pk')->value('id_rol_pk');
-            }
-            if ($rolPk) {
-                $data['id_rol_fk'] = $rolPk;
-            } else {
-                return response()->json([
-                    'error' => 'No hay un rol por defecto disponible. Configure al menos un rol.'
-                ], 422);
-            }
+        // Asignar SIEMPRE rol Cliente (ignorando lo enviado) para registro público
+        $rolPk = Rol::where('rol', 'Cliente')->value('id_rol_pk');
+        if (!$rolPk) {
+            // fallback al primer rol disponible
+            $rolPk = Rol::orderBy('id_rol_pk')->value('id_rol_pk');
+        }
+        if ($rolPk) {
+            $data['id_rol_fk'] = $rolPk;
+        } else {
+            return response()->json([
+                'error' => 'No hay un rol por defecto disponible. Configure al menos un rol.'
+            ], 422);
         }
 
     $usuario = new Usuario();

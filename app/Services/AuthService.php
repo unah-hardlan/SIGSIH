@@ -32,7 +32,9 @@ class AuthService
         }
 
         // Limitar intentos: leer de parámetros globales y bloquear al superar límite
-        $maxIntentos = (int) (\App\Models\Parametro::where('parametro','ADMIN_INTENTOS_INICIO SESION')->value('valor') ?? 3);
+        $maxIntentos = (int) (\App\Models\Parametro::where('parametro','ADMIN.INTENTOS_INICIO_SESION')->value('valor')
+            ?? \App\Models\Parametro::where('parametro','ADMIN_INTENTOS_INICIO SESION')->value('valor')
+            ?? 3);
 
         $user = Usuario::where('usuario', $usuario)->first();
         if (!$user) {
@@ -65,7 +67,9 @@ class AuthService
         cache()->forget($cacheKey);
 
         // Enforce concurrent sessions limit (limpiar expiradas antes de contar)
-        $limit = (int) (Parametro::where('parametro', 'auth.sessions_limit')->value('valor') ?? 1);
+        $limit = (int) (Parametro::where('parametro', 'AUTH.LIMITE_SESIONES')->value('valor')
+            ?? Parametro::where('parametro', 'auth.sessions_limit')->value('valor')
+            ?? 1);
         $sessionsKey = 'user_sessions:' . $user->getKey();
         $sessions = cache()->get($sessionsKey, []);
         if (!is_array($sessions)) { $sessions = []; }

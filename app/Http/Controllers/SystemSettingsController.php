@@ -39,6 +39,22 @@ class SystemSettingsController extends Controller
             ?? 'Y-m-d';
         $sessionsLimit = (int) (optional(Parametro::where('parametro', 'auth.sessions_limit')->first())->valor ?? 1);
 
+        // Admin parameters (fallback chain: standard dotted -> legacy)
+        $adminIntentos = (int) (
+            optional(Parametro::where('parametro', 'ADMIN.INTENTOS_INICIO_SESION')->first())->valor
+            ?? optional(Parametro::where('parametro', 'ADMIN_INTENTOS_INICIO SESION')->first())->valor
+            ?? 3
+        );
+        $adminCorreo = optional(Parametro::where('parametro', 'ADMIN.CORREO')->first())->valor
+            ?? optional(Parametro::where('parametro', 'ADMIN_CORREO')->first())->valor
+            ?? '';
+        $adminUsuario = optional(Parametro::where('parametro', 'ADMIN.USUARIO')->first())->valor
+            ?? optional(Parametro::where('parametro', 'ADMIN_CUSER')->first())->valor
+            ?? '';
+        $adminPassword = optional(Parametro::where('parametro', 'ADMIN.PASSWORD')->first())->valor
+            ?? optional(Parametro::where('parametro', 'ADMIN_CPASS')->first())->valor
+            ?? '';
+
         return response()->json([
             'appName' => $appName,
             'logoUrl' => $logoUrl,
@@ -46,6 +62,10 @@ class SystemSettingsController extends Controller
             'timezone' => $timezone,
             'dateFormat' => $dateFormat,
             'sessionsLimit' => $sessionsLimit,
+            'adminIntentos' => $adminIntentos,
+            'adminCorreo' => $adminCorreo,
+            'adminUsuario' => $adminUsuario,
+            'adminPassword' => $adminPassword,
         ]);
     }
 
@@ -63,6 +83,10 @@ class SystemSettingsController extends Controller
             'timezone' => ['nullable', 'string', 'timezone'],
             'date_format' => ['nullable', 'string', 'in:d/m/Y,m/d/Y,Y-m-d'],
             'sessions_limit' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'admin_intentos' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'admin_correo' => ['nullable', 'email', 'max:150'],
+            'admin_usuario' => ['nullable', 'string', 'max:60'],
+            'admin_password' => ['nullable', 'string', 'max:120'],
         ]);
 
         $user = Auth::user();
@@ -71,20 +95,7 @@ class SystemSettingsController extends Controller
         if (array_key_exists('app_name', $validated)) {
             $name = $validated['app_name'] ?? null;
             if ($name !== null) {
-                $param = Parametro::updateOrCreate(
-                    ['parametro' => 'app.name'],
-                    [
-                        'valor' => $name,
-                        'id_usuario_fk' => $user?->id_usuario_pk,
-                        'modificado_por' => $user?->usuario ?? 'system',
-                        'fecha_modificacion' => now(),
-                    ]
-                );
-                if ($param->wasRecentlyCreated || empty($param->creado_por)) {
-                    $param->creado_por = $user?->usuario ?? 'system';
-                    $param->fecha_creacion = now();
-                    $param->save();
-                }
+                $this->persistParametro('app.name', $name, $user);
                 Cache::forget('appName');
             }
         }
@@ -102,20 +113,7 @@ class SystemSettingsController extends Controller
             // Store new logo under public/system
             $path = $file->store('system', 'public'); // e.g., system/abc.png
 
-            $param = Parametro::updateOrCreate(
-                ['parametro' => 'app.logo_path'],
-                [
-                    'valor' => $path,
-                    'id_usuario_fk' => $user?->id_usuario_pk,
-                    'modificado_por' => $user?->usuario ?? 'system',
-                    'fecha_modificacion' => now(),
-                ]
-            );
-            if ($param->wasRecentlyCreated || empty($param->creado_por)) {
-                $param->creado_por = $user?->usuario ?? 'system';
-                $param->fecha_creacion = now();
-                $param->save();
-            }
+            $this->persistParametro('app.logo_path', $path, $user);
             Cache::forget('appLogoUrl');
         }
 
@@ -123,20 +121,7 @@ class SystemSettingsController extends Controller
         if (array_key_exists('logo_height', $validated)) {
             $height = (int) $validated['logo_height'];
             if ($height > 0) {
-                $param = Parametro::updateOrCreate(
-                    ['parametro' => 'app.logo_height'],
-                    [
-                        'valor' => $height,
-                        'id_usuario_fk' => $user?->id_usuario_pk,
-                        'modificado_por' => $user?->usuario ?? 'system',
-                        'fecha_modificacion' => now(),
-                    ]
-                );
-                if ($param->wasRecentlyCreated || empty($param->creado_por)) {
-                    $param->creado_por = $user?->usuario ?? 'system';
-                    $param->fecha_creacion = now();
-                    $param->save();
-                }
+                $this->persistParametro('app.logo_height', $height, $user);
                 Cache::forget('appLogoHeight');
             }
         }
@@ -145,20 +130,7 @@ class SystemSettingsController extends Controller
         if (array_key_exists('timezone', $validated)) {
             $tz = $validated['timezone'];
             if (!empty($tz)) {
-                $param = Parametro::updateOrCreate(
-                    ['parametro' => 'app.timezone'],
-                    [
-                        'valor' => $tz,
-                        'id_usuario_fk' => $user?->id_usuario_pk,
-                        'modificado_por' => $user?->usuario ?? 'system',
-                        'fecha_modificacion' => now(),
-                    ]
-                );
-                if ($param->wasRecentlyCreated || empty($param->creado_por)) {
-                    $param->creado_por = $user?->usuario ?? 'system';
-                    $param->fecha_creacion = now();
-                    $param->save();
-                }
+                $this->persistParametro('app.timezone', $tz, $user);
                 Cache::forget('appTimezone');
                 try {
                     config(['app.timezone' => $tz]);
@@ -173,20 +145,7 @@ class SystemSettingsController extends Controller
         if (array_key_exists('date_format', $validated)) {
             $df = $validated['date_format'];
             if (!empty($df)) {
-                $param = Parametro::updateOrCreate(
-                    ['parametro' => 'app.date_format'],
-                    [
-                        'valor' => $df,
-                        'id_usuario_fk' => $user?->id_usuario_pk,
-                        'modificado_por' => $user?->usuario ?? 'system',
-                        'fecha_modificacion' => now(),
-                    ]
-                );
-                if ($param->wasRecentlyCreated || empty($param->creado_por)) {
-                    $param->creado_por = $user?->usuario ?? 'system';
-                    $param->fecha_creacion = now();
-                    $param->save();
-                }
+                $this->persistParametro('app.date_format', $df, $user);
                 Cache::forget('appDateFormat');
             }
         }
@@ -195,25 +154,70 @@ class SystemSettingsController extends Controller
         if (array_key_exists('sessions_limit', $validated)) {
             $sl = (int) $validated['sessions_limit'];
             if ($sl > 0) {
-                $param = Parametro::updateOrCreate(
-                    ['parametro' => 'auth.sessions_limit'],
-                    [
-                        'valor' => $sl,
-                        'id_usuario_fk' => $user?->id_usuario_pk,
-                        'modificado_por' => $user?->usuario ?? 'system',
-                        'fecha_modificacion' => now(),
-                    ]
-                );
-                if ($param->wasRecentlyCreated || empty($param->creado_por)) {
-                    $param->creado_por = $user?->usuario ?? 'system';
-                    $param->fecha_creacion = now();
-                    $param->save();
-                }
+                $this->persistParametro('auth.sessions_limit', $sl, $user);
                 Cache::forget('authSessionsLimit');
+            }
+        }
+
+        // Admin intentos
+        if (array_key_exists('admin_intentos', $validated)) {
+            $val = (int) $validated['admin_intentos'];
+            if ($val > 0) {
+                $this->upsertParametro('ADMIN.INTENTOS_INICIO_SESION', $val, $user);
+            }
+        }
+        // Admin correo
+        if (array_key_exists('admin_correo', $validated)) {
+            $val = $validated['admin_correo'];
+            if ($val !== null) {
+                $this->upsertParametro('ADMIN.CORREO', $val, $user);
+            }
+        }
+        // Admin usuario
+        if (array_key_exists('admin_usuario', $validated)) {
+            $val = $validated['admin_usuario'];
+            if ($val !== null) {
+                $this->upsertParametro('ADMIN.USUARIO', $val, $user);
+            }
+        }
+        // Admin password (texto plano conforme implementación actual)
+        if (array_key_exists('admin_password', $validated)) {
+            $val = $validated['admin_password'];
+            if ($val !== null) {
+                $this->upsertParametro('ADMIN.PASSWORD', $val, $user);
             }
         }
 
         // Return updated values
         return $this->show($request);
+    }
+
+    private function upsertParametro(string $clave, $valor, $user): void
+    {
+        $this->persistParametro($clave, $valor, $user);
+    }
+
+    /**
+     * Persist (create or update) a parámetro ensuring creation columns are set on first insert.
+     */
+    private function persistParametro(string $clave, $valor, $user): void
+    {
+        $param = Parametro::where('parametro', $clave)->first();
+        $now = now();
+        if (!$param) {
+            $param = new Parametro();
+            $param->parametro = $clave;
+            $param->creado_por = $user?->usuario ?? 'system';
+            $param->fecha_creacion = $now;
+            $param->id_usuario_fk = $user?->id_usuario_pk; // track who created
+        }
+        $param->valor = $valor;
+        $param->modificado_por = $user?->usuario ?? 'system';
+        $param->fecha_modificacion = $now;
+        // ensure id_usuario_fk is kept (if null previously) on updates
+        if (!$param->id_usuario_fk) {
+            $param->id_usuario_fk = $user?->id_usuario_pk;
+        }
+        $param->save();
     }
 }

@@ -4,7 +4,7 @@
             @include('partials.filtros-generales', [
             'searchModel' => 'search',
             'filtrosSelect' => [
-            'filtroPerfil' => [ 'label' => 'Estado', 'options' => ['ACTIVO','INACTIVO'] ]
+            'filtroPerfil' => [ 'label' => 'Estado', 'options' => ['ACTIVO','INACTIVO','BLOQUEADO'] ]
             ],
             'ordenarOptions' => [ 'nombre_usuario' => 'Nombre', 'usuario' => 'Usuario', 'correo_electronico' =>
             'Correo', 'estado_usuario' => 'Estado']
@@ -31,6 +31,7 @@
                         <th class="py-2 px-4 text-left nunito-bold dark:text-white">Nombre</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-white">Usuario</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-white">Correo</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-white">Rol</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-white">Estado</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-white">Creado por</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-white">Creación</th>
@@ -40,12 +41,12 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="7" class="py-4 text-center nunito-regular">Cargando...</td>
+                            <td colspan="8" class="py-4 text-center nunito-regular">Cargando...</td>
                         </tr>
                     </template>
                     <template x-if="!loading && users.length===0">
                         <tr>
-                            <td colspan="7" class="py-4 text-center text-gray-500 nunito-regular">Sin resultados</td>
+                            <td colspan="8" class="py-4 text-center text-gray-500 nunito-regular">Sin resultados</td>
                         </tr>
                     </template>
                     <template x-for="u in users" :key="u.id">
@@ -53,8 +54,14 @@
                             <td class="py-2 px-4 nunito-regular dark:text-white" x-text="u.nombre_usuario"></td>
                             <td class="py-2 px-4 nunito-regular dark:text-white" x-text="u.usuario"></td>
                             <td class="py-2 px-4 nunito-regular dark:text-white" x-text="u.correo_electronico"></td>
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="userRole(u)"></td>
                             <td class="py-2 px-4">
-                                <span :class="u.estado_usuario==='ACTIVO' ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200'" class="px-2 py-1 rounded nunito-regular" x-text="u.estado_usuario"></span>
+                                <span :class="u.estado_usuario==='ACTIVO' 
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200' 
+                                    : (u.estado_usuario==='BLOQUEADO' 
+                                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-200' 
+                                        : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200')" 
+                                    class="px-2 py-1 rounded nunito-regular" x-text="u.estado_usuario"></span>
                             </td>
                             <td class="py-2 px-4 nunito-regular dark:text-white" x-text="u.creado_por||'-'"></td>
                             <td class="py-2 px-4 nunito-regular dark:text-white" x-text="u.fecha_creacion_formatted || u.fecha_creacion || '-' "></td>
@@ -93,7 +100,16 @@
             class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600">
             <option value="ACTIVO">ACTIVO</option>
             <option value="INACTIVO">INACTIVO</option>
+            <option value="BLOQUEADO">BLOQUEADO</option>
         </select></div>
+        <div><label class="block text-sm nunito-bold dark:text-white">Rol</label>
+            <select x-model="createForm.id_rol_fk" required class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <option value="" disabled selected>Seleccione un rol...</option>
+                <template x-for="r in roles" :key="r.id">
+                    <option :value="r.id" x-text="r.rol"></option>
+                </template>
+            </select>
+        </div>
         <div class="sm:col-span-2"><label class="block text-sm nunito-bold dark:text-white">Contraseña</label><input type="password"
             x-model="createForm.contrasena" minlength="8" class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600" required>
         </div>
@@ -115,7 +131,15 @@
             class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600">
             <option value="ACTIVO">ACTIVO</option>
             <option value="INACTIVO">INACTIVO</option>
+            <option value="BLOQUEADO">BLOQUEADO</option>
         </select></div>
+        <div><label class="block text-sm nunito-bold dark:text-white">Rol</label>
+            <select x-model="editForm.id_rol_fk" class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                <template x-for="r in roles" :key="'er-'+r.id">
+                    <option :value="r.id" x-text="r.rol"></option>
+                </template>
+            </select>
+        </div>
         <div class="sm:col-span-2"><label class="block text-sm nunito-bold dark:text-white">Nueva Contraseña (opcional)</label><input
             type="password" x-model="editForm.contrasena" minlength="8"
             class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600" placeholder="Dejar en blanco"></div>

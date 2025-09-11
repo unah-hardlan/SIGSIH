@@ -38,12 +38,16 @@ class AppServiceProvider extends ServiceProvider
     // Compartir nombre del sistema y logo dinámicos en todas las vistas
     View::composer('*', function ($view) {
             $appName = Cache::remember('appName', 300, function () {
-                return optional(Parametro::where('parametro', 'app.name')->first())->valor
-                    ?? config('app.name', 'SIGSIH');
+                $v = optional(Parametro::where('parametro', 'APP.NOMBRE')->first())->valor;
+                if(!$v){
+                    $v = optional(Parametro::where('parametro', 'app.name')->first())->valor;
+                }
+                return $v ?? config('app.name', 'SIGSIH');
             });
 
             $logoUrl = Cache::remember('appLogoUrl', 300, function () {
-                $logoParam = optional(Parametro::where('parametro', 'app.logo_path')->first())->valor;
+                $logoParam = optional(Parametro::where('parametro', 'APP.LOGO_RUTA')->first())->valor
+                    ?? optional(Parametro::where('parametro', 'app.logo_path')->first())->valor;
                 if ($logoParam) {
                     if (preg_match('#^(https?://|/)#i', $logoParam)) {
                         return $logoParam;
@@ -54,16 +58,21 @@ class AppServiceProvider extends ServiceProvider
             });
 
             $logoHeight = Cache::remember('appLogoHeight', 300, function () {
-                $h = optional(Parametro::where('parametro', 'app.logo_height')->first())->valor;
+                $h = optional(Parametro::where('parametro', 'APP.LOGO_ALTO')->first())->valor
+                    ?? optional(Parametro::where('parametro', 'app.logo_height')->first())->valor;
                 $h = is_numeric($h) ? (int) $h : 96;
                 return max(24, min(256, $h));
             });
 
             $dateFormat = Cache::remember('appDateFormat', 300, function () {
-                return optional(Parametro::where('parametro', 'app.date_format')->first())->valor ?: 'Y-m-d';
+                $fmt = optional(Parametro::where('parametro', 'APP.FORMATO_FECHA')->first())->valor
+                    ?? optional(Parametro::where('parametro', 'app.date_format')->first())->valor;
+                return $fmt ?: 'Y-m-d';
             });
             $timezone = Cache::remember('appTimezone', 300, function () {
-                return optional(Parametro::where('parametro', 'app.timezone')->first())->valor ?: config('app.timezone', 'UTC');
+                $tz = optional(Parametro::where('parametro', 'APP.ZONA_HORARIA')->first())->valor
+                    ?? optional(Parametro::where('parametro', 'app.timezone')->first())->valor;
+                return $tz ?: config('app.timezone', 'UTC');
             });
             try {
                 config(['app.timezone' => $timezone]);

@@ -16,7 +16,9 @@ class DateHelper
     {
         if (empty($value)) return '';
         $fmt = $format ?? Cache::remember('appDateFormat', 300, function () {
-            return optional(Parametro::where('parametro', 'app.date_format')->first())->valor ?: 'Y-m-d';
+            $v = optional(Parametro::where('parametro', 'APP.FORMATO_FECHA')->first())->valor
+                ?? optional(Parametro::where('parametro', 'app.date_format')->first())->valor;
+            return $v ?: 'Y-m-d';
         });
         try {
             if ($value instanceof \DateTimeInterface) {
