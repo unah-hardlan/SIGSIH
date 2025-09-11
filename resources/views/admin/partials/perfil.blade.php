@@ -111,8 +111,9 @@
                         <select x-model="form.id_tipo_persona_fk" @change="onFormChange()"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
-                            <option class="nunito-regular" value="1">Empleado</option>
-                            <option class="nunito-regular" value="2">Cliente</option>
+                            <template x-for="tp in tiposPersona" :key="tp.id_tipo_persona_pk || tp.id">
+                                <option class="nunito-regular" :value="tp.id_tipo_persona_pk || tp.id" x-text="tp.nombre_tipo_persona || tp.nombre"></option>
+                            </template>
                         </select>
                     </div>
                     <div>
@@ -120,8 +121,9 @@
                         <select x-model="form.id_perfil_fk" @change="onFormChange()"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
-                            <option class="nunito-regular" value="1">General</option>
-                            <option class="nunito-regular" value="2">Técnico</option>
+                            <template x-for="pf in perfiles" :key="pf.id_perfil_pk || pf.id">
+                                <option class="nunito-regular" :value="pf.id_perfil_pk || pf.id" x-text="pf.nombre_perfil || pf.nombre"></option>
+                            </template>
                         </select>
                     </div>
                 </div>
