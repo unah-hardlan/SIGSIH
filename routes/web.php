@@ -21,6 +21,8 @@ use Illuminate\Http\Request;
 // Auth routes (públicas)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
+Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
 
 // Redirect root to admin dashboard
 Route::redirect('/', '/admin/dashboard');

@@ -121,10 +121,10 @@
                     </div>
 
                     <div x-show="isLogin" class="mb-4 text-right">
-                        <button type="button" @click="handleRecover()"
+                        <a href="{{ route('password.request') }}"
                             class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none nunito-regular">
                             ¿Olvidaste tu contraseña?
-                        </button>
+                        </a>
                     </div>
 
                     <button type="submit"
