@@ -114,4 +114,45 @@ class AuthController extends Controller
         $response->cookie('auth_token', $tokenResult['token'], 60, '/', null, false, true, false, 'Lax');
         return $response;
     }
+
+    public function showPasswordRecoverForm()
+    {
+        return view('auth.password-recover');
+    }
+
+    public function sendPasswordResetEmail(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $email = $request->email;
+        
+        // Buscar usuario por email
+        $usuario = Usuario::where('email', $email)->first();
+        
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Si existe una cuenta con ese correo, se han enviado las instrucciones de recuperación.'
+            ], 200);
+        }
+
+        // Aquí puedes implementar el envío del email
+        // Por ahora, solo simulamos el éxito
+        try {
+            // TODO: Implementar envío de email con token de recuperación
+            // Mail::send(...);
+            
+            // Registrar en bitácora
+            $this->bitacora->logFor('Password Reset', 'Solicitud', 'Solicitud de recuperación de contraseña', $usuario->id);
+            
+            return response()->json([
+                'message' => 'Se han enviado las instrucciones de recuperación a tu correo electrónico.'
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al enviar las instrucciones. Inténtalo de nuevo más tarde.'
+            ], 500);
+        }
+    }
 }

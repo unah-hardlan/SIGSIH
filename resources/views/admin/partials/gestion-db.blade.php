@@ -14,10 +14,10 @@
 
     <div class="flex border-b dark:border-gray-700 mb-4 space-x-4 text-base">
             <button @click="tab = 'respaldo'; localStorage.setItem('dbTab', 'respaldo')"
-                :class="tab === 'respaldo' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-200 hover:text-blue-600'"
+                :class="tab === 'respaldo' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-700 dark:text-gray-200 hover:text-blue-600'"
                 class="pb-2 px-2 focus:outline-none transition nunito-regular">Respaldo</button>
             <button @click="tab = 'restore'; localStorage.setItem('dbTab', 'restore')"
-                :class="tab === 'restore' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-200 hover:text-blue-600'"
+                :class="tab === 'restore' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-700 dark:text-gray-200 hover:text-blue-600'"
                 class="pb-2 px-2 focus:outline-none transition nunito-regular">Restaurar</button>
         </div>
 

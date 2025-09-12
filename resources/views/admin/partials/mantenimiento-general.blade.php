@@ -1,11 +1,4 @@
 {{-- resources/views/admin/partials/mantenimiento-general.blade.php --}}
-{{-- MARCADOR-DISENO-COMPACTO-PERMISOS
-         Este archivo participa en la vista de configuraciones/mantenimiento. Si se debe rehacer el
-         commit del "diseño compacto" (matriz de permisos y parámetros unificados), usar este marcador
-         como referencia adicional junto con:
-             - resources/views/admin/reporte-configuracion-accesos.blade.php
-             - resources/js/seguridad.js
-         Mantenerlo para futuras reconstrucciones. --}}
 
 <div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data='{
         tab: (localStorage.getItem("mantenimientoTab") || "personalizacion"),

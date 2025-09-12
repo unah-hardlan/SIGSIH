@@ -14,7 +14,7 @@
     , searchTipos: '', ordenarPor: ''
 }">
     <div x-show="tab === 'tipos'">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Tipos de Objetos'">
+        <x-admin.tabla-mobile titulo="Tipos de Objetos" class="nunito-bold bg-white dark:bg-gray-900">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchTipos',
@@ -32,7 +32,8 @@
                     </button>
                 </div>
             </x-slot>
-            <table class="min-w-full text-sm">
+
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900">
                 <thead>
                     <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <th class="py-2 px-4 text-left dark:text-white">Nombre</th>
@@ -55,7 +56,39 @@
                     </template>
                 </tbody>
             </table>
-        </x-admin.tabla-crud>
+
+            <x-slot name="mobileTemplate">
+                <div class="space-y-4">
+                    <template x-for="tipo in tipos" :key="tipo.nombre">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold"
+                                        x-text="tipo.nombre"></h3>
+                                </div>
+                            </div>
+                            <div class="space-y-1 text-sm">
+                                <div><span
+                                        class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Descripción:</span> <span
+                                        class="text-gray-900 dark:text-gray-200 nunito-regular"
+                                        x-text="tipo.descripcion"></span></div>
+                            </div>
+                            <div
+                                class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <button @click="isTipoEditModalOpen = true; tipoToEdit = tipo"
+                                    class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button @click="isTipoDeleteModalOpen = true; tipoToDelete = tipo"
+                                    class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </x-slot>
+        </x-admin.tabla-mobile>
         <!-- Modal Agregar Tipo de Objeto -->
         <div x-show="isTipoModalOpen"
             class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
