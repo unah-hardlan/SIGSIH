@@ -79,8 +79,9 @@
       }" 
       x-init="initResponsiveSidebar($data)">
     <div class="flex h-screen min-h-0 relative">
+       
         <!-- Overlay para móviles SOLO -->
-        <div x-show="sidebarOpen && isMobile" x-cloak
+       <div x-show="sidebarOpen && isMobile" x-cloak
              x-transition:enter="transition-opacity ease-linear duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -88,8 +89,8 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              @click="sidebarOpen = false"
-             class="fixed inset-0 bg-black bg-opacity-50"
-             style="z-index: 9998;">
+           class="fixed inset-0 bg-black bg-opacity-50"
+           style="z-index: 900;">
         </div>
 
         @include('partials.admin-sidebar')

@@ -91,6 +91,7 @@ import {
     faInfoCircle,
     faCalendarDay,
     faFolder,
+    faBars,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -172,7 +173,8 @@ library.add(
     faRedo,
     faInfoCircle,
     faCalendarDay,
-    faFolder
+    faFolder,
+    faBars
 );
 dom.watch();
 
