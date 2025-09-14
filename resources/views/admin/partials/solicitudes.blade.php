@@ -81,7 +81,7 @@
     
     <!-- TAB: Solicitudes -->
     <div x-show="tab==='solicitudes'" class="overflow-x-auto">
-        <x-admin.tabla-mobile class="nunito-bold" titulo="Gestión de Solicitudes">
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Gestión de Solicitudes">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchSolicitud',
@@ -154,18 +154,18 @@
 
             <x-slot name="mobileTemplate">
                 <div class="space-y-4">
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                         <div class="flex justify-between items-center mb-2">
                             <div>
-                                <div class="text-lg font-bold text-gray-800">Proyecto / Solicitud</div>
-                                <div class="text-sm text-gray-600">CLI-001 · ACF-2025-001</div>
+                                <div class="text-lg font-bold text-gray-800 dark:text-gray-200">Proyecto / Solicitud</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">CLI-001 · ACF-2025-001</div>
                             </div>
-                            <div><span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700">Abierta</span></div>
+                            <div><span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200">Abierta</span></div>
                         </div>
-                        <div class="text-sm text-gray-700 mb-1"><strong>ID:</strong> 1</div>
-                        <div class="text-sm text-gray-700 mb-1"><strong>N° Solicitud Cliente:</strong> SOL-001</div>
-                        <div class="text-sm text-gray-700 mb-1"><strong>Descripción:</strong> Problema con equipo de red</div>
-                        <div class="text-sm text-gray-700 mb-3"><strong>Fecha Creación:</strong> 2025-07-01</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-1"><strong>ID:</strong> 1</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-1"><strong>N° Solicitud Cliente:</strong> SOL-001</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-1"><strong>Descripción:</strong> Problema con equipo de red</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-3"><strong>Fecha Creación:</strong> 2025-07-01</div>
                         <div class="flex justify-end gap-2">
                             <button @click="isEditModalOpen = true; solicitudToEdit = {
                                 id: 1,
@@ -188,7 +188,7 @@
 
     <!-- TAB: Contactos -->
     <div x-show="tab==='contactos'" class="overflow-x-auto mt-6">
-        <x-admin.tabla-mobile class="nunito-bold" titulo="Lista de Contactos">
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Lista de Contactos">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchContacto',
@@ -239,13 +239,13 @@
 
             <x-slot name="mobileTemplate">
                 <div class="space-y-4">
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                         <div class="flex justify-between items-center mb-2">
                             <div>
-                                <div class="text-lg font-bold text-gray-800">Email</div>
-                                <div class="text-sm text-gray-600">contacto@empresa.com</div>
+                                <div class="text-lg font-bold text-gray-800 dark:text-gray-200">Email</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">contacto@empresa.com</div>
                             </div>
-                            <div class="text-sm text-gray-600">PER-001</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">PER-001</div>
                         </div>
                         <div class="flex justify-end gap-2 mt-3">
                             <button @click="isEditContactoModalOpen = true; contactoToEdit = {

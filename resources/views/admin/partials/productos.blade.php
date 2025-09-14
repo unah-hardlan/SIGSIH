@@ -8,10 +8,7 @@
         searchCategoria: '',
         searchStock: ''
     }">
-    <x-admin.tabla-crud class="nunito-bold">
-        <x-slot name="titulo">
-            <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Productos</h2>
-        </x-slot>
+    <x-admin.tabla-mobile titulo="Productos">
         <x-slot name="filtros">
             @include('partials.filtros-generales', [
                 'searchModel' => 'searchProducto',
@@ -43,47 +40,65 @@
                     producto</button>
             </div>
         </x-slot>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
-                    <tr>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Categoría</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Precio</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Stock</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                <tr>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Categoría</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Precio</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Stock</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="producto in [
+                    {id: 1, nombre: 'Producto Ejemplo', categoria: 'General', precio: 250.00, stock: 50}
+                ]" :key="producto.id">
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900" x-show="
+                            (!searchProducto || producto.nombre.toLowerCase().includes(searchProducto.toLowerCase())) &&
+                            (!searchCategoria || producto.categoria === searchCategoria) &&
+                            (!searchStock || 
+                                (searchStock === 'disponible' && producto.stock > 0) ||
+                                (searchStock === 'agotado' && producto.stock == 0)
+                            )
+                        ">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.id"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.nombre"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.categoria"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">L.<span x-text="producto.precio.toFixed(2)"></span></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.stock"></td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click="isEditModalOpen = true; productoToEdit = {...producto}"
+                                class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteModalOpen = true; productoToDelete = {...producto}"
+                                class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <template x-for="producto in [
-                        {id: 1, nombre: 'Producto Ejemplo', categoria: 'General', precio: 250.00, stock: 50}
-                    ]" :key="producto.id">
-                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900" x-show="
-                                (!searchProducto || producto.nombre.toLowerCase().includes(searchProducto.toLowerCase())) &&
-                                (!searchCategoria || producto.categoria === searchCategoria) &&
-                                (!searchStock || 
-                                    (searchStock === 'disponible' && producto.stock > 0) ||
-                                    (searchStock === 'agotado' && producto.stock == 0)
-                                )
-                            ">
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.id"></td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.nombre"></td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.categoria"></td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">L.<span x-text="producto.precio.toFixed(2)"></span></td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.stock"></td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditModalOpen = true; productoToEdit = {...producto}"
-                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteModalOpen = true; productoToDelete = {...producto}"
-                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-    </x-admin.tabla-crud>
+                </template>
+            </tbody>
+        </table>
+        <x-slot name="mobileTemplate">
+            <div class="space-y-4 max-w-sm mx-auto">
+                <template x-for="producto in [
+                    {id: 1, nombre: 'Producto Ejemplo', categoria: 'General', precio: 250.00, stock: 50}
+                ]" :key="producto.id">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm mb-2">
+                        <div class="flex flex-col gap-1">
+                            <div class="text-base nunito-bold text-gray-800 dark:text-white">#<span x-text="producto.id"></span> · <span x-text="producto.nombre"></span></div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Categoría: <span x-text="producto.categoria"></span></div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Precio: L.<span x-text="producto.precio.toFixed(2)"></span></div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Stock: <span x-text="producto.stock"></span></div>
+                        </div>
+                        <div class="flex items-center gap-2 mt-3 text-xs">
+                            <button @click="isEditModalOpen = true; productoToEdit = {...producto}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></button>
+                            <button @click="isDeleteModalOpen = true; productoToDelete = {...producto}" class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </x-slot>
+    </x-admin.tabla-mobile>
 
     <!-- Modal Nuevo Producto -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nuevo Producto" submitLabel="Guardar" maxWidth="max-w-md">

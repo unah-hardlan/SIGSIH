@@ -1,9 +1,8 @@
 <div x-data="{ isAgenciaModalOpen: false, isDeleteAgenciaModalOpen: false, agenciaToEdit: null, agenciaToDelete: null }">
   <div class="w-full">
     <div class="overflow-x-auto w-full">
-      <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6 w-full">
-        <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 mb-4 border-b dark:border-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-          <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Agencias</h2>
+      <x-admin.tabla-mobile titulo="Agencias">
+        <x-slot name="filtros">
           <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
             @include('partials.filtros-generales', [
               'searchModel' => 'searchAgencia',
@@ -21,12 +20,16 @@
               ]
             ])
           </div>
-          <button @click="isAgenciaModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva agencia</button>
-          <a href="/admin/reportes-header?modulo=Agencias&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-             class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
-              <i class="fas fa-file-alt"></i> Generar Reporte
-          </a>
-        </div>
+        </x-slot>
+        <x-slot name="boton">
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button @click="isAgenciaModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva agencia</button>
+            <a href="/admin/reportes-header?modulo=Agencias&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+               class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </a>
+          </div>
+        </x-slot>
         <table class="min-w-full text-sm w-full">
           <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
             <tr>
@@ -54,7 +57,23 @@
             </tr>
           </tbody>
         </table>
-      </div>
+        <x-slot name="mobileTemplate">
+          <div class="space-y-4 max-w-sm mx-auto">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+              <div class="flex flex-col gap-2">
+                <div class="text-base nunito-bold text-gray-800 dark:text-white">Agencia Central</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Lunes a Viernes, 8am - 5pm</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Col. Centro</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Tegucigalpa, Francisco Morazán, Honduras</div>
+              </div>
+              <div class="flex justify-end gap-3 mt-3 text-sm">
+                <button class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-eye"></i></button>
+                <button @click="isDeleteAgenciaModalOpen = true; agenciaToDelete = {nombre: 'Agencia Central'}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        </x-slot>
+      </x-admin.tabla-mobile>
     </div>
 
     <!-- Modal Nueva Agencia -->

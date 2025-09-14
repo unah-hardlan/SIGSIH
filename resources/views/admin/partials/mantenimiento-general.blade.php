@@ -131,9 +131,9 @@
                 <label class="block font-medium mb-4 nunito-bold text-gray-700 dark:text-gray-300">Logo del
                     sistema</label>
                 <img :src="logoUrl" alt="Logo actual" class="mb-4" :style="'height:' + logoHeight + 'px; width:auto'">
-                <input type="file" @change="onLogoSelected($event)" accept="image/*"
-                    class="block mb-2 nunito-regular
-                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <input type="file" @change="onLogoSelected($event)" accept="image/*"
+                        class="block mb-2 nunito-regular max-w-xs w-full sm:w-40
+                        bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Altura del logo

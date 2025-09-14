@@ -33,54 +33,132 @@
             </div>
         </x-slot>
         <div class="overflow-x-auto w-full">
-            <table class="min-w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="border-b dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 nunito-regular dark:text-white">1</td>
-                        <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded nunito-regular">Ingreso</span></td>
-                        <td class="py-2 px-4 nunito-regular dark:text-white">Salarios</td>
-                        <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 1, tipo: 'Ingreso', nombre: 'Salarios'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 1, nombre: 'Salarios'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                    <tr class="border-b dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 nunito-regular dark:text-white">2</td>
-                        <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span></td>
-                        <td class="py-2 px-4 nunito-regular dark:text-white">Alquiler</td>
-                        <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 2, tipo: 'Gasto', nombre: 'Alquiler'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 2, nombre: 'Alquiler'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                    <tr class="border-b dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 nunito-regular dark:text-white">3</td>
-                        <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded nunito-regular">Ingreso</span></td>
-                        <td class="py-2 px-4 nunito-regular dark:text-white">Ventas</td>
-                        <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 3, tipo: 'Ingreso', nombre: 'Ventas'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 3, nombre: 'Ventas'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                    <tr class="border-b dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 nunito-regular dark:text-white">4</td>
-                        <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span></td>
-                        <td class="py-2 px-4 nunito-regular dark:text-white">Gastos Operativos</td>
-                        <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 4, tipo: 'Gasto', nombre: 'Gastos Operativos'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 4, nombre: 'Gastos Operativos'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <x-admin.tabla-mobile>
+                <x-slot name="desktop">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                                <th class="py-2 px-4 text-left nunito-bold">ID</th>
+                                <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
+                                <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
+                                <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4 nunito-regular dark:text-white">1</td>
+                                <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded nunito-regular">Ingreso</span></td>
+                                <td class="py-2 px-4 nunito-regular dark:text-white">Salarios</td>
+                                <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
+                                    <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 1, tipo: 'Ingreso', nombre: 'Salarios'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 1, nombre: 'Salarios'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            <tr class="border-b dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4 nunito-regular dark:text-white">2</td>
+                                <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span></td>
+                                <td class="py-2 px-4 nunito-regular dark:text-white">Alquiler</td>
+                                <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
+                                    <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 2, tipo: 'Gasto', nombre: 'Alquiler'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 2, nombre: 'Alquiler'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            <tr class="border-b dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4 nunito-regular dark:text-white">3</td>
+                                <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded nunito-regular">Ingreso</span></td>
+                                <td class="py-2 px-4 nunito-regular dark:text-white">Ventas</td>
+                                <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
+                                    <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 3, tipo: 'Ingreso', nombre: 'Ventas'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 3, nombre: 'Ventas'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            <tr class="border-b dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4 nunito-regular dark:text-white">4</td>
+                                <td class="py-2 px-4"><span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span></td>
+                                <td class="py-2 px-4 nunito-regular dark:text-white">Gastos Operativos</td>
+                                <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
+                                    <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 4, tipo: 'Gasto', nombre: 'Gastos Operativos'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 4, nombre: 'Gastos Operativos'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </x-slot>
+                <x-slot name="mobileTemplate">
+                    <div class="rounded-lg shadow mb-4 p-4 bg-white dark:bg-gray-800">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">ID</span>
+                            <span class="text-sm nunito-bold text-gray-800 dark:text-white">1</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Tipo</span>
+                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded nunito-regular">Ingreso</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Nombre</span>
+                            <div class="text-sm nunito-regular text-gray-800 dark:text-white">Salarios</div>
+                        </div>
+                        <div class="flex gap-3 mt-2">
+                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 1, tipo: 'Ingreso', nombre: 'Salarios'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 1, nombre: 'Salarios'}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </div>
+                    <div class="rounded-lg shadow mb-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">ID</span>
+                            <span class="text-sm nunito-bold text-gray-800 dark:text-white">2</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Tipo</span>
+                            <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Nombre</span>
+                            <div class="text-sm nunito-regular text-gray-800 dark:text-white">Alquiler</div>
+                        </div>
+                        <div class="flex gap-3 mt-2">
+                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 2, tipo: 'Gasto', nombre: 'Alquiler'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 2, nombre: 'Alquiler'}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </div>
+                    <div class="rounded-lg shadow mb-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">ID</span>
+                            <span class="text-sm nunito-bold text-gray-800 dark:text-white">3</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Tipo</span>
+                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded nunito-regular">Ingreso</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Nombre</span>
+                            <div class="text-sm nunito-regular text-gray-800 dark:text-white">Ventas</div>
+                        </div>
+                        <div class="flex gap-3 mt-2">
+                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 3, tipo: 'Ingreso', nombre: 'Ventas'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 3, nombre: 'Ventas'}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </div>
+                    <div class="rounded-lg shadow mb-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">ID</span>
+                            <span class="text-sm nunito-bold text-gray-800 dark:text-white">4</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Tipo</span>
+                            <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded nunito-regular">Gasto</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Nombre</span>
+                            <div class="text-sm nunito-regular text-gray-800 dark:text-white">Gastos Operativos</div>
+                        </div>
+                        <div class="flex gap-3 mt-2">
+                            <a href="#" @click="isEditCategoriaModalOpen = true; categoriaToEdit = {id: 4, tipo: 'Gasto', nombre: 'Gastos Operativos'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteCategoriaModalOpen = true; categoriaToDelete = {id: 4, nombre: 'Gastos Operativos'}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </div>
+                </x-slot>
+            </x-admin.tabla-mobile>
         </div>
     </x-admin.tabla-crud>
 
