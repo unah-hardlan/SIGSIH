@@ -1,4 +1,4 @@
-<div class="z-10" x-data="scrollPosition()" x-init="restoreScrollPosition()">
+<div x-data="scrollPosition()" x-init="restoreScrollPosition()">
     <script>
         function scrollPosition() {
             return {
@@ -90,9 +90,9 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 p-6 rounded-xl shadow-lg border border-teal-200 dark:border-teal-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-teal-200 dark:bg-teal-700 rounded-full -translate-y-10 translate-x-10 opacity-20"></div>
-                <div class="relative z-10">
+            <!-- Tarjeta Proyectos (sin position ni z-index en contenedor) -->
+            <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 p-6 rounded-xl shadow-lg border border-teal-200 dark:border-teal-700 overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+                <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm nunito-bold text-teal-700 dark:text-teal-300 uppercase tracking-wide">Proyectos</h3>
                         <div class="p-2 bg-teal-500 dark:bg-teal-600 rounded-lg shadow-md">
@@ -116,10 +116,9 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl shadow-lg border border-orange-200 dark:border-orange-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
-                <div class="absolute top-0 right-0 w-16 h-16 bg-orange-200 dark:bg-orange-700 rounded-full -translate-y-8 translate-x-8 opacity-30"></div>
-                <div class="absolute bottom-0 left-0 w-12 h-12 bg-orange-300 dark:bg-orange-600 rounded-full translate-y-6 -translate-x-6 opacity-20"></div>
-                <div class="relative z-10">
+            <!-- Tarjeta Tickets -->
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl shadow-lg border border-orange-200 dark:border-orange-700 overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+                <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm nunito-bold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Tickets</h3>
                         <div class="p-2 bg-orange-500 dark:bg-orange-600 rounded-lg shadow-md">
@@ -145,9 +144,9 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-green-100 to-green-300 dark:from-green-900/30 dark:to-green-800/30 p-6 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
-                <div class="absolute top-0 left-0 w-24 h-24 bg-green-700 dark:bg-green-600 rounded-full -translate-y-12 -translate-x-12 opacity-25"></div>
-                <div class="relative z-10">
+            <!-- Tarjeta Inventario -->
+            <div class="bg-gradient-to-br from-green-100 to-green-300 dark:from-green-900/30 dark:to-green-800/30 p-6 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-700 overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+                <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm nunito-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wide">Inventario</h3>
                         <div class="p-2 bg-green-500 dark:bg-green-600 rounded-lg shadow-md">
@@ -167,10 +166,9 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-800/20 p-6 rounded-xl shadow-lg border border-pink-200 dark:border-pink-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
-                <div class="absolute bottom-0 right-0 w-20 h-20 bg-pink-200 dark:bg-pink-700 rounded-full translate-y-10 translate-x-10 opacity-25"></div>
-                <div class="absolute top-0 left-1/2 w-8 h-8 bg-pink-300 dark:bg-pink-600 rounded-full -translate-y-4 opacity-30"></div>
-                <div class="relative z-10">
+            <!-- Tarjeta Reportes -->
+            <div class="bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-800/20 p-6 rounded-xl shadow-lg border border-pink-200 dark:border-pink-700 overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+                <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm nunito-bold text-pink-700 dark:text-pink-300 uppercase tracking-wide">Reportes</h3>
                         <div class="p-2 bg-pink-500 dark:bg-pink-600 rounded-lg shadow-md">

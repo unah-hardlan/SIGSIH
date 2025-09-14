@@ -343,7 +343,7 @@
 
     <!-- TAB 1: Empresas Cliente -->
     <div x-show="tab==='empresas'" class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Empresas'">
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Empresas">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchEmpresa',
@@ -403,7 +403,7 @@
 
     <!-- TAB 2: Empresas Registradas -->
     <div x-show="tab==='form-nombre'" class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Empresas Registradas'">
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Empresas Registradas">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchEmpresaRegistrada',
@@ -445,7 +445,7 @@
 
     <!-- TAB 3: Oficinas Empresa -->
     <div x-show="tab==='oficinas'" class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Oficinas de las Empresas'">
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Oficinas de las Empresas">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchOficina',

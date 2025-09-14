@@ -81,10 +81,7 @@
     
     <!-- TAB: Solicitudes -->
     <div x-show="tab==='solicitudes'" class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold">
-            <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Gestión de Solicitudes</h2>
-            </x-slot>
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Gestión de Solicitudes">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchSolicitud',
@@ -112,58 +109,86 @@
                     </a>
                 </div>
             </x-slot>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud ACF</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud Cliente</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Creación</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">CLI-001</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">ACF-2025-001</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">SOL-001</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Problema con equipo de red</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-01</td>
-                            <td class="py-2 px-4"><span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs nunito-regular">Abierta</span></td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditModalOpen = true; solicitudToEdit = {
-                                    id: 1,
-                                    id_cliente: 'CLI-001',
-                                    num_solicitud_acf: 'ACF-2025-001',
-                                    num_solicitud_cliente: 'SOL-001',
-                                    descripcion_problema: 'Problema con equipo de red',
-                                    fecha_creacion: '2025-07-01',
-                                    fecha_modificacion: '2025-07-01',
-                                    estado_solicitud: 'Abierta',
-                                    id_contacto: 'CON-001'
-                                }"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteModalOpen = true; solicitudToDelete = {id: 1}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </x-admin.tabla-crud>
+
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud ACF</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud Cliente</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Creación</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">CLI-001</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">ACF-2025-001</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">SOL-001</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Problema con equipo de red</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-01</td>
+                        <td class="py-2 px-4"><span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs nunito-regular">Abierta</span></td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click="isEditModalOpen = true; solicitudToEdit = {
+                                id: 1,
+                                id_cliente: 'CLI-001',
+                                num_solicitud_acf: 'ACF-2025-001',
+                                num_solicitud_cliente: 'SOL-001',
+                                descripcion_problema: 'Problema con equipo de red',
+                                fecha_creacion: '2025-07-01',
+                                fecha_modificacion: '2025-07-01',
+                                estado_solicitud: 'Abierta',
+                                id_contacto: 'CON-001'
+                            }"
+                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteModalOpen = true; solicitudToDelete = {id: 1}"
+                                class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <x-slot name="mobileTemplate">
+                <div class="space-y-4">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <div class="text-lg font-bold text-gray-800 dark:text-gray-200">Proyecto / Solicitud</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">CLI-001 · ACF-2025-001</div>
+                            </div>
+                            <div><span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200">Abierta</span></div>
+                        </div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-1"><strong>ID:</strong> 1</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-1"><strong>N° Solicitud Cliente:</strong> SOL-001</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-1"><strong>Descripción:</strong> Problema con equipo de red</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-200 mb-3"><strong>Fecha Creación:</strong> 2025-07-01</div>
+                        <div class="flex justify-end gap-2">
+                            <button @click="isEditModalOpen = true; solicitudToEdit = {
+                                id: 1,
+                                id_cliente: 'CLI-001',
+                                num_solicitud_acf: 'ACF-2025-001',
+                                num_solicitud_cliente: 'SOL-001',
+                                descripcion_problema: 'Problema con equipo de red',
+                                fecha_creacion: '2025-07-01',
+                                fecha_modificacion: '2025-07-01',
+                                estado_solicitud: 'Abierta',
+                                id_contacto: 'CON-001'
+                            }" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"><i class="fas fa-edit"></i> Editar</button>
+                            <button @click="isDeleteModalOpen = true; solicitudToDelete = {id: 1}" class="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"><i class="fas fa-trash"></i> Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </x-slot>
+        </x-admin.tabla-mobile>
     </div>
 
     <!-- TAB: Contactos -->
     <div x-show="tab==='contactos'" class="overflow-x-auto mt-6">
-        <x-admin.tabla-crud class="nunito-bold">
-            <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Lista de Contactos</h2>
-            </x-slot>
+        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Lista de Contactos">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchContacto',
@@ -180,39 +205,61 @@
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
                     Contacto</button>
             </x-slot>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Tipo Contacto</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Valor Contacto</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Persona</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Email</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">contacto@empresa.com</td>
-                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">PER-001</td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isEditContactoModalOpen = true; contactoToEdit = {
-                                    id: 1,
-                                    tipo_contacto: 'Email',
-                                    valor_contacto: 'contacto@empresa.com',
-                                    id_persona: 'PER-001'
-                                }"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteContactoModalOpen = true; contactoToDelete = {id: 1}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </x-admin.tabla-crud>
+
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Tipo Contacto</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Valor Contacto</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Persona</th>
+                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Email</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">contacto@empresa.com</td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">PER-001</td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click="isEditContactoModalOpen = true; contactoToEdit = {
+                                id: 1,
+                                tipo_contacto: 'Email',
+                                valor_contacto: 'contacto@empresa.com',
+                                id_persona: 'PER-001'
+                            }"
+                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click="isDeleteContactoModalOpen = true; contactoToDelete = {id: 1}"
+                                class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <x-slot name="mobileTemplate">
+                <div class="space-y-4">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <div class="text-lg font-bold text-gray-800 dark:text-gray-200">Email</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">contacto@empresa.com</div>
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">PER-001</div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-3">
+                            <button @click="isEditContactoModalOpen = true; contactoToEdit = {
+                                id: 1,
+                                tipo_contacto: 'Email',
+                                valor_contacto: 'contacto@empresa.com',
+                                id_persona: 'PER-001'
+                            }" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"><i class="fas fa-edit"></i> Editar</button>
+                            <button @click="isDeleteContactoModalOpen = true; contactoToDelete = {id: 1}" class="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"><i class="fas fa-trash"></i> Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </x-slot>
+        </x-admin.tabla-mobile>
     </div>
 
     <!-- Modal Nueva Solicitud -->

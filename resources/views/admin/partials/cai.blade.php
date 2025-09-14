@@ -8,10 +8,7 @@
 }">
 
     <div x-show="tab==='cai'" class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold">
-            <x-slot name="titulo">
-                <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">CAI</h2>
-            </x-slot>
+        <x-admin.tabla-mobile titulo="CAI">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchCai',
@@ -37,38 +34,53 @@
                     </a>
                 </div>
             </x-slot>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Código</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Inicio</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Fin</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha Límite</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado CAI</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">ABC123</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">000-001-01-00000001</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">000-001-01-000000200</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-12-31</td>
-                            <td class="py-2 px-4 nunito-regular">
-                                <span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-100">Activo</span>
-                            </td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click.prevent="isEditModalOpen = true; itemToEdit = {id: 1, codigo: 'ABC123456789', rango_inicio: '0001', rango_fin: '1000', fecha_limite: '2025-12-31', estado_cai: 'Activo'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click.prevent="isDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </x-admin.tabla-crud>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Código</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Inicio</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Fin</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha Límite</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado CAI</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">ABC123</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">000-001-01-00000001</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">000-001-01-000000200</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-12-31</td>
+                        <td class="py-2 px-4 nunito-regular">
+                            <span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-100">Activo</span>
+                        </td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <button @click.prevent="isEditModalOpen = true; itemToEdit = {id: 1, codigo: 'ABC123456789', rango_inicio: '0001', rango_fin: '1000', fecha_limite: '2025-12-31', estado_cai: 'Activo'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></button>
+                            <button @click.prevent="isDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <x-slot name="mobileTemplate">
+                <div class="space-y-4 max-w-sm mx-auto">
+                    <!-- CAI 1 -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                        <div class="flex flex-col gap-1">
+                            <div class="text-base nunito-bold text-gray-800 dark:text-white">#1 · ABC123</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Rango: 000-001-01-00000001 a 000-001-01-000000200</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Fecha Límite: 2025-12-31</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">Estado: <span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-100">Activo</span></div>
+                        </div>
+                        <div class="flex items-center gap-2 mt-3 text-xs">
+                            <button @click.prevent="isEditModalOpen = true; itemToEdit = {id: 1, codigo: 'ABC123456789', rango_inicio: '0001', rango_fin: '1000', fecha_limite: '2025-12-31', estado_cai: 'Activo'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i class="fas fa-edit"></i></button>
+                            <button @click.prevent="isDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </x-slot>
+        </x-admin.tabla-mobile>
     </div>
 
     {{-- Modales --}}

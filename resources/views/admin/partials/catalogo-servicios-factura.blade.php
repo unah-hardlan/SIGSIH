@@ -2,18 +2,17 @@
         isServicioModalOpen: false,
         isEditServicioModalOpen: false,
         isDeleteServicioModalOpen: false,
-        servicioToEdit: {id: '', nombre: '', tarifa: ''},
-        servicioToDelete: {id: ''},
+        servicioToEdit: null,
+        servicioToDelete: null,
         filtroServicio: '',
         servicios: [
             {id: 'SVC-01', nombre: 'Consultoría', tarifa: 1500},
             // Puedes agregar más servicios aquí
         ]
     }" class="overflow-x-auto">
-    <x-admin.tabla-crud class="nunito-bold">
-        <x-slot name="titulo">
-            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Servicios</h2>
-        </x-slot>
+
+    <!-- Botones y tabla -->
+    <x-admin.tabla-mobile titulo="Servicios" class="nunito-bold bg-white dark:bg-gray-900">
         <x-slot name="filtros">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroServicio',
@@ -31,38 +30,59 @@
                 </button>
             </div>
         </x-slot>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                    <tr>
-                        <th class="py-2 px-4 text-left">ID</th>
-                        <th class="py-2 px-4 text-left">Nombre Servicio</th>
-                        <th class="py-2 px-4 text-left">Tarifa</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
+
+        <table class="min-w-full text-sm bg-white dark:bg-gray-900">
+            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                <tr>
+                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
+                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Nombre Servicio</th>
+                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Tarifa</th>
+                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="servicio in servicios.filter(s => !filtroServicio || s.nombre.toLowerCase().includes(filtroServicio.toLowerCase()))" :key="servicio.id">
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicio.id"></td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicio.nombre"></td>
+                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicio.tarifa"></td>
+                        <td class="py-2 px-4 flex gap-2">
+                            <a href="#" @click.prevent="isEditServicioModalOpen = true; servicioToEdit = {...servicio}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                            <a href="#" @click.prevent="isDeleteServicioModalOpen = true; servicioToDelete = {id: servicio.id}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <template
-                        x-for="servicio in servicios.filter(s => !filtroServicio || s.nombre.toLowerCase().includes(filtroServicio.toLowerCase()))"
-                        :key="servicio.id">
-                        <tr class="border-b dark:border-gray-700 nunito-regular">
-                            <td class="py-2 px-4 dark:text-white" x-text="servicio.id"></td>
-                            <td class="py-2 px-4 dark:text-white" x-text="servicio.nombre"></td>
-                            <td class="py-2 px-4 dark:text-white" x-text="servicio.tarifa"></td>
-                            <td class="py-2 px-4 flex gap-2 dark:text-white">
-                                <a href="#"
-                                    @click.prevent="isEditServicioModalOpen = true; servicioToEdit = {...servicio}"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#"
-                                    @click.prevent="isDeleteServicioModalOpen = true; servicioToDelete = {id: servicio.id}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-    </x-admin.tabla-crud>
+                </template>
+            </tbody>
+        </table>
+
+        <x-slot name="mobileTemplate">
+            <div class="space-y-4">
+                <template x-for="servicio in servicios.filter(s => !filtroServicio || s.nombre.toLowerCase().includes(filtroServicio.toLowerCase()))" :key="servicio.id">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="servicio.nombre"></h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular" x-text="'ID: ' + servicio.id"></p>
+                            </div>
+                        </div>
+                        <div class="space-y-1 text-sm">
+                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Tarifa:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicio.tarifa"></span></div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <button @click.prevent="isEditServicioModalOpen = true; servicioToEdit = {...servicio}"
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button @click.prevent="isDeleteServicioModalOpen = true; servicioToDelete = {id: servicio.id}"
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </x-slot>
+    </x-admin.tabla-mobile>
 
     <!-- Modal Nuevo Servicio -->
     <x-admin.form-modal class="nunito-bold" modalName="isServicioModalOpen" title="Nuevo Servicio" submitLabel="Guardar Servicio"
@@ -112,4 +132,3 @@
     <!-- Modal Confirmar Eliminación Servicio -->
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteServicioModalOpen" itemToDelete="servicioToDelete"
         message="¿Estás seguro de que quieres eliminar el servicio?" />
-</div>
