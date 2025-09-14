@@ -43,8 +43,16 @@ class EmpresasClienteController extends Controller
             });
         }
 
+        // Filtro por estado_empresa propio
+        if ($request->has('estado_empresa')) {
+            $estado = strtolower($request->estado_empresa);
+            if (in_array($estado, ['activo', 'inactivo'])) {
+                $query->where('estado_empresa', $estado);
+            }
+        }
+
         $empresasCliente = $query->orderBy('fecha_registro', 'desc')
-                                ->paginate($request->get('per_page', 15));
+            ->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
@@ -69,8 +77,13 @@ class EmpresasClienteController extends Controller
             'fecha_registro' => 'required|date',
             'id_nombre_empresa_fk' => 'required|exists:tbl_nombre_empresa,id_nombre_empresa_pk',
             'id_direccion_fk' => 'required|exists:tbl_direccion,id_direccion_pk',
-            'id_oficina_fk' => 'required|exists:tbl_oficina_empresa,id_oficina_empresa_pk'
+            'id_oficina_fk' => 'required|exists:tbl_oficina_empresa,id_oficina_empresa_pk',
+            'estado_empresa' => 'sometimes|in:activo,inactivo'
         ]);
+
+        if (!isset($validated['estado_empresa'])) {
+            $validated['estado_empresa'] = 'activo';
+        }
 
         $empresaCliente = EmpresaCliente::create($validated);
         $empresaCliente->load(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
@@ -120,7 +133,8 @@ class EmpresasClienteController extends Controller
             'fecha_registro' => 'sometimes|required|date',
             'id_nombre_empresa_fk' => 'sometimes|required|exists:tbl_nombre_empresa,id_nombre_empresa_pk',
             'id_direccion_fk' => 'sometimes|required|exists:tbl_direccion,id_direccion_pk',
-            'id_oficina_fk' => 'sometimes|required|exists:tbl_oficina_empresa,id_oficina_empresa_pk'
+            'id_oficina_fk' => 'sometimes|required|exists:tbl_oficina_empresa,id_oficina_empresa_pk',
+            'estado_empresa' => 'sometimes|in:activo,inactivo'
         ]);
 
         $empresaCliente->update($validated);

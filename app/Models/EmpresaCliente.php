@@ -17,7 +17,8 @@ class EmpresaCliente extends Model
         'fecha_registro',
         'id_nombre_empresa_fk',
         'id_direccion_fk',
-        'id_oficina_fk'
+        'id_oficina_fk',
+        'estado_empresa'
     ];
 
     protected $casts = [

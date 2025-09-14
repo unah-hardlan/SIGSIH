@@ -18,7 +18,7 @@ class StoreUsuarioRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('usuario')) {
-            // No forzamos mayúsculas aquí para poder detectar el error y mostrar mensaje adecuado
+            // Sólo recortamos espacios, la transformación a mayúsculas la hará el modelo/controlador si aplica
             $this->merge(['usuario' => trim($this->input('usuario'))]);
         }
         if ($this->has('correo_electronico')) {
@@ -58,7 +58,8 @@ class StoreUsuarioRequest extends FormRequest
         $usuarioMin = 3;
         if ($usuarioMuestra) { $usuarioMin = max(3, strlen($usuarioMuestra)); }
     $this->usuarioMinUsed = $usuarioMin;
-    $usuarioRegex = '/^[A-Z0-9_]{'.$usuarioMin.',50}$/';
+    // Permitimos letras en minúscula también; luego se guarda en mayúscula.
+    $usuarioRegex = '/^[A-Za-z0-9_]{'.$usuarioMin.',50}$/';
         // Si la muestra parece ya una regex (tiene ^ y $) úsala directamente
         if ($usuarioMuestra && preg_match('/^\^.*\$$/',$usuarioMuestra)) {
             $usuarioRegex = $usuarioMuestra;
@@ -116,11 +117,8 @@ class StoreUsuarioRequest extends FormRequest
                         if (strlen($value) < $usuarioMin) {
                             $fail('El usuario debe tener al menos '.$usuarioMin.' caracteres.');
                         }
-                        if ($value !== strtoupper($value)) {
-                            $fail('El usuario debe estar en MAYÚSCULAS.');
-                        }
                         if (preg_match('/[^A-Za-z0-9_]/',$value)) {
-                            $fail('Sólo se permiten letras mayúsculas, números y _.');
+                            $fail('Sólo se permiten letras, números y _.');
                         }
                     }
                 },
