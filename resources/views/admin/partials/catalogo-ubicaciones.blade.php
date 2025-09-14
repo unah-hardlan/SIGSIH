@@ -39,6 +39,12 @@
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formPais') this.submitPais();
+        if(event.detail.formId === 'formEditPais') this.updatePais();
+    },
+    handleDelete(event) {
+        if (this.itemToDelete && this.itemToDelete.id) {
+            this.deletePais();
+        }
     },
     async submitPais() {
         try {
@@ -58,8 +64,46 @@
             console.error('Error creating pais:', error);
             window.showToast('Error al crear el país', 'error');
         }
+    },
+    async updatePais() {
+        if (!this.itemToEdit || !this.itemToEdit.id) return;
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await window.axios.put(`/api/paises/${this.itemToEdit.id}`, {
+                nombre_pais: this.itemToEdit.nombre
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            window.showToast('País actualizado exitosamente', 'success');
+            this.isPaisEditModalOpen = false;
+            this.itemToEdit = null;
+            await this.fetchPaises(); // Refresh the list
+        } catch (error) {
+            console.error('Error updating pais:', error);
+            window.showToast('Error al actualizar el país', 'error');
+        }
+    },
+    async deletePais() {
+        if (!this.itemToDelete || !this.itemToDelete.id) return;
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await window.axios.delete(`/api/paises/${this.itemToDelete.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            window.showToast('País eliminado exitosamente', 'success');
+            this.isPaisDeleteModalOpen = false;
+            this.itemToDelete = null;
+            await this.fetchPaises(); // Refresh the list
+        } catch (error) {
+            console.error('Error deleting pais:', error);
+            window.showToast('Error al eliminar el país', 'error');
+        }
     }
-}" x-init="fetchPaises()" @keydown.escape.window="isEditModalOpen = false; isDeleteModalOpen = false; isCiudadEditModalOpen = false; isCiudadDeleteModalOpen = false; isDireccionEditModalOpen = false; isDireccionDeleteModalOpen = false" @modal-submit.window="handleModalSubmit($event)">
+}" x-init="fetchPaises()" @keydown.escape.window="isEditModalOpen = false; isDeleteModalOpen = false; isCiudadEditModalOpen = false; isCiudadDeleteModalOpen = false; isDireccionEditModalOpen = false; isDireccionDeleteModalOpen = false" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete($event)">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Ubicaciones de Agencias</h1>
         <div class="flex flex-wrap gap-2 items-center mb-6">
@@ -397,10 +441,10 @@
     </x-admin.form-modal>
 
     <!-- Modales Países -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
+    <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditPais">
         <div>
             <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
-            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
         </div>
     </x-admin.edit-modal>
 
