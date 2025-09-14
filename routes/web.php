@@ -123,6 +123,10 @@ Route::prefix('admin')
             $modulo = $request->query('modulo', '');
             $fecha = $request->query('fecha', now()->format('d-M-Y'));
             $moduloLower = strtolower($modulo);
+            $ordenarPor = $request->query('ordenar_por');
+            $search = $request->query('search');
+            $estadoEmpresa = $request->query('estado_empresa');
+            $fechaGeneracion = $request->query('fecha_generacion');
 
             if ($moduloLower === 'usuarios') {
                 return app(\App\Http\Controllers\UsuarioController::class)->reporte($request);
@@ -151,6 +155,39 @@ Route::prefix('admin')
             }
             if ($moduloLower === 'gestion de personas') {
                 return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
+            }
+            // Capa dinámica específica para Empresas
+            if ($moduloLower === 'empresas') {
+                $query = \App\Models\EmpresaCliente::with(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
+                if ($search) {
+                    $query->whereHas('nombreEmpresa', function ($q) use ($search) {
+                        $q->where('nombre_empresa', 'like', "%$search%");
+                    });
+                }
+                if ($estadoEmpresa && in_array(strtolower($estadoEmpresa), ['activo', 'inactivo'])) {
+                    $query->where('estado_empresa', strtolower($estadoEmpresa));
+                }
+                // Ordering (allow subset of safe fields)
+                $allowedOrden = [
+                    'nombre_empresa' => 'tbl_nombre_empresa.nombre_empresa',
+                    'estado_empresa' => 'tbl_empresa_cliente.estado_empresa',
+                    'fecha_registro' => 'tbl_empresa_cliente.fecha_registro'
+                ];
+                if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
+                    // join to nombres if ordering by nombre_empresa
+                    if ($ordenarPor === 'nombre_empresa') {
+                        $query->join('tbl_nombre_empresa', 'tbl_nombre_empresa.id_nombre_empresa_pk', '=', 'tbl_empresa_cliente.id_nombre_empresa_fk');
+                    }
+                    $query->orderBy($allowedOrden[$ordenarPor], 'asc');
+                } else {
+                    $query->orderBy('fecha_registro', 'desc');
+                }
+                $empresas = $query->get();
+                // Catálogo nombres (sin estado ya que se removió a nivel UI, pero puede existir en DB)
+                $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')->orderBy('nombre_empresa')->get();
+                // Oficinas
+                $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')->orderBy('nombre_oficina')->get();
+                return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
             }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
