@@ -100,28 +100,31 @@ class SystemSettingsController extends Controller
             }
         }
 
-        // Update logo
+        // Update logo (sincroniza claves legacy APP.LOGO_RUTA / app.logo_path)
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-
-            // Delete old logo if exists and stored in public disk
-            $old = optional(Parametro::where('parametro', 'app.logo_path')->first())->valor;
+            $oldNew = optional(Parametro::where('parametro', 'app.logo_path')->first())->valor;
+            $oldLegacy = optional(Parametro::where('parametro', 'APP.LOGO_RUTA')->first())->valor;
+            $old = $oldNew ?: $oldLegacy;
             if ($old && !preg_match('#^(https?://|/)#i', $old)) {
-                try { Storage::disk('public')->delete($old); } catch (\Throwable $e) {}
+                try {
+                    Storage::disk('public')->delete($old);
+                } catch (\Throwable $e) {
+                }
             }
-
-            // Store new logo under public/system
-            $path = $file->store('system', 'public'); // e.g., system/abc.png
-
+            $path = $file->store('system', 'public');
             $this->persistParametro('app.logo_path', $path, $user);
+            $this->persistParametro('APP.LOGO_RUTA', $path, $user); // mantener legacy
             Cache::forget('appLogoUrl');
+            Cache::forget('appName'); // en caso de UI refresque banner completo
         }
 
-        // Update logo height
+        // Update logo height (sincroniza clave legacy APP.LOGO_ALTO)
         if (array_key_exists('logo_height', $validated)) {
             $height = (int) $validated['logo_height'];
             if ($height > 0) {
                 $this->persistParametro('app.logo_height', $height, $user);
+                $this->persistParametro('APP.LOGO_ALTO', $height, $user);
                 Cache::forget('appLogoHeight');
             }
         }
