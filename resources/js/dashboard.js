@@ -2,16 +2,12 @@
 // Persists KPI and chart datasets across SPA navigation using Alpine.store and localStorage TTL.
 
 function dashAuthHeaders() {
-    const headers = { Accept: "application/json" };
-    try {
-        const token = localStorage.getItem("authToken");
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-    } catch (_) {}
-    return headers;
+    // Ya no añadimos Authorization manual; la cookie auth_token se enviará automáticamente.
+    return { Accept: "application/json" };
 }
 
 async function dashTryFetch(url, headers) {
-    const r = await fetch(url, { headers });
+    const r = await fetch(url, { headers, credentials: 'same-origin' });
     if (!r.ok) return { ok: false, status: r.status };
     try {
         return { ok: true, data: await r.json() };
@@ -27,7 +23,7 @@ document.addEventListener("alpine:init", () => {
     let persisted = {};
     try {
         persisted = JSON.parse(localStorage.getItem("dashboard.cache") || "{}");
-    } catch (_) {}
+    } catch (_) { }
 
     const now = () => Date.now();
     const isStale = (ts) => !ts || now() - ts > (persisted.ttlMs || TTL_MS);
@@ -58,7 +54,7 @@ document.addEventListener("alpine:init", () => {
                         lastFetched: this.lastFetched,
                     })
                 );
-            } catch (_) {}
+            } catch (_) { }
         },
 
         // KPIs

@@ -1,11 +1,13 @@
-// Asegura que Axios envíe/reciba cookies cuando corresponda
+// ===== Config Axios =====
 if (window.axios) {
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 }
 
-document.addEventListener("alpine:init", () => {
-    Alpine.data("authPage", () => ({
+// ===== Factory del componente (sin localStorage) =====
+function createAuthPage() {
+    return {
+        // State
         isLogin: true,
         showPassword: false,
         showConfirmPassword: false,
@@ -16,108 +18,91 @@ document.addEventListener("alpine:init", () => {
         email: "",
         loading: false,
         isDark: false,
+
+        // Lifecycle
+        init() {
+            try { this.initTheme(); } catch (_) { }
+        },
+
+        // Theme (solo en memoria; sin persistir)
         initTheme() {
-            this.isDark = localStorage.getItem("sigTheme") === "dark";
+            try {
+                this.isDark = window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches;
+            } catch (_) {
+                this.isDark = false;
+            }
             this.applyTheme();
         },
         applyTheme() {
-            try {
-                if (this.isDark) document.documentElement.classList.add("dark");
-                else document.documentElement.classList.remove("dark");
-                localStorage.setItem(
-                    "sigTheme",
-                    this.isDark ? "dark" : "light"
-                );
-            } catch (e) {
-                // ignore
-            }
+            try { document.documentElement.classList.toggle("dark", this.isDark); } catch (_) { }
         },
         toggleTheme() {
             this.isDark = !this.isDark;
             this.applyTheme();
         },
-        validatePassword(pw) {
-            return (pw || "").length >= 8;
-        },
-        validateConfirmPassword() {
-            return this.password === this.confirmPassword;
-        },
 
+        // Validaciones
+        validatePassword(pw) { return (pw || "").length >= 8 && !(/\s/.test(pw)); },
+        validateConfirmPassword() { return this.password === this.confirmPassword; },
+
+        // Submit
         async handleSubmit() {
+            if (this.loading) return;
             this.loading = true;
 
             try {
                 if (this.isLogin) {
-                    const res = await axios.post("/api/login", {
+                    await axios.post("/api/login", {
                         usuario: this.username,
                         contrasena: this.password,
                     });
 
-                    // Guarda el token para las llamadas a /api/* (Authorization: Bearer)
-                    if (res.data && res.data.token) {
-                        localStorage.setItem("authToken", res.data.token);
-                        if (res.data.user) {
-                            try { localStorage.setItem("authUser", JSON.stringify(res.data.user)); } catch (_) {}
-                        }
-                        try {
-                            const me = await axios.get('/api/me', {
-                                headers: { Authorization: `Bearer ${res.data.token}` }
-                            });
-                                const persona = me?.data?.persona || null;
-                                const firstTime = !!(me?.data?.primer_ingreso && !persona);
-                            try { localStorage.setItem('authPersona', JSON.stringify(persona)); } catch(_){}
-                            try { localStorage.setItem('firstTime', JSON.stringify(firstTime)); } catch(_){}
-                        } catch(_) {}
-                    }
-
-                    // La cookie HttpOnly 'auth_token' la dejó el backend en Set-Cookie.
-                    // Redirige al dashboard protegido.
+                    try { window.showToast && window.showToast("Sesión iniciada", "success", { duration: 1200 }); } catch (_) { }
                     window.location.assign("/admin/dashboard");
                     return;
+
                 } else {
-                    const res = await axios.post("/api/register", {
+                    await axios.post("/api/register", {
                         usuario: this.username,
                         nombre_usuario: this.nombre_usuario,
                         correo_electronico: this.email,
                         contrasena: this.password,
                     });
 
-                    if (res.data && res.data.token) {
-                        localStorage.setItem("authToken", res.data.token);
-                        if (res.data.user) {
-                            try { localStorage.setItem("authUser", JSON.stringify(res.data.user)); } catch (_) {}
-                        }
-                        try {
-                            const me = await axios.get('/api/me', {
-                                headers: { Authorization: `Bearer ${res.data.token}` }
-                            });
-                                const persona = me?.data?.persona || null;
-                                const firstTime = !!(me?.data?.primer_ingreso && !persona);
-                            try { localStorage.setItem('authPersona', JSON.stringify(persona)); } catch(_){}
-                            try { localStorage.setItem('firstTime', JSON.stringify(firstTime)); } catch(_){}
-                        } catch(_) {}
-                    }
-
-                    // Ir a completar perfil
+                    // Tras registro, redirige a completar perfil (sin guardar nada en el navegador)
                     window.location.assign("/admin/perfil");
                     return;
                 }
             } catch (err) {
-                console.error("Error auth:", err?.response?.data || err);
-                const msg =
-                    err?.response?.data?.error ||
-                    err?.response?.data?.message ||
-                    "Error de autenticación";
+                try { console.error("Error auth:", err?.response?.status, err?.response?.data || err?.message || err); } catch (_) { }
+                const msg = err?.response?.data?.error || err?.response?.data?.message || "Error de autenticación";
                 alert(msg);
+            } finally {
                 this.loading = false;
             }
         },
 
-        handleGoogle() {
-            alert("Redirigiendo a Google Sign-In…");
-        },
-        handleRecover() {
-            alert("Redirigiendo a recuperar contraseña…");
-        },
-    }));
-});
+        // Extras
+        handleGoogle() { alert("Redirigiendo a Google Sign-In…"); },
+        handleRecover() { alert("Redirigiendo a recuperar contraseña…"); },
+    };
+}
+
+// 1) disponible como función global para x-data="authPage()"
+window.authPage = createAuthPage;
+
+// 2) registrar como componente Alpine para x-data="authPage"
+function registerWithAlpine() {
+    try {
+        if (window.Alpine && typeof window.Alpine.data === "function") {
+            window.Alpine.data("authPage", () => window.authPage());
+        }
+    } catch (_) { }
+}
+
+// Si Alpine ya está cargado:
+registerWithAlpine();
+
+// Si Alpine se cargará después:
+document.addEventListener("alpine:init", registerWithAlpine);

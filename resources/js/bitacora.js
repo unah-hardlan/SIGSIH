@@ -19,8 +19,8 @@ document.addEventListener('alpine:init', () => {
             return `/admin/reportes-header?${params.toString()}`;
         },
         authHeader() {
-            const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('authToken') : null;
-            return token ? { Authorization: `Bearer ${token}` } : {};
+            // Ya no añadimos Authorization manual; cookie auth_token se envía automáticamente.
+            return {};
         },
         async fetch(page = null) {
             this.loading = true; this.error = '';

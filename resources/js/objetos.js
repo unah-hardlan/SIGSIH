@@ -4,10 +4,7 @@
   tipos: '/api/tipos-objeto',
   };
 
-  const authHeaders = () => {
-    const t = localStorage.getItem('authToken');
-    return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-  };
+  const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
   async function apiGet(url){
     const r = await fetch(url, { headers: authHeaders(), credentials: 'same-origin' });

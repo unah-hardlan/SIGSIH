@@ -33,17 +33,27 @@ class AuthController extends Controller
         if (isset($result['error'])) {
             return response()->json(['error' => $result['error']], $result['code']);
         }
-    // Registrar en bitácora
-    try { $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null); } catch (\Throwable $e) {}
-    $response = response()->json($result, 200);
-        $response->cookie('auth_token', $result['token'], 60, '/', null, false, true, false, 'Lax');
+        // Registrar en bitácora
+        try {
+            $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null);
+        } catch (\Throwable $e) {
+        }
+        // Mantener token sólo para cookie, no exponerlo al frontend
+        $token = $result['token'] ?? null;
+        $payload = $result;
+        unset($payload['token']);
+        $response = response()->json($payload, 200);
+        if ($token) {
+            $response->cookie('auth_token', $token, 60, '/', null, false, true, false, 'Lax');
+        }
         return $response;
     }
 
     public function logout(): JsonResponse
     {
         // Intentar identificar usuario desde Authorization Bearer para loguear correctamente y liberar slot de sesión.
-        $userId = null; $tokenId = null;
+        $userId = null;
+        $tokenId = null;
         try {
             $auth = request()->header('Authorization');
             if ($auth && str_starts_with($auth, 'Bearer ')) {
@@ -52,7 +62,8 @@ class AuthController extends Controller
                 $userId = (int) ($payload->sub ?? null);
                 $tokenId = substr(hash('sha256', $token), 0, 32);
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
         // Remover token actual del registro de sesiones concurrentes
         try {
             if ($userId && $tokenId) {
@@ -63,9 +74,13 @@ class AuthController extends Controller
                     cache()->put($sessionsKey, $sessions, now()->addHours(1));
                 }
             }
-        } catch (\Throwable $e) {}
-    try { $this->bitacora->logFor('Login', 'Logout', 'Cierre de sesión', $userId); } catch (\Throwable $e) {}
-    return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, false, true, false, 'Lax');
+        } catch (\Throwable $e) {
+        }
+        try {
+            $this->bitacora->logFor('Login', 'Logout', 'Cierre de sesión', $userId);
+        } catch (\Throwable $e) {
+        }
+        return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, false, true, false, 'Lax');
     }
 
     // Registro que crea un usuario usando las mismas reglas que StoreUsuarioRequest.
@@ -96,22 +111,26 @@ class AuthController extends Controller
             ], 422);
         }
 
-    $usuario = new Usuario();
+        $usuario = new Usuario();
         $usuario->fill($data);
-    // Forzar usuario en mayúsculas al persistir
-    $usuario->usuario = strtoupper(trim($usuario->usuario));
+        // Forzar usuario en mayúsculas al persistir
+        $usuario->usuario = strtoupper(trim($usuario->usuario));
         $usuario->contrasena = Hash::make($data['contrasena']);
-    // Forzar primer_ingreso = 1 (nuevo usuario debe completar perfil)
-    $usuario->primer_ingreso = 1;
+        // Forzar primer_ingreso = 1 (nuevo usuario debe completar perfil)
+        $usuario->primer_ingreso = 1;
         $usuario->save();
 
         $tokenResult = $this->authService->tokenForUser($usuario);
         if (isset($tokenResult['error'])) {
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
         }
-
-        $response = response()->json($tokenResult, 201);
-        $response->cookie('auth_token', $tokenResult['token'], 60, '/', null, false, true, false, 'Lax');
+        $token = $tokenResult['token'] ?? null;
+        $payload = $tokenResult;
+        unset($payload['token']);
+        $response = response()->json($payload, 201);
+        if ($token) {
+            $response->cookie('auth_token', $token, 60, '/', null, false, true, false, 'Lax');
+        }
         return $response;
     }
 
@@ -127,10 +146,10 @@ class AuthController extends Controller
         ]);
 
         $email = $request->email;
-        
+
         // Buscar usuario por email
         $usuario = Usuario::where('email', $email)->first();
-        
+
         if (!$usuario) {
             return response()->json([
                 'message' => 'Si existe una cuenta con ese correo, se han enviado las instrucciones de recuperación.'
@@ -142,10 +161,10 @@ class AuthController extends Controller
         try {
             // TODO: Implementar envío de email con token de recuperación
             // Mail::send(...);
-            
+
             // Registrar en bitácora
             $this->bitacora->logFor('Password Reset', 'Solicitud', 'Solicitud de recuperación de contraseña', $usuario->id);
-            
+
             return response()->json([
                 'message' => 'Se han enviado las instrucciones de recuperación a tu correo electrónico.'
             ], 200);
