@@ -32,12 +32,7 @@
     upsertPerm: (rolId, objId) => `/api/permisos/roles/${rolId}/objetos/${objId}`,
   };
 
-  const authHeaders = () => {
-    const t = localStorage.getItem('authToken');
-    const h = { 'Content-Type': 'application/json' };
-    if (t) h['Authorization'] = `Bearer ${t}`;
-    return h;
-  };
+  const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
   async function apiGet(url, opts = {}){
     const res = await fetch(url, { headers: authHeaders(), credentials: 'same-origin', signal: opts.signal });

@@ -1,10 +1,7 @@
 // Alpine store for CRUD de Roles
   const API = { roles: '/api/roles' };
 
-  const authHeaders = () => {
-    const t = localStorage.getItem('authToken');
-    return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-  };
+  const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
   function normalizeList(payload){
     if(Array.isArray(payload)) return payload;

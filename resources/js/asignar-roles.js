@@ -1,12 +1,7 @@
 // Alpine store to assign roles to users
   const API = { users: '/api/usuarios', roles: '/api/roles' };
 
-  const authHeaders = () => {
-    const t = localStorage.getItem('authToken');
-    const h = { 'Accept': 'application/json' };
-    if (t) h['Authorization'] = `Bearer ${t}`;
-    return h;
-  };
+  const authHeaders = () => ({ 'Accept': 'application/json' });
 
   function normalizeList(payload){
     if (Array.isArray(payload)) return payload;
