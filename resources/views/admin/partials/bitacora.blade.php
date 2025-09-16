@@ -61,10 +61,7 @@
             </div>
         </div>
         <!-- Table Section -->
-        <x-admin.tabla-mobile titulo="Bitácora">
-            <x-slot name="filtros">
-                <!-- Puedes agregar filtros aquí si lo deseas -->
-            </x-slot>
+        <div class="overflow-x-auto">
             <table class="w-full text-sm text-gray-800 dark:text-gray-200 border-collapse">
                 <thead class="bg-gray-100 dark:bg-gray-800">
                     <tr>
@@ -121,24 +118,7 @@
                     </template>
                 </tbody>
             </table>
-            <x-slot name="mobileTemplate">
-                <div class="space-y-4 max-w-sm mx-auto">
-                    <template x-for="b in items" :key="b.id">
-                        <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm mb-2">
-                            <div class="flex flex-col gap-1">
-                                <div class="text-base nunito-bold text-gray-800 dark:text-gray-200">#<span x-text="b.id"></span> · <span x-text="b.usuario?.usuario || '-' "></span></div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Fecha Evento: <span x-text="b.fecha_evento_formatted || b.fecha_evento"></span></div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Objeto: <span x-text="b.objeto?.nombre_objeto || '-' "></span></div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Acción: <span x-text="b.accion"></span></div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Descripción: <span x-text="b.descripcion || '-' "></span></div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Creado por: <span x-text="b.creado_por || b.usuario?.usuario || '-' "></span></div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Fecha Creación: <span x-text="b.fecha_creacion_formatted || b.fecha_creacion || '-' "></span></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </x-slot>
-        </x-admin.tabla-mobile>
+        </div>
         <!-- Pagination Section -->
         <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4" x-show="pagination.total>0">
             <div class="text-sm nunito-regular text-gray-700 dark:text-gray-300">

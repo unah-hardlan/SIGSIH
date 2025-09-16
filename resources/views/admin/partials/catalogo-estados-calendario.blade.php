@@ -1,17 +1,10 @@
-<div x-data="{
-        isAddEstadoModalOpen: false,
-        isEditEstadoModalOpen: false,
-        isDeleteEstadoModalOpen: false,
-        selectedEstado: null,
-        searchEstadoCalendario: '',
-        estados: [
-            {id: 'E-001', nombre: 'Programado', descripcion: 'Evento programado en el calendario'},
-            {id: 'E-002', nombre: 'Realizado', descripcion: 'Evento completado exitosamente'},
-            {id: 'E-003', nombre: 'Cancelado', descripcion: 'Evento cancelado o suspendido'}
-        ]
-    }">
-    <x-admin.tabla-mobile titulo="Estado Calendario" class="nunito-bold bg-white dark:bg-gray-900">
-        <x-slot name="filtros">
+<div x-data="{ isAddEstadoModalOpen: false, isEditEstadoModalOpen: false, isDeleteEstadoModalOpen: false, selectedEstado: null }" class="overflow-x-auto w-full">
+    <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 w-full">
+        <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 mb-4 border-b dark:border-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Estado Calendario</h2>
+            <button @click="isAddEstadoModalOpen = true" class="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Estado</button>
+        </div>
+        <div class="mb-4">
             @include('partials.filtros-generales', [
                 'searchModel' => 'searchEstadoCalendario',
                 'filtrosSelect' => [
@@ -25,74 +18,59 @@
                     'id' => 'ID Estado'
                 ]
             ])
-        </x-slot>
-        <x-slot name="boton">
-            <div class="w-full flex justify-center sm:justify-end">
-                <button @click="isAddEstadoModalOpen = true"
-                    class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center text-sm">
-                    Nuevo Estado
-                </button>
-            </div>
-        </x-slot>
-
-        <table class="min-w-full text-sm bg-white dark:bg-gray-900">
+        </div>
+        <table class="min-w-full text-sm w-full">
             <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                 <tr>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Estado</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Nombre</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                    <th class="py-2 px-4 text-left">ID Estado</th>
+                    <th class="py-2 px-4 text-left">Nombre</th>
+                    <th class="py-2 px-4 text-left">Descripción</th>
+                    <th class="py-2 px-4 text-left">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <template x-for="estado in estados.filter(e => !searchEstadoCalendario || e.nombre.toLowerCase().includes(searchEstadoCalendario.toLowerCase()))" :key="estado.id">
-                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estado.id"></td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estado.nombre"></td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estado.descripcion"></td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <button @click.prevent="selectedEstado = {...estado}; isEditEstadoModalOpen = true"
-                                class="text-blue-500 hover:text-blue-700" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button @click.prevent="selectedEstado = {id: estado.id}; isDeleteEstadoModalOpen = true"
-                                class="text-red-500 hover:text-red-700" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </template>
+                <tr class="border-b dark:border-gray-700 nunito-regular">
+                    <td class="py-2 px-4 dark:text-white">E-001</td>
+                    <td class="py-2 px-4 dark:text-white">Programado</td>
+                    <td class="py-2 px-4 dark:text-white">Evento programado en el calendario</td>
+                    <td class="py-2 px-4 flex gap-2 dark:text-white">
+                        <button @click="selectedEstado = {id: 'E-001', nombre: 'Programado', descripcion: 'Evento programado en el calendario'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button @click="selectedEstado = {id: 'E-001', nombre: 'Programado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="border-b dark:border-gray-700 nunito-regular">
+                    <td class="py-2 px-4 dark:text-white">E-002</td>
+                    <td class="py-2 px-4 dark:text-white">Realizado</td>
+                    <td class="py-2 px-4 dark:text-white">Evento completado exitosamente</td>
+                    <td class="py-2 px-4 flex gap-2 dark:text-white">
+                        <button @click="selectedEstado = {id: 'E-002', nombre: 'Realizado', descripcion: 'Evento completado exitosamente'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button @click="selectedEstado = {id: 'E-002', nombre: 'Realizado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr class="border-b dark:border-gray-700 nunito-regular">
+                    <td class="py-2 px-4 dark:text-white">E-003</td>
+                    <td class="py-2 px-4 dark:text-white">Cancelado</td>
+                    <td class="py-2 px-4 dark:text-white">Evento cancelado o suspendido</td>
+                    <td class="py-2 px-4 flex gap-2 dark:text-white">
+                        <button @click="selectedEstado = {id: 'E-003', nombre: 'Cancelado', descripcion: 'Evento cancelado o suspendido'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button @click="selectedEstado = {id: 'E-003', nombre: 'Cancelado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
             </tbody>
         </table>
-
-        <x-slot name="mobileTemplate">
-            <div class="space-y-4">
-                <template x-for="estado in estados.filter(e => !searchEstadoCalendario || e.nombre.toLowerCase().includes(searchEstadoCalendario.toLowerCase()))" :key="estado.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estado.nombre"></h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular" x-text="'ID: ' + estado.id"></p>
-                            </div>
-                        </div>
-                        <div class="space-y-1 text-sm">
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Descripción:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="estado.descripcion"></span></div>
-                        </div>
-                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="selectedEstado = {...estado}; isEditEstadoModalOpen = true"
-                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button @click.prevent="selectedEstado = {id: estado.id}; isDeleteEstadoModalOpen = true"
-                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </x-slot>
-    </x-admin.tabla-mobile>
+    </div>
 
     <!-- Modal Agregar Estado -->
     <x-admin.form-modal class="nunito-bold dark:bg-gray-800" modalName="isAddEstadoModalOpen" title="Agregar Estado de Calendario" submitLabel="Guardar Estado">

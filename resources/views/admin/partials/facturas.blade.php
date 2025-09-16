@@ -25,7 +25,10 @@
 
     <!-- TAB: FACTURAS -->
     <div x-show="tab==='facturas'" class="overflow-x-auto">
-        <x-admin.tabla-mobile titulo="Facturas">
+        <x-admin.tabla-crud class="nunito-bold">
+            <x-slot name="titulo">
+                <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Facturas</h2>
+            </x-slot>
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchFacturas',
@@ -133,49 +136,7 @@
                     </tr>
                 </tbody>
             </table>
-            <x-slot name="mobileTemplate">
-                <div class="space-y-4 max-w-sm mx-auto">
-                    <!-- Factura 1 -->
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                        <div class="flex flex-col gap-1">
-                            <div class="text-base nunito-bold text-gray-800 dark:text-white">#1 · 0001</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Fecha: 2025-07-30</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">OC: OC-12345</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Subtotal: 5000</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Total: 5500</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Total Letras: Cinco mil quinientos lempiras</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">CAI: CAI-987654321</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Cliente: BAC credomatic</div>
-                        </div>
-                        <div class="flex items-center gap-2 mt-3 text-xs">
-                            <span class="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 px-2 py-1 rounded nunito-regular">Pagada</span>
-                            <a href="/admin/formato-factura" target="_blank" class="inline-flex items-center justify-center text-xs w-20 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular"><i class="fas fa-eye mr-1"></i> Ver</a>
-                            <button @click="isEditFacturaModalOpen = true; facturaToEdit = {id: 1, numero: '0001', fecha: '2025-07-30', oc: 'OC-12345', subtotal: 5000, total: 5500, total_letras: 'Cinco mil quinientos lempiras', estado_factura: 'Pagada', cai: 'CAI-987654321', cliente: 'BAC credomatic'}" class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></button>
-                            <button @click="isDeleteFacturaModalOpen = true; facturaToDelete = {id: 1}" class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                    <!-- Factura 2 -->
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                        <div class="flex flex-col gap-1">
-                            <div class="text-base nunito-bold text-gray-800 dark:text-white">#2 · 0002</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Fecha: 2025-07-31</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">OC: OC-54321</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Subtotal: 6000</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Total: 6500</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Total Letras: Seis mil quinientos lempiras</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">CAI: CAI-123456789</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Cliente: Bancafe</div>
-                        </div>
-                        <div class="flex items-center gap-2 mt-3 text-xs">
-                            <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 px-2 py-1 rounded nunito-regular">Pendiente</span>
-                            <a href="/admin/formato-factura" target="_blank" class="inline-flex items-center justify-center text-xs w-20 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular"><i class="fas fa-eye mr-1"></i> Ver</a>
-                            <button @click="isEditFacturaModalOpen = true; facturaToEdit = {id: 2, numero: '0002', fecha: '2025-07-31', oc: 'OC-54321', subtotal: 6000, total: 6500, total_letras: 'Seis mil quinientos lempiras', estado_factura: 'Pendiente', cai: 'CAI-123456789', cliente: 'Bancafe'}" class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></button>
-                            <button @click="isDeleteFacturaModalOpen = true; facturaToDelete = {id: 2}" class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </x-slot>
-        </x-admin.tabla-mobile>
+        </x-admin.tabla-crud>
     </div>
 
     <!-- Modales Factura -->
@@ -286,7 +247,10 @@
 
     <!-- TAB: DETALLE FACTURA -->
     <div x-show="tab==='detalle'" class="overflow-x-auto">
-        <x-admin.tabla-mobile titulo="Detalle Factura">
+        <x-admin.tabla-crud class="nunito-bold">
+            <x-slot name="titulo">
+                <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Detalle Factura</h2>
+            </x-slot>
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchDetalleFactura',
@@ -336,37 +300,18 @@
                             <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">8</td>
                             <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0</td>
                             <td class="py-2 px-4 flex gap-2">
-                                <button @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = {id_detalle: 1, id_factura: '0001', id_servicio: 'SVC-01', fecha_servicio: '2025-07-26', horas: 8, descuento: 0}"
-                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></button>
-                                <button @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
-                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></button>
+                                <a href="#"
+                                    @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = {id_detalle: 1, id_factura: '0001', id_servicio: 'SVC-01', fecha_servicio: '2025-07-26', horas: 8, descuento: 0}"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
+                                <a href="#"
+                                    @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
+                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <x-slot name="mobileTemplate">
-                <div class="space-y-4 max-w-sm mx-auto">
-                    <!-- Detalle 1 -->
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                        <div class="flex flex-col gap-1">
-                            <div class="text-base nunito-bold text-gray-800 dark:text-white">Detalle #1</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Factura: 0001</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Servicio: SVC-01</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Fecha: 2025-07-26</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Horas: 8</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Descuento: 0</div>
-                        </div>
-                        <div class="flex items-center gap-2 mt-3 text-xs">
-                            <button @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = {id_detalle: 1, id_factura: '0001', id_servicio: 'SVC-01', fecha_servicio: '2025-07-26', horas: 8, descuento: 0}"
-                                class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></button>
-                            <button @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
-                                class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </x-slot>
-        </x-admin.tabla-mobile>
+        </x-admin.tabla-crud>
     </div>
 
     <!-- Modal Nuevo Detalle Factura -->

@@ -31,71 +31,37 @@
             </button>
         </div>
         <!-- TABLA -->
-        <x-admin.tabla-mobile>
-            <x-slot name="desktop">
-                <table class="min-w-full text-sm w-full">
-                    <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Acción</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descripción</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="accion in acciones
-                            .filter(a =>
-                                (!filtroAccion || a.descripcion.toLowerCase().includes(filtroAccion.toLowerCase()))
-                                && (!filtroTipo || a.nombre === filtroTipo)
-                            )" :key="accion.id_accion">
-                            <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.id_accion"></td>
-                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.nombre"></td>
-                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.descripcion"></td>
-                                <td class="py-2 px-4 flex gap-2 nunito-regular">
-                                    <a href="#"
-                                        @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
-                                        class="text-blue-600 hover:text-blue-800 dark:text-blue-300"><i class="fas fa-edit"></i></a>
-                                    <a href="#"
-                                        @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
-                                        class="text-red-600 hover:text-red-800 dark:text-red-400"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </x-slot>
-            <x-slot name="mobileTemplate">
+        <table class="min-w-full text-sm w-full">
+            <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                <tr>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Acción</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descripción</th>
+                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
                 <template x-for="accion in acciones
                     .filter(a =>
                         (!filtroAccion || a.descripcion.toLowerCase().includes(filtroAccion.toLowerCase()))
                         && (!filtroTipo || a.nombre === filtroTipo)
                     )" :key="accion.id_accion">
-                    <div class="rounded-lg shadow mb-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">ID Acción</span>
-                            <span class="text-sm nunito-bold text-gray-800 dark:text-white" x-text="accion.id_accion"></span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Nombre</span>
-                            <div class="text-sm nunito-bold text-gray-800 dark:text-white" x-text="accion.nombre"></div>
-                        </div>
-                        <div class="mb-2">
-                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">Descripción</span>
-                            <div class="text-sm nunito-regular text-gray-800 dark:text-white" x-text="accion.descripcion"></div>
-                        </div>
-                        <div class="flex gap-3 mt-2">
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.id_accion"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.nombre"></td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.descripcion"></td>
+                        <td class="py-2 px-4 flex gap-2 nunito-regular">
                             <a href="#"
                                 @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
                                 class="text-blue-600 hover:text-blue-800 dark:text-blue-300"><i class="fas fa-edit"></i></a>
                             <a href="#"
                                 @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
                                 class="text-red-600 hover:text-red-800 dark:text-red-400"><i class="fas fa-trash"></i></a>
-                        </div>
-                    </div>
+                        </td>
+                    </tr>
                 </template>
-            </x-slot>
-        </x-admin.tabla-mobile>
+            </tbody>
+        </table>
     </div>
 
     <!-- MODAL AGREGAR ACCIÓN -->

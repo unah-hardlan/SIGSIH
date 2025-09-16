@@ -15,7 +15,7 @@
 
     </div>
     {{-- Tarjetas de estadísticas (diseño moderno) --}}
-    <div class="sm:sticky sm:top-4 sm:z-10 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-800 -mx-6 px-6 py-4 rounded-lg">
+    <div class="sticky top-4 z-10 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-800 -mx-6 px-6 py-4 rounded-lg">
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm dark:shadow-lg p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -68,7 +68,7 @@
                     {{-- Movimiento 1: Ingreso --}}
                     <div class="relative flex items-start gap-6">
                         {{-- Punto del timeline --}}
-                        <div class="relative flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
+                        <div class="relative z-10 flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
                             <div class="w-3 h-3 bg-red-500 dark:bg-red-400 rounded-full"></div>
                         </div>
                         
@@ -94,7 +94,7 @@
                     {{-- Movimiento 2: Gasto --}}
                     <div class="relative flex items-start gap-6">
                         {{-- Punto del timeline --}}
-                        <div class="relative flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
+                        <div class="relative z-10 flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
                             <div class="w-3 h-3 bg-red-500 dark:bg-red-400 rounded-full"></div>
                         </div>
                         
@@ -120,7 +120,7 @@
                     {{-- Movimiento 3: Gasto --}}
                     <div class="relative flex items-start gap-6">
                         {{-- Punto del timeline --}}
-                        <div class="relative flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
+                        <div class="relative z-10 flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
                             <div class="w-3 h-3 bg-red-500 dark:bg-red-400 rounded-full"></div>
                         </div>
                         
@@ -146,7 +146,7 @@
                     {{-- Movimiento 4: Ingreso --}}
                     <div class="relative flex items-start gap-6">
                         {{-- Punto del timeline --}}
-                        <div class="relative flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
+                        <div class="relative z-10 flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 border-4 border-white dark:border-gray-800 rounded-full shadow-sm">
                             <div class="w-3 h-3 bg-red-500 dark:bg-red-400 rounded-full"></div>
                         </div>
                         

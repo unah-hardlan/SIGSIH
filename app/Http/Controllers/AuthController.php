@@ -120,48 +120,21 @@ class AuthController extends Controller
         return view('auth.password-recover');
     }
 
-    public function searchAccount(Request $request): JsonResponse
-    {
-        $request->validate([
-            'email' => 'required|string'
-        ]);
-
-        $search = trim($request->email);
-        
-        $usuario = Usuario::where('correo_electronico', $search)
-                         ->orWhere('usuario', strtoupper($search))
-                         ->first();
-        
-        if (!$usuario) {
-            return response()->json([
-                'found' => false,
-                'message' => 'No se encontró ninguna cuenta con ese correo electrónico o nombre de usuario.'
-            ], 404);
-        }
-
-        return response()->json([
-            'found' => true,
-            'account' => [
-                'id' => $usuario->id_usuario_pk,
-                'usuario' => $usuario->usuario,
-                'email' => $usuario->correo_electronico,
-                'nombre_completo' => $usuario->nombre_usuario ?? 'Sin especificar'
-            ]
-        ], 200);
-    }
-
     public function sendPasswordResetEmail(Request $request): JsonResponse
     {
         $request->validate([
-            'user_id' => 'required|integer|exists:tbl_ms_usuario,id_usuario_pk'
+            'email' => 'required|email'
         ]);
 
-        $usuario = Usuario::find($request->user_id);
+        $email = $request->email;
+        
+        // Buscar usuario por email
+        $usuario = Usuario::where('email', $email)->first();
         
         if (!$usuario) {
             return response()->json([
-                'message' => 'Usuario no encontrado.'
-            ], 404);
+                'message' => 'Si existe una cuenta con ese correo, se han enviado las instrucciones de recuperación.'
+            ], 200);
         }
 
         // Aquí puedes implementar el envío del email
@@ -171,11 +144,10 @@ class AuthController extends Controller
             // Mail::send(...);
             
             // Registrar en bitácora
-            $this->bitacora->logFor('Password Reset', 'Solicitud', 'Solicitud de recuperación de contraseña', $usuario->id_usuario_pk);
+            $this->bitacora->logFor('Password Reset', 'Solicitud', 'Solicitud de recuperación de contraseña', $usuario->id);
             
             return response()->json([
-                'message' => 'Se han enviado las instrucciones de recuperación a tu correo electrónico.',
-                'email' => $usuario->correo_electronico
+                'message' => 'Se han enviado las instrucciones de recuperación a tu correo electrónico.'
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([

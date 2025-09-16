@@ -69,21 +69,6 @@ window.initResponsiveSidebar = function (scope) {
     // Configuración inicial
     scope.isMobile = window.innerWidth < 768;
 
-    // Función para aplicar z-index condicional solo en móvil
-    function applySidebarZIndex() {
-        const aside = document.querySelector("aside");
-        if (!aside) return;
-        if (window.innerWidth < 768) {
-            // Solo en móvil elevamos para quedar encima del overlay (que quedó en 900)
-            aside.style.zIndex = "999";
-        } else {
-            // En desktop dejamos que el flujo normal defina stacking
-            aside.style.zIndex = "";
-        }
-    }
-    // Aplicar inicialmente
-    applySidebarZIndex();
-
     // Establecer estado inicial del sidebar según el tipo de dispositivo
     if (scope.isMobile) {
         scope.sidebarOpen = false; // En móviles, cerrado por defecto
@@ -103,7 +88,6 @@ window.initResponsiveSidebar = function (scope) {
         else if (!wasMobile && scope.isMobile) {
             scope.sidebarOpen = false;
         }
-        applySidebarZIndex();
     }
 
     window.addEventListener("resize", checkMobile);

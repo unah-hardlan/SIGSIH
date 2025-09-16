@@ -9,128 +9,80 @@
   ordenarPor: 'id'
 }">
 <div class="w-full">
-    <x-admin.tabla-mobile titulo="Gestión de Tickets">
-        <x-slot name="filtros">
-            <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
-                @include('partials.filtros-generales', [
-                  'searchModel' => 'search',
-                  'filtrosSelect' => [
-                    'estadoFiltro' => [
-                      'label' => 'Estados',
-                      'options' => ['Pendiente', 'En proceso', 'Finalizado']
-                    ]
-                  ],
-                  'ordenarOptions' => [
-                    'id' => 'ID',
-                    'cliente' => 'Cliente',
-                    'fecha' => 'Fecha',
-                    'estado' => 'Estado'
-                  ]
-                ])
-            </div>
-        </x-slot>
-        <x-slot name="boton">
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo ticket</button>
-                <a href="/admin/reportes-header?modulo=Tickets&fecha={{ now()->format('d-M-Y') }}" target="_blank" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
-                    <i class="fas fa-file-alt"></i> Generar Reporte
-                </a>
-            </div>
-        </x-slot>
-
+    <div class="overflow-x-auto w-full">
+  <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-2 w-full">
+        <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 border-b dark:border-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
+          <h2 class="text-2xl dark:bg-gray-900 text-gray-800 dark:text-white nunito-bold">Gestión de Tickets</h2>
+          <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
+            @include('partials.filtros-generales', [
+              'searchModel' => 'search',
+              'filtrosSelect' => [
+                'estadoFiltro' => [
+                  'label' => 'Estados',
+                  'options' => ['Pendiente', 'En proceso', 'Finalizado']
+                ]
+              ],
+              'ordenarOptions' => [
+                'id' => 'ID',
+                'cliente' => 'Cliente',
+                'fecha' => 'Fecha',
+                'estado' => 'Estado'
+              ]
+            ])
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo ticket</button>
+            <a href="/admin/reportes-header?modulo=Tickets&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+               class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </a>
+          </div>
+        </div>
         <table class="min-w-full text-sm w-full">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Cliente</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b dark:border-gray-600 nunito-regular">
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Empresa Ejemplo S.A.</td>
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">26/07/2025</td>
-                    <td class="py-2 px-4"><span class="bg-yellow-100 dark:bg-yellow-600 text-yellow-700 dark:text-yellow-100 px-2 py-1 rounded nunito-regular">Pendiente</span></td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 1, cliente: 'Empresa Ejemplo S.A.', fecha: '26/07/2025', estado: 'Pendiente'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
-                <tr class="border-b dark:border-gray-600 nunito-regular">
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2</td>
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Bac Credomatic</td>
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">27/07/2025</td>
-                    <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-600 text-green-700 dark:text-green-100 px-2 py-1 rounded nunito-regular">En proceso</span></td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 2, cliente: 'Bac Credomatic', fecha: '27/07/2025', estado: 'En proceso'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 2}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
-                <tr class="border-b dark:border-gray-600 nunito-regular">
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">3</td>
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Ficohsa</td>
-                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">28/07/2025</td>
-                    <td class="py-2 px-4"><span class="bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-100 px-2 py-1 rounded nunito-regular">Finalizado</span></td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 3, cliente: 'Ficohsa', fecha: '28/07/2025', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 3}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
-            </tbody>
+          <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+            <tr>
+              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Cliente</th>
+              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha</th>
+              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado</th>
+              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b dark:border-gray-600 nunito-regular">
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Empresa Ejemplo S.A.</td>
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">26/07/2025</td>
+              <td class="py-2 px-4"><span class="bg-yellow-100 dark:bg-yellow-600 text-yellow-700 dark:text-yellow-100 px-2 py-1 rounded nunito-regular">Pendiente</span></td>
+              <td class="py-2 px-4 flex gap-2">
+                <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 1, cliente: 'Empresa Ejemplo S.A.', fecha: '26/07/2025', estado: 'Pendiente'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
+                <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
+              </td>
+            </tr>
+            <tr class="border-b dark:border-gray-600 nunito-regular">
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2</td>
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Bac Credomatic</td>
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">27/07/2025</td>
+              <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-600 text-green-700 dark:text-green-100 px-2 py-1 rounded nunito-regular">En proceso</span></td>
+              <td class="py-2 px-4 flex gap-2">
+                <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 2, cliente: 'Bac Credomatic', fecha: '27/07/2025', estado: 'En proceso'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
+                <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 2}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
+              </td>
+            </tr>
+            <tr class="border-b dark:border-gray-600 nunito-regular">
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">3</td>
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Ficohsa</td>
+              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">28/07/2025</td>
+              <td class="py-2 px-4"><span class="bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-100 px-2 py-1 rounded nunito-regular">Finalizado</span></td>
+              <td class="py-2 px-4 flex gap-2">
+                <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 3, cliente: 'Ficohsa', fecha: '28/07/2025', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
+                <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 3}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
+              </td>
+            </tr>
+          </tbody>
         </table>
-
-        <x-slot name="mobileTemplate">
-            <div class="space-y-4">
-                <!-- Card 1 -->
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="text-sm nunito-bold text-gray-800 dark:text-white">#1 · Empresa Ejemplo S.A.</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">26/07/2025</div>
-                        </div>
-                        <span class="bg-yellow-100 dark:bg-yellow-600 text-yellow-700 dark:text-yellow-100 px-2 py-1 rounded text-xs nunito-regular">Pendiente</span>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-3 text-sm">
-                        <button @click="isEditModalOpen = true; ticketToEdit = {id: 1, cliente: 'Empresa Ejemplo S.A.', fecha: '26/07/2025', estado: 'Pendiente'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
-                        <button @click="isDeleteModalOpen = true; ticketToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="text-sm nunito-bold text-gray-800 dark:text-white">#2 · Bac Credomatic</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">27/07/2025</div>
-                        </div>
-                        <span class="bg-green-100 dark:bg-green-600 text-green-700 dark:text-green-100 px-2 py-1 rounded text-xs nunito-regular">En proceso</span>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-3 text-sm">
-                        <button @click="isEditModalOpen = true; ticketToEdit = {id: 2, cliente: 'Bac Credomatic', fecha: '27/07/2025', estado: 'En proceso'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
-                        <button @click="isDeleteModalOpen = true; ticketToDelete = {id: 2}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="text-sm nunito-bold text-gray-800 dark:text-white">#3 · Ficohsa</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">28/07/2025</div>
-                        </div>
-                        <span class="bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-100 px-2 py-1 rounded text-xs nunito-regular">Finalizado</span>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-3 text-sm">
-                        <button @click="isEditModalOpen = true; ticketToEdit = {id: 3, cliente: 'Ficohsa', fecha: '28/07/2025', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
-                        <button @click="isDeleteModalOpen = true; ticketToDelete = {id: 3}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            </div>
-        </x-slot>
-    </x-admin.tabla-mobile>
+      </div>
+    </div>
 
     <!-- Modal Nuevo Ticket -->
     <x-admin.form-modal class="nunito-bold"

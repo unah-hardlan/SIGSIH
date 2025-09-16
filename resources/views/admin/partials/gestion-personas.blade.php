@@ -259,11 +259,12 @@
             if(this.isDeleteModalOpenPersonas) return this.deletePersona();
     }
     }" x-init="init()" @modal-submit.window="onModalSubmit()">
-    <x-admin.tabla-mobile titulo="Gestión de Personas">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Personas'">
         <x-slot name="filtros">
             @include('partials.filtros-generales', [
                 'searchModel' => 'searchPersonas',
                 'filtrosSelect' => [
+                    // Los keys deben coincidir exactamente con las propiedades declaradas en x-data (filtroTipoPersona, filtroGenero)
                     'filtroTipoPersona' => [
                         'label' => 'Tipo de Persona',
                         'options' => ['Técnico', 'Cliente', 'Administrador']
@@ -280,76 +281,59 @@
                 ]
             ])
         </x-slot>
-        <x-slot name="boton">
-            <button @click="openAdd()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva Persona</button>
-        </x-slot>
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Nombre</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Cargo</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Género</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Perfil</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Usuario</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="persona in personas.filter(p => equalsNormalized(p.tipo_persona_nombre, filtroTipoPersona) && equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.id"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.primer_nombre"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_nombre"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.primer_apellido"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_apellido"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.dni"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.cargo"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.tipo_persona_nombre"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.genero_nombre"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.perfil_nombre"></td>
-                        <td class="py-2 px-4 nunito-regular" x-text="persona.usuario || '-' "></td>
-                        <td class="py-2 px-4 flex gap-2 nunito-regular">
-                            <a href="#" @click="openEdit(persona)"
-                                class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="#" @click="openDelete(persona)"
-                                class="text-red-600 hover:text-red-800">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </td>
+
+        <!-- Tabla de personas -->
+        <div class="overflow-x-auto w-full">
+            <div x-show="loading" class="p-3 text-sm text-gray-600 nunito-regular">Cargando…</div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Cargo</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Género</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Perfil</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Usuario</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
-        <x-slot name="mobileTemplate">
-            <div class="space-y-4 max-w-sm mx-auto">
-                <template x-for="persona in personas.filter(p => equalsNormalized(p.tipo_persona_nombre, filtroTipoPersona) && equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
-                    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm mb-2">
-                        <div class="flex flex-col gap-1">
-                            <div class="text-base nunito-bold text-gray-800 dark:text-gray-200">#<span x-text="persona.id"></span> · <span x-text="persona.primer_nombre"></span> <span x-text="persona.primer_apellido"></span></div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">DNI: <span x-text="persona.dni"></span></div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Cargo: <span x-text="persona.cargo"></span></div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Tipo: <span x-text="persona.tipo_persona_nombre"></span></div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Género: <span x-text="persona.genero_nombre"></span></div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Perfil: <span x-text="persona.perfil_nombre"></span></div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Usuario: <span x-text="persona.usuario || '-' "></span></div>
-                        </div>
-                        <div class="flex items-center gap-2 mt-3 text-xs">
-                            <button @click="openEdit(persona)" class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></button>
-                            <button @click="openDelete(persona)" class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </x-slot>
-    </x-admin.tabla-mobile>
+                </thead>
+                <tbody>
+                    <template x-for="persona in personas.filter(p => equalsNormalized(p.tipo_persona_nombre, filtroTipoPersona) && equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
+                        <tr class="border-b nunito-regular">
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.id"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.primer_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.primer_apellido"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_apellido"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.dni"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.cargo"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.tipo_persona_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.genero_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.perfil_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.usuario || '-' "></td>
+                            <td class="py-2 px-4 flex gap-2 nunito-regular">
+                                <a href="#" @click="openEdit(persona)"
+                                    class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" @click="openDelete(persona)"
+                                    class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+    <!-- Paginación removida -->
+    </x-admin.tabla-crud>
 
     <!-- Modal Agregar Persona -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona" submitLabel="Guardar"

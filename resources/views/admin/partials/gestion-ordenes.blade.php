@@ -39,7 +39,10 @@
         }
     ">
     <div class="overflow-x-auto">
-        <x-admin.tabla-mobile class="nunito-bold" titulo="Lista de Órdenes de Servicio">
+        <x-admin.tabla-crud class="nunito-bold">
+            <x-slot name="titulo">
+                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Lista de Órdenes de Servicio</h2>
+            </x-slot>
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchOrden',
@@ -62,129 +65,92 @@
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva
                     Orden</button>
             </x-slot>
-
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                    <tr>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Orden</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Solicitud</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Técnico</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Recepción</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Calificación</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1001</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">T-001</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-01</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs nunito-regular">5/5</span>
-                        </td>
-                        <td class="py-2 px-4">
-                            <div class="flex gap-2 items-center">
-                                <button @click="toggleRow(1)"
-                                    :class="expandedRows[1] ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'"
-                                    class="text-white px-2 py-1 rounded text-xs transition nunito-regular">
-                                    <i :class="expandedRows[1] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
-                                    <span x-text="expandedRows[1] ? 'Menos' : 'Más'"></span>
-                                </button>
-                                <a href="{{ route('admin.detalle-orden') }}" target="_blank"
-                                    class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
-                                    <i class="fas fa-eye mr-1"></i> Ver
-                                </a>
-                                <a href="#" @click="isEditModalOpen = true; ordenToEdit = {
-                                    id: 1,
-                                    id_solicitud: '1001',
-                                    id_tecnico: 'T-001',
-                                    fecha_recepcion: '2025-07-01',
-                                    fecha_inicio: '2025-07-02',
-                                    fecha_finalizacion: '2025-07-05',
-                                    observaciones: 'Sin observaciones',
-                                    diagnostico_tecnico: 'Diagnóstico técnico ejemplo',
-                                    diagnostico_cliente: 'Diagnóstico cliente ejemplo',
-                                    calificacion_servicio: 5,
-                                    id_cotizacion: 'C-001'
-                                }"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isDeleteModalOpen = true; ordenToDelete = {id: 1}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr x-show="expandedRows[1]" x-transition class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                        <td colspan="6" class="py-3 px-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                                <div>
-                                    <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha Inicio:</span>
-                                    <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-02</span>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                        <tr>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Orden</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Solicitud</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Técnico</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Recepción</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Calificación</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">T-001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-01</td>
+                            <td class="py-2 px-4">
+                                <span class="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs nunito-regular">5/5</span>
+                            </td>
+                            <td class="py-2 px-4">
+                                <div class="flex gap-2 items-center">
+                                    <button @click="toggleRow(1)"
+                                        :class="expandedRows[1] ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'"
+                                        class="text-white px-2 py-1 rounded text-xs transition nunito-regular">
+                                        <i :class="expandedRows[1] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                                        <span x-text="expandedRows[1] ? 'Menos' : 'Más'"></span>
+                                    </button>
+                                    <a href="{{ route('admin.detalle-orden') }}" target="_blank"
+                                        class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
+                                        <i class="fas fa-eye mr-1"></i> Ver
+                                    </a>
+                                    <a href="#" @click="isEditModalOpen = true; ordenToEdit = {
+                                        id: 1,
+                                        id_solicitud: '1001',
+                                        id_tecnico: 'T-001',
+                                        fecha_recepcion: '2025-07-01',
+                                        fecha_inicio: '2025-07-02',
+                                        fecha_finalizacion: '2025-07-05',
+                                        observaciones: 'Sin observaciones',
+                                        diagnostico_tecnico: 'Diagnóstico técnico ejemplo',
+                                        diagnostico_cliente: 'Diagnóstico cliente ejemplo',
+                                        calificacion_servicio: 5,
+                                        id_cotizacion: 'C-001'
+                                    }"
+                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click="isDeleteModalOpen = true; ordenToDelete = {id: 1}"
+                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </div>
-                                <div>
-                                    <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha Finalización:</span>
-                                    <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-05</span>
+                            </td>
+                        </tr>
+                        <tr x-show="expandedRows[1]" x-transition class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                            <td colspan="6" class="py-3 px-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha Inicio:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-02</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha Finalización:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-05</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">ID Cotización:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">C-001</span>
+                                    </div>
+                                    <div class="md:col-span-2 lg:col-span-3">
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Observaciones:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Sin observaciones</span>
+                                    </div>
+                                    <div class="md:col-span-2 lg:col-span-3">
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico Técnico:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Diagnóstico técnico ejemplo</span>
+                                    </div>
+                                    <div class="md:col-span-2 lg:col-span-3">
+                                        <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico Cliente:</span>
+                                        <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Diagnóstico cliente ejemplo</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">ID Cotización:</span>
-                                    <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">C-001</span>
-                                </div>
-                                <div class="md:col-span-2 lg:col-span-3">
-                                    <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Observaciones:</span>
-                                    <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Sin observaciones</span>
-                                </div>
-                                <div class="md:col-span-2 lg:col-span-3">
-                                    <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico Técnico:</span>
-                                    <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Diagnóstico técnico ejemplo</span>
-                                </div>
-                                <div class="md:col-span-2 lg:col-span-3">
-                                    <span class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico Cliente:</span>
-                                    <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular">Diagnóstico cliente ejemplo</span>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <x-slot name="mobileTemplate">
-                <div class="space-y-4">
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <div class="text-lg font-bold text-gray-800">Orden #1</div>
-                                <div class="text-sm text-gray-600">Solicitud: 1001 · Técnico: T-001</div>
-                            </div>
-                            <div><span class="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs nunito-regular">5/5</span></div>
-                        </div>
-                        <div class="text-sm text-gray-700 mb-1"><strong>Fecha Recepción:</strong> 2025-07-01</div>
-                        <div class="text-sm text-gray-700 mb-1"><strong>Fecha Inicio:</strong> 2025-07-02</div>
-                        <div class="text-sm text-gray-700 mb-1"><strong>Fecha Finalización:</strong> 2025-07-05</div>
-                        <div class="text-sm text-gray-700 mb-2"><strong>ID Cotización:</strong> C-001</div>
-                        <div class="text-sm text-gray-700 mb-2"><strong>Observaciones:</strong> Sin observaciones</div>
-                        <div class="text-sm text-gray-700 mb-2"><strong>Diagnóstico Técnico:</strong> Diagnóstico técnico ejemplo</div>
-                        <div class="text-sm text-gray-700 mb-3"><strong>Diagnóstico Cliente:</strong> Diagnóstico cliente ejemplo</div>
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ route('admin.detalle-orden') }}" target="_blank" class="inline-flex items-center justify-center text-xs px-3 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"><i class="fas fa-eye mr-1"></i> Ver</a>
-                            <button @click="isEditModalOpen = true; ordenToEdit = {
-                                id: 1,
-                                id_solicitud: '1001',
-                                id_tecnico: 'T-001',
-                                fecha_recepcion: '2025-07-01',
-                                fecha_inicio: '2025-07-02',
-                                fecha_finalizacion: '2025-07-05',
-                                observaciones: 'Sin observaciones',
-                                diagnostico_tecnico: 'Diagnóstico técnico ejemplo',
-                                diagnostico_cliente: 'Diagnóstico cliente ejemplo',
-                                calificacion_servicio: 5,
-                                id_cotizacion: 'C-001'
-                            }" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"><i class="fas fa-edit"></i> Editar</button>
-                            <button @click="isDeleteModalOpen = true; ordenToDelete = {id: 1}" class="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"><i class="fas fa-trash"></i> Eliminar</button>
-                        </div>
-                    </div>
-                </div>
-            </x-slot>
-        </x-admin.tabla-mobile>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </x-admin.tabla-crud>
     </div>
 
     <!-- Modal Nueva Orden -->

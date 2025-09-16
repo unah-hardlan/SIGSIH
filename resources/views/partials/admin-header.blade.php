@@ -23,12 +23,12 @@
     <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
          class="app-logo ml-2 sm:ml-20 md:ml-16 lg:ml-24"
          style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
-        <!-- Optional app name display -->  
+        <!-- Optional app name display -->
         {{-- <span class="hidden sm:block text-xl nunito-bold ml-2">{{ $appName ?? '' }}</span> --}}
     </div>
 
     <!-- Acciones derecha -->
-    <div class="flex items-center gap-3 md:gap-6">
+    <div class="flex items-center gap-3 md:gap-6 z-50">
         <label class="switch">
             <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
             <span class="slider"></span>
@@ -86,7 +86,7 @@
                 </div>
                 <!-- Inline logout confirmation modal (Alpine-only, avoids Blade component issues) -->
                 <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms
-                    class="fixed inset-0 bg-black/20 dark:bg-black/30 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ease-in-out"><!-- z-999 removido -->
+                    class="fixed inset-0 bg-black/20 dark:bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300 ease-in-out">
                     <div x-show="logoutConfirm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 backdrop-blur-none" x-transition:enter-end="opacity-100 scale-100 backdrop-blur-md" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100 backdrop-blur-md" x-transition:leave-end="opacity-0 scale-95 backdrop-blur-none"
                         class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-lg shadow-xl border border-white/20 dark:border-gray-700/50 p-6 w-11/12 max-w-sm mx-auto" @click.stop>
                         
