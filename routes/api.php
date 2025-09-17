@@ -87,7 +87,6 @@ Route::middleware(['jwt.auth','auto.permiso'])->group(function () {
     Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
     Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
     Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
-    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);
     Route::apiResource('agencias', AgenciasController::class);
     Route::apiResource('categorias', CategoriaController::class);
@@ -106,6 +105,7 @@ Route::middleware(['jwt.auth','auto.permiso'])->group(function () {
     Route::apiResource('servicios-realizados', \App\Http\Controllers\ServicioRealizadoController::class);
     Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
     Route::apiResource('tipos-visita', \App\Http\Controllers\TipoVisitaController::class);
+    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
 
     Route::apiResource('contactos', ContactoController::class);

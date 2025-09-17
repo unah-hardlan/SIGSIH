@@ -16,4 +16,9 @@ class TipoProducto extends Model
         'nombre_tipo_producto',
         'descripcion_tipo_producto',
     ];
+
+    public function productos()
+    {
+        return $this->hasMany(Producto::class, 'id_tipo_producto_fk', 'id_tipo_producto_pk');
+    }
 }
