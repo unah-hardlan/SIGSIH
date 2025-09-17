@@ -66,6 +66,12 @@ class TipoProductoController extends Controller
     {
         $tipo = TipoProducto::find($id);
         if(!$tipo) return response()->json(['error'=>'Tipo de producto no encontrado'],404);
+        
+        // Check if there are related products
+        if($tipo->productos()->exists()) {
+            return response()->json(['error'=>'No se puede eliminar el tipo de producto porque tiene productos asociados'],422);
+        }
+        
         $tipo->delete();
         return response()->json(['message'=>'Tipo de producto eliminado']);
     }

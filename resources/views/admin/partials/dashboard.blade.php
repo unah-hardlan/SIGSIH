@@ -42,7 +42,7 @@
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
     </div>    <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-blue-500 transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-r-4 border-blue-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400">Total Usuarios</h3>
@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-green-500 transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-r-4 border-green-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400">Empresas Activas</h3>
@@ -66,7 +66,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-purple-500 transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-r-4 border-purple-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400">Órdenes de Servicio</h3>
@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-indigo-500 transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-r-4 border-indigo-500 transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400">Cotizaciones</h3>
@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 p-6 rounded-xl shadow-lg border border-teal-200 dark:border-teal-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 p-6 rounded-xl shadow-lg border border-r-4 border-teal-500 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-teal-200 dark:bg-teal-700 rounded-full -translate-y-10 translate-x-10 opacity-20"></div>
                 <div class="relative z-10">
                     <div class="flex items-center justify-between mb-4">
@@ -116,7 +116,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl shadow-lg border border-orange-200 dark:border-orange-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl shadow-lg border border-r-4 border-orange-500 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute top-0 right-0 w-16 h-16 bg-orange-200 dark:bg-orange-700 rounded-full -translate-y-8 translate-x-8 opacity-30"></div>
                 <div class="absolute bottom-0 left-0 w-12 h-12 bg-orange-300 dark:bg-orange-600 rounded-full translate-y-6 -translate-x-6 opacity-20"></div>
                 <div class="relative z-10">
@@ -145,7 +145,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-green-100 to-green-300 dark:from-green-900/30 dark:to-green-800/30 p-6 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-gradient-to-br from-green-100 to-green-300 dark:from-green-900/30 dark:to-green-800/30 p-6 rounded-xl shadow-lg border border-r-4 border-emerald-500 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute top-0 left-0 w-24 h-24 bg-green-700 dark:bg-green-600 rounded-full -translate-y-12 -translate-x-12 opacity-25"></div>
                 <div class="relative z-10">
                     <div class="flex items-center justify-between mb-4">
@@ -167,7 +167,7 @@
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-800/20 p-6 rounded-xl shadow-lg border border-pink-200 dark:border-pink-700 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+            <div class="bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-800/20 p-6 rounded-xl shadow-lg border border-r-4 border-pink-500 relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 <div class="absolute bottom-0 right-0 w-20 h-20 bg-pink-200 dark:bg-pink-700 rounded-full translate-y-10 translate-x-10 opacity-25"></div>
                 <div class="absolute top-0 left-1/2 w-8 h-8 bg-pink-300 dark:bg-pink-600 rounded-full -translate-y-4 opacity-30"></div>
                 <div class="relative z-10">

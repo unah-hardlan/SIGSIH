@@ -10,7 +10,7 @@ class TipoProductoResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            'id' => $this->id_tipo_producto_pk,
+            'id_tipo_producto_pk' => $this->id_tipo_producto_pk,
             'nombre_tipo_producto' => $this->nombre_tipo_producto,
             'descripcion_tipo_producto' => $this->descripcion_tipo_producto,
         ];
