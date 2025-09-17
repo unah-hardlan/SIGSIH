@@ -154,4 +154,571 @@ window.paisesApiHandlers = {
                 window.showToast("Error al eliminar el país", "error");
         }
     },
+
+    /**
+     * Fetches the list of departments from the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async fetchDepartamentos(component) {
+        component.loadingDepartamentos = true;
+        try {
+            const response = await fetch("/api/departamentos", {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            component.departamentos = Array.isArray(data?.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+        } catch (error) {
+            console.error("Error fetching departamentos:", error);
+            window.showToast &&
+                window.showToast("Error al cargar departamentos", "error");
+        } finally {
+            component.loadingDepartamentos = false;
+        }
+    },
+
+    /**
+     * Submits a new department to the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async submitDepartamento(component) {
+        const nombreTrim = String(component.nombre_departamento || "").trim();
+        const paisId = component.pais_departamento;
+        if (!nombreTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El nombre del departamento es obligatorio",
+                    "error"
+                );
+            return;
+        }
+        if (!paisId) {
+            window.showToast &&
+                window.showToast("Debe seleccionar un país", "error");
+            return;
+        }
+        if (
+            component.departamentos.some(
+                (d) =>
+                    d.nombre_departamento.toLowerCase() ===
+                        nombreTrim.toLowerCase() && d.id_pais_fk == paisId
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "El departamento ya existe en ese país",
+                    "error"
+                );
+            return;
+        }
+        try {
+            const payload = {
+                nombre_departamento: nombreTrim,
+                id_pais_fk: paisId,
+            };
+            const response = await fetch("/api/departamentos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("Departamento creado exitosamente", "success");
+            component.nombre_departamento = "";
+            component.pais_departamento = "";
+            component.isDepartamentoModalOpen = false;
+            await this.fetchDepartamentos(component);
+        } catch (error) {
+            console.error("Error creating departamento:", error);
+            window.showToast &&
+                window.showToast("Error al crear el departamento", "error");
+        }
+    },
+
+    /**
+     * Updates an existing department via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async updateDepartamento(component) {
+        if (!component.itemToEdit || !component.itemToEdit.id) return;
+        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
+        const paisId = component.itemToEdit.pais;
+        if (!nombreTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El nombre del departamento es obligatorio",
+                    "error"
+                );
+            return;
+        }
+        if (!paisId) {
+            window.showToast &&
+                window.showToast("Debe seleccionar un país", "error");
+            return;
+        }
+        if (
+            component.departamentos.some(
+                (d) =>
+                    d.nombre_departamento.toLowerCase() ===
+                        nombreTrim.toLowerCase() &&
+                    d.id_pais_fk == paisId &&
+                    d.id_departamento_pk !== component.itemToEdit.id
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otro departamento con ese nombre en ese país",
+                    "error"
+                );
+            return;
+        }
+        try {
+            const payload = {
+                nombre_departamento: nombreTrim,
+                id_pais_fk: paisId,
+            };
+            const response = await fetch(
+                `/api/departamentos/${component.itemToEdit.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload),
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast(
+                    "Departamento actualizado exitosamente",
+                    "success"
+                );
+            component.isDepartamentoEditModalOpen = false;
+            component.itemToEdit = null;
+            await this.fetchDepartamentos(component);
+        } catch (error) {
+            console.error("Error updating departamento:", error);
+            window.showToast &&
+                window.showToast(
+                    "Error al actualizar el departamento",
+                    "error"
+                );
+        }
+    },
+
+    /**
+     * Deletes a department via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async deleteDepartamento(component) {
+        if (!component.itemToDelete || !component.itemToDelete.id) return;
+        try {
+            const response = await fetch(
+                `/api/departamentos/${component.itemToDelete.id}`,
+                {
+                    method: "DELETE",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast(
+                    "Departamento eliminado exitosamente",
+                    "success"
+                );
+            component.isDepartamentoDeleteModalOpen = false;
+            component.itemToDelete = null;
+            await this.fetchDepartamentos(component);
+        } catch (error) {
+            console.error("Error deleting departamento:", error);
+            window.showToast &&
+                window.showToast("Error al eliminar el departamento", "error");
+        }
+    },
+
+    /**
+     * Fetches the list of cities from the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async fetchCiudades(component) {
+        component.loadingCiudades = true;
+        try {
+            const response = await fetch("/api/ciudades", {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            component.ciudades = Array.isArray(data?.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+        } catch (error) {
+            console.error("Error fetching ciudades:", error);
+            window.showToast &&
+                window.showToast("Error al cargar ciudades", "error");
+        } finally {
+            component.loadingCiudades = false;
+        }
+    },
+
+    /**
+     * Submits a new city to the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async submitCiudad(component) {
+        const nombreTrim = String(component.nombre_ciudad || "").trim();
+        const departamentoId = component.departamento_ciudad;
+        if (!nombreTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El nombre de la ciudad es obligatorio",
+                    "error"
+                );
+            return;
+        }
+        if (!departamentoId) {
+            window.showToast &&
+                window.showToast("Debe seleccionar un departamento", "error");
+            return;
+        }
+        if (
+            component.ciudades.some(
+                (c) =>
+                    c.nombre_ciudad.toLowerCase() ===
+                        nombreTrim.toLowerCase() &&
+                    c.id_departamento_fk == departamentoId
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "La ciudad ya existe en ese departamento",
+                    "error"
+                );
+            return;
+        }
+        try {
+            const payload = {
+                nombre_ciudad: nombreTrim,
+                id_departamento_fk: departamentoId,
+            };
+            const response = await fetch("/api/ciudades", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("Ciudad creada exitosamente", "success");
+            component.nombre_ciudad = "";
+            component.departamento_ciudad = "";
+            component.isCiudadModalOpen = false;
+            await this.fetchCiudades(component);
+        } catch (error) {
+            console.error("Error creating ciudad:", error);
+            window.showToast &&
+                window.showToast("Error al crear la ciudad", "error");
+        }
+    },
+
+    /**
+     * Updates an existing city via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async updateCiudad(component) {
+        if (!component.itemToEdit || !component.itemToEdit.id) return;
+        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
+        const departamentoId = component.itemToEdit.departamento;
+        if (!nombreTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El nombre de la ciudad es obligatorio",
+                    "error"
+                );
+            return;
+        }
+        if (!departamentoId) {
+            window.showToast &&
+                window.showToast("Debe seleccionar un departamento", "error");
+            return;
+        }
+        if (
+            component.ciudades.some(
+                (c) =>
+                    c.nombre_ciudad.toLowerCase() ===
+                        nombreTrim.toLowerCase() &&
+                    c.id_departamento_fk == departamentoId &&
+                    c.id_ciudad_pk !== component.itemToEdit.id
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otra ciudad con ese nombre en ese departamento",
+                    "error"
+                );
+            return;
+        }
+        try {
+            const payload = {
+                nombre_ciudad: nombreTrim,
+                id_departamento_fk: departamentoId,
+            };
+            const response = await fetch(
+                `/api/ciudades/${component.itemToEdit.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload),
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("Ciudad actualizada exitosamente", "success");
+            component.isCiudadEditModalOpen = false;
+            component.itemToEdit = null;
+            await this.fetchCiudades(component);
+        } catch (error) {
+            console.error("Error updating ciudad:", error);
+            window.showToast &&
+                window.showToast("Error al actualizar la ciudad", "error");
+        }
+    },
+
+    /**
+     * Deletes a city via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async deleteCiudad(component) {
+        if (!component.itemToDelete || !component.itemToDelete.id) return;
+        try {
+            const response = await fetch(
+                `/api/ciudades/${component.itemToDelete.id}`,
+                {
+                    method: "DELETE",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("Ciudad eliminada exitosamente", "success");
+            component.isCiudadDeleteModalOpen = false;
+            component.itemToDelete = null;
+            await this.fetchCiudades(component);
+        } catch (error) {
+            console.error("Error deleting ciudad:", error);
+            window.showToast &&
+                window.showToast("Error al eliminar la ciudad", "error");
+        }
+    },
+
+    /**
+     * Fetches the list of addresses from the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async fetchDirecciones(component) {
+        component.loadingDirecciones = true;
+        try {
+            const response = await fetch("/api/direcciones", {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            component.direcciones = Array.isArray(data?.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+        } catch (error) {
+            console.error("Error fetching direcciones:", error);
+            window.showToast &&
+                window.showToast("Error al cargar direcciones", "error");
+        } finally {
+            component.loadingDirecciones = false;
+        }
+    },
+
+    /**
+     * Submits a new address to the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async submitDireccion(component) {
+        const direccionTrim = String(component.direccion || "").trim();
+        const ciudadId = component.ciudad_direccion;
+        if (!direccionTrim) {
+            window.showToast &&
+                window.showToast("La dirección es obligatoria", "error");
+            return;
+        }
+        if (!ciudadId) {
+            window.showToast &&
+                window.showToast("Debe seleccionar una ciudad", "error");
+            return;
+        }
+        if (
+            component.direcciones.some(
+                (d) =>
+                    d.direccion.toLowerCase() === direccionTrim.toLowerCase() &&
+                    d.id_ciudad_fk == ciudadId
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "La dirección ya existe en esa ciudad",
+                    "error"
+                );
+            return;
+        }
+        try {
+            const payload = {
+                direccion: direccionTrim,
+                id_ciudad_fk: ciudadId,
+            };
+            const response = await fetch("/api/direcciones", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("Dirección creada exitosamente", "success");
+            component.direccion = "";
+            component.ciudad_direccion = "";
+            component.isDireccionModalOpen = false;
+            await this.fetchDirecciones(component);
+        } catch (error) {
+            console.error("Error creating direccion:", error);
+            window.showToast &&
+                window.showToast("Error al crear la dirección", "error");
+        }
+    },
+
+    /**
+     * Updates an existing address via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async updateDireccion(component) {
+        if (!component.itemToEdit || !component.itemToEdit.id) return;
+        const direccionTrim = String(component.itemToEdit.nombre || "").trim();
+        const ciudadId = component.itemToEdit.ciudad;
+        if (!direccionTrim) {
+            window.showToast &&
+                window.showToast("La dirección es obligatoria", "error");
+            return;
+        }
+        if (!ciudadId) {
+            window.showToast &&
+                window.showToast("Debe seleccionar una ciudad", "error");
+            return;
+        }
+        if (
+            component.direcciones.some(
+                (d) =>
+                    d.direccion.toLowerCase() === direccionTrim.toLowerCase() &&
+                    d.id_ciudad_fk == ciudadId &&
+                    d.id_direccion_pk !== component.itemToEdit.id
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otra dirección con ese nombre en esa ciudad",
+                    "error"
+                );
+            return;
+        }
+        try {
+            const payload = {
+                direccion: direccionTrim,
+                id_ciudad_fk: ciudadId,
+            };
+            const response = await fetch(
+                `/api/direcciones/${component.itemToEdit.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload),
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast(
+                    "Dirección actualizada exitosamente",
+                    "success"
+                );
+            component.isDireccionEditModalOpen = false;
+            component.itemToEdit = null;
+            await this.fetchDirecciones(component);
+        } catch (error) {
+            console.error("Error updating direccion:", error);
+            window.showToast &&
+                window.showToast("Error al actualizar la dirección", "error");
+        }
+    },
+
+    /**
+     * Deletes an address via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async deleteDireccion(component) {
+        if (!component.itemToDelete || !component.itemToDelete.id) return;
+        try {
+            const response = await fetch(
+                `/api/direcciones/${component.itemToDelete.id}`,
+                {
+                    method: "DELETE",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("Dirección eliminada exitosamente", "success");
+            component.isDireccionDeleteModalOpen = false;
+            component.itemToDelete = null;
+            await this.fetchDirecciones(component);
+        } catch (error) {
+            console.error("Error deleting direccion:", error);
+            window.showToast &&
+                window.showToast("Error al eliminar la dirección", "error");
+        }
+    },
 };

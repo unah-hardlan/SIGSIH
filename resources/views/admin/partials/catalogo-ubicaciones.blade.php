@@ -20,6 +20,18 @@
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
+    departamentos: [],
+    loadingDepartamentos: false,
+    nombre_departamento: '',
+    pais_departamento: '',
+    ciudades: [],
+    loadingCiudades: false,
+    nombre_ciudad: '',
+    departamento_ciudad: '',
+    direcciones: [],
+    loadingDirecciones: false,
+    direccion: '',
+    ciudad_direccion: '',
     async fetchPaises() {
         await window.paisesApiHandlers.fetchPaises(this);
     },
@@ -32,17 +44,68 @@
     async deletePais() {
         await window.paisesApiHandlers.deletePais(this);
     },
+    async fetchDepartamentos() {
+        await window.paisesApiHandlers.fetchDepartamentos(this);
+    },
+    async submitDepartamento() {
+        await window.paisesApiHandlers.submitDepartamento(this);
+    },
+    async updateDepartamento() {
+        await window.paisesApiHandlers.updateDepartamento(this);
+    },
+    async deleteDepartamento() {
+        await window.paisesApiHandlers.deleteDepartamento(this);
+    },
+    async fetchCiudades() {
+        await window.paisesApiHandlers.fetchCiudades(this);
+    },
+    async submitCiudad() {
+        await window.paisesApiHandlers.submitCiudad(this);
+    },
+    async updateCiudad() {
+        await window.paisesApiHandlers.updateCiudad(this);
+    },
+    async deleteCiudad() {
+        await window.paisesApiHandlers.deleteCiudad(this);
+    },
+    async fetchDirecciones() {
+        await window.paisesApiHandlers.fetchDirecciones(this);
+    },
+    async submitDireccion() {
+        await window.paisesApiHandlers.submitDireccion(this);
+    },
+    async updateDireccion() {
+        await window.paisesApiHandlers.updateDireccion(this);
+    },
+    async deleteDireccion() {
+        await window.paisesApiHandlers.deleteDireccion(this);
+    },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formPais') this.submitPais();
         if(event.detail.formId === 'formEditPais') this.updatePais();
+        if(event.detail.formId === 'formDepartamento') this.submitDepartamento();
+        if(event.detail.formId === 'formEditDepartamento') this.updateDepartamento();
+        if(event.detail.formId === 'formCiudad') this.submitCiudad();
+        if(event.detail.formId === 'formEditCiudad') this.updateCiudad();
+        if(event.detail.formId === 'formDireccion') this.submitDireccion();
+        if(event.detail.formId === 'formEditDireccion') this.updateDireccion();
     },
     handleDelete() {
         if (this.isPaisDeleteModalOpen) {
             this.deletePais();
-        } 
+        }
+        if (this.isDepartamentoDeleteModalOpen) {
+            this.deleteDepartamento();
+        }
+        if (this.isCiudadDeleteModalOpen) {
+            this.deleteCiudad();
+        }
+        if (this.isDireccionDeleteModalOpen) {
+            this.deleteDireccion();
+        }
     }
 }"
-x-init="fetchPaises()"
+x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()"
 @keydown.escape.window="
     isPaisModalOpen = false;
     isDepartamentoModalOpen = false;
@@ -170,21 +233,33 @@ x-init="fetchPaises()"
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Francisco Morazán</td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Honduras</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex justify-center gap-2">
-                                        <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Francisco Morazán', pais: 'Honduras'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
-                                        </button>
-                                        <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <template x-if="loadingDepartamentos">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Cargando departamentos...</td>
+                                </tr>
+                            </template>
+                            <template x-if="!loadingDepartamentos && departamentos.length === 0">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">No hay departamentos registrados</td>
+                                </tr>
+                            </template>
+                            <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                                <tr class="nunito-regular">
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.id_departamento_pk"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
+                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </x-admin.tabla-crud>
@@ -219,24 +294,38 @@ x-init="fetchPaises()"
                             <tr>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
                                 <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Tegucigalpa</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex justify-center gap-2">
-                                        <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Tegucigalpa'}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
-                                        </button>
-                                        <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: 1}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <template x-if="loadingCiudades">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Cargando ciudades...</td>
+                                </tr>
+                            </template>
+                            <template x-if="!loadingCiudades && ciudades.length === 0">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">No hay ciudades registradas</td>
+                                </tr>
+                            </template>
+                            <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                                <tr class="nunito-regular">
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.id_ciudad_pk"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
+                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </x-admin.tabla-crud>
@@ -270,29 +359,43 @@ x-init="fetchPaises()"
                         <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                             <tr>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Colonia</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
                                 <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr class="nunito-regular">
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">1</td>
-                                <td class="px-4 py-3 text-gray-900 dark:text-white">Col. Centro</td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Tegucigalpa</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex justify-center gap-2">
-                                        <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Col. Centro', ciudad: 'Tegucigalpa'}"
-                                            class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                            <i class="fas fa-edit text-sm"></i>
-                                        </button>
-                                        <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: 1}"
-                                            class="text-red-500 hover:text-red-700 p-1 rounded">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <template x-if="loadingDirecciones">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                </tr>
+                            </template>
+                            <template x-if="!loadingDirecciones && direcciones.length === 0">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
+                                </tr>
+                            </template>
+                            <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
+                                <tr class="nunito-regular">
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.id_direccion_pk"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.colonia"></td>
+                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: direccion.direccion_completa}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </x-admin.tabla-crud>
@@ -320,15 +423,21 @@ x-init="fetchPaises()"
         modalName="isDepartamentoModalOpen"
         title="Nuevo Departamento"
         submitLabel="Guardar Departamento"
-        maxWidth="max-w-2xl">
+        maxWidth="max-w-2xl"
+        formId="formDepartamento">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="nombre_departamento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
-                <input type="text" id="nombre_departamento" name="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="pais_departamento" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <input type="text" id="pais_departamento" name="pais_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Selecciona un país</option>
+                    <template x-for="pais in paises" :key="pais.id_pais_pk">
+                        <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
+                    </template>
+                </select>
             </div>
         </div>
     </x-admin.form-modal>
@@ -338,15 +447,21 @@ x-init="fetchPaises()"
         modalName="isCiudadModalOpen"
         title="Nueva Ciudad"
         submitLabel="Guardar Ciudad"
-        maxWidth="max-w-2xl">
+        maxWidth="max-w-2xl"
+        formId="formCiudad">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="nombre_ciudad" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
-                <input type="text" id="nombre_ciudad" name="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="departamento_ciudad" class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
-                <input type="text" id="departamento_ciudad" name="departamento_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Selecciona un departamento</option>
+                    <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                        <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
+                    </template>
+                </select>
             </div>
         </div>
     </x-admin.form-modal>
@@ -356,15 +471,21 @@ x-init="fetchPaises()"
         modalName="isDireccionModalOpen"
         title="Nueva Dirección"
         submitLabel="Guardar Dirección"
-        maxWidth="max-w-2xl">
+        maxWidth="max-w-2xl"
+        formId="formDireccion">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Dirección</label>
-                <input type="text" id="direccion" name="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
-                <input type="text" id="ciudad_direccion" name="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Selecciona una ciudad</option>
+                    <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                        <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
+                    </template>
+                </select>
             </div>
         </div>
     </x-admin.form-modal>
@@ -407,30 +528,63 @@ x-init="fetchPaises()"
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
 
     <!-- Modales Departamentos (Specific) -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
-        <div>
-            <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
-            <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+    <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditDepartamento">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
+                <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
+                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <option value="">Selecciona un país</option>
+                    <template x-for="pais in paises" :key="pais.id_pais_pk">
+                        <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
+                    </template>
+                </select>
+            </div>
         </div>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDepartamentoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este departamento?" />
 
     <!-- Modales Ciudades (Specific) -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
-        <div>
-            <label for="edit_nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
-            <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+    <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditCiudad">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="edit_nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
+                <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_departamento_ciudad" class="block text-sm font-medium text-gray-700">Departamento</label>
+                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <option value="">Selecciona un departamento</option>
+                    <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                        <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
+                    </template>
+                </select>
+            </div>
         </div>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
 
     <!-- Modales Direcciones (Specific) -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
-        <div>
-            <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
-            <input type="text" id="edit_direccion" name="edit_direccion" :value="itemToEdit?.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+    <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditDireccion">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <option value="">Selecciona una ciudad</option>
+                    <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                        <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
+                    </template>
+                </select>
+            </div>
         </div>
     </x-admin.edit-modal>
 

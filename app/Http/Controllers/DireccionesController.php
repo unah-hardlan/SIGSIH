@@ -44,7 +44,12 @@ class DireccionesController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'id_ciudad_fk' => 'required|exists:tbl_ciudad,id_ciudad_pk'
+            'id_ciudad_fk' => 'required|exists:tbl_ciudad,id_ciudad_pk',
+            'calle' => 'required|string|max:100',
+            'numero' => 'required|string|max:20',
+            'colonia' => 'required|string|max:100',
+            'codigo_postal' => 'nullable|string|max:10',
+            'referencia' => 'nullable|string'
         ]);
 
         $direccion = Direccion::create($validated);
@@ -92,7 +97,12 @@ class DireccionesController extends Controller
         }
 
         $validated = $request->validate([
-            'id_ciudad_fk' => 'sometimes|required|exists:tbl_ciudad,id_ciudad_pk'
+            'id_ciudad_fk' => 'sometimes|required|exists:tbl_ciudad,id_ciudad_pk',
+            'calle' => 'sometimes|required|string|max:100',
+            'numero' => 'sometimes|required|string|max:20',
+            'colonia' => 'sometimes|required|string|max:100',
+            'codigo_postal' => 'nullable|string|max:10',
+            'referencia' => 'nullable|string'
         ]);
 
         $direccion->update($validated);
