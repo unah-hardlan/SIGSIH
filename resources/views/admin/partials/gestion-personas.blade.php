@@ -15,7 +15,7 @@
     catalogoPerfiles: [],     // [{id, nombre}]
     catalogosError: '',
     _catalogosPromise: null,
-    catalogosTTLms: 300000, // 5 min
+    catalogosTTLms: 300000, // 5 min (ya no se usa localStorage)
     // feedback (usa patrón de parámetros.js)
     notify(msg,type='success'){
         const el=document.createElement('div');
@@ -68,27 +68,16 @@
             this._catalogosPromise = (async ()=>{
                 try{
                     this.catalogosError='';
-                    // Cache en localStorage
-                    try{
-                        const cached = JSON.parse(localStorage.getItem('catalogosPersonas')||'{}');
-                        if(cached.ts && (Date.now()-cached.ts) < this.catalogosTTLms){
-                            this.catalogoTiposPersona = cached.tipos||[];
-                            this.catalogoGeneros = cached.generos||[];
-                            this.catalogoPerfiles = cached.perfiles||[];
-                            return; // usar cache vigente
-                        }
-                    }catch(_){ }
 
-                    const headers = this.apiHeaders();
                     // intento con reintentos leves si 429
                     const fetchWithRetry = async (url, tries=3)=>{
                         for(let i=0;i<tries;i++){
-                            const res = await fetch(url,{headers});
+                            const res = await fetch(url,{ credentials: 'same-origin' });
                             if(res.status!==429) return res;
                             const wait = 400*(i+1);
                             await new Promise(r=>setTimeout(r, wait));
                         }
-                        return fetch(url,{headers});
+                        return fetch(url,{ credentials: 'same-origin' });
                     };
                     const [tpRes, gRes, pRes] = await Promise.all([
                         fetchWithRetry('/api/tipos-persona?all=1'),
@@ -101,17 +90,12 @@
                     this.catalogoTiposPersona = (tpData.data||[]).map(x=>({id:x.id, nombre:x.nombre_tipo_persona || x.nombre || x.nombre_tipo || x.nombre_tipo_persona }));
                     this.catalogoGeneros = (gData.data||[]).map(x=>({id:x.id, genero:x.genero}));
                     this.catalogoPerfiles = (pData.data||[]).map(x=>({id:x.id, nombre:x.nombre_perfil || x.nombre}));
-                    try{ localStorage.setItem('catalogosPersonas', JSON.stringify({ts:Date.now(), tipos:this.catalogoTiposPersona, generos:this.catalogoGeneros, perfiles:this.catalogoPerfiles})); }catch(_){ }
                 }catch(e){ this.catalogosError = e.message || 'Error catálogos'; this.notify(this.catalogosError,'error'); }
                 finally { this._catalogosPromise=null; }
             })();
             return this._catalogosPromise;
     },
 
-        apiHeaders(){
-            const token = localStorage.getItem('authToken');
-            return token ? { 'Authorization': `Bearer ${token}` } : {};
-        },
 
     // helpers de comparación (ignoran mayúsculas/minúsculas y acentos)
     normalizeStr(v){
@@ -140,7 +124,7 @@
                 const page = 1;
         params.set('per_page', String(perPage));
         params.set('page', String(page));
-        const res = await fetch(`/api/personas?${params.toString()}`, { headers: this.apiHeaders(), signal: this._abortCtrl.signal });
+    const res = await fetch(`/api/personas?${params.toString()}`, { credentials: 'same-origin', signal: this._abortCtrl.signal });
                 if(!res.ok){
                     const err = await res.json().catch(()=>({message:'Error cargando personas'}));
                     throw new Error(err.message || 'Error cargando personas');
@@ -204,7 +188,9 @@
         async createPersona(){
             try{
                 const res = await fetch('/api/personas', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', ...this.apiHeaders() },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(this.addForm)
                 });
                 if(!res.ok){
@@ -231,7 +217,12 @@
                 const id = this.itemToEdit?.id; if(!id) return;
                 // enviar solo campos editables simples
                 const payload = (({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo,id_tipo_persona_fk,id_genero_fk,id_perfil_fk}) => ({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo,id_tipo_persona_fk,id_genero_fk,id_perfil_fk}))(this.itemToEdit);
-                const res = await fetch(`/api/personas/${id}`, { method: 'PUT', headers: { 'Content-Type':'application/json', ...this.apiHeaders() }, body: JSON.stringify(payload) });
+                const res = await fetch(`/api/personas/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type':'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
                 if(!res.ok){ const err = await res.json().catch(()=>({message:'Error al actualizar persona'})); if(err.errors){ const first = Object.values(err.errors)[0][0]; throw new Error(first);} throw new Error(err.message); }
                 const data = await res.json();
                 const actualizado = this.mapPersona(data.data || data);
@@ -245,7 +236,7 @@
         async deletePersona(){
             try{
                 const id = this.itemToDelete?.id; if(!id) return;
-                const res = await fetch(`/api/personas/${id}`, { method:'DELETE', headers: this.apiHeaders() });
+                const res = await fetch(`/api/personas/${id}`, { method:'DELETE', credentials: 'same-origin' });
                 if(!res.ok){ const err = await res.json().catch(()=>({message:'Error al eliminar persona'})); throw new Error(err.message); }
                 const idx = this.personas.findIndex(p=>p.id===id);
                 if(idx>-1){ this.personas.splice(idx,1); this.total = this.personas.length; }
@@ -262,23 +253,23 @@
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Personas'">
         <x-slot name="filtros">
             @include('partials.filtros-generales', [
-                'searchModel' => 'searchPersonas',
-                'filtrosSelect' => [
-                    // Los keys deben coincidir exactamente con las propiedades declaradas en x-data (filtroTipoPersona, filtroGenero)
-                    'filtroTipoPersona' => [
-                        'label' => 'Tipo de Persona',
-                        'options' => ['Técnico', 'Cliente', 'Administrador']
-                    ],
-                    'filtroGenero' => [
-                        'label' => 'Género',
-                        'options' => ['Masculino', 'Femenino']
-                    ]
-                ],
-                'ordenarOptions' => [
-                    'nombre' => 'Nombre',
-                    'dni' => 'DNI',
-                    'cargo' => 'Cargo'
-                ]
+            'searchModel' => 'searchPersonas',
+            'filtrosSelect' => [
+            // Los keys deben coincidir exactamente con las propiedades declaradas en x-data (filtroTipoPersona, filtroGenero)
+            'filtroTipoPersona' => [
+            'label' => 'Tipo de Persona',
+            'options' => ['Técnico', 'Cliente', 'Administrador']
+            ],
+            'filtroGenero' => [
+            'label' => 'Género',
+            'options' => ['Masculino', 'Femenino']
+            ]
+            ],
+            'ordenarOptions' => [
+            'nombre' => 'Nombre',
+            'dni' => 'DNI',
+            'cargo' => 'Cargo'
+            ]
             ])
         </x-slot>
 
@@ -332,7 +323,7 @@
             </table>
         </div>
 
-    <!-- Paginación removida -->
+        <!-- Paginación removida -->
     </x-admin.tabla-crud>
 
     <!-- Modal Agregar Persona -->
@@ -395,30 +386,30 @@
     <!-- Modal Editar Persona -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit"
         maxWidth="max-w-2xl">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Cargo</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.cargo" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.cargo" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de Persona</label>

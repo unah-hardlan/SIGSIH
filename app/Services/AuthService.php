@@ -50,7 +50,7 @@ class AuthService
         $cacheKey = 'login_attempts:' . $user->getKey();
         $attempts = cache()->get($cacheKey, 0);
 
-        $valid = Hash::check($contrasena, $user->contrasena);
+    $valid = Hash::check($contrasena, $user->contrasena);
         if (!$valid) {
             $attempts++;
             // guardar por 15 minutos
@@ -115,6 +115,42 @@ class AuthService
                 'correo'  => $user->correo_electronico,
             ]
         ];
+    }
+
+    /**
+     * Verifica credenciales y devuelve el usuario o error sin emitir token ni registrar sesión.
+     */
+    public function verifyCredentialsOnly(string $usuario, string $contrasena): array
+    {
+        $usuario = strtoupper(trim($usuario));
+        if (preg_match('/\s/', $usuario) || preg_match('/\s/', $contrasena)) {
+            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+        }
+        $user = Usuario::where('usuario', $usuario)->first();
+        if (!$user) {
+            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+        }
+        if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
+            return ['error' => 'Usuario bloqueado por intentos inválidos', 'code' => 423];
+        }
+        $cacheKey = 'login_attempts:' . $user->getKey();
+        $attempts = cache()->get($cacheKey, 0);
+        $valid = Hash::check($contrasena, $user->contrasena);
+        if (!$valid) {
+            $attempts++;
+            cache()->put($cacheKey, $attempts, now()->addMinutes(15));
+            $maxIntentos = (int) (\App\Models\Parametro::where('parametro','ADMIN.INTENTOS_INICIO_SESION')->value('valor')
+                ?? \App\Models\Parametro::where('parametro','ADMIN_INTENTOS_INICIO SESION')->value('valor')
+                ?? 3);
+            if ($attempts >= $maxIntentos) {
+                $user->estado_usuario = 'BLOQUEADO';
+                $user->save();
+                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos', 'code' => 423];
+            }
+            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+        }
+        cache()->forget($cacheKey);
+        return ['user' => $user];
     }
 
     /**

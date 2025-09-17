@@ -14,6 +14,7 @@ use function response;
 use App\Services\BitacoraService;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Cache;
 
 
 class AuthController extends Controller
@@ -29,6 +30,26 @@ class AuthController extends Controller
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $password)) {
             return response()->json(['error' => 'Usuario/contraseña inválidos'], 401);
         }
+        // Primero solo verifica credenciales; decide 2FA sin emitir token aún
+        $cred = $this->authService->verifyCredentialsOnly($usuario, $password);
+        if (isset($cred['error'])) {
+            return response()->json(['error' => $cred['error']], $cred['code']);
+        }
+        /** @var \App\Models\Usuario $user */
+        $user = $cred['user'];
+
+        // Si 2FA está habilitado, emite challenge y no setea auth_token todavía
+        if ($user->two_factor_enabled) {
+            $challengeId = (string) \Illuminate\Support\Str::uuid();
+            Cache::put('2fa:challenge:' . $challengeId, $user->getKey(), now()->addMinutes(5));
+            try { $this->bitacora->logFor('Login', '2FA Challenge', 'Inicio de 2FA', $user->getKey()); } catch (\Throwable $e) {}
+            $secure = app()->environment('production') || $request->isSecure();
+            $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+            return response()->json(['status' => '2fa_required'])
+                ->cookie('2fa_challenge', $challengeId, 5, '/', null, $secure, true, false, $sameSite);
+        }
+
+        // Si no hay 2FA, emitir token final como antes
         $result = $this->authService->attempt($usuario, $password);
         if (isset($result['error'])) {
             return response()->json(['error' => $result['error']], $result['code']);
@@ -39,12 +60,14 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
         }
         // Mantener token sólo para cookie, no exponerlo al frontend
-        $token = $result['token'] ?? null;
+    $token = $result['token'] ?? null;
         $payload = $result;
         unset($payload['token']);
         $response = response()->json($payload, 200);
         if ($token) {
-            $response->cookie('auth_token', $token, 60, '/', null, false, true, false, 'Lax');
+            $secure = app()->environment('production') || $request->isSecure();
+            $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+            $response->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         }
         return $response;
     }
@@ -80,7 +103,10 @@ class AuthController extends Controller
             $this->bitacora->logFor('Login', 'Logout', 'Cierre de sesión', $userId);
         } catch (\Throwable $e) {
         }
-        return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, false, true, false, 'Lax');
+        $req = request();
+        $secure = app()->environment('production') || ($req && $req->isSecure());
+        $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+        return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
     }
 
     // Registro que crea un usuario usando las mismas reglas que StoreUsuarioRequest.
@@ -129,7 +155,9 @@ class AuthController extends Controller
         unset($payload['token']);
         $response = response()->json($payload, 201);
         if ($token) {
-            $response->cookie('auth_token', $token, 60, '/', null, false, true, false, 'Lax');
+            $secure = app()->environment('production') || $request->isSecure();
+            $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+            $response->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         }
         return $response;
     }

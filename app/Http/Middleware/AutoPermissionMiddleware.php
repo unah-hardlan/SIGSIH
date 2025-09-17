@@ -21,8 +21,15 @@ class AutoPermissionMiddleware
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        // Allow some endpoints without permisos (self and dashboard datasets)
-        if ($request->is('api/me') || $request->is('api/login') || $request->is('api/logout') || $request->is('api/register') || $request->is('api/dashboard/*')) {
+        // Allow some endpoints without permisos (self, 2FA flows, and dashboard datasets)
+        if (
+            $request->is('api/me') ||
+            $request->is('api/login') ||
+            $request->is('api/logout') ||
+            $request->is('api/register') ||
+            $request->is('api/dashboard/*') ||
+            $request->is('api/2fa/*')
+        ) {
             return $next($request);
         }
 
@@ -31,14 +38,15 @@ class AutoPermissionMiddleware
             if (($user instanceof Usuario) && $user->rol && mb_strtolower($user->rol->rol) === 'administrador') {
                 return $next($request);
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // Allow listing roles/objetos/tipos-objeto if user can view "Permisos" (to cargar matriz de permisos)
-        if (in_array(strtoupper($request->method()), ['GET','HEAD'], true)) {
+        if (in_array(strtoupper($request->method()), ['GET', 'HEAD'], true)) {
             $path = trim($request->path(), '/');
             if (preg_match('#^api/(roles|objetos|tipos-objeto)(/.*)?$#i', $path)) {
                 $perm = app(PermissionService::class);
-                if ($perm->can($user, ['Permisos','Configuración de accesos','Configuracion de accesos'], 'consultar')) {
+                if ($perm->can($user, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar')) {
                     return $next($request);
                 }
                 // fall-through to standard check sobre el mismo recurso
@@ -59,22 +67,22 @@ class AutoPermissionMiddleware
         $controllerBase = str_ends_with($controllerBase, 'Controller') ? substr($controllerBase, 0, -10) : $controllerBase;
         $synonyms = [
             'Auth' => ['Login'],
-            'Usuario' => ['Usuarios','Usuario'],
-            'Rol' => ['Roles','Rol'],
-            'Permiso' => ['Permisos','Permiso','Configuración de accesos','Configuracion de accesos'],
-            'Parametro' => ['Parámetros','Parametros','Parámetro','Parametro'],
-            'Objeto' => ['Objetos','Objeto'],
-            'Bitacora' => ['Bitácora','Bitacora'],
-            'Profile' => ['Profile','Perfil'],
-            'Perfil' => ['Perfil','Profile'],
-            'TipoPersona' => ['Tipo Persona','Tipos Persona','Tipo de Persona','Tipos de Persona','Tipos de Personas','Tipo de Personas','Tipo Personas'],
-            'Genero' => ['Género','Genero','Géneros','Generos'],
-            'Persona' => ['Persona','Personas','Gestión de personas','Gestion de personas'],
+            'Usuario' => ['Usuarios', 'Usuario'],
+            'Rol' => ['Roles', 'Rol'],
+            'Permiso' => ['Permisos', 'Permiso', 'Configuración de accesos', 'Configuracion de accesos'],
+            'Parametro' => ['Parámetros', 'Parametros', 'Parámetro', 'Parametro'],
+            'Objeto' => ['Objetos', 'Objeto'],
+            'Bitacora' => ['Bitácora', 'Bitacora'],
+            'Profile' => ['Profile', 'Perfil'],
+            'Perfil' => ['Perfil', 'Profile'],
+            'TipoPersona' => ['Tipo Persona', 'Tipos Persona', 'Tipo de Persona', 'Tipos de Persona', 'Tipos de Personas', 'Tipo de Personas', 'Tipo Personas'],
+            'Genero' => ['Género', 'Genero', 'Géneros', 'Generos'],
+            'Persona' => ['Persona', 'Personas', 'Gestión de personas', 'Gestion de personas'],
             'Dashboard' => ['Dashboard'],
             // Nuevos
-            'MantenimientoGeneral' => ['Mantenimiento del sistema','Mantenimiento'],
-            'GestionPersonas' => ['Gestión de personas','Gestion de personas'],
-            'GestionDb' => ['Gestión de base de datos','Gestion de base de datos'],
+            'MantenimientoGeneral' => ['Mantenimiento del sistema', 'Mantenimiento'],
+            'GestionPersonas' => ['Gestión de personas', 'Gestion de personas'],
+            'GestionDb' => ['Gestión de base de datos', 'Gestion de base de datos'],
         ];
         $candidates = $synonyms[$controllerBase] ?? [];
         $first = explode('/', trim($request->path(), '/'))[1] ?? '';
