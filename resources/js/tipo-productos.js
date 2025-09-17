@@ -192,9 +192,9 @@ window.tipoProductosApiHandlers = {
             await this.fetchTipoProductos(component);
         } catch (error) {
             console.error("Error deleting tipo producto:", error);
-            const errorMessage = error?.error || "Error al eliminar el tipo de producto";
-            window.showToast &&
-                window.showToast(errorMessage, "error");
+            const errorMessage =
+                error?.error || "Error al eliminar el tipo de producto";
+            window.showToast && window.showToast(errorMessage, "error");
         }
     },
 };
