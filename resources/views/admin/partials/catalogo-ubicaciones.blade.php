@@ -1,10 +1,12 @@
-<div x-data="{ 
-    isPaisModalOpen: false, 
-    isDepartamentoModalOpen: false, 
-    isCiudadModalOpen: false, 
+<script src="{{ asset('js/ubicaciones.js') }}"></script>
+
+<div x-data="{
+    isPaisModalOpen: false,
+    isDepartamentoModalOpen: false,
+    isCiudadModalOpen: false,
     isDireccionModalOpen: false,
-    isEditModalOpen: false,
-    isDeleteModalOpen: false,
+    // Removed generic isEditModalOpen and isDeleteModalOpen,
+    // as we now have specific ones for each entity (e.g., isPaisEditModalOpen)
     itemToEdit: null,
     itemToDelete: null,
     isCiudadEditModalOpen: false,
@@ -19,91 +21,44 @@
     loadingPaises: false,
     nombre_pais: '',
     async fetchPaises() {
-        this.loadingPaises = true;
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await window.axios.get('/api/paises', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (response.data.success) {
-                this.paises = response.data.data;
-            }
-        } catch (error) {
-            console.error('Error fetching paises:', error);
-            window.showToast('Error al cargar países', 'error');
-        } finally {
-            this.loadingPaises = false;
-        }
+        await window.paisesApiHandlers.fetchPaises(this);
+    },
+    async submitPais() {
+        await window.paisesApiHandlers.submitPais(this);
+    },
+    async updatePais() {
+        await window.paisesApiHandlers.updatePais(this);
+    },
+    async deletePais() {
+        await window.paisesApiHandlers.deletePais(this);
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formPais') this.submitPais();
         if(event.detail.formId === 'formEditPais') this.updatePais();
     },
-    handleDelete(event) {
-        if (this.itemToDelete && this.itemToDelete.id) {
+    handleDelete() {
+        if (this.isPaisDeleteModalOpen) {
             this.deletePais();
-        }
-    },
-    async submitPais() {
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await window.axios.post('/api/paises', {
-                nombre_pais: this.nombre_pais
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            window.showToast('País creado exitosamente', 'success');
-            this.nombre_pais = '';
-            this.isPaisModalOpen = false;
-            await this.fetchPaises(); // Refresh the list
-        } catch (error) {
-            console.error('Error creating pais:', error);
-            window.showToast('Error al crear el país', 'error');
-        }
-    },
-    async updatePais() {
-        if (!this.itemToEdit || !this.itemToEdit.id) return;
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await window.axios.put(`/api/paises/${this.itemToEdit.id}`, {
-                nombre_pais: this.itemToEdit.nombre
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            window.showToast('País actualizado exitosamente', 'success');
-            this.isPaisEditModalOpen = false;
-            this.itemToEdit = null;
-            await this.fetchPaises(); // Refresh the list
-        } catch (error) {
-            console.error('Error updating pais:', error);
-            window.showToast('Error al actualizar el país', 'error');
-        }
-    },
-    async deletePais() {
-        if (!this.itemToDelete || !this.itemToDelete.id) return;
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await window.axios.delete(`/api/paises/${this.itemToDelete.id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            window.showToast('País eliminado exitosamente', 'success');
-            this.isPaisDeleteModalOpen = false;
-            this.itemToDelete = null;
-            await this.fetchPaises(); // Refresh the list
-        } catch (error) {
-            console.error('Error deleting pais:', error);
-            window.showToast('Error al eliminar el país', 'error');
-        }
+        } 
     }
-}" x-init="fetchPaises()" @keydown.escape.window="isEditModalOpen = false; isDeleteModalOpen = false; isCiudadEditModalOpen = false; isCiudadDeleteModalOpen = false; isDireccionEditModalOpen = false; isDireccionDeleteModalOpen = false" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete($event)">
+}"
+x-init="fetchPaises()"
+@keydown.escape.window="
+    isPaisModalOpen = false;
+    isDepartamentoModalOpen = false;
+    isCiudadModalOpen = false;
+    isDireccionModalOpen = false;
+    isPaisEditModalOpen = false;
+    isPaisDeleteModalOpen = false;
+    isDepartamentoEditModalOpen = false;
+    isDepartamentoDeleteModalOpen = false;
+    isCiudadEditModalOpen = false;
+    isCiudadDeleteModalOpen = false;
+    isDireccionEditModalOpen = false;
+    isDireccionDeleteModalOpen = false;
+"
+@modal-submit.window="handleModalSubmit($event)"
+@confirm-delete.window="handleDelete()">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Ubicaciones de Agencias</h1>
         <div class="flex flex-wrap gap-2 items-center mb-6">
@@ -131,7 +86,7 @@
                             <p class="text-blue-100 text-sm nunito-regular">Gestiona los países disponibles</p>
                         </div>
                     </div>
-                    <button @click="isPaisModalOpen = true" 
+                    <button @click="isPaisModalOpen = true"
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
                         <span class="text-sm">Nuevo</span>
@@ -195,7 +150,7 @@
                             <p class="text-green-100 text-sm nunito-regular">Gestiona los departamentos por país</p>
                         </div>
                     </div>
-                    <button @click="isDepartamentoModalOpen = true" 
+                    <button @click="isDepartamentoModalOpen = true"
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
                         <span class="text-sm">Nuevo</span>
@@ -249,7 +204,7 @@
                             <p class="text-purple-100 text-sm nunito-regular">Gestiona las ciudades por departamento</p>
                         </div>
                     </div>
-                    <button @click="isCiudadModalOpen = true" 
+                    <button @click="isCiudadModalOpen = true"
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
                         <span class="text-sm">Nuevo</span>
@@ -301,7 +256,7 @@
                             <p class="text-orange-100 text-sm nunito-regular">Gestiona las direcciones por ciudad</p>
                         </div>
                     </div>
-                    <button @click="isDireccionModalOpen = true" 
+                    <button @click="isDireccionModalOpen = true"
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
                         <span class="text-sm">Nuevo</span>
@@ -327,11 +282,11 @@
                                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">Tegucigalpa</td>
                                 <td class="px-4 py-3">
                                     <div class="flex justify-center gap-2">
-                                        <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Col. Centro', ciudad: 'Tegucigalpa'}" 
+                                        <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: 1, nombre: 'Col. Centro', ciudad: 'Tegucigalpa'}"
                                             class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                             <i class="fas fa-edit text-sm"></i>
                                         </button>
-                                        <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: 1}" 
+                                        <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: 1}"
                                             class="text-red-500 hover:text-red-700 p-1 rounded">
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
@@ -347,8 +302,8 @@
 
     <!-- Modal Nuevo País -->
     <x-admin.form-modal class="nunito-bold"
-        modalName="isPaisModalOpen" 
-        title="Nuevo País" 
+        modalName="isPaisModalOpen"
+        title="Nuevo País"
         submitLabel="Guardar País"
         maxWidth="max-w-2xl"
         formId="formPais">
@@ -362,8 +317,8 @@
 
     <!-- Modal Nuevo Departamento -->
     <x-admin.form-modal class="nunito-bold"
-        modalName="isDepartamentoModalOpen" 
-        title="Nuevo Departamento" 
+        modalName="isDepartamentoModalOpen"
+        title="Nuevo Departamento"
         submitLabel="Guardar Departamento"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -379,10 +334,9 @@
     </x-admin.form-modal>
 
     <!-- Modal Nueva Ciudad -->
-        <!-- Modal Nueva Ciudad -->
     <x-admin.form-modal class="nunito-bold"
-        modalName="isCiudadModalOpen" 
-        title="Nueva Ciudad" 
+        modalName="isCiudadModalOpen"
+        title="Nueva Ciudad"
         submitLabel="Guardar Ciudad"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -398,10 +352,9 @@
     </x-admin.form-modal>
 
     <!-- Modal Nueva Dirección -->
-        <!-- Modal Nueva Dirección -->
     <x-admin.form-modal class="nunito-bold"
-        modalName="isDireccionModalOpen" 
-        title="Nueva Dirección" 
+        modalName="isDireccionModalOpen"
+        title="Nueva Dirección"
         submitLabel="Guardar Dirección"
         maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -416,7 +369,8 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modales -->
+    <!-- Original generic modals (these seem redundant now given specific modals below, consider removing them entirely) -->
+    <!--
     <x-admin.form-modal modalName="isEditModalOpen" title="Editar País" submitLabel="Guardar Cambios">
         <div>
             <label for="nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
@@ -427,8 +381,9 @@
     <x-admin.form-modal modalName="isDeleteModalOpen" title="Eliminar País" submitLabel="Confirmar Eliminación">
         <p>¿Estás seguro de que deseas eliminar el país <span x-text="itemToDelete.nombre"></span>?</p>
     </x-admin.form-modal>
-
-    <!-- Modales Departamentos -->
+    -->
+    <!-- Modales Departamentos (redundant generic ones) -->
+    <!--
     <x-admin.form-modal modalName="isEditModalOpen" title="Editar Departamento" submitLabel="Guardar Cambios">
         <div>
             <label for="nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
@@ -439,8 +394,9 @@
     <x-admin.form-modal modalName="isDeleteModalOpen" title="Eliminar Departamento" submitLabel="Confirmar Eliminación">
         <p>¿Estás seguro de que deseas eliminar el departamento <span x-text="itemToDelete.nombre"></span>?</p>
     </x-admin.form-modal>
+    -->
 
-    <!-- Modales Países -->
+    <!-- Modales Países (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditPais">
         <div>
             <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
@@ -450,7 +406,7 @@
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
 
-    <!-- Modales Departamentos -->
+    <!-- Modales Departamentos (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <div>
             <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
@@ -460,7 +416,7 @@
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDepartamentoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este departamento?" />
 
-    <!-- Modales Ciudades -->
+    <!-- Modales Ciudades (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <div>
             <label for="edit_nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
@@ -470,7 +426,7 @@
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
 
-    <!-- Modales Direcciones -->
+    <!-- Modales Direcciones (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <div>
             <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Dirección</label>

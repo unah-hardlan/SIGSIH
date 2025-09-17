@@ -1,5 +1,4 @@
-// Limpieza defensiva: eliminar cualquier vestigio de authToken en localStorage (ya no se usa)
-try { localStorage.removeItem('authToken'); } catch (_) { }
+// Nota: limpieza de authToken eliminada (migrado a sesiones Sanctum)
 import "./bootstrap";
 import "./usuarios";
 import "./parametros";
@@ -11,6 +10,7 @@ import "./roles";
 import "./asignar-roles";
 import "./bitacora";
 import "./toast";
+import "./ubicaciones";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -189,7 +189,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) { }
+    } catch (_) {}
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -284,14 +284,14 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) { }
+            } catch (_) {}
 
             const mainEl = document.querySelector("main");
             // Intentar destruir árbol Alpine anterior (si aplica)
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) { }
+            } catch (_) {}
 
             // Sanitizar: evitar recargar Alpine desde vistas parciales (remueve scripts externos de Alpine)
             let sanitized = html;
@@ -300,7 +300,7 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) { }
+            } catch (_) {}
 
             mainEl.innerHTML = sanitized;
             // Reinicializar Alpine sólo en raíces nuevas (evita redefinir $nextTick)
@@ -309,23 +309,23 @@ document.addEventListener("alpine:init", () => {
                     // Limpieza defensiva: si alguna magia global quedó definida por doble carga, elimínala
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) { }
+                    } catch (_) {}
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) { }
+                        } catch (_) {}
                     }
                 }
-            } catch (_) { }
+            } catch (_) {}
 
             // Restaurar posición del scroll del sidebar después de cargar nuevo contenido
             this.restoreSidebarScrollPosition();
@@ -345,7 +345,7 @@ document.addEventListener("alpine:init", () => {
             // Notificar a listeners (p.ej., re-vincular el switch de tema) que la vista se cargó
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) { }
+            } catch (_) {}
         },
 
         saveSidebarScrollPosition() {
@@ -782,17 +782,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
