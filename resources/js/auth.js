@@ -18,6 +18,11 @@ function createAuthPage() {
         email: "",
         loading: false,
         isDark: false,
+    // 2FA
+    show2FAModal: false,
+    totpCode: "",
+    verifying2FA: false,
+    totpError: "",
 
         // Lifecycle
         init() {
@@ -53,10 +58,18 @@ function createAuthPage() {
 
             try {
                 if (this.isLogin) {
-                    await axios.post("/api/login", {
+                    const res = await axios.post("/api/login", {
                         usuario: this.username,
                         contrasena: this.password,
                     });
+                    const data = res?.data || {};
+                    if (data.status === "2fa_required") {
+                        this.totpCode = "";
+                        this.totpError = "";
+                        this.show2FAModal = true;
+                        this.loading = false;
+                        return;
+                    }
 
                     try { window.showToast && window.showToast("Sesión iniciada", "success", { duration: 1200 }); } catch (_) { }
                     window.location.assign("/admin/dashboard");
@@ -81,6 +94,28 @@ function createAuthPage() {
             } finally {
                 this.loading = false;
             }
+        },
+
+        async submit2FA() {
+            if (this.verifying2FA || !this.totpCode) return;
+            this.verifying2FA = true;
+            this.totpError = "";
+            try {
+                await axios.post("/api/2fa/verify", { code: this.totpCode });
+                try { window.showToast && window.showToast("2FA verificado", "success", { duration: 1200 }); } catch (_) { }
+                window.location.assign("/admin/dashboard");
+            } catch (err) {
+                const msg = err?.response?.data?.message || err?.response?.data?.error || "Código inválido";
+                this.totpError = msg;
+            } finally {
+                this.verifying2FA = false;
+            }
+        },
+
+        close2FA() {
+            this.show2FAModal = false;
+            this.totpCode = "";
+            this.totpError = "";
         },
 
         // Extras

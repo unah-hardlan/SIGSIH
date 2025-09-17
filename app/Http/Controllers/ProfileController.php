@@ -39,6 +39,7 @@ class ProfileController extends Controller
         $persona = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
         return response()->json([
             'primer_ingreso' => (bool) $user->primer_ingreso,
+            'two_factor_enabled' => (bool) ($user->two_factor_enabled ?? false),
             'persona' => $persona,
             'usuario' => [
                 'usuario' => $user->usuario,

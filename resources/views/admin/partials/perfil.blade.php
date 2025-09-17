@@ -189,8 +189,117 @@
                 </div>
             </div>
 
+            <!-- Sección 2FA: ahora dentro del componente Alpine -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 nunito-bold">Autenticación en Dos Pasos (2FA)</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 nunito-regular">
+                    Protege tu cuenta con un segundo factor de autenticación usando aplicaciones como Google Authenticator o Microsoft Authenticator.
+                </p>
+
+                <template x-if="twoFAEnabled">
+                    <div class="flex items-center justify-between bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-3">
+                        <div>
+                            <p class="text-green-700 dark:text-green-300 font-semibold">2FA activo</p>
+                            <p class="text-xs text-green-700/80 dark:text-green-300/80">Se te pedirá un código al iniciar sesión.</p>
+                        </div>
+                        <button type="button" @click="disable2FA()" :disabled="twoFASetup.loading"
+                            class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm font-semibold disabled:opacity-50">
+                            Desactivar 2FA
+                        </button>
+                    </div>
+                </template>
+
+                <template x-if="!twoFAEnabled">
+                    <div class="flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                        <div>
+                            <p class="text-yellow-800 dark:text-yellow-200 font-semibold">2FA desactivado</p>
+                            <p class="text-xs text-yellow-800/80 dark:text-yellow-200/80">Actívalo para mayor seguridad.</p>
+                        </div>
+                        <button type="button" @click="start2FA()" :disabled="twoFASetup.loading"
+                            class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold disabled:opacity-50">
+                            Activar 2FA
+                        </button>
+                    </div>
+                </template>
+
+                <div x-show="show2FASetup" x-cloak class="mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1 flex items-center justify-center">
+                            <template x-if="twoFASetup.qrUrl">
+                                <img :src="twoFASetup.qrUrl" alt="QR 2FA" class="w-48 h-48 border rounded-lg bg-white" />
+                            </template>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">URL de configuración (otpauth)</label>
+                            <div class="flex gap-2">
+                                <input type="text" x-model="twoFASetup.otpauthUrl" readonly
+                                    class="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-xs" />
+                                <button type="button" @click="copyOtpUrl()"
+                                    class="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200">Copiar</button>
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Código del autenticador</label>
+                                <input type="text" inputmode="numeric" maxlength="10" x-model="twoFASetup.code"
+                                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-sm" placeholder="6 dígitos" />
+                                <p x-show="twoFASetup.error" class="mt-1 text-xs text-red-600" x-text="twoFASetup.error"></p>
+                            </div>
+
+                            <div class="mt-4 flex items-center gap-2">
+                                <button type="button" @click="confirm2FA()" :disabled="twoFASetup.confirming || !twoFASetup.code"
+                                    class="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white text-sm font-semibold disabled:opacity-50">
+                                    Confirmar
+                                </button>
+                                <button type="button" @click="cancel2FA()"
+                                    class="px-4 py-2 rounded border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200">Cancelar</button>
+                            </div>
+
+                            <div x-show="twoFASetup.recoveryCodes && twoFASetup.recoveryCodes.length" class="mt-6">
+                                <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">Códigos de recuperación (guárdalos en lugar seguro):</p>
+                                <ul class="grid grid-cols-2 gap-2 text-xs text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700">
+                                    <template x-for="c in twoFASetup.recoveryCodes" :key="c">
+                                        <li class="font-mono" x-text="c"></li>
+                                    </template>
+                                </ul>
+                                <button type="button" @click="copyRecoveryCodes()" class="mt-2 px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200">Copiar códigos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
+    </div>
+    {{-- Modal de contraseña actual (2FA) dentro del mismo componente Alpine --}}
+    <div x-cloak
+         x-show="showPasswordModal"
+         class="fixed inset-0 z-50 flex items-center justify-center"
+         style="display: none;"
+         x-transition
+         aria-modal="true"
+         role="dialog">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50" @click="cancelPasswordModal()"></div>
+        <!-- Dialog -->
+        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 nunito-bold" x-text="modalTitle || 'Confirmación requerida'"></h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="modalDescription || 'Ingresa tu contraseña actual para continuar.'"></p>
+            <div class="mt-4">
+                <label class="block text-sm text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña actual</label>
+                <input type="password"
+                       class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                       placeholder="••••••••"
+                       x-model="twoFASetup.currentPassword"
+                       @keydown.enter.prevent="submitPasswordModal()"
+                       autofocus />
+                <p class="mt-2 text-xs text-red-600" x-show="modalError" x-text="modalError"></p>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" class="px-4 py-2 rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200" @click="cancelPasswordModal()">Cancelar</button>
+                <button type="button" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white" @click="submitPasswordModal()">Confirmar</button>
+            </div>
+        </div>
     </div>
 </div>
 

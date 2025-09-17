@@ -41,6 +41,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,9 +64,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::post('register', [AuthController::class, 'register']);
+// 2FA verify (public, tied to challenge cookie)
+Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
 // Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
 Route::middleware(['jwt.auth','auto.permiso'])->group(function () {
+    // 2FA setup (authenticated)
+    Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
+    Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
+    Route::post('2fa/disable', [TwoFactorController::class, 'disable']);
     // Perfil del usuario autenticado
     Route::get('me', [ProfileController::class, 'me']);
     Route::post('perfil/persona', [ProfileController::class, 'savePersona']);

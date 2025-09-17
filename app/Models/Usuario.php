@@ -26,9 +26,15 @@ class Usuario extends Authenticatable
         'fecha_creacion',
         'modificado_por',
         'fecha_modificacion',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'two_factor_enabled',
     ];
     protected $hidden = [
         'contrasena',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected $casts = [
@@ -37,6 +43,8 @@ class Usuario extends Authenticatable
         'fecha_vencimiento' => 'date',
         'fecha_creacion' => 'datetime',
         'fecha_modificacion' => 'datetime',
+        'two_factor_confirmed_at' => 'datetime',
+        'two_factor_enabled' => 'boolean',
     ];
 
     protected static function boot()
