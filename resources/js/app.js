@@ -11,6 +11,7 @@ import "./asignar-roles";
 import "./bitacora";
 import "./toast";
 import "./ubicaciones";
+import "./tipo-visitas";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
