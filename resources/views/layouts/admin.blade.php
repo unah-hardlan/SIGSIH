@@ -22,6 +22,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
         rel="stylesheet">
 
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
     <script type="application/json" id="auth-bootstrap">
         @json(['firstTime' => $authFirstTime ?? false, 'user' => $authUser ?? null, 'persona' => $authPersona ?? null])
     </script>
