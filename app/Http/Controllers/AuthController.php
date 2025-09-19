@@ -39,11 +39,11 @@ class AuthController extends Controller
         $user = $cred['user'];
 
         // Si 2FA está habilitado, emite challenge y no setea auth_token todavía
-        if ($user->two_factor_enabled) {
+    if ($user->two_factor_enabled) {
             $challengeId = (string) \Illuminate\Support\Str::uuid();
             Cache::put('2fa:challenge:' . $challengeId, $user->getKey(), now()->addMinutes(5));
             try { $this->bitacora->logFor('Login', '2FA Challenge', 'Inicio de 2FA', $user->getKey()); } catch (\Throwable $e) {}
-            $secure = app()->environment('production') || $request->isSecure();
+            $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
             return response()->json(['status' => '2fa_required'])
                 ->cookie('2fa_challenge', $challengeId, 5, '/', null, $secure, true, false, $sameSite);
@@ -65,7 +65,7 @@ class AuthController extends Controller
         unset($payload['token']);
         $response = response()->json($payload, 200);
         if ($token) {
-            $secure = app()->environment('production') || $request->isSecure();
+            $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
             $response->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         }
@@ -104,7 +104,7 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
         }
         $req = request();
-        $secure = app()->environment('production') || ($req && $req->isSecure());
+        $secure = ($req && $req->isSecure()) || str_starts_with((string) config('app.url'), 'https://');
         $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
         return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
     }
@@ -155,7 +155,7 @@ class AuthController extends Controller
         unset($payload['token']);
         $response = response()->json($payload, 201);
         if ($token) {
-            $secure = app()->environment('production') || $request->isSecure();
+            $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
             $response->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         }

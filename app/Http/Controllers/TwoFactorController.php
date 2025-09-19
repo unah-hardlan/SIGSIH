@@ -132,8 +132,8 @@ class TwoFactorController extends Controller
         Cache::forget($this->challengeKey($challengeId));
         $res = response()->json(['ok' => true]);
         // Clear challenge cookie
-        $secure = app()->environment('production') || $request->isSecure();
-        $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+    $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
+    $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
         $res->headers->setCookie(Cookie::forget('2fa_challenge'));
         // Set auth cookie
         $token = $tokenResult['token'];
@@ -145,8 +145,8 @@ class TwoFactorController extends Controller
     {
         $challengeId = (string) Str::uuid();
         Cache::put(self::challengeKey($challengeId), $user->getKey(), now()->addMinutes(5));
-        $secure = app()->environment('production') || $request->isSecure();
-        $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+    $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
+    $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
         return response()->json(['status' => '2fa_required'])
             ->cookie('2fa_challenge', $challengeId, 5, '/', null, $secure, true, false, $sameSite);
     }

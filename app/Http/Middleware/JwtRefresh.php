@@ -42,17 +42,19 @@ class JwtRefresh
                     'exp'  => time() + 3600,
                 ];
                 $newToken = JWT::encode($newPayload, $jwtSecret, 'HS256');
-                // set cookie
+                // set cookie (respect HTTPS and SameSite like login)
+                $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
+                $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
                 $response->headers->setCookie(cookie(
                     'auth_token',
                     $newToken,
                     60,
                     '/',
                     null,
-                    false,
+                    $secure,
                     true,
                     false,
-                    'Lax'
+                    $sameSite
                 ));
                 // expose header so frontend could optionally update localStorage
                 $response->headers->set('X-New-JWT', $newToken);
