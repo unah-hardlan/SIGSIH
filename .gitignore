@@ -4,6 +4,7 @@
 /public/storage
 /storage/*.key
 .env
+hardlan.sql
 .env.*.backup
 .phpunit.result.cache
 Homestead.yaml
