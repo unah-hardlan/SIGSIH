@@ -39,16 +39,16 @@ class BitacoraService
         return $id ? (int) $id : null;
     }
 
-    public function logFor(string $slugObjeto, string $accion, string $descripcion = null, ?int $idUsuario = null): Bitacora
+    public function logFor(string $slugObjeto, string $accion, string $descripcion = null, ?int $idUsuario = null, array $extra = []): Bitacora
     {
         $idObjeto = $this->objetoIdFor($slugObjeto);
-    return $this->log($accion, $descripcion, $idObjeto, $idUsuario);
+        return $this->log($accion, $descripcion, $idObjeto, $idUsuario, $extra);
     }
 
-    public function log(string $accion, string $descripcion = null, ?int $idObjeto = null, ?int $idUsuario = null): Bitacora
+    public function log(string $accion, string $descripcion = null, ?int $idObjeto = null, ?int $idUsuario = null, array $extra = []): Bitacora
     {
-    $user = Auth::user();
-    $userId = $idUsuario ?? ($user->id_usuario_pk ?? null);
+        $user = Auth::user();
+        $userId = $idUsuario ?? ($user->id_usuario_pk ?? null);
         // Inferir objeto si no fue provisto
         if ($idObjeto === null) {
             try {
@@ -82,17 +82,33 @@ class BitacoraService
                 if ($objetoName) {
                     $idObjeto = $this->objetoIdFor($objetoName);
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+            }
         }
         $bit = new Bitacora();
-    $bit->fecha_evento = now();
+        $bit->fecha_evento = now();
         $bit->id_usuario_fk = $userId;
         if ($idObjeto) $bit->id_objetos_fk = $idObjeto;
         $bit->accion = $accion;
         if ($descripcion) $bit->descripcion = $descripcion;
-    // Auditoría explícita (por si la BD exige NOT NULL)
-    $bit->creado_por = $user->usuario ?? 'system';
-    $bit->fecha_creacion = now();
+        // Nuevos campos de auditoría
+        $sanitize = function ($arr) {
+            if (!is_array($arr)) return null;
+            foreach (['contrasena', 'password', 'two_factor_secret', 'two_factor_recovery_codes'] as $k) {
+                if (array_key_exists($k, $arr)) unset($arr[$k]);
+            }
+            return $arr;
+        };
+        $bit->tabla = $extra['tabla'] ?? null;
+        $bit->id_registro = $extra['id_registro'] ?? null;
+        $bit->antes = isset($extra['antes']) ? $sanitize($extra['antes']) : null;
+        $bit->despues = isset($extra['despues']) ? $sanitize($extra['despues']) : null;
+        $bit->ip = $extra['ip'] ?? request()->ip();
+        $bit->user_agent = $extra['user_agent'] ?? request()->userAgent();
+
+        // Auditoría explícita (por si la BD exige NOT NULL)
+        $bit->creado_por = $user->usuario ?? 'system';
+        $bit->fecha_creacion = now();
         $bit->save();
         // Señal para evitar duplicados en el middleware y dedupe por unos segundos
         try {
@@ -101,7 +117,8 @@ class BitacoraService
             $method = strtoupper(request()->method());
             $userKey = $userId ?: 'guest';
             cache()->put("bitacora:dedup:$userKey:$method:$path", 1, now()->addSeconds(5));
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
         return $bit;
     }
 }

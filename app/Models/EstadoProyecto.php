@@ -15,8 +15,7 @@ class EstadoProyecto extends Model
     protected $primaryKey = 'id_estado_proyecto_pk';
 
     protected $fillable = [
-        'nombre_estado',
-        'descripcion_estado_proyecto'
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 
     /**

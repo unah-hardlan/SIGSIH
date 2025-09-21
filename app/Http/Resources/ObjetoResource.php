@@ -14,9 +14,9 @@ class ObjetoResource extends JsonResource
             'nombre_objeto' => $this->nombre_objeto,
             'descripcion_objeto' => $this->descripcion_objeto,
             'id_tipo_objetos_fk' => $this->id_tipo_objetos_fk,
-        'tipo' => $this->whenLoaded('tipoObjeto', function(){
+            'tipo' => $this->whenLoaded('tipoObjeto', function () {
                 return [
-            'id' => optional($this->tipoObjeto)->id_tipo_objeto_pk,
+                    'id' => optional($this->tipoObjeto)->id_tipo_objeto_pk,
                     'nombre' => optional($this->tipoObjeto)->nombre_tipo_objeto,
                     'descripcion' => optional($this->tipoObjeto)->descripcion_tipo_objeto,
                 ];

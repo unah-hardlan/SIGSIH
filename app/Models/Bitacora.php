@@ -20,11 +20,20 @@ class Bitacora extends Model
         'descripcion',
         'creado_por',
         'fecha_creacion',
+        // nuevos campos de auditoría
+        'tabla',
+        'id_registro',
+        'antes',
+        'despues',
+        'ip',
+        'user_agent',
     ];
 
     protected $casts = [
         'fecha_evento' => 'datetime',
         'fecha_creacion' => 'datetime',
+        'antes' => 'array',
+        'despues' => 'array',
     ];
 
     protected static function boot()

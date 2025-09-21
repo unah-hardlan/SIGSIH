@@ -11,7 +11,6 @@ class EstadoFactura extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre_estado',
-        'descripcion_estado_factura'
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 }
