@@ -55,6 +55,6 @@ class Objeto extends Model
 
     public function tipoObjeto()
     {
-    return $this->belongsTo(TipoObjeto::class, 'id_tipo_objetos_fk', 'id_tipo_objeto_pk');
+        return $this->belongsTo(TipoObjeto::class, 'id_tipo_objetos_fk', 'id_tipo_objeto_pk');
     }
 }

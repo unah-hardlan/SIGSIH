@@ -15,8 +15,7 @@ class EstadoSolicitud extends Model
     protected $primaryKey = 'id_estado_solicitud_pk';
     
     protected $fillable = [
-        'nombre_estado',
-        'descripcion_estado',
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 
   

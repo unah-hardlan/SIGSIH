@@ -17,7 +17,7 @@ class ObjetoController extends Controller
      */
     public function index(Request $request)
     {
-    $query = Objeto::query()->with('tipoObjeto');
+        $query = Objeto::query()->with('tipoObjeto');
 
         if ($q = $request->input('q')) {
             $query->where(function ($sub) use ($q) {
@@ -73,7 +73,14 @@ class ObjetoController extends Controller
         $data['creado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_creacion'] = now();
         $objeto = Objeto::create($data);
-    try { $this->bitacora->log('Insertar', 'Creación de objeto '.$objeto->nombre_objeto, $objeto->id_objetos_pk); } catch (\Throwable $e) {}
+        try {
+            $this->bitacora->log('Insertar', 'Creación de objeto ' . $objeto->nombre_objeto, $objeto->id_objetos_pk, null, [
+                'tabla' => 'tbl_objetos',
+                'id_registro' => $objeto->id_objetos_pk,
+                'despues' => $objeto->getAttributes(),
+            ]);
+        } catch (\Throwable $e) {
+        }
         return (new ObjetoResource($objeto))->response()->setStatusCode(201);
     }
 
@@ -93,8 +100,18 @@ class ObjetoController extends Controller
         $data = $request->validated();
         $data['modificado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_modificacion'] = now();
+        $antes = $objeto->getOriginal();
         $objeto->update($data);
-    try { $this->bitacora->log('Actualizar', 'Actualización de objeto '.$objeto->nombre_objeto, $objeto->id_objetos_pk); } catch (\Throwable $e) {}
+        $objeto->refresh();
+        try {
+            $this->bitacora->log('Actualizar', 'Actualización de objeto ' . $objeto->nombre_objeto, $objeto->id_objetos_pk, null, [
+                'tabla' => 'tbl_objetos',
+                'id_registro' => $objeto->id_objetos_pk,
+                'antes' => $antes,
+                'despues' => $objeto->getAttributes(),
+            ]);
+        } catch (\Throwable $e) {
+        }
         return (new ObjetoResource($objeto))->response();
     }
 
@@ -109,11 +126,18 @@ class ObjetoController extends Controller
             if ($e->getCode() === '23000') {
                 return response()->json([
                     'error' => 'conflict',
-                    'message' => 'No se puede eliminar el objeto porque tiene registros asociados (Bitácora o Permisos).'], 409);
+                    'message' => 'No se puede eliminar el objeto porque tiene registros asociados (Bitácora o Permisos).'
+                ], 409);
             }
             throw $e;
         }
-    try { $this->bitacora->log('Eliminar', 'Eliminación de objeto '.$objeto->nombre_objeto, $objeto->id_objetos_pk); } catch (\Throwable $e) {}
+        try {
+            $this->bitacora->log('Eliminar', 'Eliminación de objeto ' . $objeto->nombre_objeto, $objeto->id_objetos_pk, null, [
+                'tabla' => 'tbl_objetos',
+                'id_registro' => $objeto->id_objetos_pk,
+            ]);
+        } catch (\Throwable $e) {
+        }
         return response()->json(['message' => 'Objeto eliminado']);
     }
 }

@@ -8,7 +8,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class Usuario extends Authenticatable
 {
     use HasFactory;
-    public $timestamps = false;
+    public $timestamps = true;
+    public const CREATED_AT = 'fecha_creacion';
+    public const UPDATED_AT = 'fecha_modificacion';
 
     protected $table = 'tbl_ms_usuario';
     protected $primaryKey = 'id_usuario_pk';
@@ -18,7 +20,7 @@ class Usuario extends Authenticatable
         'estado_usuario',
         'contrasena',
         'correo_electronico',
-    'id_rol_fk',
+        'id_rol_fk',
         'primer_ingreso',
         'fecha_ultima_conexion',
         'fecha_vencimiento',
@@ -92,6 +94,24 @@ class Usuario extends Authenticatable
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'id_rol_fk', 'id_rol_pk');
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Rol::class, 'tbl_usuario_rol', 'id_usuario_fk', 'id_rol_fk');
+    }
+
+    // Hash de contraseña automático con verificación de rehash
+    protected function setContrasenaAttribute($value)
+    {
+        if (!isset($value) || $value === '') {
+            $this->attributes['contrasena'] = $value;
+            return;
+        }
+        // Si ya parece ser un hash bcrypt/argon (60+ chars con prefijo), no rehash
+        $str = (string)$value;
+        $isHashed = preg_match('/^\$2y\$|^\$argon2id\$|^\$argon2i\$/', $str) === 1;
+        $this->attributes['contrasena'] = $isHashed ? $str : \Illuminate\Support\Facades\Hash::make($str);
     }
 
     public function bitacoras()

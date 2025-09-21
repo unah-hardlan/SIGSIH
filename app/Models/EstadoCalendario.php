@@ -14,7 +14,6 @@ class EstadoCalendario extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre_estado',
-        'descripcion_estado_calendario'
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 }

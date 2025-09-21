@@ -68,7 +68,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
 // Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
-Route::middleware(['jwt.auth','auto.permiso'])->group(function () {
+Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     // 2FA setup (authenticated)
     Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
     Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
@@ -80,6 +80,9 @@ Route::middleware(['jwt.auth','auto.permiso'])->group(function () {
     Route::delete('perfil/avatar', [ProfileController::class, 'deleteAvatar']);
     Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
+    // Multi-rol: sincronización de roles
+    Route::put('usuarios/{id}/roles', [UsuarioController::class, 'syncRoles']);
+    Route::get('usuarios/{id}/roles', [UsuarioController::class, 'getRoles']);
     Route::apiResource('roles', RolController::class);
     // Upsert permisos por combinación rol-objeto (debe ir antes del apiResource para evitar colisiones)
     Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
