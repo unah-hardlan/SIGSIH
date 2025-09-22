@@ -13,7 +13,7 @@ return new class extends Migration {
             Schema::table('tbl_objetos', function (Blueprint $table) {
                 // Drop index safely if present
                 try {
-                    $table->dropIndex('idx_tbl_objetos_clave_permiso');
+                    DB::statement('DROP INDEX idx_tbl_objetos_clave_permiso ON tbl_objetos');
                 } catch (\Throwable $e) {
                 }
                 if (Schema::hasColumn('tbl_objetos', 'clave_permiso')) {
@@ -29,7 +29,7 @@ return new class extends Migration {
         if (Schema::hasTable('tbl_tipo_objetos')) {
             Schema::table('tbl_tipo_objetos', function (Blueprint $table) {
                 try {
-                    $table->dropIndex('idx_tbl_tipo_objetos_clave_permiso');
+                    DB::statement('DROP INDEX idx_tbl_tipo_objetos_clave_permiso ON tbl_tipo_objetos');
                 } catch (\Throwable $e) {
                 }
                 if (Schema::hasColumn('tbl_tipo_objetos', 'clave_permiso')) {
@@ -51,10 +51,7 @@ return new class extends Migration {
             Schema::table('tbl_objetos', function (Blueprint $table) {
                 if (!Schema::hasColumn('tbl_objetos', 'clave_permiso')) {
                     $table->string('clave_permiso', 128)->nullable()->after('ruta');
-                    try {
-                        $table->index('clave_permiso', 'idx_tbl_objetos_clave_permiso');
-                    } catch (\Throwable $e) {
-                    }
+                    DB::statement('ALTER TABLE tbl_objetos ADD INDEX IF NOT EXISTS idx_tbl_objetos_clave_permiso (clave_permiso)');
                 }
             });
         }
@@ -63,10 +60,7 @@ return new class extends Migration {
             Schema::table('tbl_tipo_objetos', function (Blueprint $table) {
                 if (!Schema::hasColumn('tbl_tipo_objetos', 'clave_permiso')) {
                     $table->string('clave_permiso', 128)->nullable()->after('descripcion_tipo_objeto');
-                    try {
-                        $table->index('clave_permiso', 'idx_tbl_tipo_objetos_clave_permiso');
-                    } catch (\Throwable $e) {
-                    }
+                    DB::statement('ALTER TABLE tbl_tipo_objetos ADD INDEX IF NOT EXISTS idx_tbl_tipo_objetos_clave_permiso (clave_permiso)');
                 }
             });
         }
