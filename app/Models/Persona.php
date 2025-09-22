@@ -30,4 +30,9 @@ class Persona extends Model
     public function genero(){ return $this->belongsTo(Genero::class,'id_genero_fk','id_genero_pk'); }
     public function perfil(){ return $this->belongsTo(Perfil::class,'id_perfil_fk','id_perfil_pk'); }
     public function usuario(){ return $this->belongsTo(Usuario::class,'id_usuario_fk','id_usuario_pk'); }
+
+    public function contactos()
+    {
+        return $this->hasMany(Contacto::class, 'id_persona_fk', 'id_persona_pk');
+    }
 }

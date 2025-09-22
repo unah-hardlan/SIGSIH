@@ -42,4 +42,9 @@ class EmpresaCliente extends Model
     {
         return $this->belongsTo(OficinaEmpresa::class, 'id_oficina_fk', 'id_oficina_empresa_pk');
     }
+
+    public function contactos()
+    {
+        return $this->hasMany(Contacto::class, 'id_empresa_cliente_fk', 'id_empresa_cliente_pk');
+    }
 }
