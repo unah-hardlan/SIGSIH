@@ -20,10 +20,10 @@ class Categoria extends Model
     ];
 
     /**
-     * Relación con ingresos
+     * Relación con movimientos financieros (ingresos/gastos)
      */
-    public function ingresos()
+    public function movimientos()
     {
-        return $this->hasMany(Ingresos::class, 'id_categoria_fk', 'id_categoria_pk');
+        return $this->hasMany(MovimientoFinanciero::class, 'id_categoria_fk', 'id_categoria_pk');
     }
 }
