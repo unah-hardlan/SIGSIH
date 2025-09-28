@@ -21,7 +21,6 @@ class MovimientoFinanciero extends Model
         'id_categoria_fk',
         'atribuible_a_proyecto',
         'id_orden_servicio_fk',
-        'id_asiento_fk',
     ];
 
     protected $casts = [
@@ -37,9 +36,5 @@ class MovimientoFinanciero extends Model
     public function ordenServicio()
     {
         return $this->belongsTo(OrdenServicio::class, 'id_orden_servicio_fk', 'id_orden_servicio_pk');
-    }
-    public function asiento()
-    {
-        return $this->belongsTo(Asiento::class, 'id_asiento_fk', 'id_asiento_pk');
     }
 }

@@ -1,6 +1,8 @@
 {
   "resources/css/app.css": {
+
     "file": "assets/app-ZTmpJfVG.css",
+    "file": "assets/app-BS6Qppnm.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -9,10 +11,26 @@
     "src": "resources/css/global.css",
     "isEntry": true
   },
+  "resources/css/theme.css": {
+    "file": "assets/theme-HiwzmjK1.css",
+    "src": "resources/css/theme.css",
+    "isEntry": true
+  },
   "resources/js/app.js": {
     "file": "assets/app-CeHzZSLg.js",
+
+    "file": "assets/app-DYYQqu0u.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/toast.js"
+    ]
+  },
+  "resources/js/auth-guard.js": {
+    "file": "assets/auth-guard-l0sNRNKZ.js",
+    "name": "auth-guard",
+    "src": "resources/js/auth-guard.js",
     "isEntry": true
   },
   "resources/js/auth.js": {
@@ -21,10 +39,28 @@
     "src": "resources/js/auth.js",
     "isEntry": true
   },
+  "resources/js/session.js": {
+    "file": "assets/session-Bb7GTXwl.js",
+    "name": "session",
+    "src": "resources/js/session.js",
+    "isEntry": true
+  },
   "resources/js/sidebar.js": {
     "file": "assets/sidebar-BXqXU_a-.js",
     "name": "sidebar",
     "src": "resources/js/sidebar.js",
+    "isEntry": true
+  },
+  "resources/js/tabla-responsive.js": {
+    "file": "assets/tabla-responsive-Dn65SOWc.js",
+    "name": "tabla-responsive",
+    "src": "resources/js/tabla-responsive.js",
+    "isEntry": true
+  },
+  "resources/js/toast.js": {
+    "file": "assets/toast-CRfo3b6F.js",
+    "name": "toast",
+    "src": "resources/js/toast.js",
     "isEntry": true
   }
 }
