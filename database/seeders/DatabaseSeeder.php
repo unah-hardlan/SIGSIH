@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ParametroAuthSeeder::class,
             ParametroSystemSeeder::class,
             CoreObjetosSeeder::class,
+            EstadoOrdenServicioSeeder::class,
         ]);
     }
 }

@@ -29,12 +29,12 @@ class Rol extends Model
     protected static function boot()
     {
         parent::boot();
-        static::creating(function($model){
+        static::creating(function ($model) {
             $now = now();
-            if(!$model->fecha_creacion) $model->fecha_creacion = $now;
-            if(!$model->creado_por) $model->creado_por = auth()->user()->usuario ?? 'system';
+            if (!$model->fecha_creacion) $model->fecha_creacion = $now;
+            if (!$model->creado_por) $model->creado_por = auth()->user()->usuario ?? 'system';
         });
-        static::updating(function($model){
+        static::updating(function ($model) {
             $model->fecha_modificacion = now();
             $model->modificado_por = auth()->user()->usuario ?? 'system';
         });
@@ -42,11 +42,18 @@ class Rol extends Model
 
     public function usuarios()
     {
-    return $this->hasMany(Usuario::class, 'id_rol_fk', 'id_rol_pk');
+        // Compatibilidad: usuarios con FK directa y también N:M via pivot
+        return $this->hasMany(Usuario::class, 'id_rol_fk', 'id_rol_pk');
     }
 
     public function permisos()
     {
+        // Mantener relación existente (Permiso por rol-objeto con flags)
         return $this->hasMany(Permiso::class, 'id_rol_fk');
+    }
+
+    public function usuariosMany()
+    {
+        return $this->belongsToMany(Usuario::class, 'tbl_usuario_rol', 'id_rol_fk', 'id_usuario_fk');
     }
 }

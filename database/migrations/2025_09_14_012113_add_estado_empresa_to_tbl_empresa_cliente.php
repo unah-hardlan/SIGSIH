@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('tbl_empresa_cliente')) return;
         Schema::table('tbl_empresa_cliente', function (Blueprint $table) {
             if (!Schema::hasColumn('tbl_empresa_cliente', 'estado_empresa')) {
                 $table->string('estado_empresa', 20)->default('activo')->after('id_oficina_fk');
@@ -23,6 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('tbl_empresa_cliente')) return;
         Schema::table('tbl_empresa_cliente', function (Blueprint $table) {
             if (Schema::hasColumn('tbl_empresa_cliente', 'estado_empresa')) {
                 $table->dropColumn('estado_empresa');
