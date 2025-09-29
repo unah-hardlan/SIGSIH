@@ -18,6 +18,8 @@ function createAuthPage() {
         email: "",
         loading: false,
         isDark: false,
+    generalError: "",
+    validationErrors: {},
     // 2FA
     show2FAModal: false,
     totpCode: "",
@@ -47,14 +49,48 @@ function createAuthPage() {
             this.applyTheme();
         },
 
+        toggleMode() {
+            this.isLogin = !this.isLogin;
+            this.generalError = "";
+            this.validationErrors = {};
+        },
+
+        clearFieldError(field) {
+            if (!field) return;
+            if (this.validationErrors[field]) {
+                const { [field]: _, ...rest } = this.validationErrors;
+                this.validationErrors = rest;
+                if (Object.keys(this.validationErrors).length === 0) {
+                    this.generalError = "";
+                }
+            }
+        },
+
         // Validaciones
-        validatePassword(pw) { return (pw || "").length >= 8 && !(/\s/.test(pw)); },
+        passwordIssues(pw) {
+            const value = pw || "";
+            const issues = [];
+            if (value.length < 8) {
+                issues.push("Debe tener al menos 8 caracteres.");
+            }
+            if (/\s/.test(value)) {
+                issues.push("No debe contener espacios.");
+            }
+            const requireUppercase = !this.isLogin;
+            if (requireUppercase && !/[A-Z]/.test(value)) {
+                issues.push("Debe incluir al menos una letra mayúscula.");
+            }
+            return issues;
+        },
+        validatePassword(pw) { return this.passwordIssues(pw).length === 0; },
         validateConfirmPassword() { return this.password === this.confirmPassword; },
 
         // Submit
         async handleSubmit() {
             if (this.loading) return;
             this.loading = true;
+            this.generalError = "";
+            this.validationErrors = {};
 
             try {
                 if (this.isLogin) {
@@ -89,8 +125,23 @@ function createAuthPage() {
                 }
             } catch (err) {
                 try { console.error("Error auth:", err?.response?.status, err?.response?.data || err?.message || err); } catch (_) { }
-                const msg = err?.response?.data?.error || err?.response?.data?.message || "Error de autenticación";
-                alert(msg);
+                const response = err?.response;
+                const payload = response?.data || {};
+                const errors = payload?.errors;
+
+                if (errors && typeof errors === "object") {
+                    this.validationErrors = errors;
+                    let extracted = "";
+                    for (const value of Object.values(errors)) {
+                        if (Array.isArray(value) && value.length) {
+                            extracted = value[0];
+                            break;
+                        }
+                    }
+                    this.generalError = extracted || payload?.message || "Errores de validación.";
+                } else {
+                    this.generalError = payload?.error || payload?.message || "Error de autenticación";
+                }
             } finally {
                 this.loading = false;
             }
