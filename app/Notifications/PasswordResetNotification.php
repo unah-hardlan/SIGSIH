@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Models\Parametro;
 
 class PasswordResetNotification extends Notification
 {
@@ -28,14 +29,35 @@ class PasswordResetNotification extends Notification
         $expire = (int) config('auth.passwords.users.expire', 60);
         $name = trim((string) ($notifiable->nombre_usuario ?? $notifiable->usuario ?? ''));
 
+        $appName = $this->getParametro('APP.NOMBRE')
+            ?? $this->getParametro('app.name')
+            ?? config('app.name', 'SIGSIH');
+
+        $logoParam = $this->getParametro('APP.LOGO_RUTA')
+            ?? $this->getParametro('app.logo_path');
+
+        $logoUrl = null;
+        if ($logoParam) {
+            if (preg_match('#^(https?://|/)#i', $logoParam)) {
+                $logoUrl = $logoParam;
+            } else {
+                $logoUrl = asset('storage/' . ltrim($logoParam, '/'));
+            }
+        }
+
+        $supportEmail = $this->getParametro('APP.SOPORTE_CORREO')
+            ?? config('mail.from.address');
+
         return (new MailMessage)
-            ->subject(config('app.name', 'SIGSIH') . ' - Restablecimiento de contraseña')
-            ->greeting($name !== '' ? 'Hola ' . $name : 'Hola')
-            ->line('Recibiste este correo porque se solicitó restablecer tu contraseña en SIGSIH.')
-            ->line('El enlace estará disponible durante ' . $expire . ' minutos.')
-            ->action('Restablecer contraseña', $url)
-            ->line('Si no solicitaste el cambio, ignora este mensaje.')
-            ->salutation('Saludos, ' . config('app.name', 'SIGSIH'));
+            ->subject($appName . ' - Restablecimiento de contraseña')
+            ->markdown('emails.auth.password-reset', [
+                'greetingName' => $name !== '' ? $name : null,
+                'appName' => $appName,
+                'logoUrl' => $logoUrl,
+                'resetUrl' => $url,
+                'expireMinutes' => $expire,
+                'supportEmail' => $supportEmail,
+            ]);
     }
 
     protected function resetUrl(string $email): string
@@ -54,5 +76,10 @@ class PasswordResetNotification extends Notification
             'token' => $this->token,
             'email' => $email,
         ], false));
+    }
+
+    protected function getParametro(string $key): ?string
+    {
+        return Parametro::where('parametro', $key)->value('valor');
     }
 }
