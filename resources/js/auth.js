@@ -18,23 +18,26 @@ function createAuthPage() {
         email: "",
         loading: false,
         isDark: false,
-    generalError: "",
-    validationErrors: {},
-    // 2FA
-    show2FAModal: false,
-    totpCode: "",
-    verifying2FA: false,
-    totpError: "",
+        generalError: "",
+        validationErrors: {},
+        // 2FA
+        show2FAModal: false,
+        totpCode: "",
+        verifying2FA: false,
+        totpError: "",
 
         // Lifecycle
         init() {
-            try { this.initTheme(); } catch (_) { }
+            try {
+                this.initTheme();
+            } catch (_) {}
         },
 
         // Theme (solo en memoria; sin persistir)
         initTheme() {
             try {
-                this.isDark = window.matchMedia &&
+                this.isDark =
+                    window.matchMedia &&
                     window.matchMedia("(prefers-color-scheme: dark)").matches;
             } catch (_) {
                 this.isDark = false;
@@ -42,7 +45,9 @@ function createAuthPage() {
             this.applyTheme();
         },
         applyTheme() {
-            try { document.documentElement.classList.toggle("dark", this.isDark); } catch (_) { }
+            try {
+                document.documentElement.classList.toggle("dark", this.isDark);
+            } catch (_) {}
         },
         toggleTheme() {
             this.isDark = !this.isDark;
@@ -82,8 +87,12 @@ function createAuthPage() {
             }
             return issues;
         },
-        validatePassword(pw) { return this.passwordIssues(pw).length === 0; },
-        validateConfirmPassword() { return this.password === this.confirmPassword; },
+        validatePassword(pw) {
+            return this.passwordIssues(pw).length === 0;
+        },
+        validateConfirmPassword() {
+            return this.password === this.confirmPassword;
+        },
 
         // Submit
         async handleSubmit() {
@@ -107,10 +116,14 @@ function createAuthPage() {
                         return;
                     }
 
-                    try { window.showToast && window.showToast("Sesión iniciada", "success", { duration: 1200 }); } catch (_) { }
+                    try {
+                        window.showToast &&
+                            window.showToast("Sesión iniciada", "success", {
+                                duration: 1200,
+                            });
+                    } catch (_) {}
                     window.location.assign("/admin/dashboard");
                     return;
-
                 } else {
                     await axios.post("/api/register", {
                         usuario: this.username,
@@ -124,7 +137,13 @@ function createAuthPage() {
                     return;
                 }
             } catch (err) {
-                try { console.error("Error auth:", err?.response?.status, err?.response?.data || err?.message || err); } catch (_) { }
+                try {
+                    console.error(
+                        "Error auth:",
+                        err?.response?.status,
+                        err?.response?.data || err?.message || err
+                    );
+                } catch (_) {}
                 const response = err?.response;
                 const payload = response?.data || {};
                 const errors = payload?.errors;
@@ -138,9 +157,15 @@ function createAuthPage() {
                             break;
                         }
                     }
-                    this.generalError = extracted || payload?.message || "Errores de validación.";
+                    this.generalError =
+                        extracted ||
+                        payload?.message ||
+                        "Errores de validación.";
                 } else {
-                    this.generalError = payload?.error || payload?.message || "Error de autenticación";
+                    this.generalError =
+                        payload?.error ||
+                        payload?.message ||
+                        "Error de autenticación";
                 }
             } finally {
                 this.loading = false;
@@ -153,10 +178,18 @@ function createAuthPage() {
             this.totpError = "";
             try {
                 await axios.post("/api/2fa/verify", { code: this.totpCode });
-                try { window.showToast && window.showToast("2FA verificado", "success", { duration: 1200 }); } catch (_) { }
+                try {
+                    window.showToast &&
+                        window.showToast("2FA verificado", "success", {
+                            duration: 1200,
+                        });
+                } catch (_) {}
                 window.location.assign("/admin/dashboard");
             } catch (err) {
-                const msg = err?.response?.data?.message || err?.response?.data?.error || "Código inválido";
+                const msg =
+                    err?.response?.data?.message ||
+                    err?.response?.data?.error ||
+                    "Código inválido";
                 this.totpError = msg;
             } finally {
                 this.verifying2FA = false;
@@ -170,8 +203,12 @@ function createAuthPage() {
         },
 
         // Extras
-        handleGoogle() { alert("Redirigiendo a Google Sign-In…"); },
-        handleRecover() { alert("Redirigiendo a recuperar contraseña…"); },
+        handleGoogle() {
+            alert("Redirigiendo a Google Sign-In…");
+        },
+        handleRecover() {
+            alert("Redirigiendo a recuperar contraseña…");
+        },
     };
 }
 
@@ -184,7 +221,7 @@ function registerWithAlpine() {
         if (window.Alpine && typeof window.Alpine.data === "function") {
             window.Alpine.data("authPage", () => window.authPage());
         }
-    } catch (_) { }
+    } catch (_) {}
 }
 
 // Si Alpine ya está cargado:
