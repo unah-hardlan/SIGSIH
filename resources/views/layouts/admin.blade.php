@@ -57,7 +57,7 @@
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
       }" x-init="initResponsiveSidebar($data)">
-    <div class="flex h-screen min-h-0 relative">
+    <div class="flex min-h-screen relative">
         <!-- Overlay para móviles SOLO -->
         <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -69,7 +69,7 @@
         @include('partials.admin-sidebar')
 
         <main
-            class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+            class="flex-1 min-h-screen p-3 sm:p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
             @include('partials.admin-header')
             @hasSection('page-header')
             <div class="bg-white dark:bg-gray-900 p-4 rounded shadow mb-6">

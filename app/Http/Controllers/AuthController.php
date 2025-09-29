@@ -7,6 +7,8 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\StoreUsuarioRequest;
 use App\Models\Usuario;
 use App\Models\Rol;
+use App\Models\HistorialContrasena;
+use App\Models\Parametro;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -14,7 +16,12 @@ use function response;
 use App\Services\BitacoraService;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use App\Notifications\PasswordResetNotification;
 
 
 class AuthController extends Controller
@@ -39,10 +46,13 @@ class AuthController extends Controller
         $user = $cred['user'];
 
         // Si 2FA está habilitado, emite challenge y no setea auth_token todavía
-    if ($user->two_factor_enabled) {
+        if ($user->two_factor_enabled) {
             $challengeId = (string) \Illuminate\Support\Str::uuid();
             Cache::put('2fa:challenge:' . $challengeId, $user->getKey(), now()->addMinutes(5));
-            try { $this->bitacora->logFor('Login', '2FA Challenge', 'Inicio de 2FA', $user->getKey()); } catch (\Throwable $e) {}
+            try {
+                $this->bitacora->logFor('Login', '2FA Challenge', 'Inicio de 2FA', $user->getKey());
+            } catch (\Throwable $e) {
+            }
             $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
             return response()->json(['status' => '2fa_required'])
@@ -60,7 +70,7 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
         }
         // Mantener token sólo para cookie, no exponerlo al frontend
-    $token = $result['token'] ?? null;
+        $token = $result['token'] ?? null;
         $payload = $result;
         unset($payload['token']);
         $response = response()->json($payload, 200);
@@ -169,37 +179,260 @@ class AuthController extends Controller
 
     public function sendPasswordResetEmail(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email'
+        $data = $request->validate([
+            'identifier' => 'nullable|string|max:255',
+            'email' => 'nullable|string|max:255',
         ]);
 
-        $email = $request->email;
+        $rawIdentifier = $data['identifier'] ?? $data['email'] ?? null;
+        $identifier = is_string($rawIdentifier) ? trim($rawIdentifier) : '';
 
-        // Buscar usuario por email
-        $usuario = Usuario::where('email', $email)->first();
+        if ($identifier === '') {
+            return response()->json([
+                'message' => 'Debes ingresar tu correo electrónico o nombre de usuario.'
+            ], 422);
+        }
+
+        $normalizedEmail = null;
+        $query = Usuario::query();
+        $upperIdentifier = strtoupper($identifier);
+        $lowerIdentifier = strtolower($identifier);
+
+        $usuario = $query
+            ->where(function ($q) use ($upperIdentifier, $lowerIdentifier) {
+                $q->whereRaw('LOWER(correo_electronico) = ?', [$lowerIdentifier])
+                    ->orWhere('usuario', $upperIdentifier);
+            })
+            ->first();
+
+        if ($usuario && $usuario->correo_electronico) {
+            $normalizedEmail = strtolower($usuario->correo_electronico);
+        }
 
         if (!$usuario) {
             return response()->json([
-                'message' => 'Si existe una cuenta con ese correo, se han enviado las instrucciones de recuperación.'
-            ], 200);
+                'message' => 'No encontramos ninguna cuenta que coincida con los datos proporcionados.'
+            ], 404);
         }
 
-        // Aquí puedes implementar el envío del email
-        // Por ahora, solo simulamos el éxito
-        try {
-            // TODO: Implementar envío de email con token de recuperación
-            // Mail::send(...);
+        if (!$normalizedEmail) {
+            return response()->json([
+                'message' => 'El usuario no tiene un correo electrónico registrado. Comunícate con el administrador.'
+            ], 422);
+        }
 
-            // Registrar en bitácora
-            $this->bitacora->logFor('Password Reset', 'Solicitud', 'Solicitud de recuperación de contraseña', $usuario->id);
+        $cooldownMinutes = $this->getParametroInt([
+            'AUTH.PASSWORD_RESET.COOLDOWN_MINUTES',
+            'auth.password_reset.cooldown_minutes'
+        ], 5);
+        $maxPerDay = $this->getParametroInt([
+            'AUTH.PASSWORD_RESET.MAX_PER_DAY',
+            'auth.password_reset.max_per_day'
+        ], 5);
+        $expireMinutes = $this->getParametroInt([
+            'AUTH.PASSWORD_RESET.EXPIRE_MINUTES',
+            'auth.password_reset.expire_minutes'
+        ], (int) config('auth.passwords.users.expire', 60));
+
+        if ($expireMinutes > 0) {
+            config(['auth.passwords.users.expire' => $expireMinutes]);
+        }
+
+        if ($cooldownMinutes > 0) {
+            config(['auth.passwords.users.throttle' => max(1, $cooldownMinutes) * 60]);
+        }
+
+        if ($cooldownMinutes > 0) {
+            $table = config('auth.passwords.users.table', 'password_reset_tokens');
+            $lastRequest = DB::table($table)
+                ->where('email', $normalizedEmail)
+                ->value('created_at');
+
+            if ($lastRequest) {
+                $nextAllowed = Carbon::parse($lastRequest)->addMinutes($cooldownMinutes);
+                if (now()->lt($nextAllowed)) {
+                    $secondsRemaining = now()->diffInSeconds($nextAllowed);
+                    $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
+
+                    return response()->json([
+                        'message' => "Debes esperar {$minutesRemaining} minuto(s) antes de solicitar otro correo de recuperación."
+                    ], 429);
+                }
+            }
+        }
+
+        $rateLimiterKey = null;
+        $rateLimiterTtl = 60 * 60 * 24;
+
+        if ($maxPerDay > 0) {
+            $rateLimiterKey = 'password-reset:max-per-day:' . sha1($normalizedEmail);
+
+            if (RateLimiter::tooManyAttempts($rateLimiterKey, $maxPerDay)) {
+                $secondsRemaining = RateLimiter::availableIn($rateLimiterKey);
+                $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
+
+                return response()->json([
+                    'message' => "Alcanzaste el límite de solicitudes de recuperación. Intenta nuevamente en {$minutesRemaining} minuto(s)."
+                ], 429);
+            }
+        }
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker();
+
+        try {
+            $token = $broker->createToken($usuario);
+            $usuario->notify(new PasswordResetNotification($token, $normalizedEmail));
+
+            if ($rateLimiterKey) {
+                RateLimiter::hit($rateLimiterKey, $rateLimiterTtl);
+            }
+
+            try {
+                $this->bitacora->logFor(
+                    'Password Reset',
+                    'Solicitud',
+                    'Solicitud de recuperación de contraseña',
+                    $usuario->getKey()
+                );
+            } catch (\Throwable $e) {
+            }
 
             return response()->json([
                 'message' => 'Se han enviado las instrucciones de recuperación a tu correo electrónico.'
-            ], 200);
+            ]);
         } catch (\Throwable $e) {
+            report($e);
+
             return response()->json([
-                'message' => 'Error al enviar las instrucciones. Inténtalo de nuevo más tarde.'
+                'message' => 'No se pudo enviar el correo de recuperación en este momento. Inténtalo más tarde.'
             ], 500);
         }
+    }
+
+    public function showPasswordResetForm(Request $request, string $token)
+    {
+        return view('auth.password-reset', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'token' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $email = strtolower($data['email']);
+
+        $usuario = Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
+
+        if (!$usuario || !$usuario->correo_electronico) {
+            return response()->json([
+                'message' => 'El token de recuperación no es válido o ha expirado.'
+            ], 400);
+        }
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker();
+
+        if (!$broker->tokenExists($usuario, $data['token'])) {
+            return response()->json([
+                'message' => 'El token de recuperación no es válido o ha expirado.'
+            ], 400);
+        }
+
+        $uid = $usuario->getKey();
+        $historialQuery = HistorialContrasena::where('id_usuario_fk', $uid)
+            ->orderByDesc('fecha_creacion')
+            ->orderByDesc('id_hist_pk')
+            ->limit(5);
+
+        $hashes = $historialQuery->pluck('contrasena');
+        foreach ($hashes as $hash) {
+            if (!is_string($hash) || $hash === '') {
+                continue;
+            }
+
+            if (preg_match('/^\$(2y|argon2id|argon2i)\$/', $hash) === 1) {
+                if (Hash::check($data['password'], $hash)) {
+                    return response()->json([
+                        'message' => 'No puedes reutilizar una de tus últimas 5 contraseñas.'
+                    ], 422);
+                }
+
+                continue;
+            }
+
+            if (hash_equals($hash, $data['password'])) {
+                return response()->json([
+                    'message' => 'No puedes reutilizar una de tus últimas 5 contraseñas.'
+                ], 422);
+            }
+        }
+
+        $usuario->contrasena = $data['password'];
+        $usuario->primer_ingreso = 0;
+        $usuario->save();
+
+        try {
+            $hashed = $usuario->contrasena;
+            HistorialContrasena::create([
+                'contrasena' => $hashed,
+                'id_usuario_fk' => $uid,
+                'creado_por' => $usuario->usuario ?? 'system',
+                'fecha_creacion' => now(),
+            ]);
+
+            $idsToKeep = HistorialContrasena::where('id_usuario_fk', $uid)
+                ->orderByDesc('fecha_creacion')
+                ->orderByDesc('id_hist_pk')
+                ->limit(5)
+                ->pluck('id_hist_pk');
+
+            HistorialContrasena::where('id_usuario_fk', $uid)
+                ->whereNotIn('id_hist_pk', $idsToKeep)
+                ->delete();
+        } catch (\Throwable $e) {
+        }
+        $broker->deleteToken($usuario);
+
+        try {
+            $this->bitacora->logFor(
+                'Password Reset',
+                'Actualización',
+                'Restablecimiento de contraseña vía recuperación',
+                $uid
+            );
+        } catch (\Throwable $e) {
+        }
+
+        return response()->json([
+            'message' => 'Tu contraseña ha sido restablecida con éxito.'
+        ]);
+    }
+
+    private function getParametroInt(array $keys, int $default): int
+    {
+        foreach ($keys as $key) {
+            $value = Parametro::where('parametro', $key)->value('valor');
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            if (is_numeric($value)) {
+                return (int) $value;
+            }
+
+            if (is_string($value)) {
+                $filtered = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+                if ($filtered !== '' && is_numeric($filtered)) {
+                    return (int) $filtered;
+                }
+            }
+        }
+
+        return $default;
     }
 }
