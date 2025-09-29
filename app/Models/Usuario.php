@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Usuario extends Authenticatable
+class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanResetPassword
 {
-    use HasFactory;
+    use HasFactory, Notifiable, \Illuminate\Auth\Passwords\CanResetPassword;
     public $timestamps = true;
     public const CREATED_AT = 'fecha_creacion';
     public const UPDATED_AT = 'fecha_modificacion';
@@ -140,5 +141,18 @@ class Usuario extends Authenticatable
     public function setUsuarioAttribute($value)
     {
         $this->attributes['usuario'] = strtoupper(trim((string)$value));
+    }
+
+    /**
+     * Obtiene el correo a utilizar para el flujo de restablecimiento de contraseña.
+     */
+    public function getEmailForPasswordReset()
+    {
+        return (string) $this->correo_electronico;
+    }
+
+    public function routeNotificationForMail($notification)
+    {
+        return $this->correo_electronico;
     }
 }

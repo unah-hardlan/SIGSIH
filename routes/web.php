@@ -23,6 +23,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
 Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset.form');
+Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
 
 // Redirect root to admin dashboard
 Route::redirect('/', '/admin/dashboard');
