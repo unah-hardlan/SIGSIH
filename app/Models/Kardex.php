@@ -20,6 +20,9 @@ class Kardex extends Model
         'fecha_movimiento',
         'motivo',
         'id_tecnico_fk',
+        'tipo_movimiento',
+        'id_origen_fk',
+        'id_origen',
     ];
 
     protected $casts = [
@@ -40,4 +43,5 @@ class Kardex extends Model
     public function producto(){ return $this->belongsTo(Producto::class,'id_producto_fk','id_producto_pk'); }
     public function tipoMovimiento(){ return $this->belongsTo(TipoMovimiento::class,'id_tipo_movimiento_fk','id_tipo_movimiento_pk'); }
     public function tecnico(){ return $this->belongsTo(Persona::class,'id_tecnico_fk','id_persona_pk'); }
+    public function origen(){ return $this->belongsTo(Origen::class,'id_origen_fk','id_origen_pk'); }
 }

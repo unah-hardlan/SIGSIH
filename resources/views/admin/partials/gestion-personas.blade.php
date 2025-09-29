@@ -9,6 +9,22 @@
         searchPersonas: '',
         filtroTipoPersona: '', // mantiene etiqueta visual; filtro adicional se aplica en cliente
         filtroGenero: '',
+    // catálogos dinámicos
+    catalogoTiposPersona: [], // [{id, nombre}]
+    catalogoGeneros: [],      // [{id, genero}]
+    catalogoPerfiles: [],     // [{id, nombre}]
+    catalogosError: '',
+    _catalogosPromise: null,
+    catalogosTTLms: 300000, // 5 min (ya no se usa localStorage)
+    // feedback (usa patrón de parámetros.js)
+    notify(msg,type='success'){
+        const el=document.createElement('div');
+        el.textContent=msg;
+        el.className=`fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm text-white ${type==='error'?'bg-red-600':'bg-green-600'}`;
+        document.body.appendChild(el);
+        setTimeout(()=>{ el.classList.add('opacity-0','transition'); },2500);
+        setTimeout(()=> el.remove(),3000);
+    },
     // orden fijo por nombre asc
     ordenarPor: 'nombre',
     ordenarDir: 'asc',
@@ -28,21 +44,58 @@
         // forms
         addForm: {
             primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
-            dni: '', cargo: ''
+            dni: '', cargo: '', id_tipo_persona_fk: '', id_genero_fk: '', id_perfil_fk: ''
         },
 
         init(){
             // cargar al abrir y observar filtros con debounce
-            this.loadPersonas();
+            this.loadCatalogos().then(()=> this.loadPersonas());
             this.$watch('searchPersonas', Alpine.debounce(() => { if(this._suppressWatch) return; this.page = 1; this.loadPersonas(); }, 350));
+            this.$watch('ordenarPor', (val, old) => {
+                if(old === val){ this.ordenarDir = this.ordenarDir === 'asc' ? 'desc' : 'asc'; } else { this.ordenarDir='asc'; }
+                this.sortLocal();
+            });
+            this.$watch('ordenarDir', () => { this.sortLocal(); });
             // Orden fijo, no watchers para orden
             // No observar perPage automáticamente para evitar loops; se recarga solo desde UI explícita
         },
 
-        apiHeaders(){
-            const token = localStorage.getItem('authToken');
-            return token ? { 'Authorization': `Bearer ${token}` } : {};
-        },
+        async loadCatalogos(){
+            // Evitar llamadas duplicadas / tormenta
+            if(this.catalogoTiposPersona.length && this.catalogoGeneros.length && this.catalogoPerfiles.length) return;
+            if(this._catalogosPromise) return this._catalogosPromise;
+
+            this._catalogosPromise = (async ()=>{
+                try{
+                    this.catalogosError='';
+
+                    // intento con reintentos leves si 429
+                    const fetchWithRetry = async (url, tries=3)=>{
+                        for(let i=0;i<tries;i++){
+                            const res = await fetch(url,{ credentials: 'same-origin' });
+                            if(res.status!==429) return res;
+                            const wait = 400*(i+1);
+                            await new Promise(r=>setTimeout(r, wait));
+                        }
+                        return fetch(url,{ credentials: 'same-origin' });
+                    };
+                    const [tpRes, gRes, pRes] = await Promise.all([
+                        fetchWithRetry('/api/tipos-persona?all=1'),
+                        fetchWithRetry('/api/generos?all=1'),
+                        fetchWithRetry('/api/perfiles?all=1'),
+                    ]);
+                    const bad = [tpRes,gRes,pRes].find(r=>!r.ok);
+                    if(bad){ throw new Error('Error catálogos ('+bad.status+')'); }
+                    const [tpData, gData, pData] = await Promise.all([tpRes.json(), gRes.json(), pRes.json()]);
+                    this.catalogoTiposPersona = (tpData.data||[]).map(x=>({id:x.id, nombre:x.nombre_tipo_persona || x.nombre || x.nombre_tipo || x.nombre_tipo_persona }));
+                    this.catalogoGeneros = (gData.data||[]).map(x=>({id:x.id, genero:x.genero}));
+                    this.catalogoPerfiles = (pData.data||[]).map(x=>({id:x.id, nombre:x.nombre_perfil || x.nombre}));
+                }catch(e){ this.catalogosError = e.message || 'Error catálogos'; this.notify(this.catalogosError,'error'); }
+                finally { this._catalogosPromise=null; }
+            })();
+            return this._catalogosPromise;
+    },
+
 
     // helpers de comparación (ignoran mayúsculas/minúsculas y acentos)
     normalizeStr(v){
@@ -71,7 +124,7 @@
                 const page = 1;
         params.set('per_page', String(perPage));
         params.set('page', String(page));
-        const res = await fetch(`/api/personas?${params.toString()}`, { headers: this.apiHeaders(), signal: this._abortCtrl.signal });
+    const res = await fetch(`/api/personas?${params.toString()}`, { credentials: 'same-origin', signal: this._abortCtrl.signal });
                 if(!res.ok){
                     const err = await res.json().catch(()=>({message:'Error cargando personas'}));
                     throw new Error(err.message || 'Error cargando personas');
@@ -81,10 +134,10 @@
                 const items = Array.isArray(data?.data) ? data.data : [];
                 this.personas = items.map(p => ({
                     ...p,
-                    // aplanar campos para la vista
-                    tipo_persona: p.tipo_persona?.nombre || '',
-                    genero: p.genero?.genero || '',
-                    perfil: p.perfil?.nombre || '',
+                    // mantener IDs originales y aplanar nombres para mostrar
+                    tipo_persona_nombre: p.tipo_persona?.nombre || '',
+                    genero_nombre: p.genero?.genero || '',
+                    perfil_nombre: p.perfil?.nombre || '',
                     usuario: p.id_usuario_fk || ''
                 }));
         const meta = data?.meta || {};
@@ -101,103 +154,137 @@
         },
 
         // CRUD
+        mapPersona(p){
+            return {
+                ...p,
+                tipo_persona_nombre: p.tipo_persona?.nombre || '',
+                genero_nombre: p.genero?.genero || '',
+                perfil_nombre: p.perfil?.nombre || '',
+                usuario: p.id_usuario_fk || ''
+            };
+        },
+        sortLocal(){
+            const map = { nombre: 'primer_nombre', dni: 'dni', cargo: 'cargo' };
+            const key = map[this.ordenarPor] || 'primer_nombre';
+            const dir = this.ordenarDir === 'desc' ? -1 : 1;
+            this.personas.sort((a,b)=>{
+                const av = (a[key] ?? '').toString().toLowerCase();
+                const bv = (b[key] ?? '').toString().toLowerCase();
+                if(av < bv) return -1 * dir;
+                if(av > bv) return 1 * dir;
+                return 0;
+            });
+        },
+        insertarOrdenado(persona){
+            // orden actual fijo por primer_nombre asc
+            const nombre = (persona.primer_nombre||'').toLowerCase();
+            let i=0; for(; i < this.personas.length; i++){ const cmp=(this.personas[i].primer_nombre||'').toLowerCase(); if(nombre < cmp){ break; } }
+            this.personas.splice(i,0,persona);
+        },
         openAdd(){
-            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', cargo: '' };
+            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', cargo: '', id_tipo_persona_fk: '', id_genero_fk: '', id_perfil_fk: '' };
             this.isModalOpenPersonas = true;
         },
         async createPersona(){
             try{
                 const res = await fetch('/api/personas', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', ...this.apiHeaders() },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(this.addForm)
                 });
-                if(!res.ok){ const err = await res.json().catch(()=>({message:'Error al crear persona'})); throw new Error(err.message); }
-                this.isModalOpenPersonas = false; this.loadPersonas();
-            } catch(e){ alert(e.message || 'Error al crear persona'); }
+                if(!res.ok){
+                    const err = await res.json().catch(()=>({message:'Error al crear persona'}));
+                    // validar errores 422
+                    if(err.errors){
+                        const first = Object.values(err.errors)[0][0];
+                        throw new Error(first);
+                    }
+                    throw new Error(err.message || 'Error al crear persona');
+                }
+                const data = await res.json();
+                const p = data.data || data;
+                const nuevo = this.mapPersona(p);
+                this.personas.push(nuevo);
+                this.sortLocal();
+                this.total = this.personas.length; // ajustar meta local
+                this.isModalOpenPersonas = false; this.notify('Persona creada');
+            } catch(e){ this.notify(e.message || 'Error al crear persona','error'); }
         },
         openEdit(persona){ this.itemToEdit = JSON.parse(JSON.stringify(persona)); this.isEditModalOpenPersonas = true; },
         async updatePersona(){
             try{
                 const id = this.itemToEdit?.id; if(!id) return;
                 // enviar solo campos editables simples
-                const payload = (({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo}) => ({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo}))(this.itemToEdit);
-                const res = await fetch(`/api/personas/${id}`, { method: 'PUT', headers: { 'Content-Type':'application/json', ...this.apiHeaders() }, body: JSON.stringify(payload) });
-                if(!res.ok){ const err = await res.json().catch(()=>({message:'Error al actualizar persona'})); throw new Error(err.message); }
-                this.isEditModalOpenPersonas = false; this.loadPersonas();
-            } catch(e){ alert(e.message || 'Error al actualizar persona'); }
+                const payload = (({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo,id_tipo_persona_fk,id_genero_fk,id_perfil_fk}) => ({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo,id_tipo_persona_fk,id_genero_fk,id_perfil_fk}))(this.itemToEdit);
+                const res = await fetch(`/api/personas/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type':'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok){ const err = await res.json().catch(()=>({message:'Error al actualizar persona'})); if(err.errors){ const first = Object.values(err.errors)[0][0]; throw new Error(first);} throw new Error(err.message); }
+                const data = await res.json();
+                const actualizado = this.mapPersona(data.data || data);
+                const idx = this.personas.findIndex(p=>p.id===id);
+                if(idx>-1){ this.personas.splice(idx,1,actualizado); }
+                this.sortLocal();
+                this.isEditModalOpenPersonas = false; this.notify('Persona actualizada');
+            } catch(e){ this.notify(e.message || 'Error al actualizar persona','error'); }
         },
         openDelete(persona){ this.itemToDelete = persona; this.isDeleteModalOpenPersonas = true; },
         async deletePersona(){
             try{
                 const id = this.itemToDelete?.id; if(!id) return;
-                const res = await fetch(`/api/personas/${id}`, { method:'DELETE', headers: this.apiHeaders() });
+                const res = await fetch(`/api/personas/${id}`, { method:'DELETE', credentials: 'same-origin' });
                 if(!res.ok){ const err = await res.json().catch(()=>({message:'Error al eliminar persona'})); throw new Error(err.message); }
-                this.isDeleteModalOpenPersonas = false; this.loadPersonas();
-            } catch(e){ alert(e.message || 'Error al eliminar persona'); }
+                const idx = this.personas.findIndex(p=>p.id===id);
+                if(idx>-1){ this.personas.splice(idx,1); this.total = this.personas.length; }
+                this.isDeleteModalOpenPersonas = false; this.notify('Persona eliminada');
+            } catch(e){ this.notify(e.message || 'Error al eliminar persona','error'); }
         },
 
         onModalSubmit(){
             if(this.isModalOpenPersonas) return this.createPersona();
             if(this.isEditModalOpenPersonas) return this.updatePersona();
             if(this.isDeleteModalOpenPersonas) return this.deletePersona();
-        }
+    }
     }" x-init="init()" @modal-submit.window="onModalSubmit()">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Personas'">
         <x-slot name="filtros">
-            <div class="w-full">
-                <!-- On mobile: stack vertically; on sm+ keep a single row with filters then buttons at the end -->
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
-                    <div class="flex-1 flex items-center gap-2">
-                        <!-- Búsqueda mínima visible -->
-                        <input type="text" x-model="searchPersonas" placeholder="Buscar..."
-                            class="border rounded px-3 py-2 text-sm w-full sm:w-64 nunito-regular" />
-                        <button type="button" @click="showMoreFilters = !showMoreFilters"
-                            class="px-3 py-2 border rounded text-sm nunito-regular bg-white hover:bg-gray-50">
-                            <i class="fas fa-filter mr-1"></i> Más filtros
-                        </button>
-                    </div>
-                    <div class="flex flex-col sm:flex-row gap-2 items-center mt-2 sm:mt-0 sm:ml-auto">
-                        <button @click="openAdd()"
-                            class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center text-sm">
-                            Agregar persona
-                        </button>
-                        <a :href="`/admin/reportes-header?modulo=Gestion de Personas&fecha={{ now()->format('d-M-Y') }}&q=${encodeURIComponent(searchPersonas||'')}&sort=nombre&direction=asc&tipo=${encodeURIComponent(filtroTipoPersona||'')}&genero=${encodeURIComponent(filtroGenero||'')}`" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 justify-center text-sm">
-                            <i class="fas fa-file-alt"></i> Generar Reporte
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Bloque de filtros extendidos -->
-                <div x-show="showMoreFilters" x-transition class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                    <select x-model="filtroTipoPersona" class="border rounded px-3 py-2 text-sm w-full nunito-regular">
-                        <option class="nunito-regular" value="">Todos los tipo de persona</option>
-                        <option class="nunito-regular" value="Técnico">Tecnico</option>
-                        <option class="nunito-regular" value="Cliente">Cliente</option>
-                        <option class="nunito-regular" value="Administrador">Administrador</option>
-                    </select>
-                    <select x-model="filtroGenero" class="border rounded px-3 py-2 text-sm w-full nunito-regular">
-                        <option class="nunito-regular" value="">Todos los género</option>
-                        <option class="nunito-regular">Masculino</option>
-                        <option class="nunito-regular">Femenino</option>
-                    </select>
-                    <!-- Controles de orden y paginación removidos -->
-                </div>
-            </div>
+            @include('partials.filtros-generales', [
+            'searchModel' => 'searchPersonas',
+            'filtrosSelect' => [
+            // Los keys deben coincidir exactamente con las propiedades declaradas en x-data (filtroTipoPersona, filtroGenero)
+            'filtroTipoPersona' => [
+            'label' => 'Tipo de Persona',
+            'options' => ['Técnico', 'Cliente', 'Administrador']
+            ],
+            'filtroGenero' => [
+            'label' => 'Género',
+            'options' => ['Masculino', 'Femenino']
+            ]
+            ],
+            'ordenarOptions' => [
+            'nombre' => 'Nombre',
+            'dni' => 'DNI',
+            'cargo' => 'Cargo'
+            ]
+            ])
         </x-slot>
 
         <!-- Tabla de personas -->
         <div class="overflow-x-auto w-full">
             <div x-show="loading" class="p-3 text-sm text-gray-600 nunito-regular">Cargando…</div>
             <table class="min-w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-100 nunito-bold">
-                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Primer Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Segundo Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Primer Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Segundo Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold">DNI</th>
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
                         <th class="py-2 px-4 text-left nunito-bold">Cargo</th>
                         <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
                         <th class="py-2 px-4 text-left nunito-bold">Género</th>
@@ -207,7 +294,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="persona in personas.filter(p => equalsNormalized(p.tipo_persona, filtroTipoPersona) && equalsNormalized(p.genero, filtroGenero))" :key="persona.id">
+                    <template x-for="persona in personas.filter(p => equalsNormalized(p.tipo_persona_nombre, filtroTipoPersona) && equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
                         <tr class="border-b nunito-regular">
                             <td class="py-2 px-4 nunito-regular" x-text="persona.id"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.primer_nombre"></td>
@@ -216,9 +303,9 @@
                             <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_apellido"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.dni"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.cargo"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.tipo_persona"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.genero"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.perfil"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.tipo_persona_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.genero_nombre"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="persona.perfil_nombre"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.usuario || '-' "></td>
                             <td class="py-2 px-4 flex gap-2 nunito-regular">
                                 <a href="#" @click="openEdit(persona)"
@@ -236,7 +323,7 @@
             </table>
         </div>
 
-    <!-- Paginación removida -->
+        <!-- Paginación removida -->
     </x-admin.tabla-crud>
 
     <!-- Modal Agregar Persona -->
@@ -267,38 +354,90 @@
                 <label class="block text-sm font-medium mb-1 nunito-bold">Cargo</label>
                 <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.cargo" placeholder="Ej: Analista" />
             </div>
-            <!-- Campos de catálogos pueden agregarse luego con selects (tipo/género/perfil/usuario) -->
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de Persona</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_tipo_persona_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="op in catalogoTiposPersona" :key="op.id">
+                        <option :value="op.id" x-text="op.nombre"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="op in catalogoGeneros" :key="op.id">
+                        <option :value="op.id" x-text="op.genero"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Perfil</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_perfil_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="op in catalogoPerfiles" :key="op.id">
+                        <option :value="op.id" x-text="op.nombre"></option>
+                    </template>
+                </select>
+            </div>
         </div>
     </x-admin.form-modal>
     <!-- Modal Editar Persona -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit"
         maxWidth="max-w-2xl">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Cargo</label>
-        <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.cargo" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.cargo" />
             </div>
-        <!-- Campos de catálogos pueden agregarse luego con selects (tipo/género/perfil/usuario) -->
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de Persona</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_tipo_persona_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="op in catalogoTiposPersona" :key="'edit-tipo-'+op.id">
+                        <option :value="op.id" x-text="op.nombre"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="op in catalogoGeneros" :key="'edit-genero-'+op.id">
+                        <option :value="op.id" x-text="op.genero"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Perfil</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_perfil_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="op in catalogoPerfiles" :key="'edit-perfil-'+op.id">
+                        <option :value="op.id" x-text="op.nombre"></option>
+                    </template>
+                </select>
+            </div>
         </div>
     </x-admin.edit-modal>
     <!-- Modal Eliminar Persona -->

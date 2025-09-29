@@ -45,6 +45,14 @@
                 margin-bottom: 10px;
             }
 
+            .app-logo {
+                width: 150px;
+                height: 100px;
+                object-fit: contain;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
             .company-info p {
                 margin: 0;
                 line-height: 1.4;
@@ -323,9 +331,10 @@
                 <div class="logo-section">
                     <!-- Using the provided image URL for the logo -->
                     <img
-                        src="{{ asset('images/logo.png') }}"
+                        src="{{ $appLogoUrl ?? asset('images/logo.png') }}"
                         alt="IT SUPPORT HARDLAN Logo"
-                        class="logo"
+                        class="app-logo"
+                        style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;"
                     />
                     <div class="company-info">
                         <p>

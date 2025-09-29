@@ -19,7 +19,8 @@ class Factura extends Model
         'total_letras',
         'id_estado_factura_fk',
         'id_cai_fk',
-        'id_cliente_fk'
+        'id_cliente_fk',
+        'id_cotizacion_fk'
     ];
 
     public function estadoFactura()
@@ -35,5 +36,10 @@ class Factura extends Model
     public function cliente()
     {
         return $this->belongsTo(Persona::class, 'id_cliente_fk', 'id_persona_pk');
+    }
+
+    public function cotizacion()
+    {
+        return $this->belongsTo(Cotizacion::class, 'id_cotizacion_fk', 'id_cotizacion_pk');
     }
 }

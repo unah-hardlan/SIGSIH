@@ -11,7 +11,6 @@ class EstadoCai extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre_estado_cai',
-        'descripcion_estado_cai'
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 }

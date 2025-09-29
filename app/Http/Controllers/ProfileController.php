@@ -9,20 +9,37 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Persona;
 use App\Models\Usuario;
+use App\Models\HistorialContrasena;
 use App\Http\Requests\StorePersonaRequest;
 use App\Http\Requests\UpdatePersonaRequest;
+use App\Services\BitacoraService;
 use function response;
 
 class ProfileController extends Controller
 {
+    public function __construct(private BitacoraService $bitacora) {}
+
+    private function getUserId($user)
+    {
+        $id = Auth::id();
+        if (!$id && is_object($user)) {
+            $id = method_exists($user, 'getAuthIdentifier') ? $user->getAuthIdentifier() : null;
+            if (!$id) {
+                $id = method_exists($user, 'getKey') ? $user->getKey() : ($user->id_usuario_pk ?? $user->id ?? null);
+            }
+        }
+        return $id;
+    }
     // Devuelve si falta completar perfil y la persona (si existe)
     public function me()
     {
         /** @var Usuario $user */
         $user = Auth::user();
-        $persona = Persona::where('id_usuario_fk', $user->getKey())->first();
+        $uid = $this->getUserId($user);
+        $persona = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
         return response()->json([
             'primer_ingreso' => (bool) $user->primer_ingreso,
+            'two_factor_enabled' => (bool) ($user->two_factor_enabled ?? false),
             'persona' => $persona,
             'usuario' => [
                 'usuario' => $user->usuario,
@@ -36,7 +53,8 @@ class ProfileController extends Controller
     public function savePersona(Request $request)
     {
         $user = Auth::user();
-        $existing = Persona::where('id_usuario_fk', $user->getKey())->first();
+        $uid = $this->getUserId($user);
+        $existing = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
 
         // Validar usando reglas de StorePersonaRequest pero sin exigir dni único si ya existe y permitir id_usuario_fk auto
         $rules = [
@@ -61,13 +79,23 @@ class ProfileController extends Controller
         $validated = $request->validate($rules);
 
         $persona = Persona::updateOrCreate(
-            ['id_usuario_fk' => $user->getKey()],
-            array_merge($validated, ['id_usuario_fk' => $user->getKey()])
+            ['id_usuario_fk' => $uid],
+            array_merge($validated, ['id_usuario_fk' => $uid])
         );
 
-        // Marcar primer ingreso como completado
-        $user->primer_ingreso = 0;
-        $user->save();
+        // Marcar primer ingreso como completado (actualización directa por ID)
+        if ($uid) {
+            Usuario::where('id_usuario_pk', $uid)->update(['primer_ingreso' => 0]);
+        }
+
+        // Bitácora: creación/actualización de perfil
+        try {
+            $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
+            $accion = $existing ? 'Actualizar' : 'Insertar';
+            $msg = ($existing ? 'Actualización de perfil' : 'Creación de perfil') . ($nombre ? (': ' . $nombre) : '');
+            $this->bitacora->logFor('Perfil', $accion, $msg, $uid);
+        } catch (\Throwable $e) {
+        }
 
         return response()->json(['ok' => true, 'persona' => $persona]);
     }
@@ -78,7 +106,8 @@ class ProfileController extends Controller
             'avatar' => 'required|image|max:2048',
         ]);
         $user = Auth::user();
-        $persona = Persona::firstOrCreate(['id_usuario_fk' => $user->getKey()], []);
+        $uid = $this->getUserId($user);
+        $persona = Persona::firstOrCreate(['id_usuario_fk' => $uid], []);
         $oldPath = $persona->avatar_path;
         $path = $request->file('avatar')->store('avatars', 'public');
         $persona->avatar_path = $path;
@@ -86,6 +115,12 @@ class ProfileController extends Controller
         // Borrar el archivo anterior si existe
         if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+        }
+
+        // Bitácora: subida de avatar
+        try {
+            $this->bitacora->logFor('Perfil', 'Actualizar', 'Actualizó foto de perfil', $uid);
+        } catch (\Throwable $e) {
         }
 
         return response()->json([
@@ -98,7 +133,8 @@ class ProfileController extends Controller
     public function deleteAvatar(Request $request)
     {
         $user = Auth::user();
-        $persona = Persona::where('id_usuario_fk', $user->getKey())->first();
+        $uid = $this->getUserId($user);
+        $persona = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
         if (!$persona) {
             return response()->json(['ok' => true]);
         }
@@ -108,6 +144,11 @@ class ProfileController extends Controller
         }
         $persona->avatar_path = null;
         $persona->save();
+        // Bitácora: eliminación de avatar
+        try {
+            $this->bitacora->logFor('Perfil', 'Actualizar', 'Eliminó foto de perfil', $uid);
+        } catch (\Throwable $e) {
+        }
         return response()->json(['ok' => true]);
     }
 
@@ -127,18 +168,69 @@ class ProfileController extends Controller
         }
 
         $user = Auth::user();
-
-        // Verificar que la contraseña actual sea correcta
-        if (!Hash::check($request->current_password, $user->contrasena)) {
+        $uid = $this->getUserId($user);
+        // Verificar que la contraseña actual sea correcta (leer de $user o de BD)
+        $currentHash = is_object($user) && isset($user->contrasena)
+            ? $user->contrasena
+            : ($uid ? Usuario::where('id_usuario_pk', $uid)->value('contrasena') : null);
+        if (!$currentHash || !Hash::check($request->current_password, $currentHash)) {
             return response()->json([
                 'ok' => false,
                 'message' => 'La contraseña actual es incorrecta'
             ], 400);
         }
 
-        // Cambiar la contraseña
-        $user->contrasena = Hash::make($request->password);
-        $user->save();
+        // Evitar reutilizar una de las últimas N contraseñas
+        $N = 5;
+        $hashes = $uid
+            ? HistorialContrasena::where('id_usuario_fk', $uid)
+            ->orderByDesc('fecha_creacion')
+            ->orderByDesc('id_hist_pk')
+            ->limit($N)
+            ->pluck('contrasena')
+            : collect();
+
+        foreach ($hashes as $hash) {
+            if (Hash::check($request->password, $hash)) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'No puedes reutilizar una de tus últimas ' . $N . ' contraseñas.'
+                ], 422);
+            }
+        }
+
+        // Cambiar la contraseña (actualización directa por ID)
+        $hashed = Hash::make($request->password);
+        if ($uid) {
+            Usuario::where('id_usuario_pk', $uid)->update(['contrasena' => $hashed]);
+
+            // Registrar en historial de contraseñas
+            try {
+                HistorialContrasena::create([
+                    'contrasena' => $hashed,
+                    'id_usuario_fk' => $uid,
+                    'creado_por' => ($user->usuario ?? 'system'),
+                    'fecha_creacion' => now(),
+                ]);
+
+                // Mantener solo las últimas N
+                $idsToKeep = HistorialContrasena::where('id_usuario_fk', $uid)
+                    ->orderByDesc('fecha_creacion')
+                    ->orderByDesc('id_hist_pk')
+                    ->limit($N)
+                    ->pluck('id_hist_pk');
+                HistorialContrasena::where('id_usuario_fk', $uid)
+                    ->whereNotIn('id_hist_pk', $idsToKeep)
+                    ->delete();
+            } catch (\Throwable $e) {
+            }
+        }
+
+        // Bitácora: cambio de contraseña (sin datos sensibles)
+        try {
+            $this->bitacora->logFor('Perfil', 'Actualizar', 'Cambio de contraseña', $uid);
+        } catch (\Throwable $e) {
+        }
 
         return response()->json([
             'ok' => true,

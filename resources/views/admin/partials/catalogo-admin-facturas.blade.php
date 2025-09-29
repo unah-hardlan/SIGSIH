@@ -3,94 +3,101 @@
     isEditEstadoFacturaModalOpen: false,
     estadoFacturaToEdit: {id: '', nombre: '', descripcion: ''},
     isDeleteEstadoFacturaModalOpen: false,
-    estadoFacturaToDelete: {id: ''}
-}" class="overflow-x-auto w-full">
-    <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
-        <div class="sticky top-0 z-10 bg-white pb-4 mb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Estados de Factura</h2>
+    estadoFacturaToDelete: {id: ''},
+    searchEstadoFactura: '',
+    sortBy: 'nombre',
+    sortDirection: 'asc'
+}" class="overflow-x-auto w-full dark:bg-gray-900 min-h-screen">
+    <x-admin.tabla-crud class="nunito-bold">
+        <x-slot name="titulo">
+            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Estados de Factura</h2>
+        </x-slot>
+        <x-slot name="filtros">
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchEstadoFactura',
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre'
+                ]
+            ])
+        </x-slot>
+        <x-slot name="boton">
             <button @click="isEstadoFacturaModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Estado</button>
+        </x-slot>
+                <div class="overflow-x-auto">
+            <table class="min-w-full text-sm w-full">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Nombre Estado</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="estado in [
+                        {id: 1, nombre: 'Pagada', descripcion: 'Factura completamente pagada'},
+                        {id: 2, nombre: 'Pendiente', descripcion: 'Factura pendiente de pago'},
+                        {id: 3, nombre: 'Cancelada', descripcion: 'Factura cancelada'}
+                    ].filter(estado => 
+                        !searchEstadoFactura || 
+                        estado.nombre.toLowerCase().includes(searchEstadoFactura.toLowerCase()) ||
+                        estado.descripcion.toLowerCase().includes(searchEstadoFactura.toLowerCase())
+                    ).sort((a, b) => {
+                        const aValue = a[sortBy]?.toLowerCase() || '';
+                        const bValue = b[sortBy]?.toLowerCase() || '';
+                        if (sortDirection === 'asc') {
+                            return aValue.localeCompare(bValue);
+                        } else {
+                            return bValue.localeCompare(aValue);
+                        }
+                    })" :key="estado.id">
+                        <tr class="border-b dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="estado.id"></td>
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="estado.nombre"></td>
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="estado.descripcion"></td>
+                            <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
+                                <button @click="isEditEstadoFacturaModalOpen = true; estadoFacturaToEdit = estado" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button @click="isDeleteEstadoFacturaModalOpen = true; estadoFacturaToDelete = estado" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
         </div>
-        <table class="min-w-full text-sm w-full">
-            <thead class="bg-gray-100 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Nombre Estado</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4 nunito-regular">1</td>
-                    <td class="py-2 px-4 nunito-regular">Pagada</td>
-                    <td class="py-2 px-4 nunito-regular">Factura completamente pagada</td>
-                    <td class="py-2 px-4 flex gap-2 nunito-regular">
-                        <button @click="isEditEstadoFacturaModalOpen = true; estadoFacturaToEdit = {id: 1, nombre: 'Pagada', descripcion: 'Factura completamente pagada'}" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="isDeleteEstadoFacturaModalOpen = true; estadoFacturaToDelete = {id: 1}" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4 nunito-regular">2</td>
-                    <td class="py-2 px-4 nunito-regular">Pendiente</td>
-                    <td class="py-2 px-4 nunito-regular">Factura pendiente de pago</td>
-                    <td class="py-2 px-4 flex gap-2 nunito-regular">
-                        <button @click="isEditEstadoFacturaModalOpen = true; estadoFacturaToEdit = {id: 2, nombre: 'Pendiente', descripcion: 'Factura pendiente de pago'}" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="isDeleteEstadoFacturaModalOpen = true; estadoFacturaToDelete = {id: 2}" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4 nunito-regular">3</td>
-                    <td class="py-2 px-4 nunito-regular">Cancelada</td>
-                    <td class="py-2 px-4 nunito-regular">Factura cancelada</td>
-                    <td class="py-2 px-4 flex gap-2 nunito-regular">
-                        <button @click="isEditEstadoFacturaModalOpen = true; estadoFacturaToEdit = {id: 3, nombre: 'Cancelada', descripcion: 'Factura cancelada'}" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="isDeleteEstadoFacturaModalOpen = true; estadoFacturaToDelete = {id: 3}" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    </x-admin.tabla-crud>
 
     <!-- Modal Nuevo Estado Factura -->
-    <x-admin.form-modal class="nunito-bold" modalName="isEstadoFacturaModalOpen" title="Nuevo Estado Factura" submitLabel="Guardar Estado">
+    <x-admin.form-modal class="nunito-bold dark:bg-gray-800" modalName="isEstadoFacturaModalOpen" title="Nuevo Estado Factura" submitLabel="Guardar Estado">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Nombre Estado</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" placeholder="Ej: En Proceso">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-bold">Nombre Estado</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular dark:bg-gray-900 dark:text-white" placeholder="Ej: En Proceso">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Descripción</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" rows="3" placeholder="Descripción del estado de la factura"></textarea>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-bold">Descripción</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular dark:bg-gray-900 dark:text-white" rows="3" placeholder="Descripción del estado de la factura"></textarea>
             </div>
         </div>
     </x-admin.form-modal>
 
     <!-- Modal Editar Estado Factura -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoFacturaModalOpen" title="Editar Estado Factura" itemToEdit="estadoFacturaToEdit">
+    <x-admin.edit-modal class="nunito-bold dark:bg-gray-800" modalName="isEditEstadoFacturaModalOpen" title="Editar Estado Factura" itemToEdit="estadoFacturaToEdit">
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">ID Estado</label>
-                <input type="text" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg nunito-regular" x-bind:value="estadoFacturaToEdit?.id" readonly>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-bold">ID Estado</label>
+                <input type="text" class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 rounded-lg nunito-regular dark:text-white" x-bind:value="estadoFacturaToEdit?.id" readonly>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Nombre Estado</label>
-                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" x-bind:value="estadoFacturaToEdit?.nombre">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-bold">Nombre Estado</label>
+                <input type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular dark:bg-gray-900 dark:text-white" x-bind:value="estadoFacturaToEdit?.nombre">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Descripción</label>
-                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular" rows="3" x-text="estadoFacturaToEdit?.descripcion"></textarea>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-bold">Descripción</label>
+                <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent nunito-regular dark:bg-gray-900 dark:text-white" rows="3" x-text="estadoFacturaToEdit?.descripcion"></textarea>
             </div>
         </div>
     </x-admin.edit-modal>

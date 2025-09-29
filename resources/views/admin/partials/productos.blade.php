@@ -10,28 +10,27 @@
     }">
     <x-admin.tabla-crud class="nunito-bold">
         <x-slot name="titulo">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Productos</h2>
+            <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Productos</h2>
         </x-slot>
         <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" x-model="searchProducto" placeholder="Buscar por nombre..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-                <select x-model="searchCategoria" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                    <option value="" class="nunito-regular">Todas las categorías</option>
-                    <option class="nunito-regular">Computadoras</option>
-                    <option class="nunito-regular">Accesorios</option>
-                    <option class="nunito-regular">Redes</option>
-                    <option class="nunito-regular">Impresoras</option>
-                    <option class="nunito-regular">Software</option>
-                    <option class="nunito-regular">Componentes</option>
-                    <option class="nunito-regular">Licencias</option>
-                </select>
-                <select x-model="searchStock" class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                    <option value="" class="nunito-regular">Stock</option>
-                    <option value="disponible" class="nunito-regular">Disponible</option>
-                    <option value="agotado" class="nunito-regular">Agotado</option>
-                </select>
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchProducto',
+                'filtrosSelect' => [
+                    'categoriaProductoFiltro' => [
+                        'label' => 'Categoría',
+                        'options' => ['Computadoras', 'Accesorios', 'Redes', 'Impresoras', 'Software', 'Componentes', 'Licencias']
+                    ],
+                    'stockProductoFiltro' => [
+                        'label' => 'Stock',
+                        'options' => ['Disponible', 'Agotado']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'precio' => 'Precio',
+                    'stock' => 'Stock'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="flex flex-col sm:flex-row gap-2">
@@ -46,21 +45,21 @@
         </x-slot>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Categoría</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Precio</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Stock</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Categoría</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Precio</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Stock</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="producto in [
                         {id: 1, nombre: 'Producto Ejemplo', categoria: 'General', precio: 250.00, stock: 50}
                     ]" :key="producto.id">
-                        <tr class="border-b nunito-regular" x-show="
+                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900" x-show="
                                 (!searchProducto || producto.nombre.toLowerCase().includes(searchProducto.toLowerCase())) &&
                                 (!searchCategoria || producto.categoria === searchCategoria) &&
                                 (!searchStock || 
@@ -68,16 +67,16 @@
                                     (searchStock === 'agotado' && producto.stock == 0)
                                 )
                             ">
-                            <td class="py-2 px-4 nunito-regular" x-text="producto.id"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="producto.nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="producto.categoria"></td>
-                            <td class="py-2 px-4 nunito-regular">L.<span x-text="producto.precio.toFixed(2)"></span></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="producto.stock"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.id"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.nombre"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.categoria"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">L.<span x-text="producto.precio.toFixed(2)"></span></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="producto.stock"></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click="isEditModalOpen = true; productoToEdit = {...producto}"
-                                    class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></a>
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click="isDeleteModalOpen = true; productoToDelete = {...producto}"
-                                    class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></a>
+                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>

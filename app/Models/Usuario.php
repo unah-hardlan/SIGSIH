@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Usuario extends Authenticatable
+class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanResetPassword
 {
-    use HasFactory;
-    public $timestamps = false;
+    use HasFactory, Notifiable, \Illuminate\Auth\Passwords\CanResetPassword;
+    public $timestamps = true;
+    public const CREATED_AT = 'fecha_creacion';
+    public const UPDATED_AT = 'fecha_modificacion';
 
     protected $table = 'tbl_ms_usuario';
     protected $primaryKey = 'id_usuario_pk';
@@ -18,7 +21,7 @@ class Usuario extends Authenticatable
         'estado_usuario',
         'contrasena',
         'correo_electronico',
-    'id_rol_fk',
+        'id_rol_fk',
         'primer_ingreso',
         'fecha_ultima_conexion',
         'fecha_vencimiento',
@@ -26,9 +29,15 @@ class Usuario extends Authenticatable
         'fecha_creacion',
         'modificado_por',
         'fecha_modificacion',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'two_factor_enabled',
     ];
     protected $hidden = [
         'contrasena',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected $casts = [
@@ -37,6 +46,8 @@ class Usuario extends Authenticatable
         'fecha_vencimiento' => 'date',
         'fecha_creacion' => 'datetime',
         'fecha_modificacion' => 'datetime',
+        'two_factor_confirmed_at' => 'datetime',
+        'two_factor_enabled' => 'boolean',
     ];
 
     protected static function boot()
@@ -86,6 +97,24 @@ class Usuario extends Authenticatable
         return $this->belongsTo(Rol::class, 'id_rol_fk', 'id_rol_pk');
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(Rol::class, 'tbl_usuario_rol', 'id_usuario_fk', 'id_rol_fk');
+    }
+
+    // Hash de contraseña automático con verificación de rehash
+    protected function setContrasenaAttribute($value)
+    {
+        if (!isset($value) || $value === '') {
+            $this->attributes['contrasena'] = $value;
+            return;
+        }
+        // Si ya parece ser un hash bcrypt/argon (60+ chars con prefijo), no rehash
+        $str = (string)$value;
+        $isHashed = preg_match('/^\$2y\$|^\$argon2id\$|^\$argon2i\$/', $str) === 1;
+        $this->attributes['contrasena'] = $isHashed ? $str : \Illuminate\Support\Facades\Hash::make($str);
+    }
+
     public function bitacoras()
     {
         return $this->hasMany(Bitacora::class, 'id_usuario_fk');
@@ -106,5 +135,24 @@ class Usuario extends Authenticatable
     public function setPrimerIngresoAttribute($value)
     {
         $this->attributes['primer_ingreso'] = in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true) ? 1 : 0;
+    }
+
+    // Mutator: garantizar que el nombre de usuario se almacene en MAYÚSCULAS sin espacios extremos
+    public function setUsuarioAttribute($value)
+    {
+        $this->attributes['usuario'] = strtoupper(trim((string)$value));
+    }
+
+    /**
+     * Obtiene el correo a utilizar para el flujo de restablecimiento de contraseña.
+     */
+    public function getEmailForPasswordReset()
+    {
+        return (string) $this->correo_electronico;
+    }
+
+    public function routeNotificationForMail($notification)
+    {
+        return $this->correo_electronico;
     }
 }

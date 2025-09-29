@@ -16,6 +16,14 @@ body {
     object-fit: contain;
 }
 
+/* App-wide logo helper: uses CSS variables to allow dynamic sizing */
+.app-logo {
+    height: auto;
+    max-height: var(--app-logo-max, 112px);
+    width: auto;
+    object-fit: contain;
+}
+
 .serif-regular {
     font-family: "PT Serif", serif;
     font-weight: 400;

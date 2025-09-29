@@ -1,242 +1,349 @@
-<div x-data="{ 
-        deleteModal: false, 
-        selectedItem: null, 
-        generateCotizacionModal: false, 
-        editModal: false, 
-        itemToEdit: {
-            id: null,
-            clienteId: '',
-            fechaCotizacion: '',
-            validoHasta: '',
-            imponible: '',
-            totalImpuesto: '',
-            otrosCargos: '',
-            total: '',
-            descripciones: []
-        }, 
-        showFilters: false 
-    }">
-        <x-admin.tabla-crud class="nunito-bold" titulo="Cotizaciones">
-            <x-slot:filtros>
-                <div class="w-full">
-                    <div class="flex mb-4">
-                        <div class="flex-1 relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-2">
-                                <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
-                                    <path d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z"></path>
-                                </svg>
-                            </span>
-                            <input placeholder="Buscar por ID o cliente" 
-                                class="appearance-none rounded-md border border-gray-300 block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:border-blue-500 focus:outline-none nunito-regular" />
-                        </div>
-                        <button @click="showFilters = !showFilters" class="ml-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm flex items-center nunito-regular">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+<div x-data="{
+    // UI state
+    deleteModal:false,
+    selectedItem:null,
+    generateCotizacionModal:false,
+    editModal:false,
+    showFilters:false,
+    loading:false,
+    saving:false,
+    // Data
+    cotizaciones:[],
+    clientes:[],
+    filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
+    // Forms
+    form:{ id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ] },
+    editForm:null,
+    errors:{},
+    // Computed helpers
+    calcTotals(form){
+        let imponible=0; let totalImp=0; let subtotal=0; let total=0; const items=form.items||[];
+        items.forEach(it=>{ const precio=parseFloat(it.precio_unitario)||0; const cant=parseFloat(it.cantidad)||0; const imp=parseFloat(it.impuesto)||0; const linea=precio*cant; imponible+=linea; totalImp+=imp; subtotal+= (linea+imp); });
+        total = subtotal + (parseFloat(form.otros_cargos)||0);
+        form.imponible = +imponible.toFixed(2);
+        form.total_impuesto = +totalImp.toFixed(2);
+        form.subtotal = +subtotal.toFixed(2);
+        form.total = +total.toFixed(2);
+    },
+    addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); },
+    removeItem(index, formRef='form'){ this[formRef].items.splice(index,1); this.calcTotals(this[formRef]); },
+    apiHeaders(){ const t=localStorage.getItem('authToken'); return { 'Content-Type':'application/json','Accept':'application/json', ...(t?{ 'Authorization':'Bearer '+t }:{}) }; },
+    showToast(msg,type='ok'){ let d=document.createElement('div'); d.className='fixed top-4 right-4 z-50 px-3 py-2 rounded text-sm shadow '+(type==='error'?'bg-red-600 text-white':'bg-green-600 text-white'); d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); },
+    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); const r=await fetch('/api/cotizaciones?per_page=100&'+p.toString(), { headers:this.apiHeaders() }); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[]).map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente?.primer_nombre||'')+' '+(c.cliente?.primer_apellido||'') })); }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
+    async fetchClientes(){ try{ const r=await fetch('/api/personas?per_page=200',{ headers:this.apiHeaders() }); if(!r.ok) throw new Error(); const j=await r.json(); this.clientes = (j.data||j||[]).map(p=>({ id:p.id_persona_pk, nombre:[p.primer_nombre,p.primer_apellido].filter(Boolean).join(' ') })); }catch(e){} },
+    resetForm(){ this.form={ id:null, id_cliente_fk:'', fecha_cotizacion:new Date().toISOString().slice(0,10), valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ] }; },
+    openCreate(){ this.resetForm(); this.generateCotizacionModal=true; },
+    openEdit(c){ this.editForm={ ...c, id:c.id, id_cliente_fk:c.cliente_id, fecha_cotizacion:c.fecha, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ] }; this.editModal=true; },
+    async createCotizacion(){ this.saving=true; this.calcTotals(this.form); try{ const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk }; const r=await fetch('/api/cotizaciones',{ method:'POST', headers:this.apiHeaders(), body:JSON.stringify(payload) }); if(r.status===422){ this.errors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); const j=await r.json(); const newId=j.data?.id_cotizacion_pk||j.id_cotizacion_pk; // Crear items
+            for(const it of this.form.items){ if(!it.descripcion) continue; const ir=await fetch('/api/items-cotizacion',{ method:'POST', headers:this.apiHeaders(), body:JSON.stringify({ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:newId }) }); }
+            this.showToast('Cotización creada'); this.generateCotizacionModal=false; this.fetchCotizaciones(); }
+        catch(e){ this.showToast('No se creó','error'); }
+        finally{ this.saving=false; } },
+    async updateCotizacion(){ if(!this.editForm) return; this.saving=true; try{ this.calcTotals(this.editForm); const payload={ valido_hasta:this.editForm.valido_hasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk }; const r=await fetch('/api/cotizaciones/'+this.editForm.id,{ method:'PUT', headers:this.apiHeaders(), body:JSON.stringify(payload) }); if(!r.ok) throw new Error(); this.showToast('Actualizada'); this.editModal=false; this.fetchCotizaciones(); }catch(e){ this.showToast('No se actualizó','error'); } finally{ this.saving=false; } },
+    async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await fetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE', headers:this.apiHeaders() }); if(!r.ok) throw new Error(); this.cotizaciones=this.cotizaciones.filter(c=>c.id!==this.selectedItem); this.showToast('Eliminada'); }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
+    applyFilters(){ this.fetchCotizaciones(); },
+    init(){ this.fetchClientes(); this.fetchCotizaciones(); const debounce=(fn,ms=400)=>{let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms);};}; this.$watch('filters.search',debounce(()=>this.fetchCotizaciones())); }
+}">
+    <x-admin.tabla-crud class="nunito-bold" titulo="Cotizaciones">
+        <x-slot:filtros>
+            <div class="w-full">
+                <div class="flex">
+                    <div class="flex-1 relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2">
+                            <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
+                                <path d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z"></path>
                             </svg>
-                            Filtros
-                        </button>
+                        </span>
+                        <input placeholder="Buscar por ID o cliente" x-model="filters.search"
+                            class="appearance-none rounded-md border border-gray-300 dark:border-gray-700 block pl-8 pr-6 py-2 w-full bg-white dark:bg-gray-900 text-sm placeholder-gray-400 dark:placeholder-gray-400 text-gray-700 dark:text-gray-200 focus:border-blue-500 focus:outline-none nunito-regular" />
+                    </div>
+                    <button @click="showFilters = !showFilters" class="ml-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm flex items-center nunito-regular">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        Filtros
+                    </button>
+                </div>
+            </div>
+        </x-slot:filtros>
+
+        <x-slot:boton>
+            <button
+                @click="openCreate()"
+                class="text-sm w-full sm:w-32 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
+                <i class="fas fa-plus"></i> Generar Cotización
+            </button>
+        </x-slot:boton>
+
+        <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-sm mb-4">
+            <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
+                <div class="w-full md:w-1/2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-white mb-1 nunito-bold">Rango de fechas</label>
+                    <div class="flex space-x-2">
+                        <input type="date" x-model="filters.desde" class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
+                        <input type="date" x-model="filters.hasta" class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
                     </div>
                 </div>
-            </x-slot:filtros>
 
-            <x-slot:boton>
-                <button
-                    @click="generateCotizacionModal = true"
-                    class="text-sm w-full sm:w-32 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"
-                    >
-                  <i class="fas fa-plus"></i> Generar Cotización
-                </button>
-            </x-slot:boton>
+                <!-- Cliente -->
+                <div class="w-full md:w-1/2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Cliente</label>
+                    <select class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" x-model="filters.cliente">
+                        <option value="">Todos los clientes</option>
+                        <template x-for="cl in clientes" :key="cl.id">
+                            <option :value="cl.id" x-text="cl.nombre"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
 
-            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="bg-gray-50 p-4 rounded-md shadow-sm mb-4">
-                <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
-                    <div class="w-full md:w-1/2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Rango de fechas</label>
-                        <div class="flex space-x-2">
-                            <input type="date" placeholder="dd/mm/aaaa" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
-                            <input type="date" placeholder="dd/mm/aaaa" class="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Rango de montos</label>
+                <div class="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-2 space-y-2 md:space-y-0">
+                    <input type="number" placeholder="Monto mínimo" x-model="filters.montoMin" class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
+                    <input type="number" placeholder="Monto máximo" x-model="filters.montoMax" class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button type="button" @click="filters={ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' }; fetchCotizaciones();" class="px-4 py-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 text-sm nunito-regular">Limpiar</button>
+                <button type="button" @click="applyFilters()" class="px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm nunito-regular">Aplicar filtros</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="nunito-bold">
+                    <tr>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID Cliente</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha Cotización</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida Hasta</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Imponible</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Impuesto</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total Imp.</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Otros Cargos</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Anticipo</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total</th>
+                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="nunito-regular">
+                    <template x-for="c in cotizaciones" :key="c.id">
+                        <tr>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.id"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_id"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.fecha"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.valido_hasta"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="'$'+Number(c.imponible).toFixed(2)"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="'$'+Number(c.impuesto).toFixed(2)"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="'$'+Number(c.total_impuesto).toFixed(2)"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="'$'+Number(c.otros_cargos).toFixed(2)"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="'$'+Number(c.anticipo_requerido).toFixed(2)"></td>
+                            <td class="px-4 py-3 border-t border-gray-200" x-text="'$'+Number(c.total).toFixed(2)"></td>
+                            <td class="px-4 py-3 border-t border-gray-200 flex items-center gap-2">
+                                <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
+                                    <i class='fas fa-eye mr-1'></i> Ver
+                                </a>
+                                <a href="#" @click.prevent="openEdit(c)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="!cotizaciones.length && !loading">
+                        <td colspan="7" class="text-center text-gray-500 py-4">Sin datos</td>
+                    </tr>
+                    <tr x-show="loading">
+                        <td colspan="7" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </x-admin.tabla-crud>
+
+    <x-admin.form-modal class="nunito-bold" modalName="generateCotizacionModal" title="Generar Cotización" submitLabel="Guardar"
+        formId="generateCotizacionForm" maxWidth="max-w-4xl"
+        @modal-submit.window="if($event.detail.formId==='generateCotizacionForm'){ createCotizacion(); }">
+        <div class="grid grid-cols-1 gap-4">
+
+            <!-- ID del Cliente -->
+            <div> {{-- Este div ahora ocupa todo el ancho --}}
+                <label for="clienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del Cliente</label>
+                <select id="clienteId" name="clienteId" x-model="form.id_cliente_fk"
+                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <option value="">Seleccione un cliente</option>
+                    <template x-for="cl in clientes" :key="cl.id">
+                        <option :value="cl.id" x-text="cl.nombre"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Fecha de Cotización -->
+            <div> {{-- Este div ahora ocupa todo el ancho --}}
+                <label for="fechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
+                    Cotización</label>
+                <input type="date" id="fechaCotizacion" name="fechaCotizacion" x-model="form.fecha_cotizacion"
+                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+            </div>
+
+            <!-- Válido Hasta -->
+            <div> {{-- Este div ahora ocupa todo el ancho --}}
+                <label for="validoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido Hasta</label>
+                <input type="date" id="validoHasta" name="validoHasta" x-model="form.valido_hasta"
+                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+            </div>
+
+            <!-- Descripción dinámica -->
+            <div class="col-span-1">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                <div class="max-h-48 overflow-y-auto pr-2">
+                    <template x-for="(description, index) in form.items" :key="index">
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
+                            <div class="col-span-1 sm:col-span-3">
+                                <input type="text" x-model="description.descripcion"
+                                    placeholder="Descripción"
+                                    class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            </div>
+                            <div class="col-span-1 sm:col-span-2">
+                                <input type="number" step="0.01" x-model="description.precio_unitario" @input="calcTotals(form)"
+                                    placeholder="Precio Unitario"
+                                    class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            </div>
+                            <div class="col-span-1 sm:col-span-2">
+                                <input type="number" step="0.01" x-model="description.cantidad" @input="calcTotals(form)" placeholder="Cantidad"
+                                    class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            </div>
+                            <div class="col-span-1 sm:col-span-2">
+                                <input type="number" step="0.01" x-model="description.impuesto" @input="calcTotals(form)" placeholder="Impuesto"
+                                    class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            </div>
+                            <div class="col-span-1 sm:col-span-2">
+                                <input type="number" :value="(Number(description.precio_unitario||0)*Number(description.cantidad||0)+Number(description.impuesto||0)).toFixed(2)" disabled placeholder="Total"
+                                    class="w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1">
+                            </div>
+                            <div class="col-span-1 sm:col-span-1 text-right">
+                                <button type="button" @click="removeItem(index,'form')"
+                                    class="text-red-500 hover:text-red-700" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </template>
+                </div>
+                <button type="button" @click="addItem('form')"
+                    class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
+                    <i class="fas fa-plus"></i> Añadir Descripción
+                </button>
+            </div>
 
-                    <!-- Cliente -->
-                    <div class="w-full md:w-1/2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Cliente</label>
-                        <select class="w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm">
-                            <option value="">Todos los clientes</option>
-                            <option value="CLI-1234">Juan Orlando Hernandez</option>
-                            <option value="CLI-5678">Rocky</option>
-                        </select>
-                    </div>
+            <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> {{-- Este es el nuevo contenedor para la fila de 3 elementos --}}
+                <!-- Imponible -->
+                <div>
+                    <label for="imponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                    <input type="number" id="imponible" name="imponible" x-model="form.imponible" readonly
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1 nunito-bold">Rango de montos</label>
-                    <div class="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-2 space-y-2 md:space-y-0">
-                        <input type="number" placeholder="Monto mínimo" class="w-full md:w-1/2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
-                        <input type="number" placeholder="Monto máximo" class="w-full md:w-1/2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm" />
-                    </div>
+
+                <!-- Total impuesto -->
+                <div>
+                    <label for="totalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
+                        Impuesto</label>
+                    <input type="number" id="totalImpuesto" name="totalImpuesto" x-model="form.total_impuesto" readonly
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 </div>
-                
-                <div class="flex justify-end space-x-2">
-                    <button class="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 text-sm nunito-regular">
-                        Limpiar
-                    </button>
-                    <button class="px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm nunito-regular">
-                        Aplicar filtros
-                    </button>
+
+                <!-- Otros cargos -->
+                <div>
+                    <label for="otrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
+                        Cargos</label>
+                    <input type="number" id="otrosCargos" name="otrosCargos" x-model="form.otros_cargos" @input="calcTotals(form)"
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="nunito-bold">
-                        <tr>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">ID</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">ID Cliente</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Fecha Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Válida Hasta</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Subtotal</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Total</th>
-                            <th class="px-4 py-3 text-left bg-white nunito-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="nunito-regular">
-                        <tr>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">1</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">CLI-1234</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">2025-07-28</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">2025-08-28</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">$10,500.00</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">$12,180.00</td>
-                            <td class="px-4 py-3 border-t border-gray-200">
-                                <a href="/admin/detalle-cotizacion" target="_blank"
-                                  class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular"
-                                >
-                                  <i class="fas fa-eye mr-1"></i> Ver detalles
-                                </a>
-                                <a href="#" class="text-blue-500 hover:text-blue-700 mr-2" @click="editModal = true; itemToEdit = { 
-                                    id: 1, 
-                                    clienteId: 'CLI-1234', 
-                                    fechaCotizacion: '2025-07-28', 
-                                    validoHasta: '2025-08-28',
-                                    imponible: 10500.00,
-                                    totalImpuesto: 1580.00,
-                                    otrosCargos: 100.00,
-                                    total: 12180.00,
-                                    descripciones: [
-                                        { descripcion: 'Producto 1', precio: 5000.00, cantidad: 1, impuesto: 750.00, total: 5750.00 },
-                                        { descripcion: 'Producto 2', precio: 5500.00, cantidad: 1, impuesto: 830.00, total: 6330.00 }
-                                    ]
-                                }">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="#" class="text-red-500 hover:text-red-700" @click="deleteModal = true; selectedItem = 1">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                                <x-admin.confirmation-modal class="nunito-bold" modalName="deleteModal" itemToDelete="selectedItem" message="¿Está seguro que desea eliminar la cotización"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">2</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">CLI-5678</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">2025-07-26</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">2025-08-26</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">$8,750.00</td>
-                            <td class="px-4 py-3 border-t border-gray-200 nunito-regular">$10,150.00</td>
-                            <td class="px-4 py-3 border-t border-gray-200">
-                                <a href="/admin/detalle-cotizacion" target="_blank"
-                                  class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular"
-                                >
-                                  <i class="fas fa-eye mr-1"></i> Ver detalles
-                                </a>
-                                <a href="#" class="text-blue-500 hover:text-blue-700 mr-2" @click="editModal = true; itemToEdit = {
-                                    id: 2,
-                                    clienteId: 'CLI-5678', 
-                                    fechaCotizacion: '2025-07-26', 
-                                    validoHasta: '2025-08-26',
-                                    imponible: 8750.00,
-                                    totalImpuesto: 1312.50,
-                                    otrosCargos: 87.50,
-                                    total: 10150.00,
-                                    descripciones: [
-                                        { descripcion: 'Servicio A', precio: 4500.00, cantidad: 1, impuesto: 675.00, total: 5175.00 },
-                                        { descripcion: 'Servicio B', precio: 4250.00, cantidad: 1, impuesto: 637.50, total: 4887.50 }
-                                    ]
-                                }">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="#" class="text-red-500 hover:text-red-700" @click="deleteModal = true; selectedItem = 2">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                                <x-admin.confirmation-modal class="nunito-bold" modalName="deleteModal" itemToDelete="selectedItem" message="¿Está seguro que desea eliminar la cotización"/>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Total -->
+            <div> {{-- Este div ahora ocupa todo el ancho --}}
+                <label for="total" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                <input type="number" id="total" name="total" x-model="form.total" readonly
+                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
             </div>
-        </x-admin.tabla-crud>
+        </div>
+    </x-admin.form-modal>
 
-            <x-admin.form-modal class="nunito-bold" modalName="generateCotizacionModal" title="Generar Cotización" submitLabel="Guardar"
-                formId="generateCotizacionForm" maxWidth="max-w-4xl">
-                <div class="grid grid-cols-1 gap-4"> {{-- Cambiado a grid-cols-1 para que los elementos principales tomen todo el ancho --}}
+    <!-- Modal de Edición de Cotización -->
+    <x-admin.edit-modal class="nunito-bold" modalName="editModal" title="Editar Cotización" submitLabel="Actualizar" itemToEdit="editForm"
+        maxWidth="max-w-4xl" formId="editCotizacionForm" @modal-submit.window="if($event.detail.formId==='editCotizacionForm'){ updateCotizacion(); }">
+        <div x-show="editForm" class="space-y-4">
+            <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
 
                 <!-- ID del Cliente -->
-                <div> {{-- Este div ahora ocupa todo el ancho --}}
-                    <label for="clienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del Cliente</label>
-                    <select id="clienteId" name="clienteId"
+                <div>
+                    <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del
+                        Cliente</label>
+                    <select id="editClienteId" name="clienteId" x-model="editForm.id_cliente_fk"
                         class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                         <option value="">Seleccione un cliente</option>
-                        <option value="">Juan Orlando Hernandez</option>
-                        <option value="">Rocky</option>
-                        <!-- Opciones dinámicas -->
+                        <template x-for="cl in clientes" :key="cl.id">
+                            <option :value="cl.id" x-text="cl.nombre"></option>
+                        </template>
                     </select>
                 </div>
 
                 <!-- Fecha de Cotización -->
-                <div> {{-- Este div ahora ocupa todo el ancho --}}
-                    <label for="fechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
+                <div>
+                    <label for="editFechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
                         Cotización</label>
-                    <input type="date" id="fechaCotizacion" name="fechaCotizacion"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <input type="date" id="editFechaCotizacion" name="fechaCotizacion" disabled
+                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                        x-model="editForm.fecha">
                 </div>
 
                 <!-- Válido Hasta -->
-                <div> {{-- Este div ahora ocupa todo el ancho --}}
-                    <label for="validoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido Hasta</label>
-                    <input type="date" id="validoHasta" name="validoHasta"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                <div>
+                    <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
+                        Hasta</label>
+                    <input type="date" id="editValidoHasta" name="validoHasta"
+                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                        x-model="editForm.valido_hasta">
                 </div>
 
                 <!-- Descripción dinámica -->
-                <div class="col-span-1" x-data="{ descriptions: [{}] }"> {{-- col-span-1 aquí es redundante pero no hace daño --}}
+                <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <div class="max-h-48 overflow-y-auto pr-2">
-                        <template x-for="(description, index) in descriptions" :key="index">
+                        <template x-for="(descripcion, index) in (editForm.items || [])" :key="index">
                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
                                 <div class="col-span-1 sm:col-span-3">
-                                    <input type="text" :name="`descripcion[${index}][descripcion]`"
+                                    <input type="text" x-model="descripcion.descripcion"
                                         placeholder="Descripción"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                        x-model="descripcion.descripcion">
                                 </div>
                                 <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][precio]`"
+                                    <input type="number" step="0.01" x-model="descripcion.precio_unitario" @input="calcTotals(editForm)"
                                         placeholder="Precio Unitario"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                        x-model="descripcion.precio">
                                 </div>
                                 <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][cantidad]`" placeholder="Cantidad"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                    <input type="number" step="0.01" x-model="descripcion.cantidad" @input="calcTotals(editForm)"
+                                        placeholder="Cantidad"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                        x-model="descripcion.cantidad">
                                 </div>
                                 <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][impuesto]`" placeholder="Impuesto"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                    <input type="number" step="0.01" x-model="descripcion.impuesto" @input="calcTotals(editForm)"
+                                        placeholder="Impuesto"
+                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                        x-model="descripcion.impuesto">
                                 </div>
                                 <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" :name="`descripcion[${index}][total]`" placeholder="Total"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                                    <input type="number" :value="(Number(descripcion.precio_unitario||0)*Number(descripcion.cantidad||0)+Number(descripcion.impuesto||0)).toFixed(2)" placeholder="Total" disabled
+                                        class="w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1">
                                 </div>
                                 <div class="col-span-1 sm:col-span-1 text-right">
-                                    <button type="button" @click="descriptions.splice(index, 1)"
+                                    <button type="button" @click="editForm.items.splice(index, 1); calcTotals(editForm);"
                                         class="text-red-500 hover:text-red-700" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -244,175 +351,52 @@
                             </div>
                         </template>
                     </div>
-                    <button type="button" @click="descriptions.push({})"
+                    <button type="button" @click="editForm.items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); calcTotals(editForm);"
                         class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
                         <i class="fas fa-plus"></i> Añadir Descripción
                     </button>
                 </div>
 
                 <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> {{-- Este es el nuevo contenedor para la fila de 3 elementos --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Imponible -->
                     <div>
-                        <label for="imponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                        <input type="number" id="imponible" name="imponible"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                        <label for="editImponible"
+                            class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                        <input type="number" id="editImponible" name="imponible" readonly
+                            class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                            x-model="editForm.imponible">
                     </div>
 
                     <!-- Total impuesto -->
                     <div>
-                        <label for="totalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
+                        <label for="editTotalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
                             Impuesto</label>
-                        <input type="number" id="totalImpuesto" name="totalImpuesto"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                        <input type="number" id="editTotalImpuesto" name="totalImpuesto" readonly
+                            class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                            x-model="editForm.total_impuesto">
                     </div>
 
                     <!-- Otros cargos -->
                     <div>
-                        <label for="otrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
+                        <label for="editOtrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
                             Cargos</label>
-                        <input type="number" id="otrosCargos" name="otrosCargos"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                        <input type="number" id="editOtrosCargos" name="otrosCargos"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                            x-model="editForm.otros_cargos" @input="calcTotals(editForm)">
                     </div>
                 </div>
 
                 <!-- Total -->
                 <div> {{-- Este div ahora ocupa todo el ancho --}}
-                    <label for="total" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                    <input type="number" id="total" name="total"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                    <input type="number" id="editTotal" name="total" readonly
+                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                        x-model="editForm.total">
                 </div>
             </div>
-        </x-admin.form-modal>
-
-        <!-- Modal de Edición de Cotización -->
-        <x-admin.edit-modal class="nunito-bold" modalName="editModal" title="Editar Cotización" submitLabel="Actualizar"    itemToEdit="itemToEdit"
-            maxWidth="max-w-4xl" formId="editCotizacionForm">
-            <div x-show="itemToEdit" class="space-y-4"> {{-- Este div envuelve todo el contenido del slot --}}
-                <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
-
-                    <!-- ID del Cliente -->
-                    <div>
-                        <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del
-                            Cliente</label>
-                        <select id="editClienteId" name="clienteId"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                            x-model="itemToEdit.clienteId">
-                            <option value="">Seleccione un cliente</option>
-                            <option value="CLI-1234">Juan Orlando Hernandez</option>
-                            <option value="CLI-5678">Rocky</option>
-                            <!-- Opciones dinámicas -->
-                        </select>
-                    </div>
-
-                    <!-- Fecha de Cotización -->
-                    <div>
-                        <label for="editFechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
-                            Cotización</label>
-                        <input type="date" id="editFechaCotizacion" name="fechaCotizacion"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                            x-model="itemToEdit.fechaCotizacion">
-                    </div>
-
-                    <!-- Válido Hasta -->
-                    <div>
-                        <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
-                            Hasta</label>
-                        <input type="date" id="editValidoHasta" name="validoHasta"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                            x-model="itemToEdit.validoHasta">
-                    </div>
-
-                    <!-- Descripción dinámica -->
-                    <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
-                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                        <div class="max-h-48 overflow-y-auto pr-2">
-                            <template x-for="(descripcion, index) in itemToEdit.descripciones" :key="index">
-                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
-                                    <div class="col-span-1 sm:col-span-3">
-                                        <input type="text" :name="`descripcion[${index}][descripcion]`"
-                                            placeholder="Descripción"
-                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                            x-model="descripcion.descripcion">
-                                    </div>
-                                    <div class="col-span-1 sm:col-span-2">
-                                        <input type="number" :name="`descripcion[${index}][precio]`"
-                                            placeholder="Precio Unitario"
-                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                            x-model="descripcion.precio">
-                                    </div>
-                                    <div class="col-span-1 sm:col-span-2">
-                                        <input type="number" :name="`descripcion[${index}][cantidad]`"
-                                            placeholder="Cantidad"
-                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                            x-model="descripcion.cantidad">
-                                    </div>
-                                    <div class="col-span-1 sm:col-span-2">
-                                        <input type="number" :name="`descripcion[${index}][impuesto]`"
-                                            placeholder="Impuesto"
-                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                            x-model="descripcion.impuesto">
-                                    </div>
-                                    <div class="col-span-1 sm:col-span-2">
-                                        <input type="number" :name="`descripcion[${index}][total]`" placeholder="Total"
-                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                            x-model="descripcion.total">
-                                    </div>
-                                    <div class="col-span-1 sm:col-span-1 text-right">
-                                        <button type="button" @click="itemToEdit.descripciones.splice(index, 1)"
-                                            class="text-red-500 hover:text-red-700" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                        <button type="button" @click="itemToEdit.descripciones.push({})"
-                            class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
-                            <i class="fas fa-plus"></i> Añadir Descripción
-                        </button>
-                    </div>
-
-                    <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Imponible -->
-                        <div>
-                            <label for="editImponible"
-                                class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                            <input type="number" id="editImponible" name="imponible"
-                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                x-model="itemToEdit.imponible">
-                        </div>
-
-                        <!-- Total impuesto -->
-                        <div>
-                            <label for="editTotalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
-                                Impuesto</label>
-                            <input type="number" id="editTotalImpuesto" name="totalImpuesto"
-                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                x-model="itemToEdit.totalImpuesto">
-                        </div>
-
-                        <!-- Otros cargos -->
-                        <div>
-                            <label for="editOtrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
-                                Cargos</label>
-                            <input type="number" id="editOtrosCargos" name="otrosCargos"
-                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                x-model="itemToEdit.otrosCargos">
-                        </div>
-                    </div>
-
-                    <!-- Total -->
-                    <div> {{-- Este div ahora ocupa todo el ancho --}}
-                        <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                        <input type="number" id="editTotal" name="total"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                            x-model="itemToEdit.total">
-                    </div>
-                </div>
-            </div>
-        </x-admin.edit-modal>
+        </div>
+    </x-admin.edit-modal>
 </div>
 
 <style>

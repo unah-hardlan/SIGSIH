@@ -16,8 +16,10 @@ class ParametroResource extends JsonResource
             'usuario_id' => $this->id_usuario_fk,
             'creado_por' => $this->creado_por,
             'fecha_creacion' => $this->fecha_creacion ? (string) $this->fecha_creacion : null,
+            'fecha_creacion_formatted' => \App\Helpers\DateHelper::format($this->fecha_creacion),
             'modificado_por' => $this->modificado_por,
             'fecha_modificacion' => $this->fecha_modificacion ? (string) $this->fecha_modificacion : null,
+            'fecha_modificacion_formatted' => \App\Helpers\DateHelper::format($this->fecha_modificacion),
         ];
     }
 }

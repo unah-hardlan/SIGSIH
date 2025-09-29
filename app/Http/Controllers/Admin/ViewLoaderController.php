@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Auth;
+use App\Services\PermissionService;
 
 class ViewLoaderController extends Controller
 {
@@ -78,6 +80,35 @@ class ViewLoaderController extends Controller
             return response('View not allowed', 403);
         }
 
+        // Enforce permisos for specific admin views (consultar)
+        $user = Auth::user();
+        if ($user) {
+            // Admin bypass
+            try {
+                if (mb_strtolower($user->rol?->rol ?? '') !== 'administrador') {
+                    $viewObjetoMap = [
+                        'parametros' => ['Parámetros','Parametros'],
+                        'configuracion-acceso' => ['Permisos','Configuración de accesos','Configuracion de accesos'],
+                        'gestion-usuarios' => ['Usuarios'],
+                        'bitacora' => ['Bitácora','Bitacora'],
+                        // Nuevos módulos
+                        'gestion-personas' => ['Gestión de personas','Gestion de personas'],
+                        'mantenimiento-general' => ['Mantenimiento del sistema'],
+                        'gestion-db' => ['Gestión de base de datos','Gestion de base de datos'],
+                    ];
+                    if (isset($viewObjetoMap[$view])) {
+                        $perm = app(PermissionService::class);
+                        if (!$perm->can($user, $viewObjetoMap[$view], 'consultar')) {
+                            return response('Permiso denegado para ver esta sección', 403);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Si falla relación u otro error, negar por seguridad
+                return response('Permiso denegado', 403);
+            }
+        }
+
         // Primero verificar si existe una vista parcial específica
         $partialView = "admin.partials.{$view}";
         if (View::exists($partialView)) {
@@ -85,7 +116,7 @@ class ViewLoaderController extends Controller
             $headerHtml = view('partials.admin-header')->render();
             $contentHtml = view($partialView)->render();
 
-            return $headerHtml . '<div class="bg-white p-6 rounded-lg shadow">' . $contentHtml . '</div>';
+            return $headerHtml . '<div class="p-6 rounded-lg shadow">' . $contentHtml . '</div>';
         }
 
         // Si no existe vista parcial, intentar cargar la vista completa y extraer contenido

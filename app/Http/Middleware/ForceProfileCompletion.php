@@ -14,8 +14,19 @@ class ForceProfileCompletion
     {
         $user = Auth::user();
         if ($user) {
+            // Obtener ID de usuario de forma segura sin invocar métodos inexistentes
+            $uid = \Illuminate\Support\Facades\Auth::id();
+            if (!$uid && is_object($user)) {
+                // Preferir propiedades conocidas del modelo
+                $uid = $user->id_usuario_pk ?? $user->id ?? null;
+                // Como respaldo, si implementa Authenticatable, usar getAuthIdentifier()
+                if (!$uid && $user instanceof \Illuminate\Contracts\Auth\Authenticatable) {
+                    $uid = $user->getAuthIdentifier();
+                }
+            }
+
             // Necesita completar perfil si aún no existe Persona asociada
-            $needsProfile = !Persona::query()->where('id_usuario_fk', $user->getKey())->exists();
+            $needsProfile = $uid ? !Persona::query()->where('id_usuario_fk', $uid)->exists() : false;
 
             if ($needsProfile) {
                 // 1) Bloquear cualquier ruta admin/* que no sea el perfil con redirección dura

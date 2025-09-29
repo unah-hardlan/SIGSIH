@@ -14,7 +14,6 @@ class EstadoTicket extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre_estado',
-        'descripcion_estado_ticket'
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 }

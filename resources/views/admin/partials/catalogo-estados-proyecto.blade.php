@@ -6,11 +6,21 @@
     estadoToDelete: null,
     searchEstadoProyecto: '' 
 }">
-    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Estados de Proyecto'">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Estados de Proyecto'">
         <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" x-model="searchEstadoProyecto" placeholder="Buscar estado..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchEstadoProyecto',
+                'filtrosSelect' => [
+                    'estadoProyecto' => [
+                        'label' => 'Estado',
+                        'options' => ['Planificación', 'En Proceso', 'Completado', 'Cancelado']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'id' => 'ID'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="w-full flex justify-center sm:justify-end">
@@ -22,7 +32,7 @@
         <div class="overflow-x-auto w-full">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100 nunito-bold">
+                    <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <th class="py-2 px-4 text-left">ID</th>
                         <th class="py-2 px-4 text-left">Nombre</th> 
                         <th class="py-2 px-4 text-left">Descripción</th>
@@ -30,38 +40,38 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">1</td>
-                        <td class="py-2 px-4">Planificación</td>
-                        <td class="py-2 px-4">Proyecto en fase de planificación</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">1</td>
+                        <td class="py-2 px-4 dark:text-white">Planificación</td>
+                        <td class="py-2 px-4 dark:text-white">Proyecto en fase de planificación</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 1, nombre: 'Planificación', descripcion: 'Proyecto en fase de planificación'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 1, nombre: 'Planificación'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">2</td>
-                        <td class="py-2 px-4">En Proceso</td>
-                        <td class="py-2 px-4">El proyecto se encuentra actualmente en desarrollo</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">2</td>
+                        <td class="py-2 px-4 dark:text-white">En Proceso</td>
+                        <td class="py-2 px-4 dark:text-white">El proyecto se encuentra actualmente en desarrollo</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 2, nombre: 'En Proceso', descripcion: 'El proyecto se encuentra actualmente en desarrollo'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 2, nombre: 'En Proceso'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">3</td>
-                        <td class="py-2 px-4">Completado</td>
-                        <td class="py-2 px-4">Proyecto finalizado exitosamente</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">3</td>
+                        <td class="py-2 px-4 dark:text-white">Completado</td>
+                        <td class="py-2 px-4 dark:text-white">Proyecto finalizado exitosamente</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 3, nombre: 'Completado', descripcion: 'Proyecto finalizado exitosamente'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 3, nombre: 'Completado'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">4</td>
-                        <td class="py-2 px-4">Cancelado</td>
-                        <td class="py-2 px-4">Proyecto cancelado por el cliente</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">4</td>
+                        <td class="py-2 px-4 dark:text-white">Cancelado</td>
+                        <td class="py-2 px-4 dark:text-white">Proyecto cancelado por el cliente</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 4, nombre: 'Cancelado', descripcion: 'Proyecto cancelado por el cliente'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 4, nombre: 'Cancelado'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>

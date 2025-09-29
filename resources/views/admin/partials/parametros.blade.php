@@ -1,4 +1,4 @@
-<div x-data="parametrosCrud" x-init="init()" class="p-4 space-y-4">
+<div x-data="parametrosCrud" x-init="init()" class="p-4 space-y-4 bg-white dark:bg-gray-900 rounded-lg shadow">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Parámetros'">
         <x-slot name="filtros">
             @include('partials.filtros-generales', [
@@ -24,26 +24,26 @@
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100">
-                        <th class="py-2 px-4 text-left nunito-bold">Parámetro</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Valor</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Creado por</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Creación</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    <tr class="bg-gray-100 dark:bg-gray-700">
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-white">Parámetro</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-white">Valor</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-white">Creado por</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-white">Creación</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-white">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-if="loading"><tr><td colspan="5" class="py-4 text-center nunito-regular">Cargando...</td></tr></template>
                     <template x-if="!loading && parametros.length===0"><tr><td colspan="5" class="py-4 text-center text-gray-500 nunito-regular">Sin resultados</td></tr></template>
                     <template x-for="p in parametros" :key="p.id">
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="py-2 px-4 nunito-regular" x-text="p.parametro"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="p.valor"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="p.creado_por||'-'"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="p.fecha_creacion||'-'"></td>
+                        <tr class="border-b dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="p.parametro"></td>
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="p.valor"></td>
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="p.creado_por||'-'"></td>
+                            <td class="py-2 px-4 nunito-regular dark:text-white" x-text="p.fecha_creacion_formatted || p.fecha_creacion || '-' "></td>
                             <td class="py-2 px-4 flex gap-2">
-                                <button @click="openEdit(p)" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></button>
-                                <button @click="openDelete(p)" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                <button @click="openEdit(p)" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
+                                <button @click="openDelete(p)" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     </template>
@@ -62,16 +62,16 @@
 
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Agregar Parámetro" submitLabel="Guardar" formId="formCrearParametro">
         <div class="grid grid-cols-1 gap-4">
-            <div><label class="block text-sm nunito-bold">Parámetro</label><input type="text" x-model="createForm.parametro" class="mt-1 w-full border rounded px-2 py-1 nunito-regular" required></div>
-            <div><label class="block text-sm nunito-bold">Valor</label><input type="text" x-model="createForm.valor" class="mt-1 w-full border rounded px-2 py-1 nunito-regular" required></div>
+            <div><label class="block text-sm nunito-bold dark:text-white">Parámetro</label><input type="text" x-model="createForm.parametro" class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600" required></div>
+            <div><label class="block text-sm nunito-bold dark:text-white">Valor</label><input type="text" x-model="createForm.valor" class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600" required></div>
             <div class="text-red-600 text-sm nunito-regular" x-show="formError" x-text="formError"></div>
         </div>
     </x-admin.form-modal>
 
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Parámetro" itemToEdit="parametroToEdit" submitLabel="Actualizar" formId="formEditarParametro">
         <div class="grid grid-cols-1 gap-4">
-            <div><label class="block text-sm nunito-bold">Parámetro</label><input type="text" x-model="editForm.parametro" class="mt-1 w-full border rounded px-2 py-1 bg-gray-100 nunito-regular" disabled></div>
-            <div><label class="block text-sm nunito-bold">Valor</label><input type="text" x-model="editForm.valor" class="mt-1 w-full border rounded px-2 py-1 nunito-regular" required></div>
+            <div><label class="block text-sm nunito-bold dark:text-white">Parámetro</label><input type="text" x-model="editForm.parametro" class="mt-1 w-full border rounded px-2 py-1 bg-gray-100 dark:bg-gray-700 dark:text-white dark:border-gray-600 nunito-regular" disabled></div>
+            <div><label class="block text-sm nunito-bold dark:text-white">Valor</label><input type="text" x-model="editForm.valor" class="mt-1 w-full border rounded px-2 py-1 nunito-regular dark:bg-gray-700 dark:text-white dark:border-gray-600" required></div>
             <div class="text-red-600 text-sm nunito-regular" x-show="formError" x-text="formError"></div>
         </div>
     </x-admin.edit-modal>

@@ -1,14 +1,10 @@
 // Alpine store for CRUD de Objetos del sistema
-(function(){
   const API = {
     objetos: '/api/objetos',
   tipos: '/api/tipos-objeto',
   };
 
-  const authHeaders = () => {
-    const t = localStorage.getItem('authToken');
-    return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-  };
+  const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
   async function apiGet(url){
     const r = await fetch(url, { headers: authHeaders(), credentials: 'same-origin' });
@@ -170,8 +166,9 @@
           this.isCreateOpen = false;
           await this.fetchList(1);
           this.syncAccessStore();
+          try{ window.showToast && window.showToast('Objeto creado correctamente', 'success'); }catch(_){}
           return res;
-        } catch(e){ this.error = parseErr(e); }
+        } catch(e){ this.error = parseErr(e); try{ window.showToast && window.showToast('Error al crear el objeto', 'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 
@@ -188,8 +185,9 @@
           this.isEditOpen = false; this.current = null;
           await this.fetchList(this.meta.page);
           this.syncAccessStore();
+          try{ window.showToast && window.showToast('Objeto actualizado', 'success'); }catch(_){}
           return res;
-        } catch(e){ this.error = parseErr(e); }
+        } catch(e){ this.error = parseErr(e); try{ window.showToast && window.showToast('Error al actualizar el objeto', 'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 
@@ -204,7 +202,8 @@
           const page = (this.items.length === 1 && this.meta.page > 1) ? this.meta.page - 1 : this.meta.page;
           await this.fetchList(page);
           this.syncAccessStore();
-        } catch(e){ this.error = parseErr(e); }
+          try{ window.showToast && window.showToast('Objeto eliminado', 'success'); }catch(_){}
+        } catch(e){ this.error = parseErr(e); try{ window.showToast && window.showToast('Error al eliminar el objeto', 'error'); }catch(_){} }
         finally { this.loading = false; }
       },
 
@@ -238,4 +237,4 @@
   document.addEventListener('alpine:init', ()=>{
     Alpine.store('objetos', createObjetosStore());
   });
-})();
+

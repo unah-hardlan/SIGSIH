@@ -41,6 +41,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,9 +64,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::post('register', [AuthController::class, 'register']);
+// 2FA verify (public, tied to challenge cookie)
+Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
-// Protegidas con JWT (Authorization: Bearer <token>)
-Route::middleware('jwt.auth')->group(function () {
+// Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
+Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
+    // 2FA setup (authenticated)
+    Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
+    Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
+    Route::post('2fa/disable', [TwoFactorController::class, 'disable']);
     // Perfil del usuario autenticado
     Route::get('me', [ProfileController::class, 'me']);
     Route::post('perfil/persona', [ProfileController::class, 'savePersona']);
@@ -73,6 +80,9 @@ Route::middleware('jwt.auth')->group(function () {
     Route::delete('perfil/avatar', [ProfileController::class, 'deleteAvatar']);
     Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
+    // Multi-rol: sincronización de roles
+    Route::put('usuarios/{id}/roles', [UsuarioController::class, 'syncRoles']);
+    Route::get('usuarios/{id}/roles', [UsuarioController::class, 'getRoles']);
     Route::apiResource('roles', RolController::class);
     // Upsert permisos por combinación rol-objeto (debe ir antes del apiResource para evitar colisiones)
     Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
@@ -87,7 +97,6 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
     Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
     Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
-    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);
     Route::apiResource('agencias', AgenciasController::class);
     Route::apiResource('categorias', CategoriaController::class);
@@ -106,6 +115,7 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('servicios-realizados', \App\Http\Controllers\ServicioRealizadoController::class);
     Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
     Route::apiResource('tipos-visita', \App\Http\Controllers\TipoVisitaController::class);
+    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
 
     Route::apiResource('contactos', ContactoController::class);

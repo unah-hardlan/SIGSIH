@@ -12,259 +12,212 @@
 
 
             <!-- Título del reporte -->
-            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Configuración Completa de Accesos al Sistema
+            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">
+                @if(($seccion ?? '')==='roles') Lista de Roles @elseif(($seccion ?? '')==='objetos') Objetos del Sistema @elseif(($seccion ?? '')==='asignar') Asignación de Roles a Usuarios @elseif(($seccion ?? '')==='gestion') Gestión de Permisos @else Configuración de Accesos @endif
             </h2>
 
-            <!-- Resumen General -->
-            <div class="grid grid-cols-3 gap-4 mb-6">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                    <div class="text-2xl nunito-bold text-blue-700 mb-2">4</div>
-                    <div class="text-sm nunito-bold text-blue-600">ROLES TOTALES</div>
-                </div>
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <div class="text-2xl nunito-bold text-green-700 mb-2">4</div>
-                    <div class="text-sm nunito-bold text-green-600">OBJETOS DEL SISTEMA</div>
-                </div>
-                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
-                    <div class="text-2xl nunito-bold text-orange-700 mb-2">4</div>
-                    <div class="text-sm nunito-bold text-orange-600">USUARIOS CON ROLES</div>
+            <!-- Resumen contextual (solo del módulo/sección seleccionada) -->
+        @php
+                $section = $seccion ?? '';
+                $theme = [
+                    'roles' => ['bg'=>'bg-blue-50','border'=>'border-blue-200','num'=>'text-blue-700','label'=>'text-blue-600','labelText'=>'ROLES','value'=> $stats['rolesFiltered'] ?? 0],
+                    'objetos' => ['bg'=>'bg-green-50','border'=>'border-green-200','num'=>'text-green-700','label'=>'text-green-600','labelText'=>'OBJETOS DEL SISTEMA','value'=> $stats['objetosFiltered'] ?? 0],
+                    'asignar' => ['bg'=>'bg-orange-50','border'=>'border-orange-200','num'=>'text-orange-700','label'=>'text-orange-600','labelText'=>'USUARIOS CON ROLES','value'=> $stats['usuariosConRolFiltered'] ?? 0],
+                    'gestion' => ['bg'=>'bg-indigo-50','border'=>'border-indigo-200','num'=>'text-indigo-700','label'=>'text-indigo-600','labelText'=>'OBJETOS CON PERMISOS ASIGNADOS','value'=> isset($matriz) ? max(($matriz->count() - ($stats['permResumen']['ninguno'] ?? 0)), 0) : 0],
+                ][$section] ?? ['bg'=>'bg-slate-50','border'=>'border-slate-200','num'=>'text-slate-700','label'=>'text-slate-600','labelText'=>'RESUMEN','value'=> 0];
+            @endphp
+            <div class="grid grid-cols-1 gap-4 mb-6">
+                <div class="rounded-lg p-5 text-center flex flex-col items-center justify-center space-y-1 {{ $theme['bg'] }} border {{ $theme['border'] }}">
+                    @php
+                        if(($seccion ?? '')==='gestion' && isset($matriz)){
+                            // Contar solo filas de objeto (ignorar cabeceras) con al menos un permiso
+                            $theme['value'] = collect($matriz)->filter(function($r){
+                                return !empty($r['objeto']) && (
+                                    !empty($r['permiso_insercion']) || !empty($r['permiso_consultar']) || !empty($r['permiso_actualizar']) || !empty($r['permiso_eliminacion'])
+                                );
+                            })->count();
+                        }
+                    @endphp
+                    <div class="text-4xl nunito-bold {{ $theme['num'] }}">{{ $theme['value'] }}</div>
+                    <div class="text-sm nunito-bold tracking-wide {{ $theme['label'] }}">{{ $theme['labelText'] }}</div>
                 </div>
             </div>
 
-            <!-- Sección 1: Gestión de Roles y Permisos -->
-            <div class="mb-6">
-                <h3 class="text-lg nunito-bold text-gray-800 mb-3">1. GESTIÓN DE ROLES Y PERMISOS</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ROL
-                                </th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">
-                                    DESCRIPCIÓN</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">
-                                    PERMISOS</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">OBJETO
-                                </th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">CREADO
-                                    POR</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">FECHA
-                                    CREACIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Administrador</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Acceso total a todas las
-                                    pantallas</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Crear, Editar, Eliminar, Ver
-                                </td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Dashboard</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-30 10:00:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Soporte</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Gestión de tickets y
-                                    reportes</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Ver, Editar, Crear</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Tickets</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-29 09:30:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Supervisor</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Supervisión de reportes y
-                                    facturación</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Ver, Editar</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Reportes</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-28 08:15:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Cliente</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Solo lectura de sus tickets
-                                    y facturas</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Ver</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Facturación</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-27 08:15:00</td>
-                            </tr>
-                        </tbody>
-                    </table>
+          <!-- Sección 1: Gestión de Roles y Permisos -->
+          {{-- MARCADOR-DISENO-COMPACTO-PERMISOS
+              Referencia: Diseño compacto de matriz de permisos (checkboxes condensados por objeto y encabezados de módulo).
+              Si se necesita recrear el commit perdido, volver a aplicar estilos/estructura a esta sección.
+              Mantener este comentario para futuras reconstrucciones. --}}
+            @if(($seccion ?? '')==='gestion')
+                <div class="mb-6">
+                    <h3 class="text-lg nunito-bold text-gray-800 mb-3">Gestión de Roles y Permisos</h3>
+                    @if(isset($rol) && $rol)
+                        <p class="mb-2 text-sm">Rol seleccionado: <span class="nunito-bold">{{ $rol->rol }}</span></p>
+                    @else
+                        <p class="mb-2 text-sm text-gray-600">No se seleccionó un rol. Usa la pantalla para elegir uno y re-generar.</p>
+                    @endif
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse border border-gray-300">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Objeto</th>
+                                    @foreach(($permColumns ?? []) as $c)
+                                        <th class="border border-gray-300 py-2 px-3 text-center nunito-bold text-gray-700">{{ $c['label'] }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $cols = 1 + count(($permColumns ?? [])); @endphp
+                                @forelse(($matriz ?? collect()) as $row)
+                                    @if(!empty($row['is_header']))
+                                        <tr>
+                                            <td colspan="{{ $cols }}" class="bg-gray-50 border border-gray-300 py-2 px-3 text-gray-700 nunito-bold uppercase">{{ $row['title'] ?? '' }}</td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $row['objeto'] }}</td>
+                                            @foreach(($permColumns ?? []) as $c)
+                                                <td class="border border-gray-300 py-2 px-3 text-center">
+                                                    {!! !empty($row[$c['field']]) ? '<span class="text-green-600">✔</span>' : '<span class="text-gray-400">—</span>' !!}
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endif
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="py-6 text-center text-gray-500">Sin datos</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             <!-- Sección 2: Lista de Roles -->
-            <div class="mb-6">
-                <h3 class="text-lg nunito-bold text-gray-800 mb-3">2. LISTA DE ROLES</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ROL
-                                </th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">
-                                    DESCRIPCIÓN</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">CREADO
-                                    POR</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">FECHA
-                                    DE CREACIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Administrador</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Acceso total a todas las
-                                    pantallas</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-30 10:00:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Soporte</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Gestión de tickets y
-                                    reportes</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-29 09:30:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Supervisor</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Supervisión de reportes y
-                                    facturación</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-28 08:15:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Cliente</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Solo lectura de sus tickets
-                                    y facturas</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-27 08:15:00</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            @if(($seccion ?? '')==='roles')
+                <div class="mb-6">
+                    <h3 class="text-lg nunito-bold text-gray-800 mb-3">Lista de Roles</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse border border-gray-300">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ROL</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">DESCRIPCIÓN</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">CREADO POR</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">FECHA DE CREACIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse(($roles ?? collect()) as $r)
+                                    <tr>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->rol }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->descripcion_rol }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r->creado_por }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($r->fecha_creacion)</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="py-6 text-center text-gray-500">Sin resultados</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             <!-- Sección 3: Asignación de Roles a Usuarios -->
-            <div class="mb-6">
-                <h3 class="text-lg nunito-bold text-gray-800 mb-3">3. ASIGNACIÓN DE ROLES A USUARIOS</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">USUARIO
-                                </th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ROL
-                                    ASIGNADO</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">CREADO
-                                    POR</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">FECHA
-                                    DE CREACIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">juan.perez</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Administrador</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-30 10:00:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">ana.lopez</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Soporte</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-29 09:30:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">carlos.mendez</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Supervisor</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-28 08:15:00</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">cliente1</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Cliente</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-27 08:15:00</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            @if(($seccion ?? '')==='asignar')
+                <div class="mb-6">
+                    <h3 class="text-lg nunito-bold text-gray-800 mb-3">Asignación de Roles a Usuarios</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse border border-gray-300">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">USUARIO</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">NOMBRE</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ROL ASIGNADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse(($usuarios ?? collect()) as $u)
+                                    <tr>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->usuario }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->nombre_usuario }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ optional($u->rol)->rol }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="py-6 text-center text-gray-500">Sin resultados</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             <!-- Sección 4: Objetos del Sistema -->
-            <div class="mb-6">
-                <h3 class="text-lg nunito-bold text-gray-800 mb-3">4. OBJETOS DEL SISTEMA</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">NOMBRE
-                                </th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">
-                                    DESCRIPCIÓN</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">TIPO
-                                </th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">CREADO
-                                    POR</th>
-                                <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">FECHA
-                                    CREACIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Dashboard</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Pantalla principal con
-                                    resumen del sistema</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">General</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-30</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Tickets</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Pantalla para gestión y
-                                    seguimiento de tickets</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Operativa</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-29</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Reportes</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Pantalla para generación y
-                                    consulta de reportes</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Analítica</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-28</td>
-                            </tr>
-                            <tr>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Facturación</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Pantalla para gestión de
-                                    facturas y pagos</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">Financiera</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">admin</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-27</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            @if(($seccion ?? '')==='objetos')
+                <div class="mb-6">
+                    <h3 class="text-lg nunito-bold text-gray-800 mb-3">Objetos del Sistema</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse border border-gray-300">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">NOMBRE</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">DESCRIPCIÓN</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">TIPO</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">CREADO POR</th>
+                                    <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">FECHA CREACIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse(($objetos ?? collect()) as $o)
+                                    <tr>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $o->nombre_objeto }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $o->descripcion_objeto }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ optional($o->tipoObjeto)->nombre_tipo_objeto }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $o->creado_por }}</td>
+                                        <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($o->fecha_creacion)</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="py-6 text-center text-gray-500">Sin resultados</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            @endif
 
-            <!-- Resumen Final -->
+            <!-- Resumen Final dinámico -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
                 <h3 class="text-lg nunito-bold text-gray-800 mb-3">RESUMEN EJECUTIVO</h3>
-                <div class="text-sm nunito-regular text-gray-700 space-y-2">
-                    <p><strong>Total de elementos configurados:</strong></p>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li><strong>4 Roles</strong> definidos con diferentes niveles de acceso (Administrador, Soporte,
-                            Supervisor, Cliente)</li>
-                        <li><strong>4 Objetos del sistema</strong> categorizados por funcionalidad</li>
-                        <li><strong>4 Usuarios</strong> con roles asignados activos</li>
-                    </ul>
-                    <p class="mt-3"><strong>Distribución de permisos:</strong> El sistema cuenta con una estructura de
-                        permisos granular que permite control específico sobre las funcionalidades disponibles para cada
-                        rol, garantizando la seguridad y el acceso apropiado según el nivel de responsabilidad del
-                        usuario.</p>
+                <div class="text-sm nunito-regular text-gray-700 space-y-3">
+                    @if(($seccion ?? '')==='roles')
+                        <p>Listado de roles: <strong>{{ $stats['rolesFiltered'] }}</strong> de {{ $stats['rolesTotal'] }} @if(($q ?? null)) (filtro “{{ $q }}”) @endif @if(($sort ?? null)) — orden: <strong>{{ $sort }}</strong> ({{ $direction ?? 'asc' }}) @endif.</p>
+                    @elseif(($seccion ?? '')==='objetos')
+                        <p>Objetos: <strong>{{ $stats['objetosFiltered'] }}</strong> de {{ $stats['objetosTotal'] }} @if(($q ?? null)) (filtro “{{ $q }}”) @endif @if(request()->filled('id_tipo_objetos_fk')) — tipo: <strong>{{ request('id_tipo_objetos_fk') }}</strong> @endif @if(($sort ?? null)) — orden: <strong>{{ $sort }}</strong> ({{ $direction ?? 'asc' }}) @endif.</p>
+                    @elseif(($seccion ?? '')==='asignar')
+                        <p>Usuarios con rol: <strong>{{ $stats['usuariosConRolFiltered'] }}</strong> de {{ $stats['usuariosConRolTotal'] }} @if(($q ?? null)) (filtro “{{ $q }}”) @endif @if(request()->filled('id_rol_fk')) — rol: <strong>{{ request('id_rol_fk') }}</strong> @endif @if(($sort ?? null)) — orden: <strong>{{ $sort }}</strong> ({{ $direction ?? 'asc' }}) @endif.</p>
+                    @elseif(($seccion ?? '')==='gestion')
+                        <p>Matriz de permisos para el rol @if(isset($rol) && $rol) <strong>{{ $rol->rol }}</strong> @else <em>no seleccionado</em> @endif.</p>
+                        @if(isset($rol) && $rol)
+                            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <li>Objetos con permiso de Crear: <strong>{{ $stats['permResumen']['insercion'] }}</strong></li>
+                                <li>Objetos con permiso de Ver: <strong>{{ $stats['permResumen']['consultar'] }}</strong></li>
+                                <li>Objetos con permiso de Editar: <strong>{{ $stats['permResumen']['actualizar'] }}</strong></li>
+                                <li>Objetos con permiso de Eliminar: <strong>{{ $stats['permResumen']['eliminacion'] }}</strong></li>
+                                <li>Objetos con todos los permisos: <strong>{{ $stats['permResumen']['todo'] }}</strong></li>
+                                <li>Objetos sin ningún permiso: <strong>{{ $stats['permResumen']['ninguno'] }}</strong></li>
+                            </ul>
+                        @endif
+                    @else
+                        <p>Resumen del módulo de Configuración de Accesos.</p>
+                    @endif
                 </div>
             </div>
         </div>

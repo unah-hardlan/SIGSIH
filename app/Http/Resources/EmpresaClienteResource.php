@@ -20,7 +20,8 @@ class EmpresaClienteResource extends JsonResource
             'id_nombre_empresa_fk' => $this->id_nombre_empresa_fk,
             'id_direccion_fk' => $this->id_direccion_fk,
             'id_oficina_fk' => $this->id_oficina_fk,
-            
+            'estado_empresa' => $this->estado_empresa,
+
             // Relaciones
             'nombre_empresa' => $this->whenLoaded('nombreEmpresa'),
             'direccion' => $this->whenLoaded('direccion'),

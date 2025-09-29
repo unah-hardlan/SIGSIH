@@ -8,9 +8,13 @@
 }">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Géneros'">
         <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" x-model="searchGenero" placeholder="Buscar género..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'searchGenero',
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'id' => 'Id Género'
+                ]
+            ])
         </x-slot>
         <x-slot name="boton">
             <div class="w-full flex justify-center sm:justify-end">
@@ -23,27 +27,27 @@
         <div class="overflow-x-auto w-full">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-100 nunito-bold">
+                    <tr class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <th class="py-2 px-4 text-left">Id Género</th>
                         <th class="py-2 px-4 text-left">Género</th>
                         <th class="py-2 px-4 text-left">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">1</td>
-                        <td class="py-2 px-4">Masculino</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">1</td>
+                        <td class="py-2 px-4 dark:text-white">Masculino</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditModalOpenGenero = true; itemToEdit = {genero: 'Masculino'}"
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenGenero = true; itemToDelete = {genero: 'Masculino'}"
                                 class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4">2</td>
-                        <td class="py-2 px-4">Femenino</td>
-                        <td class="py-2 px-4 flex gap-2">
+                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 dark:text-white">2</td>
+                        <td class="py-2 px-4 dark:text-white">Femenino</td>
+                        <td class="py-2 px-4 flex gap-2 dark:text-white">
                             <a href="#" @click="isEditModalOpenGenero = true; itemToEdit = {genero: 'Femenino'}"
                                 class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteModalOpenGenero = true; itemToDelete = {genero: 'Femenino'}"

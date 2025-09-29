@@ -17,6 +17,10 @@ class PermissionMiddleware
      */
     public function handle(Request $request, Closure $next, string $objetoKey, string $accion): Response
     {
+        // Allow CORS preflight
+        if (strtoupper($request->method()) === 'OPTIONS') {
+            return $next($request);
+        }
         $user = auth()->user();
         if (!$user) {
             return response()->json(['error' => 'No autenticado'], 401);
@@ -35,6 +39,16 @@ class PermissionMiddleware
         $objeto = Objeto::whereRaw('LOWER(nombre_objeto) = ?', [mb_strtolower($objetoKey)])->first();
         if (!$objeto) {
             return response()->json(['error' => 'Objeto no configurado', 'objeto' => $objetoKey], 403);
+        }
+
+        // Si accion=auto, derivar por método HTTP
+        if ($accion === 'auto') {
+            $accion = match (strtoupper($request->method())) {
+                'POST' => 'insercion',
+                'PUT', 'PATCH' => 'actualizacion',
+                'DELETE' => 'eliminacion',
+                default => 'consultar',
+            };
         }
 
         // Mapear acción => columna

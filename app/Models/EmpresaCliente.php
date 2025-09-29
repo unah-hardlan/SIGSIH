@@ -17,7 +17,8 @@ class EmpresaCliente extends Model
         'fecha_registro',
         'id_nombre_empresa_fk',
         'id_direccion_fk',
-        'id_oficina_fk'
+        'id_oficina_fk',
+        'estado_empresa'
     ];
 
     protected $casts = [
@@ -40,5 +41,10 @@ class EmpresaCliente extends Model
     public function oficina()
     {
         return $this->belongsTo(OficinaEmpresa::class, 'id_oficina_fk', 'id_oficina_empresa_pk');
+    }
+
+    public function contactos()
+    {
+        return $this->hasMany(Contacto::class, 'id_empresa_cliente_fk', 'id_empresa_cliente_pk');
     }
 }

@@ -19,6 +19,7 @@ class Calendario extends Model
         'observaciones_calendario',
         'id_estado_calendario_fk',
         'id_agencias_fk',
+        'id_usuario_fk',
         'id_orden_servicio_fk',
         'id_tipo_mantenimiento_fk',
         'id_cliente_fk'
@@ -66,5 +67,13 @@ class Calendario extends Model
     public function cliente()
     {
         return $this->belongsTo(Persona::class, 'id_cliente_fk', 'id_persona_pk');
+    }
+
+    /**
+     * Relación con el técnico (usuario)
+     */
+    public function tecnico()
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario_fk', 'id_usuario_pk');
     }
 }

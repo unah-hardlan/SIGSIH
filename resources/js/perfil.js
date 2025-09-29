@@ -1,217 +1,427 @@
 // resources/js/perfil.js
-function perfilPage(){
+function perfilPage() {
     return {
+        // UI state
         success: false,
         saving: false,
         hasChanges: false,
         originalForm: {},
-        originalAvatar: '',
+        originalAvatar: "",
         passwordForm: {
-            current_password: '',
-            password: '',
-            password_confirmation: ''
+            current_password: "",
+            password: "",
+            password_confirmation: ""
         },
         changingPassword: false,
         passwordSuccess: false,
+        passwordError: "",
+
+        // Perfil
         form: {
-            primer_nombre: '',
-            segundo_nombre: '',
-            primer_apellido: '',
-            segundo_apellido: '',
-            dni: '',
-            cargo: '',
-            id_tipo_persona_fk: '',
-            id_genero_fk: '',
-            id_perfil_fk: '',
+            primer_nombre: "",
+            segundo_nombre: "",
+            primer_apellido: "",
+            segundo_apellido: "",
+            dni: "",
+            cargo: "",
+            id_tipo_persona_fk: "",
+            id_genero_fk: "",
+            id_perfil_fk: ""
         },
-        email: '',
-        displayName: 'Mi Perfil',
-        cargo: '',
-        avatarUrl: '',
-        personaAvatar: '',
+        tiposPersona: [],
+        perfiles: [],
+        email: "",
+        displayName: "Mi Perfil",
+        cargo: "",
+        avatarUrl: "",
+        personaAvatar: "",
         removing: false,
 
-        init(){
+        // 2FA state
+        twoFAEnabled: false,
+        show2FASetup: false,
+        twoFASetup: {
+            loading: false,
+            otpauthUrl: "",
+            qrUrl: "",
+            code: "",
+            error: "",
+            confirming: false,
+            recoveryCodes: [],
+            currentPassword: ""
+        },
+        // Modal password state
+        showPasswordModal: false,
+        pendingAction: null, // 'start2fa' | 'disable2fa' | 'confirm2fa'
+        modalTitle: "",
+        modalDescription: "",
+        modalError: "",
+
+        init() {
             this.$nextTick(() => {
                 this.initializeProfileData();
             });
         },
 
-        get displayNameComputed(){
-            const n1 = (this.form?.primer_nombre || '').trim();
-            const a1 = (this.form?.primer_apellido || '').trim();
-            const fallback = (this.displayName || '').trim() || 'Mi Perfil';
-            const name = [n1, a1].filter(Boolean).join(' ').trim();
+        get displayNameComputed() {
+            const n1 = (this.form?.primer_nombre || "").trim();
+            const a1 = (this.form?.primer_apellido || "").trim();
+            const fallback = (this.displayName || "").trim() || "Mi Perfil";
+            const name = [n1, a1].filter(Boolean).join(" ").trim();
             return name || fallback;
         },
 
-        initializeProfileData(){
-            if (!window.Alpine || !window.Alpine.store) {
-                setTimeout(() => this.initializeProfileData(), 100);
+        initializeProfileData() {
+            // Si existe un Alpine.store('perfil'), úsalo solo para pintar (sin localStorage)
+            try {
+                if (window.Alpine && window.Alpine.store) {
+                    const store = Alpine.store("perfil");
+                    if (store?.user) {
+                        this.displayName = store.persona?.primer_nombre
+                            ? (store.persona.primer_nombre + " " + (store.persona.primer_apellido || ""))
+                            : (store.user.nombre_usuario || store.user.usuario || "Mi Perfil");
+                        this.email = store.user.correo_electronico || "";
+                    }
+                    if (store?.persona) {
+                        const p = store.persona;
+                        this.form = {
+                            primer_nombre: p.primer_nombre || "",
+                            segundo_nombre: p.segundo_nombre || "",
+                            primer_apellido: p.primer_apellido || "",
+                            segundo_apellido: p.segundo_apellido || "",
+                            dni: p.dni || "",
+                            cargo: p.cargo || "",
+                            id_tipo_persona_fk: p.id_tipo_persona_fk || "",
+                            id_genero_fk: p.id_genero_fk || "",
+                            id_perfil_fk: p.id_perfil_fk || ""
+                        };
+                        this.personaAvatar = p.avatar_path
+                            ? (p.avatar_path.startsWith("http")
+                                ? p.avatar_path
+                                : (window.location.origin + "/storage/" + p.avatar_path))
+                            : "";
+                    }
+                }
+            } catch (_) { /* noop */ }
+
+            // Siempre refrescar desde el backend
+            this.cargarDatos();
+            this.cargarCatalogos();
+        },
+
+        async cargarCatalogos() {
+            try {
+                const [tpRes, perfRes] = await Promise.all([
+                    fetch("/api/tipos-persona?all=1", { credentials: "same-origin" }),
+                    fetch("/api/perfiles?all=1", { credentials: "same-origin" })
+                ]);
+                if (tpRes.ok) {
+                    const data = await tpRes.json();
+                    this.tiposPersona = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+                }
+                if (perfRes.ok) {
+                    const data = await perfRes.json();
+                    this.perfiles = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+                }
+            } catch (_) { /* noop */ }
+        },
+
+        async cargarDatos() {
+            try {
+                const res = await fetch("/api/me", { credentials: "same-origin" });
+                if (res.ok) {
+                    const data = await res.json();
+                    this.displayName = data?.persona?.primer_nombre
+                        ? (data.persona.primer_nombre + " " + (data.persona.primer_apellido || ""))
+                        : (data?.usuario?.nombre_usuario || "Mi Perfil");
+                    this.email = data?.usuario?.correo_electronico || "";
+                    if (data?.persona) {
+                        this.form = {
+                            primer_nombre: data.persona.primer_nombre || "",
+                            segundo_nombre: data.persona.segundo_nombre || "",
+                            primer_apellido: data.persona.primer_apellido || "",
+                            segundo_apellido: data.persona.segundo_apellido || "",
+                            dni: data.persona.dni || "",
+                            cargo: data.persona.cargo || "",
+                            id_tipo_persona_fk: data.persona.id_tipo_persona_fk || "",
+                            id_genero_fk: data.persona.id_genero_fk || "",
+                            id_perfil_fk: data.persona.id_perfil_fk || ""
+                        };
+                        this.personaAvatar = data.persona.avatar_path
+                            ? (data.persona.avatar_path.startsWith("http")
+                                ? data.persona.avatar_path
+                                : (window.location.origin + "/storage/" + data.persona.avatar_path))
+                            : "";
+                        // Baselines
+                        this.originalForm = JSON.parse(JSON.stringify(this.form));
+                        this.originalAvatar = this.personaAvatar || "";
+                        this.checkForChanges();
+                    }
+                    // Sin localStorage
+                    if (window.Alpine && Alpine.store) {
+                        const store = Alpine.store("perfil");
+                        if (store) {
+                            store.persona = data?.persona || store.persona;
+                            if (typeof store.firstTime !== "undefined") store.firstTime = !!(data?.primer_ingreso && !data?.persona);
+                        }
+                    }
+
+                    this.twoFAEnabled = !!data?.two_factor_enabled;
+                }
+            } catch (_) { /* noop */ }
+        },
+
+        // 2FA setup flow
+        async start2FA() {
+            if (!this.twoFASetup.currentPassword) {
+                this.openPasswordModal({
+                    action: 'start2fa',
+                    title: 'Activar 2FA',
+                    description: 'Ingresa tu contraseña actual para activar 2FA.'
+                });
                 return;
             }
             try {
-                const store = Alpine.store('perfil');
-                if (store?.user) {
-                    this.displayName = store.persona?.primer_nombre ? (store.persona.primer_nombre + ' ' + (store.persona.primer_apellido || '')) : (store.user.nombre_usuario || store.user.usuario || 'Mi Perfil');
-                    this.email = store.user.correo_electronico || '';
-                }
-                if (store?.persona) {
-                    const p = store.persona;
-                    this.form = {
-                        primer_nombre: p.primer_nombre || '',
-                        segundo_nombre: p.segundo_nombre || '',
-                        primer_apellido: p.primer_apellido || '',
-                        segundo_apellido: p.segundo_apellido || '',
-                        dni: p.dni || '',
-                        cargo: p.cargo || '',
-                        id_tipo_persona_fk: p.id_tipo_persona_fk || '',
-                        id_genero_fk: p.id_genero_fk || '',
-                        id_perfil_fk: p.id_perfil_fk || '',
-                    };
-                    this.personaAvatar = p.avatar_path ? (p.avatar_path.startsWith('http') ? p.avatar_path : (window.location.origin + '/storage/' + p.avatar_path)) : '';
-                } else {
-                    const cachedPersona = JSON.parse(localStorage.getItem('authPersona') || 'null');
-                    if (cachedPersona) {
-                        this.form.primer_nombre = cachedPersona.primer_nombre || '';
-                        this.form.segundo_nombre = cachedPersona.segundo_nombre || '';
-                        this.form.primer_apellido = cachedPersona.primer_apellido || '';
-                        this.form.segundo_apellido = cachedPersona.segundo_apellido || '';
-                        this.form.dni = cachedPersona.dni || '';
-                        this.form.cargo = cachedPersona.cargo || '';
-                        this.form.id_tipo_persona_fk = cachedPersona.id_tipo_persona_fk || '';
-                        this.form.id_genero_fk = cachedPersona.id_genero_fk || '';
-                        this.form.id_perfil_fk = cachedPersona.id_perfil_fk || '';
-                        this.personaAvatar = cachedPersona.avatar_path ? (cachedPersona.avatar_path.startsWith('http') ? cachedPersona.avatar_path : (window.location.origin + '/storage/' + cachedPersona.avatar_path)) : '';
-                    }
-                }
-            } catch(e) {
-                // noop
-            }
-            this.cargarDatos();
-        },
-
-        async cargarDatos(){
-            try{
-                const token = localStorage.getItem('authToken');
-                const res = await fetch('/api/me', { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
-                if(res.ok){
-                    const data = await res.json();
-                    this.displayName = (data?.persona?.primer_nombre ? (data.persona.primer_nombre + ' ' + (data.persona.primer_apellido || '')) : (data?.usuario?.nombre_usuario || 'Mi Perfil'));
-                    this.email = data?.usuario?.correo_electronico || '';
-                    if(data?.persona){
-                        this.form = {
-                            primer_nombre: data.persona.primer_nombre || '',
-                            segundo_nombre: data.persona.segundo_nombre || '',
-                            primer_apellido: data.persona.primer_apellido || '',
-                            segundo_apellido: data.persona.segundo_apellido || '',
-                            dni: data.persona.dni || '',
-                            cargo: data.persona.cargo || '',
-                            id_tipo_persona_fk: data.persona.id_tipo_persona_fk || '',
-                            id_genero_fk: data.persona.id_genero_fk || '',
-                            id_perfil_fk: data.persona.id_perfil_fk || '',
-                        };
-                        this.personaAvatar = data.persona.avatar_path ? (data.persona.avatar_path.startsWith('http') ? data.persona.avatar_path : (window.location.origin + '/storage/' + data.persona.avatar_path)) : '';
-                        // Baselines
-                        this.originalForm = JSON.parse(JSON.stringify(this.form));
-                        this.originalAvatar = this.personaAvatar || '';
-                        this.checkForChanges();
-                    }
-                }
-            } catch(e){ /* noop */ }
-        },
-
-        async guardar(){
-            try{
-                this.saving = true;
-                const token = localStorage.getItem('authToken');
-                const res = await fetch('/api/perfil/persona', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                    },
-                    body: JSON.stringify(this.form)
+                this.twoFASetup.loading = true;
+                this.twoFASetup.error = "";
+                const res = await fetch("/api/2fa/setup/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ current_password: this.twoFASetup.currentPassword })
                 });
-                if(!res.ok){
-                    const err = await res.json().catch(()=>({message:'Error'}));
-                    alert(err.message || 'Error al guardar');
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: 'No se pudo iniciar el setup 2FA' }));
+                    throw new Error(err.message || 'No se pudo iniciar el setup 2FA');
+                }
+                const data = await res.json();
+                this.twoFASetup.otpauthUrl = data?.otpauth_url || "";
+                const enc = encodeURIComponent(this.twoFASetup.otpauthUrl);
+                this.twoFASetup.qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=192x192&data=${enc}`;
+                this.show2FASetup = true;
+            } catch (e) {
+                this.modalError = e.message || 'Error al iniciar 2FA';
+                this.showPasswordModal = true; // keep modal visible to correct password
+                return;
+            } finally {
+                this.twoFASetup.loading = false;
+            }
+        },
+
+        async confirm2FA() {
+            if (!this.twoFASetup.currentPassword) {
+                this.openPasswordModal({
+                    action: 'confirm2fa',
+                    title: 'Confirmar 2FA',
+                    description: 'Ingresa tu contraseña actual para confirmar 2FA.'
+                });
+                return;
+            }
+            try {
+                this.twoFASetup.confirming = true;
+                this.twoFASetup.error = "";
+                const res = await fetch("/api/2fa/setup/confirm", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ code: this.twoFASetup.code, current_password: this.twoFASetup.currentPassword })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: "Error" }));
+                    this.twoFASetup.error = err.message || "Código inválido";
                     return;
                 }
                 const data = await res.json();
-                const store = Alpine.store('perfil');
-                store.firstTime = false;
-                store.persona = data?.persona || store.persona;
-                try { localStorage.setItem('authPersona', JSON.stringify(store.persona)); } catch(_){ }
+                this.twoFASetup.recoveryCodes = Array.isArray(data?.recovery_codes) ? data.recovery_codes : [];
+                this.twoFAEnabled = true;
+                this.twoFASetup.code = "";
+                this.twoFASetup.currentPassword = "";
+            } catch (_) {
+                this.twoFASetup.error = "Error al confirmar 2FA";
+            } finally {
+                this.twoFASetup.confirming = false;
+            }
+        },
+
+        async disable2FA() {
+            this.openPasswordModal({
+                action: 'disable2fa',
+                title: 'Desactivar 2FA',
+                description: 'Confirma tu contraseña para desactivar 2FA.'
+            });
+        },
+
+        cancel2FA() {
+            this.show2FASetup = false;
+            this.twoFASetup = { loading: false, otpauthUrl: "", qrUrl: "", code: "", error: "", confirming: false, recoveryCodes: [], currentPassword: "" };
+        },
+
+        // Modal helpers
+        openPasswordModal({ action, title, description }) {
+            this.pendingAction = action;
+            this.modalTitle = title;
+            this.modalDescription = description;
+            this.modalError = "";
+            this.showPasswordModal = true;
+        },
+        cancelPasswordModal() {
+            this.showPasswordModal = false;
+            this.pendingAction = null;
+            this.modalError = "";
+            // Do not clear currentPassword automatically; user might reopen
+        },
+        async submitPasswordModal() {
+            if (!this.twoFASetup.currentPassword) {
+                this.modalError = 'La contraseña es requerida';
+                return;
+            }
+            this.modalError = '';
+            this.showPasswordModal = false;
+            const action = this.pendingAction;
+            this.pendingAction = null;
+            if (action === 'start2fa') {
+                await this.start2FA();
+            } else if (action === 'disable2fa') {
+                await this._performDisable2FA();
+            } else if (action === 'confirm2fa') {
+                await this.confirm2FA();
+            }
+        },
+
+        async _performDisable2FA() {
+            try {
+                const res = await fetch("/api/2fa/disable", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ current_password: this.twoFASetup.currentPassword })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: 'No se pudo desactivar 2FA' }));
+                    throw new Error(err.message || 'No se pudo desactivar 2FA');
+                }
+                this.twoFAEnabled = false;
+                this.show2FASetup = false;
+                this.twoFASetup = { loading: false, otpauthUrl: "", qrUrl: "", code: "", error: "", confirming: false, recoveryCodes: [], currentPassword: "" };
+            } catch (e) {
+                this.modalError = e.message || 'Error al desactivar 2FA';
+                this.openPasswordModal({ action: 'disable2fa', title: 'Desactivar 2FA', description: 'Confirma tu contraseña para desactivar 2FA.' });
+            }
+        },
+
+        copyOtpUrl() {
+            if (!this.twoFASetup.otpauthUrl) return;
+            navigator.clipboard?.writeText?.(this.twoFASetup.otpauthUrl);
+        },
+
+        copyRecoveryCodes() {
+            const txt = (this.twoFASetup.recoveryCodes || []).join("\n");
+            if (!txt) return;
+            navigator.clipboard?.writeText?.(txt);
+        },
+
+        async guardar() {
+            try {
+                this.saving = true;
+                const res = await fetch("/api/perfil/persona", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify(this.form)
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: "Error" }));
+                    alert(err.message || "Error al guardar");
+                    return;
+                }
+                const data = await res.json();
+
+                if (window.Alpine && Alpine.store) {
+                    const store = Alpine.store("perfil");
+                    if (store) {
+                        store.firstTime = false;
+                        store.persona = data?.persona || store.persona;
+                    }
+                }
+
                 this.success = true;
                 // reset baselines
                 this.originalForm = JSON.parse(JSON.stringify(this.form));
-                this.originalAvatar = this.personaAvatar || '';
+                this.originalAvatar = this.personaAvatar || "";
                 this.hasChanges = false;
                 setTimeout(() => { this.success = false; }, 2000);
-            } catch(e){
-                alert('Error al guardar');
-            } finally { this.saving = false; }
+            } catch (_) {
+                alert("Error al guardar");
+            } finally {
+                this.saving = false;
+            }
         },
 
-        async removeAvatar(){
-            try{
-                if(this.removing) return;
-                if (!confirm('¿Está seguro de que desea eliminar la foto de perfil? Esta acción no se puede deshacer.')) {
+        async removeAvatar() {
+            try {
+                if (this.removing) return;
+                if (!confirm("¿Está seguro de que desea eliminar la foto de perfil? Esta acción no se puede deshacer.")) {
                     return;
                 }
                 this.removing = true;
-                const token = localStorage.getItem('authToken');
-                const res = await fetch('/api/perfil/avatar', {
-                    method: 'DELETE',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                const res = await fetch("/api/perfil/avatar", {
+                    method: "DELETE",
+                    credentials: "same-origin"
                 });
-                if(res.ok){
-                    this.avatarUrl = '';
-                    this.personaAvatar = '';
-                    const store = Alpine.store('perfil');
-                    if (store.persona) {
-                        store.persona.avatar_path = null;
-                        try { localStorage.setItem('authPersona', JSON.stringify(store.persona)); } catch(_){ }
+                if (res.ok) {
+                    this.avatarUrl = "";
+                    this.personaAvatar = "";
+                    if (window.Alpine && Alpine.store) {
+                        const store = Alpine.store("perfil");
+                        if (store?.persona) store.persona.avatar_path = null;
                     }
                     // baseline update
-                    this.originalAvatar = '';
+                    this.originalAvatar = "";
                     this.checkForChanges();
                     this.hasChanges = false;
                 }
-            } finally { this.removing = false; }
+            } finally {
+                this.removing = false;
+            }
         },
 
-        async onAvatarChange(ev){
+        async onAvatarChange(ev) {
             const file = ev.target.files?.[0];
-            if(!file) return;
-            if (this.avatarUrl || this.personaAvatar) {
-                if (!confirm('¿Desea cambiar la foto de perfil actual? La imagen anterior será reemplazada.')) {
-                    ev.target.value = '';
-                    return;
-                }
+            if (!file) return;
+
+            if (!confirm("¿Desea cambiar la foto de perfil actual? La imagen anterior será reemplazada.")) {
+                ev.target.value = "";
+                return;
             }
+
+            // Preview en memoria
             const reader = new FileReader();
             reader.onload = (e) => { this.avatarUrl = e.target.result; };
             reader.readAsDataURL(file);
 
+            // Subir al servidor
             const fd = new FormData();
-            fd.append('avatar', file);
-            const token = localStorage.getItem('authToken');
-            const res = await fetch('/api/perfil/avatar', {
-                method: 'POST',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            fd.append("avatar", file);
+            const res = await fetch("/api/perfil/avatar", {
+                method: "POST",
+                credentials: "same-origin",
                 body: fd
             });
-            if(res.ok){
+
+            if (res.ok) {
                 const data = await res.json();
                 const finalUrl = data?.url || this.avatarUrl;
                 this.avatarUrl = finalUrl;
-                const store = Alpine.store('perfil');
-                if (!store.persona) store.persona = {};
-                if (data?.path) store.persona.avatar_path = data.path;
-                try { localStorage.setItem('authPersona', JSON.stringify(store.persona)); } catch(_){ }
-                // update personaAvatar and baseline (server accepted)
+
+                if (window.Alpine && Alpine.store) {
+                    const store = Alpine.store("perfil");
+                    if (store) {
+                        if (!store.persona) store.persona = {};
+                        if (data?.path) store.persona.avatar_path = data.path;
+                    }
+                }
+
+                // Aceptado por el servidor: fija avatar y baseline
                 this.personaAvatar = finalUrl;
                 this.originalAvatar = finalUrl;
                 this.checkForChanges();
@@ -219,62 +429,112 @@ function perfilPage(){
             }
         },
 
-        checkForChanges(){
+        async actualizarAvatar(nuevaFoto) {
+            try {
+                const formData = new FormData();
+                formData.append("avatar", nuevaFoto);
+
+                const res = await fetch("/api/perfil/avatar", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: "Error" }));
+                    alert(err.message || "Error al actualizar la foto de perfil");
+                    return;
+                }
+
+                const data = await res.json();
+                if (window.Alpine && Alpine.store) {
+                    const store = Alpine.store("perfil");
+                    if (store?.persona) store.persona.avatar_path = data.avatar_path;
+                }
+
+                this.personaAvatar = data.avatar_path.startsWith("http")
+                    ? data.avatar_path
+                    : `${window.location.origin}/storage/${data.avatar_path}`;
+
+                alert("Foto de perfil actualizada correctamente");
+            } catch (e) {
+                console.error("Error al actualizar la foto de perfil:", e);
+                alert("Error al actualizar la foto de perfil");
+            }
+        },
+
+        checkForChanges() {
             const currentForm = JSON.stringify(this.form);
             const originalForm = JSON.stringify(this.originalForm);
             const hasFormChanges = currentForm !== originalForm;
+
             let hasAvatarChanges = false;
-            if (this.avatarUrl && this.avatarUrl !== (this.personaAvatar || '')) {
+            if (this.avatarUrl && this.avatarUrl !== (this.personaAvatar || "")) {
                 hasAvatarChanges = true;
             }
-            if (!this.personaAvatar && (this.originalAvatar || '') !== '') {
+            if (!this.personaAvatar && (this.originalAvatar || "") !== "") {
                 hasAvatarChanges = true;
             }
             this.hasChanges = hasFormChanges || hasAvatarChanges;
         },
 
-        async cambiarPassword(){
-            try{
+        async cambiarPassword() {
+            try {
                 if (this.passwordForm.password !== this.passwordForm.password_confirmation) {
-                    alert('Las contraseñas no coinciden');
+                    alert("Las contraseñas no coinciden");
                     return;
                 }
-                if (this.passwordForm.password.length < 8) {
-                    alert('La nueva contraseña debe tener al menos 8 caracteres');
+                if ((this.passwordForm.password || "").length < 8) {
+                    alert("La nueva contraseña debe tener al menos 8 caracteres");
                     return;
                 }
                 this.changingPassword = true;
-                const token = localStorage.getItem('authToken');
-                const res = await fetch('/api/perfil/password', {
-                    method: 'POST',
+                this.passwordError = "";
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+                const res = await fetch("/api-web/me/password", {
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json',
-                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        ...(csrf ? { "X-CSRF-TOKEN": csrf } : {})
                     },
+                    credentials: "same-origin",
                     body: JSON.stringify({
                         current_password: this.passwordForm.current_password,
                         password: this.passwordForm.password,
                         password_confirmation: this.passwordForm.password_confirmation
                     })
                 });
-                if(!res.ok){
-                    const err = await res.json().catch(()=>({message:'Error'}));
-                    alert(err.message || 'Error al cambiar la contraseña');
+                if (!res.ok) {
+                    let message = "Error al cambiar la contraseña";
+                    try {
+                        const err = await res.json();
+                        if (err?.message) message = err.message;
+                        else if (err?.errors) {
+                            const first = Object.values(err.errors)[0];
+                            if (Array.isArray(first) && first.length) message = first[0];
+                        }
+                    } catch (_) { }
+                    this.passwordError = message;
+                    alert(message);
                     return;
                 }
-                this.passwordForm = { current_password: '', password: '', password_confirmation: '' };
+                this.passwordForm = { current_password: "", password: "", password_confirmation: "" };
                 this.passwordSuccess = true;
+                this.passwordError = "";
                 setTimeout(() => { this.passwordSuccess = false; }, 3000);
-            } catch(e){
-                alert('Error al cambiar la contraseña');
+            } catch (_) {
+                const msg = "Error al cambiar la contraseña";
+                this.passwordError = msg;
+                alert(msg);
             } finally {
                 this.changingPassword = false;
             }
         },
 
-        onFormChange(){ this.checkForChanges(); }
-    }
+        onFormChange() { this.checkForChanges(); }
+    };
 }
 
-// Hacer la función disponible globalmente
+// Hacer la función disponible globalmente (para x-data="perfilPage()")
 window.perfilPage = perfilPage;

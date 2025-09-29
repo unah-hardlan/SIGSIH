@@ -15,10 +15,10 @@
     <div class="mb-6">
         <ul class="flex border-b nunito-bold">
             <li @click="tab='facturas'"
-                :class="tab==='facturas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
+                :class="tab==='facturas' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
                 class="mr-6 pb-2 nunito-bold">Facturas</li>
             <li @click="tab='detalle'"
-                :class="tab==='detalle' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
+                :class="tab==='detalle' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
                 class="pb-2 nunito-bold">Detalle de Factura</li>
         </ul>
     </div>
@@ -27,33 +27,27 @@
     <div x-show="tab==='facturas'" class="overflow-x-auto">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Facturas</h2>
+                <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Facturas</h2>
             </x-slot>
             <x-slot name="filtros">
-                <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                    <input type="text" placeholder="Buscar factura..."
-                        class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-
-                    <div class="w-full sm:w-auto flex items-center gap-2">
-                        <div class="flex rounded border overflow-hidden text-sm w-full sm:w-auto">
-                            <span class="bg-white px-3 py-2 border-r nunito-regular">Desde:</span>
-                            <input type="date" class="px-3 py-2 outline-none w-full nunito-regular" />
-                        </div>
-                    </div>
-
-                    <div class="w-full sm:w-auto flex items-center gap-2">
-                        <div class="flex rounded border overflow-hidden text-sm w-full sm:w-auto">
-                            <span class="bg-white px-3 py-2 border-r nunito-regular">Hasta:</span>
-                            <input type="date" class="px-3 py-2 outline-none w-full nunito-regular" />
-                        </div>
-                    </div>
-
-                    <button
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 w-full sm:w-auto text-sm">
-                        <i class="fas fa-filter"></i>
-                        Filtrar
-                    </button>
-                </div>
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchFacturas',
+                    'filtrosSelect' => [
+                        'estadoFacturaFiltro' => [
+                            'label' => 'Estado',
+                            'options' => ['Pagada', 'Pendiente', 'Cancelada']
+                        ],
+                        'clienteFacturaFiltro' => [
+                            'label' => 'Cliente',
+                            'options' => ['BAC Credomatic', 'Bancafe']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'fecha' => 'Fecha',
+                        'total' => 'Total',
+                        'estado_factura' => 'Estado'
+                    ]
+                ])
             </x-slot>
             <x-slot name="boton">
                 <div class="flex flex-col gap-2 items-stretch">
@@ -66,35 +60,35 @@
                 </div>
             </x-slot>
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Número</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Fecha</th>
-                        <th class="py-2 px-4 text-left nunito-bold">OC</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Subtotal</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Total</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Total Letras</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Estado Factura</th>
-                        <th class="py-2 px-4 text-left nunito-bold">CAI</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Cliente</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Número</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">OC</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Subtotal</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Total</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Total Letras</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado Factura</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">CAI</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Cliente</th>
+                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4 nunito-regular">1</td>
-                        <td class="py-2 px-4 nunito-regular">0001</td>
-                        <td class="py-2 px-4 nunito-regular">2025-07-30</td>
-                        <td class="py-2 px-4 nunito-regular">OC-12345</td>
-                        <td class="py-2 px-4 nunito-regular">5000</td>
-                        <td class="py-2 px-4 nunito-regular">5500</td>
-                        <td class="py-2 px-4 nunito-regular">Cinco mil quinientos lempiras</td>
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0001</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-07-30</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">OC-12345</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">5000</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">5500</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Cinco mil quinientos lempiras</td>
                         <td class="py-2 px-4">
-                            <span class="bg-green-100 text-green-600 px-2 py-1 rounded nunito-regular">Pagada</span>
+                            <span class="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 px-2 py-1 rounded nunito-regular">Pagada</span>
                         </td>
-                        <td class="py-2 px-4 nunito-regular">CAI-987654321</td>
-                        <td class="py-2 px-4 nunito-regular">BAC credomatic</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">CAI-987654321</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">BAC credomatic</td>
                         <td class="py-2 px-4 flex gap-2">
                             <a href="/admin/formato-factura" target="_blank"
                                 class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular">
@@ -111,19 +105,19 @@
                             </a>
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4 nunito-regular">2</td>
-                        <td class="py-2 px-4 nunito-regular">0002</td>
-                        <td class="py-2 px-4 nunito-regular">2025-07-31</td>
-                        <td class="py-2 px-4 nunito-regular">OC-54321</td>
-                        <td class="py-2 px-4 nunito-regular">6000</td>
-                        <td class="py-2 px-4 nunito-regular">6500</td>
-                        <td class="py-2 px-4 nunito-regular">Seis mil quinientos lempiras</td>
+                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0002</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-07-31</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">OC-54321</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">6000</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">6500</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Seis mil quinientos lempiras</td>
                         <td class="py-2 px-4">
-                            <span class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded nunito-regular">Pendiente</span>
+                            <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 px-2 py-1 rounded nunito-regular">Pendiente</span>
                         </td>
-                        <td class="py-2 px-4 nunito-regular">CAI-123456789</td>
-                        <td class="py-2 px-4 nunito-regular">Bancafe</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">CAI-123456789</td>
+                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Bancafe</td>
                         <td class="py-2 px-4 flex gap-2">
                             <a href="/admin/formato-factura" target="_blank"
                                 class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular">
@@ -255,11 +249,27 @@
     <div x-show="tab==='detalle'" class="overflow-x-auto">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Detalle Factura</h2>
+                <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">Detalle Factura</h2>
             </x-slot>
             <x-slot name="filtros">
-                <input type="text" placeholder="Buscar detalle..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchDetalleFactura',
+                    'filtrosSelect' => [
+                        'servicioDetalleFiltro' => [
+                            'label' => 'Servicio',
+                            'options' => ['SVC-01', 'SVC-02']
+                        ],
+                        'facturaDetalleFiltro' => [
+                            'label' => 'Factura',
+                            'options' => ['0001', '0002']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'fecha_servicio' => 'Fecha Servicio',
+                        'horas' => 'Horas',
+                        'descuento' => 'Descuento'
+                    ]
+                ])
             </x-slot>
             <x-slot name="boton">
                 <div class="w-full flex justify-center">
@@ -270,32 +280,32 @@
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 nunito-bold">
+                    <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Detalle</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Factura</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Servicio</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Fecha Servicio</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Horas</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Descuento</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Detalle</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Factura</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Servicio</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha Servicio</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Horas</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descuento</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4 nunito-regular">1</td>
-                            <td class="py-2 px-4 nunito-regular">0001</td>
-                            <td class="py-2 px-4 nunito-regular">SVC-01</td>
-                            <td class="py-2 px-4 nunito-regular">2025-07-26</td>
-                            <td class="py-2 px-4 nunito-regular">8</td>
-                            <td class="py-2 px-4 nunito-regular">0</td>
+                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0001</td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">SVC-01</td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-07-26</td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">8</td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0</td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#"
                                     @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = {id_detalle: 1, id_factura: '0001', id_servicio: 'SVC-01', fecha_servicio: '2025-07-26', horas: 8, descuento: 0}"
-                                    class="text-blue-500 hover:text-blue-700 nunito-regular"><i class="fas fa-edit"></i></a>
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
                                 <a href="#"
                                     @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
-                                    class="text-red-500 hover:text-red-700 nunito-regular"><i class="fas fa-trash"></i></a>
+                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </tbody>

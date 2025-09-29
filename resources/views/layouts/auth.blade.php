@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" x-data="authPage()" x-init="init()" :class="{ 'dark': isDark }">
+<html lang="es" x-data="authPage" x-init="init()" :class="{ 'dark': isDark }">
 
 <head>
     <meta charset="UTF-8" />
@@ -8,58 +8,82 @@
     @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css'])
     <title>Iniciar Sesión – SIGSIH</title>
 
+    <style>
+        [x-cloak] {
+            display: none !important
+        }
+    </style>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     @livewireStyles
-    {{-- Alpine se carga vía Vite en el layout principal; evitar doble carga por CDN --}}
+
+    {{-- Cargar primero tu auth.js para exponer window.authPage --}}
+    <script src="{{ Vite::asset('resources/js/auth.js') }}" defer></script>
+
+    {{-- Luego Alpine --}}
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- Otros scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/login-guard.js" defer></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
 </head>
 
-<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900">
-    <div class="fixed top-4 right-4">
-        <label @click.prevent="toggleTheme()" class="switch cursor-pointer">
-            <input type="checkbox" class="hidden" :checked="isDark">
-            <span class="slider"></span>
-        </label>
-    </div>
+<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
+        <div class="fixed top-4 right-4">
+            <label @click.prevent="toggleTheme()"
+                class="switch cursor-pointer rounded-full border border-gray-300 dark:border-gray-500">
+                <input type="checkbox" class="hidden" :checked="isDark">
+                <span class="slider"></span>
+            </label>
+        </div>
 
-    <div class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-sm mx-auto">
-            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
+            <div
+                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
                 <div class="text-center mb-4">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-200 transition-colors">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-16 h-16 object-contain">
+                    <div
+                        class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
+                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo"
+                            style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-boldy">
-                        <span x-text="isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'"></span>
+                        <span x-text="isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'">Bienvenido de nuevo</span>
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 nunito-regular">
-                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Completa tus datos'"></span>
+                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Completa tus datos'">Por
+                            favor inicia sesión para continuar</span>
                     </p>
                 </div>
 
                 <form @submit.prevent="handleSubmit" autocomplete="off">
                     <div x-show="!isLogin" x-cloak class="grid grid-cols-1 gap-y-2">
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre de Usuario</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
+                                de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 placeholder="John Doe" />
                         </div>
 
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo electrónico</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo
+                                electrónico</label>
                             <input type="email" name="email" x-model="email" :required="!isLogin"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 placeholder="correo@ejemplo.com" />
                         </div>
 
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    :required="!isLogin"
+                                    :required="!isLogin" maxlength="100" pattern="^\S{8,100}$"
+                                    title="Mínimo 8 caracteres, sin espacios"
                                     class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     placeholder="••••••••" />
                                 <button type="button"
@@ -70,21 +94,24 @@
                             </div>
                             <p x-show="password && !validatePassword(password)"
                                 class="mt-1 text-xs text-red-600 nunito-regular">
-                                Mínimo 8 caracteres
+                                Mínimo 8 caracteres, sin espacios
                             </p>
                         </div>
 
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar Contraseña</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar
+                                Contraseña</label>
                             <div class="relative">
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
-                                    x-model="confirmPassword" :required="!isLogin"
+                                    x-model="confirmPassword" :required="!isLogin" maxlength="100"
                                     class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
                                     @click="showConfirmPassword = !showConfirmPassword">
-                                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
+                                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
+                                        class="w-4 h-4"></i>
                                 </button>
                             </div>
                             <p x-show="confirmPassword && !validateConfirmPassword()"
@@ -95,17 +122,20 @@
                     </div>
 
                     <div :class="{ 'mb-4': isLogin, 'mb-2': !isLogin }">
-                        <label class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
-                        <input type="text" name="username" x-model="username" required
+                        <label
+                            class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
+                        <input type="text" name="username" x-model="username" required maxlength="50" pattern="^\S+$"
+                            title="Sin espacios"
                             class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             placeholder="John Doe" />
                     </div>
 
                     <div x-show="isLogin" class="mb-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                required
+                                required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 placeholder="••••••••" />
                             <button type="button"
@@ -116,23 +146,23 @@
                         </div>
                         <p x-show="password && !validatePassword(password)"
                             class="mt-1 text-xs text-red-600 nunito-regular">
-                            Mínimo 8 caracteres
+                            Mínimo 8 caracteres, sin espacios
                         </p>
                     </div>
 
                     <div x-show="isLogin" class="mb-4 text-right">
-                        <button type="button" @click="handleRecover()"
+                        <a href="{{ route('password.request') }}"
                             class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none nunito-regular">
                             ¿Olvidaste tu contraseña?
-                        </button>
+                        </a>
                     </div>
 
                     <button type="submit"
                         class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed nunito-regular text-sm"
                         :disabled="loading || (!username) || (password && !validatePassword(password)) || (!isLogin && confirmPassword && !validateConfirmPassword())">
                         <span x-show="loading" class="inline-flex items-center">
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4" />
                                 <path class="opacity-75" fill="currentColor"
@@ -140,7 +170,8 @@
                             </svg>
                             Procesando...
                         </span>
-                        <span x-show="!loading" x-text="isLogin ? 'Iniciar sesión' : 'Crear cuenta'"></span>
+                        <span x-show="!loading" x-text="isLogin ? 'Iniciar sesión' : 'Crear cuenta'">Iniciar
+                            sesión</span>
                     </button>
 
                     <div class="my-3 flex items-center">
@@ -165,11 +196,12 @@
                     </button>
 
                     <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 nunito-regular">
-                        <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'"></span>
+                        <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'">¿No tienes una
+                            cuenta?</span>
                         <button type="button"
                             class="ml-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold"
                             @click="isLogin = !isLogin">
-                            <span x-text="isLogin ? 'Regístrate' : 'Inicia sesión'"></span>
+                            <span x-text="isLogin ? 'Regístrate' : 'Inicia sesión'">Regístrate</span>
                         </button>
                     </p>
                 </form>
@@ -177,8 +209,43 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/auth.js') }}"></script>
     @livewireScripts
+
+    <div x-show="show2FAModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+            class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-xl">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Verificación en dos pasos</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                Abre tu app de autenticación (Google Authenticator, Microsoft Authenticator, Authy)
+                e ingresa el código de 6 dígitos. También puedes usar un código de recuperación.
+            </p>
+            <div class="mt-3">
+                <input type="text" inputmode="numeric" pattern="^\\d{6}$" maxlength="10" x-model="totpCode"
+                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+                    placeholder="Código de 6 dígitos o recuperación" />
+                <p x-show="totpError" class="mt-1 text-xs text-red-600" x-text="totpError"></p>
+            </div>
+            <div class="mt-4 flex items-center gap-2">
+                <button type="button" @click="submit2FA" :disabled="verifying2FA || !totpCode"
+                    class="flex-1 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 disabled:opacity-50 text-sm">
+                    <span x-show="verifying2FA" class="inline-flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2z" />
+                        </svg>
+                        Verificando...
+                    </span>
+                    <span x-show="!verifying2FA">Verificar</span>
+                </button>
+                <button type="button" @click="close2FA"
+                    class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

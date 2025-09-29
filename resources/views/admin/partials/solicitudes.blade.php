@@ -1,6 +1,10 @@
 <div
     x-data="{ 
         tab: 'solicitudes', 
+        searchSolicitud: '',
+        estadoSolicitud: '',
+        ordenarPor: 'id',
+        searchContacto: '',
         isModalOpen: false, 
         isEditModalOpen: false, 
         solicitudToEdit: {
@@ -34,14 +38,44 @@
             id_persona: ''
         },
         isDeleteContactoModalOpen: false,
-        contactoToDelete: null
-    }" @include('partials.persist-tab', ['tabKey' => 'admin-solicitudes-tab'])>
-    <ul class="flex border-b nunito-bold">
+        contactoToDelete: null,
+        deleteSolicitud() {
+            if (this.solicitudToDelete) {
+                console.log('Eliminando solicitud:', this.solicitudToDelete);
+                this.isDeleteModalOpen = false;
+                this.solicitudToDelete = null;
+            }
+        },
+        deleteEstado() {
+            if (this.estadoToDelete) {
+                console.log('Eliminando estado:', this.estadoToDelete);
+                this.isDeleteEstadoModalOpen = false;
+                this.estadoToDelete = null;
+            }
+        },
+        deleteContacto() {
+            if (this.contactoToDelete) {
+                console.log('Eliminando contacto:', this.contactoToDelete);
+                this.isDeleteContactoModalOpen = false;
+                this.contactoToDelete = null;
+            }
+        }
+    }" @include('partials.persist-tab', ['tabKey' => 'admin-solicitudes-tab'])
+    @confirm-delete.window="
+        if (isDeleteModalOpen) {
+            deleteSolicitud();
+        } else if (isDeleteEstadoModalOpen) {
+            deleteEstado();
+        } else if (isDeleteContactoModalOpen) {
+            deleteContacto();
+        }
+    ">
+    <ul class="flex border-b border-gray-200 dark:border-gray-700 nunito-bold">
         <li @click="tab='solicitudes'"
-            :class="tab==='solicitudes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
+            :class="tab==='solicitudes' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="mr-6 pb-2 nunito-bold">Solicitudes</li>
         <li @click="tab='contactos'"
-            :class="tab==='contactos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
+            :class="tab==='contactos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="mr-6 pb-2 nunito-bold">Contactos</li>
     </ul>
     
@@ -49,17 +83,23 @@
     <div x-show="tab==='solicitudes'" class="overflow-x-auto">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Gestión de Solicitudes</h2>
+                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Gestión de Solicitudes</h2>
             </x-slot>
             <x-slot name="filtros">
-                <input type="text" placeholder="Buscar solicitud..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
-                <select class="border rounded px-1 py-2 text-sm w-full sm:w-40 nunito-regular">
-                    <option class="nunito-regular" value="">Todos los estados</option>
-                    <option class="nunito-regular">Abierta</option>
-                    <option class="nunito-regular">En Proceso</option>
-                    <option class="nunito-regular">Cerrada</option>
-                </select>
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchSolicitud',
+                    'filtrosSelect' => [
+                        'estadoSolicitud' => [
+                            'label' => 'estados',
+                            'options' => ['Abierta', 'En Proceso', 'Cerrada']
+                        ]
+                    ],
+                    'ordenarOptions' => [
+                        'id' => 'ID',
+                        'fecha_creacion' => 'Fecha Creación',
+                        'estado_solicitud' => 'Estado'
+                    ]
+                ])
             </x-slot>
             <x-slot name="boton">
                 <div class="flex flex-col gap-2 w-full sm:w-auto">
@@ -74,27 +114,27 @@
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 nunito-bold">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Cliente</th>
-                            <th class="py-2 px-4 text-left nunito-bold">N° Solicitud ACF</th>
-                            <th class="py-2 px-4 text-left nunito-bold">N° Solicitud Cliente</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Fecha Creación</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Estado</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud ACF</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud Cliente</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Creación</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4 nunito-regular">1</td>
-                            <td class="py-2 px-4 nunito-regular">CLI-001</td>
-                            <td class="py-2 px-4 nunito-regular">ACF-2025-001</td>
-                            <td class="py-2 px-4 nunito-regular">SOL-001</td>
-                            <td class="py-2 px-4 nunito-regular">Problema con equipo de red</td>
-                            <td class="py-2 px-4 nunito-regular">2025-07-01</td>
-                            <td class="py-2 px-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs nunito-regular">Abierta</span></td>
+                        <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">CLI-001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">ACF-2025-001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">SOL-001</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Problema con equipo de red</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-01</td>
+                            <td class="py-2 px-4"><span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs nunito-regular">Abierta</span></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click="isEditModalOpen = true; solicitudToEdit = {
                                     id: 1,
@@ -122,11 +162,18 @@
     <div x-show="tab==='contactos'" class="overflow-x-auto mt-6">
         <x-admin.tabla-crud class="nunito-bold">
             <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 nunito-bold">Contactos</h2>
+                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Lista de Contactos</h2>
             </x-slot>
             <x-slot name="filtros">
-                <input type="text" placeholder="Buscar contacto..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 nunito-regular" />
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchContacto',
+                    'filtrosSelect' => [],
+                    'ordenarOptions' => [
+                        'id' => 'ID',
+                        'tipo_contacto' => 'Tipo Contacto',
+                        'valor_contacto' => 'Valor Contacto'
+                    ]
+                ])
             </x-slot>
             <x-slot name="boton">
                 <button @click="isContactoModalOpen = true"
@@ -135,21 +182,21 @@
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 nunito-bold">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Tipo Contacto</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Valor Contacto</th>
-                            <th class="py-2 px-4 text-left nunito-bold">ID Persona</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Tipo Contacto</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Valor Contacto</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Persona</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4 nunito-regular">1</td>
-                            <td class="py-2 px-4 nunito-regular">Email</td>
-                            <td class="py-2 px-4 nunito-regular">contacto@empresa.com</td>
-                            <td class="py-2 px-4 nunito-regular">PER-001</td>
+                        <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Email</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">contacto@empresa.com</td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">PER-001</td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click="isEditContactoModalOpen = true; contactoToEdit = {
                                     id: 1,
@@ -286,8 +333,12 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Solicitud -->
-    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpen" itemToDelete="solicitudToDelete"
-        message="¿Estás seguro de que quieres eliminar la solicitud?" />
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteModalOpen" 
+        title="Eliminar Solicitud"
+        item-to-delete="solicitudToDelete"
+        item-name-property="id"
+        message="¿Estás seguro de que deseas eliminar la solicitud ID" />
 
     <!-- Modal Nuevo Estado -->
     <x-admin.form-modal class="nunito-bold" modalName="isEstadoModalOpen" title="Nuevo Estado de Solicitud" submitLabel="Guardar Estado"
@@ -326,8 +377,12 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Estado -->
-    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteEstadoModalOpen" itemToDelete="estadoToDelete"
-        message="¿Estás seguro de que quieres eliminar el estado?" />
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteEstadoModalOpen" 
+        title="Eliminar Estado"
+        item-to-delete="estadoToDelete"
+        item-name-property="nombre_estado"
+        message="¿Estás seguro de que deseas eliminar el estado" />
 
     <!-- Modal Nuevo Contacto -->
     <x-admin.form-modal class="nunito-bold" modalName="isContactoModalOpen" title="Nuevo Contacto" submitLabel="Guardar Contacto"
@@ -376,6 +431,10 @@
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Contacto -->
-    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteContactoModalOpen" itemToDelete="contactoToDelete"
-        message="¿Estás seguro de que quieres eliminar el contacto?" />
+    <x-admin.confirmation-modal 
+        modal-name="isDeleteContactoModalOpen" 
+        title="Eliminar Contacto"
+        item-to-delete="contactoToDelete"
+        item-name-property="id"
+        message="¿Estás seguro de que deseas eliminar el contacto ID" />
 </div>

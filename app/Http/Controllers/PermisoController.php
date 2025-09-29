@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StorePermisoRequest;
 use App\Http\Requests\UpdatePermisoRequest;
 use App\Http\Resources\PermisoResource;
+use App\Services\BitacoraService;
 
 class PermisoController extends Controller
 {
+    public function __construct(private BitacoraService $bitacora) {}
     /** Listado con búsqueda, filtros, orden y paginación */
     public function index(Request $request)
     {
@@ -74,6 +76,16 @@ class PermisoController extends Controller
         $data['creado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_creacion'] = now();
         $permiso = Permiso::create($data)->load(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto']);
+        try {
+            $flags = sprintf('[Ver:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                $permiso->permiso_consultar ? 'Sí' : 'No',
+                $permiso->permiso_insercion ? 'Sí' : 'No',
+                $permiso->permiso_actualizar ? 'Sí' : 'No',
+                $permiso->permiso_eliminacion ? 'Sí' : 'No'
+            );
+            $desc = 'Asignación de permisos al rol '.$permiso->rol->rol.' sobre '.$permiso->objeto->nombre_objeto.' '.$flags;
+            $this->bitacora->logFor('Permisos', 'Insertar', $desc);
+        } catch (\Throwable $e) {}
         return (new PermisoResource($permiso))->response()->setStatusCode(201);
     }
 
@@ -96,6 +108,16 @@ class PermisoController extends Controller
         $data['fecha_modificacion'] = now();
         $permiso->update($data);
         $permiso->load(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto']);
+        try {
+            $flags = sprintf('[Ver:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                $permiso->permiso_consultar ? 'Sí' : 'No',
+                $permiso->permiso_insercion ? 'Sí' : 'No',
+                $permiso->permiso_actualizar ? 'Sí' : 'No',
+                $permiso->permiso_eliminacion ? 'Sí' : 'No'
+            );
+            $desc = 'Actualización de permisos del rol '.$permiso->rol->rol.' sobre '.$permiso->objeto->nombre_objeto.' '.$flags;
+            $this->bitacora->logFor('Permisos', 'Actualizar', $desc);
+        } catch (\Throwable $e) {}
         return (new PermisoResource($permiso))->response();
     }
 
@@ -103,9 +125,13 @@ class PermisoController extends Controller
     /** Eliminar por ID */
     public function destroy($id)
     {
-        $permiso = Permiso::find($id);
+        $permiso = Permiso::with(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto'])->find($id);
         if (!$permiso) return response()->json(['error' => 'Permiso no encontrado'], 404);
         $permiso->delete();
+        try {
+            $desc = 'Eliminación de permisos del rol '.$permiso->rol->rol.' sobre '.$permiso->objeto->nombre_objeto;
+            $this->bitacora->logFor('Permisos', 'Eliminar', $desc);
+        } catch (\Throwable $e) {}
         return response()->json(['message' => 'Permiso eliminado']);
     }
 
@@ -158,6 +184,16 @@ class PermisoController extends Controller
         }
 
         $permiso->load(['rol:id_rol_pk,rol','objeto:id_objetos_pk,nombre_objeto']);
+        try {
+            $flags = sprintf('[Ver:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                $permiso->permiso_consultar ? 'Sí' : 'No',
+                $permiso->permiso_insercion ? 'Sí' : 'No',
+                $permiso->permiso_actualizar ? 'Sí' : 'No',
+                $permiso->permiso_eliminacion ? 'Sí' : 'No'
+            );
+            $desc = 'Actualización de permisos (upsert) del rol '.$permiso->rol->rol.' sobre '.$permiso->objeto->nombre_objeto.' '.$flags;
+            $this->bitacora->logFor('Permisos', 'Actualizar', $desc);
+        } catch (\Throwable $e) {}
         return (new PermisoResource($permiso))->response();
     }
 
