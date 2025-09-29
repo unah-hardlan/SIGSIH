@@ -57,6 +57,14 @@
                     </p>
                 </div>
 
+                <template x-if="formError">
+                    <div
+                        class="mb-3 px-3 py-2 rounded border border-red-200 bg-red-50 text-red-700 dark:bg-red-900/30 dark:border-red-500 dark:text-red-200 text-xs nunito-regular">
+                        <i class="fas fa-circle-exclamation mr-1"></i>
+                        <span x-text="formError"></span>
+                    </div>
+                </template>
+
                 <form @submit.prevent="handleSubmit" autocomplete="off">
                     <div x-show="!isLogin" x-cloak class="grid grid-cols-1 gap-y-2">
                         <div class="mb-2">
@@ -64,8 +72,14 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
                                 de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
+                                @input="clearFieldError('nombre_usuario')"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario }"
                                 placeholder="John Doe" />
+                            <template x-if="fieldErrors.nombre_usuario">
+                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                    x-text="fieldErrors.nombre_usuario[0]"></p>
+                            </template>
                         </div>
 
                         <div class="mb-2">
@@ -73,8 +87,14 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo
                                 electrónico</label>
                             <input type="email" name="email" x-model="email" :required="!isLogin"
+                                @input="clearFieldError('correo_electronico')"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico }"
                                 placeholder="correo@ejemplo.com" />
+                            <template x-if="fieldErrors.correo_electronico">
+                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                    x-text="fieldErrors.correo_electronico[0]"></p>
+                            </template>
                         </div>
 
                         <div class="mb-2">
@@ -82,9 +102,11 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    :required="!isLogin" maxlength="100" pattern="^\S{8,100}$"
-                                    title="Mínimo 8 caracteres, sin espacios"
+                                    :required="!isLogin" maxlength="100" pattern="^(?=.*[A-Z])\S{8,100}$"
+                                    title="Mínimo 8 caracteres, sin espacios y al menos una letra mayúscula"
+                                    @input="clearFieldError('contrasena')"
                                     class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -92,10 +114,21 @@
                                     <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
                                 </button>
                             </div>
-                            <p x-show="password && !validatePassword(password)"
-                                class="mt-1 text-xs text-red-600 nunito-regular">
-                                Mínimo 8 caracteres, sin espacios
-                            </p>
+                            <template x-if="password">
+                                <ul x-show="passwordIssues(password).length"
+                                    class="mt-1 text-xs text-red-600 nunito-regular space-y-1">
+                                    <template x-for="issue in passwordIssues(password)" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                            <template x-if="fieldErrors.contrasena">
+                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                    x-text="fieldErrors.contrasena[0]"></p>
+                            </template>
                         </div>
 
                         <div class="mb-2">
@@ -125,9 +158,15 @@
                         <label
                             class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required maxlength="50" pattern="^\S+$"
+                            @input="clearFieldError('usuario')"
                             title="Sin espacios"
                             class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario }"
                             placeholder="John Doe" />
+                        <template x-if="fieldErrors.usuario">
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                x-text="fieldErrors.usuario[0]"></p>
+                        </template>
                     </div>
 
                     <div x-show="isLogin" class="mb-2">
@@ -136,7 +175,9 @@
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
+                                @input="clearFieldError('contrasena')"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
                                 placeholder="••••••••" />
                             <button type="button"
                                 class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -148,6 +189,10 @@
                             class="mt-1 text-xs text-red-600 nunito-regular">
                             Mínimo 8 caracteres, sin espacios
                         </p>
+                        <template x-if="fieldErrors.contrasena">
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                x-text="fieldErrors.contrasena[0]"></p>
+                        </template>
                     </div>
 
                     <div x-show="isLogin" class="mb-4 text-right">
@@ -200,7 +245,7 @@
                             cuenta?</span>
                         <button type="button"
                             class="ml-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold"
-                            @click="isLogin = !isLogin">
+                            @click="switchMode()">
                             <span x-text="isLogin ? 'Regístrate' : 'Inicia sesión'">Regístrate</span>
                         </button>
                     </p>
