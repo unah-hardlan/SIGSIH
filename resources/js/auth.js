@@ -1,13 +1,10 @@
-// ===== Config Axios =====
 if (window.axios) {
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 }
 
-// ===== Factory del componente (sin localStorage) =====
 function createAuthPage() {
     return {
-        // State
         isLogin: true,
         showPassword: false,
         showConfirmPassword: false,
@@ -26,14 +23,12 @@ function createAuthPage() {
         verifying2FA: false,
         totpError: "",
 
-        // Lifecycle
         init() {
             try {
                 this.initTheme();
             } catch (_) {}
         },
 
-        // Theme (solo en memoria; sin persistir)
         initTheme() {
             try {
                 this.isDark =
@@ -99,7 +94,6 @@ function createAuthPage() {
             return this.password === this.confirmPassword;
         },
 
-        // Submit
         async handleSubmit() {
             if (this.loading) return;
             this.loading = true;
@@ -207,10 +201,8 @@ function createAuthPage() {
     };
 }
 
-// 1) disponible como función global para x-data="authPage()"
 window.authPage = createAuthPage;
 
-// 2) registrar como componente Alpine para x-data="authPage"
 function registerWithAlpine() {
     try {
         if (window.Alpine && typeof window.Alpine.data === "function") {
@@ -219,8 +211,6 @@ function registerWithAlpine() {
     } catch (_) {}
 }
 
-// Si Alpine ya está cargado:
 registerWithAlpine();
 
-// Si Alpine se cargará después:
 document.addEventListener("alpine:init", registerWithAlpine);
