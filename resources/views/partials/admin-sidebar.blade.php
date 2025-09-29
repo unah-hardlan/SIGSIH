@@ -1,4 +1,4 @@
-<aside :class="sidebarOpen ? 'w-72' : 'w-20'" x-data="{ logoutConfirm: false }" x-init="
+<aside x-data="{ logoutConfirm: false }" x-init="
     $nextTick(() => {
         if (window.sidebarScrollManager) {
             const savedScrollTop = localStorage.getItem('sidebar-scroll-position');
@@ -16,53 +16,59 @@
             });
         }
     });
-  " 
-  x-show="!isMobile || sidebarOpen"
-  :class="{
-      'fixed inset-y-0 left-0 w-72': sidebarOpen && isMobile,
-      'relative w-72': !isMobile && sidebarOpen,
-      'relative w-20': !isMobile && !sidebarOpen
-  }"
-    class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 h-screen flex flex-col p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto"
-  style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 25;">
+    " x-show="!isMobile || sidebarOpen" :class="{
+            'fixed inset-y-0 left-0 w-72': sidebarOpen && isMobile,
+            'w-72': !isMobile && sidebarOpen,
+            'w-20': !isMobile && !sidebarOpen
+    }"
+    class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 flex flex-col p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto md:sticky md:top-0 md:h-screen"
+    style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 25;">
 
     <!-- Banner removido para forzar flujo sin aviso visual -->
 
     @php
-        use App\Services\PermissionService;
-        use App\Models\Objeto;
-        /** @var \App\Models\Usuario|null $u */
-        $u = Auth::user();
-        /** @var PermissionService $perm */
-        $perm = app(PermissionService::class);
+    use App\Services\PermissionService;
+    use App\Models\Objeto;
+    /** @var \App\Models\Usuario|null $u */
+    $u = Auth::user();
+    /** @var PermissionService $perm */
+    $perm = app(PermissionService::class);
 
-        $hasObj = function(string $name): bool {
-            return Objeto::whereRaw('LOWER(nombre_objeto) = ?', [mb_strtolower($name)])->exists();
-        };
-        $canModule = function(string $title, array $subNames = []) use ($perm, $u, $hasObj): bool {
-            if (!$u) return false;
-            if ($hasObj($title)) {
-                return $perm->can($u, [$title], 'consultar');
-            }
-            return !empty($subNames) ? $perm->can($u, $subNames, 'consultar') : false;
-        };
+    $hasObj = function(string $name): bool {
+    return Objeto::whereRaw('LOWER(nombre_objeto) = ?', [mb_strtolower($name)])->exists();
+    };
+    $canModule = function(string $title, array $subNames = []) use ($perm, $u, $hasObj): bool {
+    if (!$u) return false;
+    if ($hasObj($title)) {
+    return $perm->can($u, [$title], 'consultar');
+    }
+    return !empty($subNames) ? $perm->can($u, $subNames, 'consultar') : false;
+    };
 
-        // Candidatos por módulo (con y sin acentos cuando aplica)
-        $canSeguridad = $canModule('Seguridad', ['Gestión de Usuarios','Gestion de Usuarios','Usuarios','Parámetros','Parametros','Configuración de accesos','Configuracion de accesos']);
-        $canClientes = $canModule('Clientes', ['Empresas','Cotizaciones','Solicitudes','Órdenes de Servicios','Ordenes de Servicios']);
-    $canProyectos = $canModule('Proyectos', ['Proyectos','Gestión de proyectos','Gestion de proyectos','Vista de proyectos']);
-        $canTickets = $canModule('Tickets', ['Gestión de tickets','Gestion de tickets','Tickets']);
-    $canCalendario = $canModule('Calendario', ['Agencias','Calendario','Gestión de Calendario','Gestion de Calendario']);
-        $canFacturacion = $canModule('Facturación', ['Facturas','CAI','Facturacion']);
-        $canReportes = $canModule('Reportes', ['Gestión de Reportes','Gestion de Reportes','Reportes']);
-        $canInventario = $canModule('Inventario', ['Productos','Kardex']);
-        $canAdministracion = $canModule('Administración', ['Gestión de personas','Gestion de personas','Mi perfil','Bitácora','Bitacora','Gestión de base de datos','Gestion de base de datos','Administracion']);
-        $canMantenimiento = $canModule('Mantenimiento', ['Mantenimiento del Sistema','Mantenimiento del sistema']);
-        $canCatalogo = $canModule('Catalogo', [
-            'Acciones Realizadas','Administración de Facturas','Administracion de Facturas','Categorias de Ingresos y Gastos','Categorías de Ingresos y Gastos',
-            'Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del Calendario','Género','Genero','Perfiles',
-            'Servicio Factura','Servicios Realizados','Tipo de Movimiento','Tipo de Objeto','Tipo de Personas','Tipo de Producto','Tipo de Visita','Ubicaciones'
-        ]);
+    // Candidatos por módulo (con y sin acentos cuando aplica)
+    $canSeguridad = $canModule('Seguridad', ['Gestión de Usuarios','Gestion de
+    Usuarios','Usuarios','Parámetros','Parametros','Configuración de accesos','Configuracion de accesos']);
+    $canClientes = $canModule('Clientes', ['Empresas','Cotizaciones','Solicitudes','Órdenes de Servicios','Ordenes de
+    Servicios']);
+    $canProyectos = $canModule('Proyectos', ['Proyectos','Gestión de proyectos','Gestion de proyectos','Vista de
+    proyectos']);
+    $canTickets = $canModule('Tickets', ['Gestión de tickets','Gestion de tickets','Tickets']);
+    $canCalendario = $canModule('Calendario', ['Agencias','Calendario','Gestión de Calendario','Gestion de
+    Calendario']);
+    $canFacturacion = $canModule('Facturación', ['Facturas','CAI','Facturacion']);
+    $canReportes = $canModule('Reportes', ['Gestión de Reportes','Gestion de Reportes','Reportes']);
+    $canInventario = $canModule('Inventario', ['Productos','Kardex']);
+    $canAdministracion = $canModule('Administración', ['Gestión de personas','Gestion de personas','Mi
+    perfil','Bitácora','Bitacora','Gestión de base de datos','Gestion de base de datos','Administracion']);
+    $canMantenimiento = $canModule('Mantenimiento', ['Mantenimiento del Sistema','Mantenimiento del sistema']);
+    $canCatalogo = $canModule('Catalogo', [
+    'Acciones Realizadas','Administración de Facturas','Administracion de Facturas','Categorias de Ingresos y
+    Gastos','Categorías de Ingresos y Gastos',
+    'Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del
+    Calendario','Género','Genero','Perfiles',
+    'Servicio Factura','Servicios Realizados','Tipo de Movimiento','Tipo de Objeto','Tipo de Personas','Tipo de
+    Producto','Tipo de Visita','Ubicaciones'
+    ]);
     @endphp
 
     <!-- Menú -->
@@ -79,8 +85,10 @@
 
             {{-- Seguridad --}}
             @if($canSeguridad)
-            <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-shield-alt w-5 text-center"></i>
@@ -112,7 +120,8 @@
 
                     @if($perm->can($u, ['Configuración de accesos','Configuracion de accesos'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="configuracion-acceso" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="configuracion-acceso"
+                            class="py-1 px-3">
                             <i class="fas fa-key text-sm w-4 text-center"></i>
                             Configuración de accesos al sistema
                         </x-admin.sidebar-link>
@@ -125,8 +134,10 @@
 
             {{-- Clientes --}}
             @if($canClientes)
-            <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-users w-5 text-center"></i>
@@ -146,7 +157,8 @@
                         </x-admin.sidebar-link>
                     </li>
                     @endif
-                    @if($perm->can($u, ['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'], 'consultar'))
+                    @if($perm->can($u, ['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                    'consultar'))
                     <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="cotizaciones" class="py-1 px-3">
                             <i class="fas fa-file-invoice text-sm w-4 text-center"></i>
@@ -163,7 +175,8 @@
                     </li>
                     @endif
 
-                    @if($perm->can($u, ['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'], 'consultar'))
+                    @if($perm->can($u, ['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'],
+                    'consultar'))
                     <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="gestion-ordenes" class="py-1 px-3">
                             <i class="fas fa-plus text-sm w-4 text-center"></i>
@@ -178,8 +191,10 @@
 
             {{-- Proyectos --}}
             @if($canProyectos)
-            <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-project-diagram w-5 text-center"></i>
@@ -213,8 +228,10 @@
 
             {{-- Tickets --}}
             @if($canTickets)
-            <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-ticket-alt w-5 text-center"></i>
@@ -240,8 +257,10 @@
 
             {{-- Calendario --}}
             @if($canCalendario)
-            <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-calendar-alt w-5 text-center"></i>
@@ -275,8 +294,10 @@
 
             {{-- Facturación --}}
             @if($canFacturacion)
-            <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
@@ -310,8 +331,10 @@
 
             {{-- Reportes --}}
             @if($canReportes)
-            <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-chart-bar w-5 text-center"></i>
@@ -337,8 +360,10 @@
 
             {{-- Inventario --}}
             @if($canInventario)
-            <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-boxes w-5 text-center"></i>
@@ -373,7 +398,8 @@
             {{-- Administración --}}
             @if($canAdministracion)
             <li class="mt-2" x-data="sidebarDropdown('administracion', false)" x-init="init()">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-cogs w-5 text-center"></i>
@@ -424,8 +450,10 @@
 
             {{-- Mantenimiento --}}
             @if($canMantenimiento)
-            <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-tools w-5 text-center"></i>
@@ -440,7 +468,8 @@
                 <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
                     @if($perm->can($u, ['Mantenimiento del Sistema','Mantenimiento del sistema'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="mantenimiento-general" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="mantenimiento-general"
+                            class="py-1 px-3">
                             <i class="fas fa-wrench text-sm w-4 text-center"></i>
                             Mantenimiento del Sistema
                         </x-admin.sidebar-link>
@@ -456,8 +485,10 @@
 
             {{-- Catalogo --}}
             @if($canCatalogo)
-            <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()" :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
-                <button @click="toggle()" :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+            <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
+                <button @click="toggle()"
+                    :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-book-open w-5 text-center"></i>
@@ -471,7 +502,8 @@
                 <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
                     @if($perm->can($u, ['Acciones Realizadas'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-acciones-realizadas" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-acciones-realizadas"
+                            class="py-1 px-3">
                             <i class="fas fa-list-alt text-sm w-4 text-center"></i>
                             Acciones Realizadas
                         </x-admin.sidebar-link>
@@ -479,15 +511,18 @@
                     @endif
                     @if($perm->can($u, ['Administración de Facturas','Administracion de Facturas'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-admin-facturas" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-admin-facturas"
+                            class="py-1 px-3">
                             <i class="fas fa-file-invoice-dollar text-sm w-4 text-center"></i>
                             Administración de Facturas
                         </x-admin.sidebar-link>
                     </li>
                     @endif
-                    @if($perm->can($u, ['Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos'], 'consultar'))
+                    @if($perm->can($u, ['Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos'],
+                    'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-categorias-ingresos-gastos" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-categorias-ingresos-gastos"
+                            class="py-1 px-3">
                             <i class="fas fa-coins text-sm w-4 text-center"></i>
                             Categorías de Ingresos y Gastos
                         </x-admin.sidebar-link>
@@ -495,7 +530,8 @@
                     @endif
                     @if($perm->can($u, ['Estados CAI'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-cai" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-cai"
+                            class="py-1 px-3">
                             <i class="fas fa-barcode text-sm w-4 text-center"></i>
                             Estados CAI
                         </x-admin.sidebar-link>
@@ -503,7 +539,8 @@
                     @endif
                     @if($perm->can($u, ['Estados de Proyecto'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-proyecto" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-proyecto"
+                            class="py-1 px-3">
                             <i class="fas fa-project-diagram text-sm w-4 text-center"></i>
                             Estados de Proyecto
                         </x-admin.sidebar-link>
@@ -511,7 +548,8 @@
                     @endif
                     @if($perm->can($u, ['Estados de Solicitud'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-solicitud" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-solicitud"
+                            class="py-1 px-3">
                             <i class="fas fa-tasks text-sm w-4 text-center"></i>
                             Estados de Solicitud
                         </x-admin.sidebar-link>
@@ -519,7 +557,8 @@
                     @endif
                     @if($perm->can($u, ['Estados de Tickets'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-tickets" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-tickets"
+                            class="py-1 px-3">
                             <i class="fas fa-ticket-alt text-sm w-4 text-center"></i>
                             Estados de Tickets
                         </x-admin.sidebar-link>
@@ -527,7 +566,8 @@
                     @endif
                     @if($perm->can($u, ['Estados del Calendario'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-calendario" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-calendario"
+                            class="py-1 px-3">
                             <i class="fas fa-calendar-check text-sm w-4 text-center"></i>
                             Estados del Calendario
                         </x-admin.sidebar-link>
@@ -551,7 +591,8 @@
                     @endif
                     @if($perm->can($u, ['Servicio Factura'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-factura" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-factura"
+                            class="py-1 px-3">
                             <i class="fas fa-list text-sm w-4 text-center"></i>
                             Servicio Factura
                         </x-admin.sidebar-link>
@@ -559,7 +600,8 @@
                     @endif
                     @if($perm->can($u, ['Servicios Realizados'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-realizados" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-realizados"
+                            class="py-1 px-3">
                             <i class="fas fa-plus text-sm w-4 text-center"></i>
                             Servicios Realizados
                         </x-admin.sidebar-link>
@@ -567,7 +609,8 @@
                     @endif
                     @if($perm->can($u, ['Tipo de Movimiento'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-movimiento" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-movimiento"
+                            class="py-1 px-3">
                             <i class="fas fa-clipboard-list text-sm w-4 text-center"></i>
                             Tipo de Movimiento
                         </x-admin.sidebar-link>
@@ -575,7 +618,8 @@
                     @endif
                     @if($perm->can($u, ['Tipo de Objeto'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-objeto" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-objeto"
+                            class="py-1 px-3">
                             <i class="fas fa-object-group text-sm w-4 text-center"></i>
                             Tipo de Objeto
                         </x-admin.sidebar-link>
@@ -583,7 +627,8 @@
                     @endif
                     @if($perm->can($u, ['Tipo de Personas'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-persona" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-persona"
+                            class="py-1 px-3">
                             <i class="fas fa-user-tag text-sm w-4 text-center"></i>
                             Tipo de Personas
                         </x-admin.sidebar-link>
@@ -591,7 +636,8 @@
                     @endif
                     @if($perm->can($u, ['Tipo de Producto'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-producto" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-producto"
+                            class="py-1 px-3">
                             <i class="fas fa-box text-sm w-4 text-center"></i>
                             Tipo de Producto
                         </x-admin.sidebar-link>
@@ -599,7 +645,8 @@
                     @endif
                     @if($perm->can($u, ['Tipo de Visita'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-visita" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-visita"
+                            class="py-1 px-3">
                             <i class="fas fa-user-friends text-sm w-4 text-center"></i>
                             Tipo de Visita
                         </x-admin.sidebar-link>
@@ -607,7 +654,8 @@
                     @endif
                     @if($perm->can($u, ['Ubicaciones'], 'consultar'))
                     <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-ubicaciones" class="py-1 px-3">
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-ubicaciones"
+                            class="py-1 px-3">
                             <i class="fas fa-map-marker-alt text-sm w-4 text-center"></i>
                             Ubicaciones
                         </x-admin.sidebar-link>
@@ -622,5 +670,5 @@
             @endif
         </ul>
     </nav>
-    
+
 </aside>

@@ -75,7 +75,7 @@
                     </ul>
                 </div>
                 <!-- Matriz -->
-                <div class="md:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-4 max-h-[calc(100vh-240px)] overflow-auto" x-data="{ objQ: '' }">
+                <div class="md:col-span-3 bg-white dark:bg-gray-800 rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-4 overflow-x-auto" x-data="{ objQ: '' }">
                     <template x-if="!$store.access.selectedRoleId">
                         <div class="text-gray-500 dark:text-gray-400">Selecciona un rol para configurar sus permisos.</div>
                     </template>
