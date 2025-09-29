@@ -18,8 +18,8 @@ function createAuthPage() {
         email: "",
         loading: false,
         isDark: false,
-        generalError: "",
-        validationErrors: {},
+        formError: "",
+        fieldErrors: {},
         // 2FA
         show2FAModal: false,
         totpCode: "",
@@ -54,20 +54,25 @@ function createAuthPage() {
             this.applyTheme();
         },
 
-        toggleMode() {
+        switchMode() {
             this.isLogin = !this.isLogin;
-            this.generalError = "";
-            this.validationErrors = {};
+            this.resetErrors();
+            this.password = "";
+            this.confirmPassword = "";
+        },
+
+        resetErrors() {
+            this.formError = "";
+            this.fieldErrors = {};
         },
 
         clearFieldError(field) {
             if (!field) return;
-            if (this.validationErrors[field]) {
-                const { [field]: _, ...rest } = this.validationErrors;
-                this.validationErrors = rest;
-                if (Object.keys(this.validationErrors).length === 0) {
-                    this.generalError = "";
-                }
+            if (!this.fieldErrors[field]) return;
+            const { [field]: _, ...rest } = this.fieldErrors;
+            this.fieldErrors = rest;
+            if (Object.keys(this.fieldErrors).length === 0) {
+                this.formError = "";
             }
         },
 
@@ -98,8 +103,7 @@ function createAuthPage() {
         async handleSubmit() {
             if (this.loading) return;
             this.loading = true;
-            this.generalError = "";
-            this.validationErrors = {};
+            this.resetErrors();
 
             try {
                 if (this.isLogin) {
@@ -124,18 +128,16 @@ function createAuthPage() {
                     } catch (_) {}
                     window.location.assign("/admin/dashboard");
                     return;
-                } else {
-                    await axios.post("/api/register", {
-                        usuario: this.username,
-                        nombre_usuario: this.nombre_usuario,
-                        correo_electronico: this.email,
-                        contrasena: this.password,
-                    });
-
-                    // Tras registro, redirige a completar perfil (sin guardar nada en el navegador)
-                    window.location.assign("/admin/perfil");
-                    return;
                 }
+
+                await axios.post("/api/register", {
+                    usuario: this.username,
+                    nombre_usuario: this.nombre_usuario,
+                    correo_electronico: this.email,
+                    contrasena: this.password,
+                });
+
+                window.location.assign("/admin/perfil");
             } catch (err) {
                 try {
                     console.error(
@@ -144,27 +146,20 @@ function createAuthPage() {
                         err?.response?.data || err?.message || err
                     );
                 } catch (_) {}
-                const response = err?.response;
-                const payload = response?.data || {};
-                const errors = payload?.errors;
-
-                if (errors && typeof errors === "object") {
-                    this.validationErrors = errors;
-                    let extracted = "";
-                    for (const value of Object.values(errors)) {
-                        if (Array.isArray(value) && value.length) {
-                            extracted = value[0];
-                            break;
-                        }
-                    }
-                    this.generalError =
-                        extracted ||
-                        payload?.message ||
-                        "Errores de validación.";
+                const resp = err?.response;
+                if (resp?.status === 422) {
+                    this.fieldErrors = resp.data?.errors || {};
+                    this.formError =
+                        resp.data?.message || "Hay errores de validación.";
+                } else if (resp?.status === 401) {
+                    this.formError =
+                        resp.data?.message ||
+                        resp.data?.error ||
+                        "Credenciales incorrectas.";
                 } else {
-                    this.generalError =
-                        payload?.error ||
-                        payload?.message ||
+                    this.formError =
+                        resp?.data?.error ||
+                        resp?.data?.message ||
                         "Error de autenticación";
                 }
             } finally {
