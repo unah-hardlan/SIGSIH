@@ -48,16 +48,22 @@ class PasswordResetNotification extends Notification
         $supportEmail = $this->getParametro('APP.SOPORTE_CORREO')
             ?? config('mail.from.address');
 
+        $viewData = [
+            'greetingName' => $name !== '' ? $name : null,
+            'appName' => $appName,
+            'logoUrl' => $logoUrl,
+            'resetUrl' => $url,
+            'expireMinutes' => $expire,
+            'supportEmail' => $supportEmail,
+            'email' => $email,
+            'year' => now()->year,
+            'appUrl' => config('app.url'),
+        ];
+
         return (new MailMessage)
             ->subject($appName . ' - Restablecimiento de contraseña')
-            ->markdown('emails.auth.password-reset', [
-                'greetingName' => $name !== '' ? $name : null,
-                'appName' => $appName,
-                'logoUrl' => $logoUrl,
-                'resetUrl' => $url,
-                'expireMinutes' => $expire,
-                'supportEmail' => $supportEmail,
-            ]);
+            ->view('emails.auth.password-reset', $viewData)
+            ->text('emails.auth.password-reset_plain', $viewData);
     }
 
     protected function resetUrl(string $email): string
