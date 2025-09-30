@@ -173,7 +173,24 @@ class ProfileController extends Controller
         $currentHash = is_object($user) && isset($user->contrasena)
             ? $user->contrasena
             : ($uid ? Usuario::where('id_usuario_pk', $uid)->value('contrasena') : null);
-        if (!$currentHash || !Hash::check($request->current_password, $currentHash)) {
+
+        $currentOk = false;
+        if ($currentHash) {
+            $hashStr = (string) $currentHash;
+            $isKnownHash = preg_match('/^\$(2y|argon2id|argon2i)\$/', $hashStr) === 1;
+            if ($isKnownHash) {
+                try {
+                    $currentOk = Hash::check($request->current_password, $hashStr);
+                } catch (\Throwable $e) {
+                    $currentOk = false;
+                }
+            } else {
+                // Fallback para legado: si en la BD quedó en texto plano u otro formato, comparar directo
+                $currentOk = hash_equals($hashStr, (string) $request->current_password);
+            }
+        }
+
+        if (!$currentOk) {
             return response()->json([
                 'ok' => false,
                 'message' => 'La contraseña actual es incorrecta'
@@ -191,7 +208,21 @@ class ProfileController extends Controller
             : collect();
 
         foreach ($hashes as $hash) {
-            if (Hash::check($request->password, $hash)) {
+            if (!is_string($hash) || $hash === '') { continue; }
+            $hashStr = (string) $hash;
+            $isKnownHash = preg_match('/^\$(2y|argon2id|argon2i)\$/', $hashStr) === 1;
+            $reused = false;
+            if ($isKnownHash) {
+                try {
+                    $reused = Hash::check($request->password, $hashStr);
+                } catch (\Throwable $e) {
+                    $reused = false; // si falla por algoritmo, lo ignoramos
+                }
+            } else {
+                // Si por legado hay texto plano en historial, evitar reutilización exacta
+                $reused = hash_equals($hashStr, (string) $request->password);
+            }
+            if ($reused) {
                 return response()->json([
                     'ok' => false,
                     'message' => 'No puedes reutilizar una de tus últimas ' . $N . ' contraseñas.'
