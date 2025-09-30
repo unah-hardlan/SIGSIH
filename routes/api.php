@@ -92,9 +92,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('objetos', ObjetoController::class);
     Route::apiResource('tipos-objeto', TipoObjetoController::class)->only(['index']);
 
-    // MODULO DE PERSONAS
-    Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
-    Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
+    // MODULO DE PERSONAS (sin tipos-persona ni perfiles)
     Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
     Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
     Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);

@@ -579,14 +579,7 @@
                         </x-admin.sidebar-link>
                     </li>
                     @endif
-                    @if($perm->can($u, ['Perfiles'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-perfil" class="py-1 px-3">
-                            <i class="fas fa-user-shield text-sm w-4 text-center"></i>
-                            Perfiles
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
+                    
                     @if($perm->can($u, ['Servicio Factura'], 'consultar'))
                     <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-factura"
@@ -623,15 +616,7 @@
                         </x-admin.sidebar-link>
                     </li>
                     @endif
-                    @if($perm->can($u, ['Tipo de Personas'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-persona"
-                            class="py-1 px-3">
-                            <i class="fas fa-user-tag text-sm w-4 text-center"></i>
-                            Tipo de Personas
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
+                    
                     @if($perm->can($u, ['Tipo de Producto'], 'consultar'))
                     <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-producto"

@@ -5,6 +5,11 @@ function perfilPage() {
         success: false,
         saving: false,
         hasChanges: false,
+        errorBanner: '',
+        fieldErrors: {},
+        // Parámetros y validación en cliente
+        dniFormat: '', // valor exacto del parámetro "FORMATO DNI"
+        dniPattern: null, // instancia RegExp construida desde dniFormat
         originalForm: {},
         originalAvatar: "",
         passwordForm: {
@@ -24,12 +29,10 @@ function perfilPage() {
             segundo_apellido: "",
             dni: "",
             cargo: "",
-            id_tipo_persona_fk: "",
             id_genero_fk: "",
-            id_perfil_fk: ""
+
         },
-        tiposPersona: [],
-        perfiles: [],
+
         email: "",
         displayName: "Mi Perfil",
         cargo: "",
@@ -91,9 +94,7 @@ function perfilPage() {
                             segundo_apellido: p.segundo_apellido || "",
                             dni: p.dni || "",
                             cargo: p.cargo || "",
-                            id_tipo_persona_fk: p.id_tipo_persona_fk || "",
                             id_genero_fk: p.id_genero_fk || "",
-                            id_perfil_fk: p.id_perfil_fk || ""
                         };
                         this.personaAvatar = p.avatar_path
                             ? (p.avatar_path.startsWith("http")
@@ -107,22 +108,82 @@ function perfilPage() {
             // Siempre refrescar desde el backend
             this.cargarDatos();
             this.cargarCatalogos();
+            this.cargarParametros();
+        },
+
+        async cargarParametros(){
+            try{
+                // Buscar parámetro FORMATO DNI (usa api index con filtro q)
+                const res = await fetch('/api/parametros?q=' + encodeURIComponent('FORMATO DNI') + '&per_page=1', { credentials: 'same-origin' });
+                if(res.ok){
+                    const data = await res.json();
+                    const first = Array.isArray(data?.data) ? data.data[0] : null;
+                    const valor = (first && (first.valor || first['valor'])) ? (first.valor || first['valor']) : '';
+                    this.dniFormat = (valor || '').toString().trim();
+                }
+            }catch(_){ /* noop: usar fallback */ }
+            // Fallback si vacío
+            if(!this.dniFormat){ this.dniFormat = '0000-0000-00000'; }
+            // Construir patrón
+            this.dniPattern = this.buildDniRegex(this.dniFormat);
+        },
+
+        buildDniRegex(format){
+            try{
+                const f = (format || '').toString().trim();
+                if(!f){ return new RegExp('^(?:\\d{13}|\\d{4}-\\d{4}-\\d{5})$'); }
+                if(/^\d+$/.test(f)){
+                    const n = Math.max(1, parseInt(f,10)||1);
+                    return new RegExp('^\\d{' + n + ',}$');
+                }
+                const esc = s => s.replace(/[.*+?^${}()|[\]\\\-:]/g, '\\$&');
+                let regex = '^';
+                for(let i=0;i<f.length;i++){
+                    const ch = f[i];
+                    if(ch==='0') regex += '\\d'; else regex += esc(ch);
+                }
+                regex += '$';
+                return new RegExp(regex);
+            }catch(_){
+                return new RegExp('^(?:\\d{13}|\\d{4}-\\d{4}-\\d{5})$');
+            }
+        },
+
+        validarFormulario(){
+            const errs = {};
+            const msgs = [];
+            // Requeridos básicos
+            if(!this.form.primer_nombre || !this.form.primer_nombre.toString().trim()){
+                errs.primer_nombre = ['El primer nombre es obligatorio.']; msgs.push(errs.primer_nombre[0]);
+            }
+            if(!this.form.primer_apellido || !this.form.primer_apellido.toString().trim()){
+                errs.primer_apellido = ['El primer apellido es obligatorio.']; msgs.push(errs.primer_apellido[0]);
+            }
+            if(!this.form.id_genero_fk || this.form.id_genero_fk === ''){
+                errs.id_genero_fk = ['El género es obligatorio.']; msgs.push(errs.id_genero_fk[0]);
+            }
+            // DNI
+            const dni = (this.form.dni || '').toString().trim();
+            if(!dni){ errs.dni = ['El DNI es obligatorio.']; msgs.push(errs.dni[0]); }
+            else {
+                const re = this.dniPattern instanceof RegExp ? this.dniPattern : this.buildDniRegex(this.dniFormat);
+                if(!re.test(dni)){
+                    if(/^\d+$/.test(this.dniFormat)){
+                        errs.dni = ['El DNI no cumple con el formato. Debe contener al menos ' + this.dniFormat + ' dígitos.'];
+                    } else {
+                        errs.dni = ['El DNI no cumple con el formato. El formato es: ' + this.dniFormat + '.'];
+                    }
+                    msgs.push(errs.dni[0]);
+                }
+            }
+            this.fieldErrors = errs;
+            this.errorBanner = msgs.join(' \u2022 ');
+            return msgs.length===0;
         },
 
         async cargarCatalogos() {
             try {
-                const [tpRes, perfRes] = await Promise.all([
-                    fetch("/api/tipos-persona?all=1", { credentials: "same-origin" }),
-                    fetch("/api/perfiles?all=1", { credentials: "same-origin" })
-                ]);
-                if (tpRes.ok) {
-                    const data = await tpRes.json();
-                    this.tiposPersona = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
-                }
-                if (perfRes.ok) {
-                    const data = await perfRes.json();
-                    this.perfiles = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
-                }
+                // catálogos ya no requieren tipos de persona ni perfiles
             } catch (_) { /* noop */ }
         },
 
@@ -143,9 +204,8 @@ function perfilPage() {
                             segundo_apellido: data.persona.segundo_apellido || "",
                             dni: data.persona.dni || "",
                             cargo: data.persona.cargo || "",
-                            id_tipo_persona_fk: data.persona.id_tipo_persona_fk || "",
                             id_genero_fk: data.persona.id_genero_fk || "",
-                            id_perfil_fk: data.persona.id_perfil_fk || ""
+
                         };
                         this.personaAvatar = data.persona.avatar_path
                             ? (data.persona.avatar_path.startsWith("http")
@@ -155,6 +215,9 @@ function perfilPage() {
                         // Baselines
                         this.originalForm = JSON.parse(JSON.stringify(this.form));
                         this.originalAvatar = this.personaAvatar || "";
+                        // Baselines y limpieza de errores al cargar
+                        this.errorBanner = '';
+                        this.fieldErrors = {};
                         this.checkForChanges();
                     }
                     // Sin localStorage
@@ -323,6 +386,12 @@ function perfilPage() {
         async guardar() {
             try {
                 this.saving = true;
+                // Validación en cliente antes de enviar para evitar 422 y ruido de consola
+                this.errorBanner = '';
+                this.fieldErrors = {};
+                if(!this.validarFormulario()){
+                    return; // no enviar si no pasa validación local
+                }
                 const res = await fetch("/api/perfil/persona", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -330,8 +399,18 @@ function perfilPage() {
                     body: JSON.stringify(this.form)
                 });
                 if (!res.ok) {
-                    const err = await res.json().catch(() => ({ message: "Error" }));
-                    alert(err.message || "Error al guardar");
+                    const payload = await res.json().catch(() => ({}));
+                    this.fieldErrors = {};
+                    this.errorBanner = '';
+                    if (res.status === 422 && payload && payload.errors) {
+                        this.fieldErrors = payload.errors;
+                        const all = Object.values(payload.errors)
+                            .map(arr => (Array.isArray(arr) ? arr[0] : String(arr)))
+                            .filter(Boolean);
+                        this.errorBanner = all.join(' \u2022 ');
+                    } else {
+                        this.errorBanner = payload.message || 'Error al guardar';
+                    }
                     return;
                 }
                 const data = await res.json();
@@ -345,13 +424,16 @@ function perfilPage() {
                 }
 
                 this.success = true;
+                // limpiar errores al guardar con éxito
+                this.errorBanner = '';
+                this.fieldErrors = {};
                 // reset baselines
                 this.originalForm = JSON.parse(JSON.stringify(this.form));
                 this.originalAvatar = this.personaAvatar || "";
                 this.hasChanges = false;
                 setTimeout(() => { this.success = false; }, 2000);
-            } catch (_) {
-                alert("Error al guardar");
+            } catch (e) {
+                this.errorBanner = e?.message || 'Error al guardar';
             } finally {
                 this.saving = false;
             }
@@ -532,7 +614,12 @@ function perfilPage() {
             }
         },
 
-        onFormChange() { this.checkForChanges(); }
+        onFormChange() {
+            // al editar, limpiar mensajes de error para no dejarlos pegados
+            this.errorBanner = '';
+            this.fieldErrors = {};
+            this.checkForChanges();
+        }
     };
 }
 

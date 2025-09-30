@@ -20,15 +20,11 @@ class Persona extends Model
         'dni',
         'cargo',
     'avatar_path',
-        'id_tipo_persona_fk',
         'id_genero_fk',
-        'id_perfil_fk',
         'id_usuario_fk',
     ];
 
-    public function tipoPersona(){ return $this->belongsTo(TipoPersona::class,'id_tipo_persona_fk','id_tipo_persona_pk'); }
     public function genero(){ return $this->belongsTo(Genero::class,'id_genero_fk','id_genero_pk'); }
-    public function perfil(){ return $this->belongsTo(Perfil::class,'id_perfil_fk','id_perfil_pk'); }
     public function usuario(){ return $this->belongsTo(Usuario::class,'id_usuario_fk','id_usuario_pk'); }
 
     public function contactos()

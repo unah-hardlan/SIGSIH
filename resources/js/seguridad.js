@@ -18,7 +18,7 @@
     { id: 'mantenimiento', title: 'Mantenimiento', items: ['Mantenimiento del Sistema', 'Mantenimiento del sistema'] },
     {
       id: 'catalogo', title: 'Catalogo', items: [
-        'Acciones Realizadas', 'Administración de Facturas', 'Categorias de Ingresos y Gastos', 'Categorías de Ingresos y Gastos', 'Estados CAI', 'Estados de Proyecto', 'Estados de Solicitud', 'Estados de Tickets', 'Estados del Calendario', 'Género', 'Genero', 'Perfiles', 'Servicio Factura', 'Servicios Realizados', 'Tipo de Movimiento', 'Tipo de Objeto', 'Tipo de Personas', 'Tipo de Producto', 'Tipo de Visita', 'Ubicaciones'
+  'Acciones Realizadas', 'Administración de Facturas', 'Categorias de Ingresos y Gastos', 'Categorías de Ingresos y Gastos', 'Estados CAI', 'Estados de Proyecto', 'Estados de Solicitud', 'Estados de Tickets', 'Estados del Calendario', 'Género', 'Genero', 'Servicio Factura', 'Servicios Realizados', 'Tipo de Movimiento', 'Tipo de Objeto', 'Tipo de Producto', 'Tipo de Visita', 'Ubicaciones'
       ]
     },
   ];
