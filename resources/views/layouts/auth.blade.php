@@ -13,7 +13,6 @@
             display: none !important
         }
         
-        /* Input borders - Inline styles for production compatibility */
         input[type="text"].auth-input,
         input[type="email"].auth-input,
         input[type="password"].auth-input,
@@ -21,7 +20,7 @@
         .auth-input {
             border-width: 1px !important;
             border-style: solid !important;
-            border-color: #374151 !important; /* Gray-700 border in light mode */
+            border-color: #374151 !important;
         }
 
         input[type="text"].auth-input:focus,
@@ -42,7 +41,7 @@
         .dark .auth-input {
             border-width: 1px !important;
             border-style: solid !important;
-            border-color: #6b7280 !important; /* Gray-500 border in dark mode */
+            border-color: #6b7280 !important;
         }
 
         .dark input[type="text"].auth-input:focus,
@@ -56,13 +55,12 @@
             box-shadow: none !important;
         }
 
-        /* Error state borders - Keep red */
         .auth-input.border-red-500 {
-            border-color: #ef4444 !important; /* red-500 */
+            border-color: #ef4444 !important;
         }
 
         .auth-input.border-red-500:focus {
-            border-color: #ef4444 !important; /* red-500 */
+            border-color: #ef4444 !important;
         }
     </style>
 
@@ -74,7 +72,6 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <script>
-        // Pre-render theme script - Se ejecuta inmediatamente para evitar flash
         (function() {
             try {
                 const saved = localStorage.getItem('theme');
@@ -87,7 +84,6 @@
             } catch (_) {}
         })();
         
-        // Fallback auth component para casos donde auth.js no carga
         document.addEventListener('alpine:init', () => {
             if (!window.authPage) {
                 console.warn('authPage not loaded, creating fallback');
@@ -115,9 +111,7 @@
                     
                     initTheme() {
                         try {
-                            // Leer el estado actual del DOM en lugar de recalcular
                             this.isDark = document.documentElement.classList.contains('dark');
-                            // Solo aplicar si hay discrepancia (por seguridad)
                             document.documentElement.classList.toggle("dark", this.isDark);
                         } catch (_) {}
                     },
@@ -149,7 +143,6 @@
                         }
                     },
                     
-                    // Validación de Usuario
                     usernameIssues(username) {
                         const value = username || "";
                         const issues = [];
@@ -167,7 +160,6 @@
                         return this.usernameIssues(username).length === 0;
                     },
                     
-                    // Validación de Nombre de Usuario
                     nombreUsuarioIssues(nombre) {
                         const value = nombre || "";
                         const issues = [];
@@ -183,7 +175,6 @@
                         return this.nombreUsuarioIssues(nombre).length === 0;
                     },
                     
-                    // Validación de Email
                     emailIssues(email) {
                         const value = email || "";
                         const issues = [];
@@ -202,7 +193,6 @@
                         return this.emailIssues(email).length === 0;
                     },
                     
-                    // Validación de Confirmar Contraseña
                     confirmPasswordIssues() {
                         const issues = [];
                         if (!this.isLogin && this.confirmPassword.length === 0) {
@@ -293,7 +283,7 @@
 
         <div class="w-full max-w-sm mx-auto">
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-400 dark:border-gray-500 p-4 transition-colors">
+                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-600 dark:border-gray-500 p-4 transition-colors">
                 <div class="text-center mb-4">
                     <div
                         class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
@@ -328,12 +318,10 @@
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (!isLogin && nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
                                 placeholder="Usuario" />
-                            <!-- Error del servidor -->
                             <template x-if="fieldErrors.nombre_usuario">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.nombre_usuario[0]"></p>
                             </template>
-                            <!-- Validación en tiempo real -->
                             <template x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in nombreUsuarioIssues(nombre_usuario)" :key="issue">
@@ -355,12 +343,10 @@
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (!isLogin && email && !validateEmail(email)) }"
                                 placeholder="correo@ejemplo.com" />
-                            <!-- Error del servidor -->
                             <template x-if="fieldErrors.correo_electronico">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.correo_electronico[0]"></p>
                             </template>
-                            <!-- Validación en tiempo real -->
                             <template x-if="!isLogin && email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in emailIssues(email)" :key="issue">
@@ -423,7 +409,6 @@
                                         class="w-4 h-4"></i>
                                 </button>
                             </div>
-                            <!-- Validación en tiempo real -->
                             <template x-if="!isLogin && confirmPassword && confirmPasswordIssues().length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in confirmPasswordIssues()" :key="issue">
@@ -445,12 +430,10 @@
                             class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
                             placeholder="Usuario123" />
-                        <!-- Error del servidor -->
                         <template x-if="fieldErrors.usuario">
                             <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                 x-text="fieldErrors.usuario[0]"></p>
                         </template>
-                        <!-- Validación en tiempo real -->
                         <template x-if="username && !fieldErrors.usuario && usernameIssues(username).length > 0">
                             <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                 <template x-for="issue in usernameIssues(username)" :key="issue">

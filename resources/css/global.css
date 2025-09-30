@@ -1,11 +1,9 @@
-/* Alpine.js x-cloak support */
 [x-cloak] {
     display: none !important;
 }
 
-/* Ensure body background is consistent during load */
 body {
-    background-color: #f9fafb !important; /* gray-50 */
+    background-color: #f9fafb !important;
 }
 
 .logo {
@@ -16,7 +14,6 @@ body {
     object-fit: contain;
 }
 
-/* App-wide logo helper: uses CSS variables to allow dynamic sizing */
 .app-logo {
     height: auto;
     max-height: var(--app-logo-max, 112px);
@@ -55,11 +52,11 @@ body {
 }
 
 .scrollbar-hidden {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE y Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 .scrollbar-hidden::-webkit-scrollbar {
-    display: none; /* Chrome, Safari y Opera */
+    display: none;
 }
 
 .page-transition-enter-active,
@@ -99,33 +96,30 @@ aside::-webkit-scrollbar-track {
     border-radius: 8px;
 }
 
-/* Validation Messages - Force red color */
 .validation-error {
-    color: #dc2626 !important; /* red-600 */
+    color: #dc2626 !important;
 }
 
 .dark .validation-error {
-    color: #f87171 !important; /* red-400 */
+    color: #f87171 !important;
 }
 
-/* Validation Icons - Force red color */
 .validation-error .fas {
-    color: #dc2626 !important; /* red-600 */
+    color: #dc2626 !important;
 }
 
 .dark .validation-error .fas {
-    color: #f87171 !important; /* red-400 */
+    color: #f87171 !important;
 }
 
-/* Input borders - Custom colors */
 input[type="text"].auth-input,
 input[type="email"].auth-input,
 input[type="password"].auth-input,
 input.auth-input,
 .auth-input {
-    border-width: 1px !important; /* Ensure thin border */
+    border-width: 1px !important;
     border-style: solid !important;
-    border-color: #374151 !important; /* Gray-700 border in light mode - darker */
+    border-color: #374151 !important;
 }
 
 input[type="text"].auth-input:focus,
@@ -133,40 +127,33 @@ input[type="email"].auth-input:focus,
 input[type="password"].auth-input:focus,
 input.auth-input:focus,
 .auth-input:focus {
-    border-width: 1px !important; /* Keep thin border on focus */
-    border-color: #374151 !important; /* Keep gray-700 border on focus in light mode */
+    border-width: 1px !important;
+    border-color: #374151 !important;
     outline: none !important;
     box-shadow: none !important;
 }
 
-.dark input[type="text"].auth-input,
-.dark input[type="email"].auth-input,
-.dark input[type="password"].auth-input,
 .dark input.auth-input,
 .dark .auth-input {
-    border-width: 1px !important; /* Ensure thin border in dark mode */
+    border-width: 1px !important;
     border-style: solid !important;
-    border-color: #6b7280 !important; /* Gray-500 border in dark mode */
+    border-color: #9ca3af !important;
 }
 
-.dark input[type="text"].auth-input:focus,
-.dark input[type="email"].auth-input:focus,
-.dark input[type="password"].auth-input:focus,
 .dark input.auth-input:focus,
 .dark .auth-input:focus {
-    border-width: 1px !important; /* Keep thin border on focus in dark mode */
-    border-color: #6b7280 !important; /* Keep gray-500 border on focus in dark mode */
+    border-width: 1px !important;
+    border-color: #9ca3af !important;
     outline: none !important;
     box-shadow: none !important;
 }
 
-/* Error state borders - Keep red */
 .auth-input.border-red-500 {
-    border-color: #ef4444 !important; /* red-500 */
+    border-color: #ef4444 !important;
 }
 
 .auth-input.border-red-500:focus {
-    border-color: #ef4444 !important; /* red-500 */
+    border-color: #ef4444 !important;
 }
 aside {
     scrollbar-width: thin;
