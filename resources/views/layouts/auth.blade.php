@@ -12,6 +12,58 @@
         [x-cloak] {
             display: none !important
         }
+        
+        /* Input borders - Inline styles for production compatibility */
+        input[type="text"].auth-input,
+        input[type="email"].auth-input,
+        input[type="password"].auth-input,
+        input.auth-input,
+        .auth-input {
+            border-width: 1px !important;
+            border-style: solid !important;
+            border-color: #374151 !important; /* Gray-700 border in light mode */
+        }
+
+        input[type="text"].auth-input:focus,
+        input[type="email"].auth-input:focus,
+        input[type="password"].auth-input:focus,
+        input.auth-input:focus,
+        .auth-input:focus {
+            border-width: 1px !important;
+            border-color: #374151 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .dark input[type="text"].auth-input,
+        .dark input[type="email"].auth-input,
+        .dark input[type="password"].auth-input,
+        .dark input.auth-input,
+        .dark .auth-input {
+            border-width: 1px !important;
+            border-style: solid !important;
+            border-color: #6b7280 !important; /* Gray-500 border in dark mode */
+        }
+
+        .dark input[type="text"].auth-input:focus,
+        .dark input[type="email"].auth-input:focus,
+        .dark input[type="password"].auth-input:focus,
+        .dark input.auth-input:focus,
+        .dark .auth-input:focus {
+            border-width: 1px !important;
+            border-color: #6b7280 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Error state borders - Keep red */
+        .auth-input.border-red-500 {
+            border-color: #ef4444 !important; /* red-500 */
+        }
+
+        .auth-input.border-red-500:focus {
+            border-color: #ef4444 !important; /* red-500 */
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
