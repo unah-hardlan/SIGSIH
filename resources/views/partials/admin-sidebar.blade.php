@@ -16,8 +16,8 @@
             });
         }
     });
-    " x-show="!isMobile || sidebarOpen" :class="{
-        'fixed inset-y-0 left-0 w-72 min-w-[18rem]': sidebarOpen && isMobile,
+    " x-show="sidebarOpen" :class="{
+        'fixed inset-y-0 left-0 w-72 min-w-[18rem] h-full': isMobile,
         'w-72 min-w-[18rem]': !isMobile && sidebarOpen,
         'w-20 min-w-[5rem]': !isMobile && !sidebarOpen
     }"
