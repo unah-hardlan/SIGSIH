@@ -56,7 +56,7 @@
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
-      }" x-init="initResponsiveSidebar($data)">
+      }" x-init="initResponsiveSidebar($data); sidebarOpen = !isMobile;">
     <div class="flex min-h-screen relative">
         <!-- Overlay para móviles SOLO -->
         <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
