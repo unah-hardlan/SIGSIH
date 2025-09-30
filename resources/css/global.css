@@ -98,6 +98,24 @@ aside::-webkit-scrollbar-track {
     background: #1f2937;
     border-radius: 8px;
 }
+
+/* Validation Messages - Force red color */
+.validation-error {
+    color: #dc2626 !important; /* red-600 */
+}
+
+.dark .validation-error {
+    color: #f87171 !important; /* red-400 */
+}
+
+/* Validation Icons - Force red color */
+.validation-error .fas {
+    color: #dc2626 !important; /* red-600 */
+}
+
+.dark .validation-error .fas {
+    color: #f87171 !important; /* red-400 */
+}
 aside {
     scrollbar-width: thin;
     scrollbar-color: #facc15 #1f2937;

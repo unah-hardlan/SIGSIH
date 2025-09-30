@@ -97,6 +97,70 @@
                         }
                     },
                     
+                    // Validación de Usuario
+                    usernameIssues(username) {
+                        const value = username || "";
+                        const issues = [];
+                        if (value.length === 0) {
+                            issues.push("El usuario es requerido.");
+                        } else if (!/^[A-Za-z0-9]+$/.test(value)) {
+                            issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
+                        } else if (value.length > 50) {
+                            issues.push("Máximo 50 caracteres permitidos.");
+                        }
+                        return issues;
+                    },
+                    
+                    validateUsername(username) {
+                        return this.usernameIssues(username).length === 0;
+                    },
+                    
+                    // Validación de Nombre de Usuario
+                    nombreUsuarioIssues(nombre) {
+                        const value = nombre || "";
+                        const issues = [];
+                        if (!this.isLogin && value.length === 0) {
+                            issues.push("El nombre de usuario es requerido.");
+                        } else if (value.length > 0 && !/^[A-Za-z0-9]+$/.test(value)) {
+                            issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
+                        }
+                        return issues;
+                    },
+                    
+                    validateNombreUsuario(nombre) {
+                        return this.nombreUsuarioIssues(nombre).length === 0;
+                    },
+                    
+                    // Validación de Email
+                    emailIssues(email) {
+                        const value = email || "";
+                        const issues = [];
+                        if (!this.isLogin && value.length === 0) {
+                            issues.push("El correo electrónico es requerido.");
+                        } else if (value.length > 0) {
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (!emailRegex.test(value)) {
+                                issues.push("Ingresa un correo electrónico válido.");
+                            }
+                        }
+                        return issues;
+                    },
+                    
+                    validateEmail(email) {
+                        return this.emailIssues(email).length === 0;
+                    },
+                    
+                    // Validación de Confirmar Contraseña
+                    confirmPasswordIssues() {
+                        const issues = [];
+                        if (!this.isLogin && this.confirmPassword.length === 0) {
+                            issues.push("Debes confirmar tu contraseña.");
+                        } else if (this.confirmPassword.length > 0 && this.password !== this.confirmPassword) {
+                            issues.push("Las contraseñas no coinciden.");
+                        }
+                        return issues;
+                    },
+                    
                     passwordIssues(pw) {
                         const value = pw || "";
                         const issues = [];
@@ -111,7 +175,7 @@
                     },
                     
                     validateConfirmPassword() {
-                        return this.password === this.confirmPassword;
+                        return this.confirmPasswordIssues().length === 0;
                     },
                     
                     async handleSubmit() {
@@ -177,7 +241,7 @@
 
         <div class="w-full max-w-sm mx-auto">
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-600 p-4 transition-colors">
+                class="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-600 dark:border-gray-500 p-4 transition-colors">
                 <div class="text-center mb-4">
                     <div
                         class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
@@ -208,15 +272,25 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
                                 de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
-                                pattern="^[A-Za-z0-9]+$"
-                                title="Sólo letras y números"
-                                @input="handleNombreUsuarioInput"
+                                @input="clearFieldError('nombre_usuario')"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario }"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (!isLogin && nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
                                 placeholder="Usuario" />
+                            <!-- Error del servidor -->
                             <template x-if="fieldErrors.nombre_usuario">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.nombre_usuario[0]"></p>
+                            </template>
+                            <!-- Validación en tiempo real -->
+                            <template x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
+                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                    <template x-for="issue in nombreUsuarioIssues(nombre_usuario)" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
                             </template>
                         </div>
 
@@ -227,11 +301,23 @@
                             <input type="email" name="email" x-model="email" :required="!isLogin"
                                 @input="clearFieldError('correo_electronico')"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico }"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (!isLogin && email && !validateEmail(email)) }"
                                 placeholder="correo@ejemplo.com" />
+                            <!-- Error del servidor -->
                             <template x-if="fieldErrors.correo_electronico">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.correo_electronico[0]"></p>
+                            </template>
+                            <!-- Validación en tiempo real -->
+                            <template x-if="!isLogin && email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
+                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                    <template x-for="issue in emailIssues(email)" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
                             </template>
                         </div>
 
@@ -240,11 +326,10 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    :required="!isLogin" maxlength="100" pattern="^(?=.*[A-Z])\S{8,100}$"
-                                    title="Mínimo 8 caracteres, sin espacios y al menos una letra mayúscula"
+                                    :required="!isLogin" maxlength="100"
                                     @input="clearFieldError('contrasena')"
                                     class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
+                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (!isLogin && password && !validatePassword(password)) }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -254,7 +339,7 @@
                             </div>
                             <template x-if="password">
                                 <ul x-show="passwordIssues(password).length"
-                                    class="mt-1 text-xs text-red-600 nunito-regular space-y-1">
+                                    class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in passwordIssues(password)" :key="issue">
                                         <li class="flex items-center gap-1">
                                             <i class="fas fa-exclamation-circle text-[10px]"></i>
@@ -277,6 +362,7 @@
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
                                     x-model="confirmPassword" :required="!isLogin" maxlength="100"
                                     class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    :class="{ 'border-red-500 focus:border-red-500': !isLogin && confirmPassword && !validateConfirmPassword() }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -285,25 +371,43 @@
                                         class="w-4 h-4"></i>
                                 </button>
                             </div>
-                            <p x-show="confirmPassword && !validateConfirmPassword()"
-                                class="mt-1 text-xs text-red-600 nunito-regular">
-                                Las contraseñas no coinciden
-                            </p>
+                            <!-- Validación en tiempo real -->
+                            <template x-if="!isLogin && confirmPassword && confirmPasswordIssues().length > 0">
+                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                    <template x-for="issue in confirmPasswordIssues()" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
                         </div>
                     </div>
 
                     <div :class="{ 'mb-4': isLogin, 'mb-2': !isLogin }">
                         <label
                             class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
-                        <input type="text" name="username" x-model="username" required maxlength="50" pattern="^[A-Za-z0-9]+$"
-                            @input="handleUsernameInput"
-                            title="Sólo letras y números"
+                        <input type="text" name="username" x-model="username" required maxlength="50"
+                            @input="clearFieldError('usuario')"
                             class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario }"
-                            placeholder="John Doe" />
+                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
+                            placeholder="Usuario123" />
+                        <!-- Error del servidor -->
                         <template x-if="fieldErrors.usuario">
                             <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                 x-text="fieldErrors.usuario[0]"></p>
+                        </template>
+                        <!-- Validación en tiempo real -->
+                        <template x-if="username && !fieldErrors.usuario && usernameIssues(username).length > 0">
+                            <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                <template x-for="issue in usernameIssues(username)" :key="issue">
+                                    <li class="flex items-center gap-1">
+                                        <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                        <span x-text="issue"></span>
+                                    </li>
+                                </template>
+                            </ul>
                         </template>
                     </div>
 
