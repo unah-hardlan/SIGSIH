@@ -118,21 +118,31 @@ aside::-webkit-scrollbar-track {
 }
 
 /* Input borders - Custom colors */
+input.auth-input,
 .auth-input {
+    border-width: 1px !important; /* Ensure thin border */
+    border-style: solid !important;
     border-color: #6b7280 !important; /* Gray-500 border in light mode */
 }
 
+input.auth-input:focus,
 .auth-input:focus {
+    border-width: 1px !important; /* Keep thin border on focus */
     border-color: #6b7280 !important; /* Keep gray-500 border on focus in light mode */
     outline: none !important;
     box-shadow: none !important;
 }
 
+.dark input.auth-input,
 .dark .auth-input {
-    border-color: #9ca3af !important; /* Gray-400 border in dark mode (darker) */
+    border-width: 1px !important; /* Ensure thin border in dark mode */
+    border-style: solid !important;
+    border-color: #9ca3af !important; /* Gray-400 border in dark mode */
 }
 
+.dark input.auth-input:focus,
 .dark .auth-input:focus {
+    border-width: 1px !important; /* Keep thin border on focus in dark mode */
     border-color: #9ca3af !important; /* Keep gray-400 border on focus in dark mode */
     outline: none !important;
     box-shadow: none !important;
