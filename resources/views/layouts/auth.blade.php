@@ -12,26 +12,78 @@
         [x-cloak] {
             display: none !important
         }
+        
+        input[type="text"].auth-input,
+        input[type="email"].auth-input,
+        input[type="password"].auth-input,
+        input.auth-input,
+        .auth-input {
+            border-width: 1px !important;
+            border-style: solid !important;
+            border-color: #374151 !important;
+        }
+
+        input[type="text"].auth-input:focus,
+        input[type="email"].auth-input:focus,
+        input[type="password"].auth-input:focus,
+        input.auth-input:focus,
+        .auth-input:focus {
+            border-width: 1px !important;
+            border-color: #374151 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .dark input[type="text"].auth-input,
+        .dark input[type="email"].auth-input,
+        .dark input[type="password"].auth-input,
+        .dark input.auth-input,
+        .dark .auth-input {
+            border-width: 1px !important;
+            border-style: solid !important;
+            border-color: #6b7280 !important;
+        }
+
+        .dark input[type="text"].auth-input:focus,
+        .dark input[type="email"].auth-input:focus,
+        .dark input[type="password"].auth-input:focus,
+        .dark input.auth-input:focus,
+        .dark .auth-input:focus {
+            border-width: 1px !important;
+            border-color: #6b7280 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .auth-input.border-red-500 {
+            border-color: #ef4444 !important;
+        }
+
+        .auth-input.border-red-500:focus {
+            border-color: #ef4444 !important;
+        }
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     @livewireStyles
 
-    {{-- Cargar axios primero --}}
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
-    {{-- Cargar Alpine.js --}}
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
-    {{-- Cargar auth.js después --}}
-    <script src="{{ Vite::asset('resources/js/auth.js') }}" defer></script>
-    
-    {{-- Otros scripts --}}
-    <script src="/js/login-guard.js" defer></script>
-    <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
-    
-    {{-- Inline fallback para asegurar que switchMode esté disponible --}}
     <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+        
         document.addEventListener('alpine:init', () => {
             if (!window.authPage) {
                 console.warn('authPage not loaded, creating fallback');
@@ -59,7 +111,7 @@
                     
                     initTheme() {
                         try {
-                            this.isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                            this.isDark = document.documentElement.classList.contains('dark');
                             document.documentElement.classList.toggle("dark", this.isDark);
                         } catch (_) {}
                     },
@@ -67,6 +119,9 @@
                     toggleTheme() {
                         this.isDark = !this.isDark;
                         document.documentElement.classList.toggle("dark", this.isDark);
+                        try {
+                            localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                        } catch (_) {}
                     },
                     
                     switchMode() {
@@ -88,6 +143,66 @@
                         }
                     },
                     
+                    usernameIssues(username) {
+                        const value = username || "";
+                        const issues = [];
+                        if (value.length === 0) {
+                            issues.push("El usuario es requerido.");
+                        } else if (!/^[A-Za-z0-9]+$/.test(value)) {
+                            issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
+                        } else if (value.length > 50) {
+                            issues.push("Máximo 50 caracteres permitidos.");
+                        }
+                        return issues;
+                    },
+                    
+                    validateUsername(username) {
+                        return this.usernameIssues(username).length === 0;
+                    },
+                    
+                    nombreUsuarioIssues(nombre) {
+                        const value = nombre || "";
+                        const issues = [];
+                        if (!this.isLogin && value.length === 0) {
+                            issues.push("El nombre de usuario es requerido.");
+                        } else if (value.length > 0 && !/^[A-Za-z0-9]+$/.test(value)) {
+                            issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
+                        }
+                        return issues;
+                    },
+                    
+                    validateNombreUsuario(nombre) {
+                        return this.nombreUsuarioIssues(nombre).length === 0;
+                    },
+                    
+                    emailIssues(email) {
+                        const value = email || "";
+                        const issues = [];
+                        if (!this.isLogin && value.length === 0) {
+                            issues.push("El correo electrónico es requerido.");
+                        } else if (value.length > 0) {
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (!emailRegex.test(value)) {
+                                issues.push("Ingresa un correo electrónico válido.");
+                            }
+                        }
+                        return issues;
+                    },
+                    
+                    validateEmail(email) {
+                        return this.emailIssues(email).length === 0;
+                    },
+                    
+                    confirmPasswordIssues() {
+                        const issues = [];
+                        if (!this.isLogin && this.confirmPassword.length === 0) {
+                            issues.push("Debes confirmar tu contraseña.");
+                        } else if (this.confirmPassword.length > 0 && this.password !== this.confirmPassword) {
+                            issues.push("Las contraseñas no coinciden.");
+                        }
+                        return issues;
+                    },
+                    
                     passwordIssues(pw) {
                         const value = pw || "";
                         const issues = [];
@@ -102,7 +217,7 @@
                     },
                     
                     validateConfirmPassword() {
-                        return this.password === this.confirmPassword;
+                        return this.confirmPasswordIssues().length === 0;
                     },
                     
                     async handleSubmit() {
@@ -148,13 +263,19 @@
             Alpine.data('authPage', window.authPage);
         });
     </script>
+    
+    <script src="{{ Vite::asset('resources/js/auth.js') }}" defer></script>
+    
+    <script src="/js/login-guard.js" defer></script>
+    <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
+
 </head>
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
         <div class="fixed top-4 right-4">
             <label @click.prevent="toggleTheme()"
-                class="switch cursor-pointer rounded-full border border-gray-300 dark:border-gray-500">
+                class="switch cursor-pointer rounded-full border border-gray-400 dark:border-gray-500">
                 <input type="checkbox" class="hidden" :checked="isDark">
                 <span class="slider"></span>
             </label>
@@ -162,7 +283,7 @@
 
         <div class="w-full max-w-sm mx-auto">
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
+                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-500 dark:border-gray-600 p-4 transition-colors shadow-lg">
                 <div class="text-center mb-4">
                     <div
                         class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
@@ -193,15 +314,23 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
                                 de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
-                                pattern="^[A-Za-z0-9]+$"
-                                title="Sólo letras y números"
-                                @input="handleNombreUsuarioInput"
-                                class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario }"
-                                placeholder="UsuarioDemo" />
+                                @input="clearFieldError('nombre_usuario')"
+                                class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (!isLogin && nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
+                                placeholder="Usuario" />
                             <template x-if="fieldErrors.nombre_usuario">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.nombre_usuario[0]"></p>
+                            </template>
+                            <template x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
+                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                    <template x-for="issue in nombreUsuarioIssues(nombre_usuario)" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
                             </template>
                         </div>
 
@@ -211,12 +340,22 @@
                                 electrónico</label>
                             <input type="email" name="email" x-model="email" :required="!isLogin"
                                 @input="clearFieldError('correo_electronico')"
-                                class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico }"
+                                class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (!isLogin && email && !validateEmail(email)) }"
                                 placeholder="correo@ejemplo.com" />
                             <template x-if="fieldErrors.correo_electronico">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.correo_electronico[0]"></p>
+                            </template>
+                            <template x-if="!isLogin && email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
+                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                    <template x-for="issue in emailIssues(email)" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
                             </template>
                         </div>
 
@@ -225,11 +364,10 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    :required="!isLogin" maxlength="100" pattern="^(?=.*[A-Z])\S{8,100}$"
-                                    title="Mínimo 8 caracteres, sin espacios y al menos una letra mayúscula"
+                                    :required="!isLogin" maxlength="100"
                                     @input="clearFieldError('contrasena')"
-                                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
+                                    class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (!isLogin && password && !validatePassword(password)) }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -239,7 +377,7 @@
                             </div>
                             <template x-if="password">
                                 <ul x-show="passwordIssues(password).length"
-                                    class="mt-1 text-xs text-red-600 nunito-regular space-y-1">
+                                    class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in passwordIssues(password)" :key="issue">
                                         <li class="flex items-center gap-1">
                                             <i class="fas fa-exclamation-circle text-[10px]"></i>
@@ -261,7 +399,8 @@
                             <div class="relative">
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
                                     x-model="confirmPassword" :required="!isLogin" maxlength="100"
-                                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    :class="{ 'border-red-500 focus:border-red-500': !isLogin && confirmPassword && !validateConfirmPassword() }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -270,25 +409,40 @@
                                         class="w-4 h-4"></i>
                                 </button>
                             </div>
-                            <p x-show="confirmPassword && !validateConfirmPassword()"
-                                class="mt-1 text-xs text-red-600 nunito-regular">
-                                Las contraseñas no coinciden
-                            </p>
+                            <template x-if="!isLogin && confirmPassword && confirmPasswordIssues().length > 0">
+                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                    <template x-for="issue in confirmPasswordIssues()" :key="issue">
+                                        <li class="flex items-center gap-1">
+                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                            <span x-text="issue"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
                         </div>
                     </div>
 
                     <div :class="{ 'mb-4': isLogin, 'mb-2': !isLogin }">
                         <label
                             class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
-                        <input type="text" name="username" x-model="username" required maxlength="50" pattern="^[A-Za-z0-9]+$"
-                            @input="handleUsernameInput"
-                            title="Sólo letras y números"
-                            class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario }"
+                        <input type="text" name="username" x-model="username" required maxlength="50"
+                            @input="clearFieldError('usuario')"
+                            class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
                             placeholder="Usuario123" />
                         <template x-if="fieldErrors.usuario">
                             <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                 x-text="fieldErrors.usuario[0]"></p>
+                        </template>
+                        <template x-if="username && !fieldErrors.usuario && usernameIssues(username).length > 0">
+                            <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                <template x-for="issue in usernameIssues(username)" :key="issue">
+                                    <li class="flex items-center gap-1">
+                                        <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                        <span x-text="issue"></span>
+                                    </li>
+                                </template>
+                            </ul>
                         </template>
                     </div>
 
@@ -299,7 +453,7 @@
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
                                 @input="clearFieldError('contrasena')"
-                                class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
                                 placeholder="••••••••" />
                             <button type="button"
@@ -374,7 +528,7 @@
             </p>
             <div class="mt-3">
                 <input type="text" inputmode="numeric" pattern="^\\d{6}$" maxlength="10" x-model="totpCode"
-                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+                    class="auth-input w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
                     placeholder="Código de 6 dígitos o recuperación" />
                 <p x-show="totpError" class="mt-1 text-xs text-red-600" x-text="totpError"></p>
             </div>

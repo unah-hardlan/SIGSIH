@@ -11,7 +11,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     @livewireStyles
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
+
+    <script>
+        // Pre-render theme script - Se ejecuta inmediatamente para evitar flash
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
@@ -24,7 +46,7 @@
         </div>
 
         <div class="w-full max-w-sm mx-auto">
-            <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
+            <div class="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-600 dark:border-gray-500 p-4 transition-colors">
                 <div class="text-center mb-4">
                     <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-500 transition-colors">
                         <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo" style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
@@ -41,24 +63,86 @@
                     <input type="hidden" name="token" :value="token">
 
                     <div class="mb-3">
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Correo electrónico</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo electrónico</label>
                         <input type="email" name="email" x-model="email" required
-                            class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                            @input="clearFieldError('email')"
+                            class="auth-input w-full px-3 py-2 rounded border transition-colors bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.email || (email && !validateEmail(email)) }"
                             placeholder="tu@correo.com">
+                        <!-- Error del servidor -->
+                        <template x-if="fieldErrors.email">
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                x-text="fieldErrors.email[0]"></p>
+                        </template>
+                        <!-- Validación en tiempo real -->
+                        <template x-if="email && !fieldErrors.email && emailIssues(email).length > 0">
+                            <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                <template x-for="issue in emailIssues(email)" :key="issue">
+                                    <li class="flex items-center gap-1">
+                                        <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                        <span x-text="issue"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
                     </div>
 
                     <div class="mb-3">
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nueva contraseña</label>
-                        <input type="password" name="password" x-model="password" required minlength="8"
-                            class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                            placeholder="Ingresa la nueva contraseña">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nueva contraseña</label>
+                        <div class="relative">
+                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password" required maxlength="100"
+                                @input="clearFieldError('password')"
+                                class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.password || (password && !validatePassword(password)) }"
+                                placeholder="Ingresa la nueva contraseña">
+                            <button type="button"
+                                class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
+                                @click="showPassword = !showPassword">
+                                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <template x-if="password">
+                            <ul x-show="passwordIssues(password).length"
+                                class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                <template x-for="issue in passwordIssues(password)" :key="issue">
+                                    <li class="flex items-center gap-1">
+                                        <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                        <span x-text="issue"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                        <!-- Error del servidor -->
+                        <template x-if="fieldErrors.password">
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                x-text="fieldErrors.password[0]"></p>
+                        </template>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Confirmar contraseña</label>
-                        <input type="password" name="password_confirmation" x-model="passwordConfirmation" required minlength="8"
-                            class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                            placeholder="Confirma la nueva contraseña">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar contraseña</label>
+                        <div class="relative">
+                            <input :type="showConfirmPassword ? 'text' : 'password'" name="password_confirmation" x-model="passwordConfirmation" required maxlength="100"
+                                class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': passwordConfirmation && !validateConfirmPassword() }"
+                                placeholder="Confirma la nueva contraseña">
+                            <button type="button"
+                                class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
+                                @click="showConfirmPassword = !showConfirmPassword">
+                                <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <!-- Validación en tiempo real -->
+                        <template x-if="passwordConfirmation && confirmPasswordIssues().length > 0">
+                            <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                <template x-for="issue in confirmPasswordIssues()" :key="issue">
+                                    <li class="flex items-center gap-1">
+                                        <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                        <span x-text="issue"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
                     </div>
 
                     <div class="flex gap-2">
@@ -97,15 +181,82 @@
                 passwordConfirmation: '',
                 loading: false,
                 isDark: false,
+                showPassword: false,
+                showConfirmPassword: false,
+                fieldErrors: {},
+                
                 get formValid() {
                     return this.email && this.password && this.passwordConfirmation && this.password === this.passwordConfirmation;
                 },
+                
                 init() {
-                    this.isDark = localStorage.getItem('theme') === 'dark';
+                    this.initTheme();
                 },
+                
+                initTheme() {
+                    try {
+                        this.isDark = document.documentElement.classList.contains('dark');
+                        document.documentElement.classList.toggle("dark", this.isDark);
+                    } catch (_) {}
+                },
+                
                 toggleTheme() {
                     this.isDark = !this.isDark;
-                    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                    document.documentElement.classList.toggle("dark", this.isDark);
+                    try {
+                        localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                    } catch (_) {}
+                },
+                
+                clearFieldError(field) {
+                    if (this.fieldErrors[field]) {
+                        delete this.fieldErrors[field];
+                    }
+                },
+                
+                emailIssues(email) {
+                    const value = email || "";
+                    const issues = [];
+                    if (value.length === 0) {
+                        issues.push("El correo electrónico es requerido.");
+                    } else {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(value)) {
+                            issues.push("Ingresa un correo electrónico válido.");
+                        }
+                    }
+                    return issues;
+                },
+                
+                validateEmail(email) {
+                    return this.emailIssues(email).length === 0;
+                },
+                
+                passwordIssues(pw) {
+                    const value = pw || "";
+                    const issues = [];
+                    if (value.length < 8) issues.push("Debe tener al menos 8 caracteres.");
+                    if (/\s/.test(value)) issues.push("No debe contener espacios.");
+                    if (!/[A-Z]/.test(value)) issues.push("Debe incluir al menos una letra mayúscula.");
+                    return issues;
+                },
+                
+                validatePassword(pw) {
+                    return this.passwordIssues(pw).length === 0;
+                },
+                
+                confirmPasswordIssues() {
+                    const issues = [];
+                    if (this.passwordConfirmation.length === 0) {
+                        issues.push("Debes confirmar tu contraseña.");
+                    } else if (this.passwordConfirmation.length > 0 && this.password !== this.passwordConfirmation) {
+                        issues.push("Las contraseñas no coinciden.");
+                    }
+                    return issues;
+                },
+                
+                validateConfirmPassword() {
+                    return this.confirmPasswordIssues().length === 0;
                 },
                 async handleReset() {
                     if (!this.formValid) return;
@@ -129,11 +280,20 @@
                             window.location.href = PASSWORD_RESET_LOGIN_URL;
                         }, 2000);
                     } catch (error) {
-                        const message = error.response?.data?.message || 'No se pudo restablecer la contraseña';
-                        if (window.showToast) {
-                            window.showToast(message, 'error');
+                        const resp = error?.response;
+                        if (resp?.status === 422) {
+                            this.fieldErrors = resp.data?.errors || {};
+                            const message = resp.data?.message || 'Hay errores de validación.';
+                            if (window.showToast) {
+                                window.showToast(message, 'error');
+                            }
                         } else {
-                            alert(message);
+                            const message = resp?.data?.message || 'No se pudo restablecer la contraseña';
+                            if (window.showToast) {
+                                window.showToast(message, 'error');
+                            } else {
+                                alert(message);
+                            }
                         }
                     } finally {
                         this.loading = false;
