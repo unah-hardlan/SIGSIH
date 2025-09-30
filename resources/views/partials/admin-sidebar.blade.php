@@ -22,7 +22,7 @@
         'w-20 min-w-[5rem]': !isMobile && !sidebarOpen
     }"
     class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 flex flex-col flex-shrink-0 p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto md:sticky md:top-0 md:h-screen"
-    style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 25;">
+    style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">
 
     @php
     use App\Services\PermissionService;
