@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" x-data="authPage" x-init="init()" :class="{ 'dark': isDark }">
+<html lang="es" x-data="authPage()" x-init="init()" :class="{ 'dark': isDark }">
 
 <head>
     <meta charset="UTF-8" />
@@ -224,22 +224,7 @@
                         <span class="mx-2 text-xs text-gray-400 dark:text-gray-500 nunito-regular">o</span>
                         <hr class="flex-grow border-gray-300 dark:border-gray-600" />
                     </div>
-
-                    <button type="button" @click="handleGoogle()"
-                        class="w-full bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 rounded font-medium flex items-center justify-center transition-colors mb-3 nunito-regular text-sm">
-                        <svg class="w-4 h-4 mr-2" viewBox="0 0 533.5 544.3">
-                            <path fill="#4285F4"
-                                d="M533.5 278.4c0-17.4-1.4-34.1-4-50.4H272v95.5h147.5c-6.4 34.7-25.5 64.1-54.5 83.8v69.7h87.9c51.6-47.6 81.6-117.8 81.6-198.6z" />
-                            <path fill="#34A853"
-                                d="M272 544.3c73.7 0 135.7-24.4 180.8-66.4l-87.9-69.7c-24.5 16.4-55.9 26-92.9 26-71.4 0-132-48.1-153.5-112.8H26.9v70.8C72 485.4 165.3 544.3 272 544.3z" />
-                            <path fill="#FBBC05"
-                                d="M118.5 324.6c-10.8-32.4-10.8-67.4 0-99.8V154h-91.6C8.6 204.5 0 238.8 0 272c0 33.2 8.6 67.5 26.9 99.9l91.6-47.3z" />
-                            <path fill="#EA4335"
-                                d="M272 107.7c39.9 0 75.7 13.7 104 40.5l78-78C409.3 24.6 345.3 0 272 0 165.3 0 72 58.9 26.9 154l91.6 70.8C140 155.8 200.6 107.7 272 107.7z" />
-                        </svg>
-                        Iniciar sesión con Google
-                    </button>
-
+                    
                     <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 nunito-regular">
                         <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'">¿No tienes una
                             cuenta?</span>

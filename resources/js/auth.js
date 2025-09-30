@@ -5,6 +5,7 @@ if (window.axios) {
 
 function createAuthPage() {
     return {
+        // State
         isLogin: true,
         showPassword: false,
         showConfirmPassword: false,
@@ -24,9 +25,14 @@ function createAuthPage() {
         totpError: "",
 
         init() {
+            // Ensure all properties are properly initialized
+            this.formError = this.formError || "";
+            this.fieldErrors = this.fieldErrors || {};
             try {
                 this.initTheme();
-            } catch (_) {}
+            } catch (e) {
+                console.warn("Theme initialization failed:", e);
+            }
         },
 
         initTheme() {
@@ -62,30 +68,39 @@ function createAuthPage() {
         },
 
         clearFieldError(field) {
-            if (!field) return;
-            if (!this.fieldErrors[field]) return;
-            const { [field]: _, ...rest } = this.fieldErrors;
-            this.fieldErrors = rest;
-            if (Object.keys(this.fieldErrors).length === 0) {
-                this.formError = "";
+            try {
+                if (!field) return;
+                if (!this.fieldErrors || !this.fieldErrors[field]) return;
+                const { [field]: _, ...rest } = this.fieldErrors;
+                this.fieldErrors = rest;
+                if (Object.keys(this.fieldErrors).length === 0) {
+                    this.formError = "";
+                }
+            } catch (e) {
+                console.warn("clearFieldError failed:", e);
             }
         },
 
         // Validaciones
         passwordIssues(pw) {
-            const value = pw || "";
-            const issues = [];
-            if (value.length < 8) {
-                issues.push("Debe tener al menos 8 caracteres.");
+            try {
+                const value = pw || "";
+                const issues = [];
+                if (value.length < 8) {
+                    issues.push("Debe tener al menos 8 caracteres.");
+                }
+                if (/\s/.test(value)) {
+                    issues.push("No debe contener espacios.");
+                }
+                const requireUppercase = !this.isLogin;
+                if (requireUppercase && !/[A-Z]/.test(value)) {
+                    issues.push("Debe incluir al menos una letra mayúscula.");
+                }
+                return issues;
+            } catch (e) {
+                console.warn("passwordIssues failed:", e);
+                return [];
             }
-            if (/\s/.test(value)) {
-                issues.push("No debe contener espacios.");
-            }
-            const requireUppercase = !this.isLogin;
-            if (requireUppercase && !/[A-Z]/.test(value)) {
-                issues.push("Debe incluir al menos una letra mayúscula.");
-            }
-            return issues;
         },
         validatePassword(pw) {
             return this.passwordIssues(pw).length === 0;
@@ -201,16 +216,30 @@ function createAuthPage() {
     };
 }
 
+// Make authPage available globally
 window.authPage = createAuthPage;
 
+// Register with Alpine.js
 function registerWithAlpine() {
     try {
         if (window.Alpine && typeof window.Alpine.data === "function") {
-            window.Alpine.data("authPage", () => window.authPage());
+            window.Alpine.data("authPage", createAuthPage);
         }
-    } catch (_) {}
+    } catch (e) {
+        console.warn("Alpine.js registration failed:", e);
+    }
 }
 
-registerWithAlpine();
+// Try to register immediately if Alpine is already loaded
+if (window.Alpine) {
+    registerWithAlpine();
+}
 
-document.addEventListener("alpine:init", registerWithAlpine);
+// Also register when Alpine initializes
+document.addEventListener("alpine:init", () => {
+    try {
+        window.Alpine.data("authPage", createAuthPage);
+    } catch (e) {
+        console.warn("Alpine.js init registration failed:", e);
+    }
+});
