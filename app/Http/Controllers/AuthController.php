@@ -351,27 +351,27 @@ class AuthController extends Controller
 
         $hashes = $historialQuery->pluck('contrasena');
         foreach ($hashes as $hash) {
-            if (!is_string($hash) || $hash === '') {
-                continue;
-            }
-
-            if (preg_match('/^\$(2y|argon2id|argon2i)\$/', $hash) === 1) {
-                if (Hash::check($data['password'], $hash)) {
-                    return response()->json([
-                        'message' => 'No puedes reutilizar una de tus últimas 5 contraseñas.'
-                    ], 422);
+            if (!is_string($hash) || $hash === '') { continue; }
+            $hashStr = (string) $hash;
+            $isKnownHash = preg_match('/^\$(2y|argon2id|argon2i)\$/', $hashStr) === 1;
+            $reused = false;
+            if ($isKnownHash) {
+                try {
+                    $reused = Hash::check($data['password'], $hashStr);
+                } catch (\Throwable $e) {
+                    $reused = false;
                 }
-
-                continue;
+            } else {
+                $reused = hash_equals($hashStr, (string) $data['password']);
             }
-
-            if (hash_equals($hash, $data['password'])) {
+            if ($reused) {
                 return response()->json([
                     'message' => 'No puedes reutilizar una de tus últimas 5 contraseñas.'
                 ], 422);
             }
         }
 
+        // Asignación segura: el mutator del modelo se encargará de hashear si es necesario
         $usuario->contrasena = $data['password'];
         $usuario->primer_ingreso = 0;
         $usuario->save();
