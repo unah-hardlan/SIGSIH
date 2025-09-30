@@ -13,7 +13,17 @@
 @endphp
 
 <a href="{{ $realHref }}"
-    @click.prevent="$store.navigation.navigate('{{ $realHref }}', '{{ $viewName }}'); if ($store.navigation) { $store.navigation.currentView = '{{ $viewName }}' }"
+    @click.prevent="
+        $store.navigation.navigate('{{ $realHref }}', '{{ $viewName }}'); 
+        if ($store.navigation) { $store.navigation.currentView = '{{ $viewName }}' }; 
+        setTimeout(() => { 
+            if (window.innerWidth < 768) { 
+                const bodyEl = document.querySelector('body[x-data]');
+                if (bodyEl && bodyEl._x_dataStack && bodyEl._x_dataStack[0]) {
+                    bodyEl._x_dataStack[0].sidebarOpen = false;
+                }
+            }
+        }, 50);"
     aria-current="{{ $isActive ? 'page' : 'false' }}"
     x-data="{ initialActive: {{ $isActive ? 'true' : 'false' }} }"
     :class="(($store.navigation && $store.navigation.currentView)
