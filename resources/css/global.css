@@ -119,11 +119,11 @@ aside::-webkit-scrollbar-track {
 
 /* Input borders - Custom colors */
 .auth-input {
-    border-color: #000000 !important; /* Black border in light mode */
+    border-color: #6b7280 !important; /* Gray-500 border in light mode */
 }
 
 .auth-input:focus {
-    border-color: #000000 !important; /* Keep black border on focus in light mode */
+    border-color: #6b7280 !important; /* Keep gray-500 border on focus in light mode */
     outline: none !important;
     box-shadow: none !important;
 }
