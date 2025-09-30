@@ -116,6 +116,36 @@ aside::-webkit-scrollbar-track {
 .dark .validation-error .fas {
     color: #f87171 !important; /* red-400 */
 }
+
+/* Input borders - Custom colors */
+.auth-input {
+    border-color: #000000 !important; /* Black border in light mode */
+}
+
+.auth-input:focus {
+    border-color: #000000 !important; /* Keep black border on focus in light mode */
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.dark .auth-input {
+    border-color: #9ca3af !important; /* Gray-400 border in dark mode (darker) */
+}
+
+.dark .auth-input:focus {
+    border-color: #9ca3af !important; /* Keep gray-400 border on focus in dark mode */
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Error state borders - Keep red */
+.auth-input.border-red-500 {
+    border-color: #ef4444 !important; /* red-500 */
+}
+
+.auth-input.border-red-500:focus {
+    border-color: #ef4444 !important; /* red-500 */
+}
 aside {
     scrollbar-width: thin;
     scrollbar-color: #facc15 #1f2937;

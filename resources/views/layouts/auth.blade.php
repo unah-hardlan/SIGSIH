@@ -233,7 +233,7 @@
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
         <div class="fixed top-4 right-4">
             <label @click.prevent="toggleTheme()"
-                class="switch cursor-pointer rounded-full border border-gray-300 dark:border-gray-500">
+                class="switch cursor-pointer rounded-full border border-gray-400 dark:border-gray-500">
                 <input type="checkbox" class="hidden" :checked="isDark">
                 <span class="slider"></span>
             </label>
@@ -241,7 +241,7 @@
 
         <div class="w-full max-w-sm mx-auto">
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-600 dark:border-gray-500 p-4 transition-colors">
+                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-400 dark:border-gray-500 p-4 transition-colors">
                 <div class="text-center mb-4">
                     <div
                         class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
@@ -273,7 +273,7 @@
                                 de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
                                 @input="clearFieldError('nombre_usuario')"
-                                class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (!isLogin && nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
                                 placeholder="Usuario" />
                             <!-- Error del servidor -->
@@ -300,7 +300,7 @@
                                 electrónico</label>
                             <input type="email" name="email" x-model="email" :required="!isLogin"
                                 @input="clearFieldError('correo_electronico')"
-                                class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (!isLogin && email && !validateEmail(email)) }"
                                 placeholder="correo@ejemplo.com" />
                             <!-- Error del servidor -->
@@ -328,7 +328,7 @@
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                     :required="!isLogin" maxlength="100"
                                     @input="clearFieldError('contrasena')"
-                                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (!isLogin && password && !validatePassword(password)) }"
                                     placeholder="••••••••" />
                                 <button type="button"
@@ -361,7 +361,7 @@
                             <div class="relative">
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
                                     x-model="confirmPassword" :required="!isLogin" maxlength="100"
-                                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                    class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     :class="{ 'border-red-500 focus:border-red-500': !isLogin && confirmPassword && !validateConfirmPassword() }"
                                     placeholder="••••••••" />
                                 <button type="button"
@@ -390,7 +390,7 @@
                             class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required maxlength="50"
                             @input="clearFieldError('usuario')"
-                            class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                            class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
                             placeholder="Usuario123" />
                         <!-- Error del servidor -->
@@ -418,7 +418,7 @@
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
                                 @input="clearFieldError('contrasena')"
-                                class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
                                 placeholder="••••••••" />
                             <button type="button"
@@ -493,7 +493,7 @@
             </p>
             <div class="mt-3">
                 <input type="text" inputmode="numeric" pattern="^\\d{6}$" maxlength="10" x-model="totpCode"
-                    class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+                    class="auth-input w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
                     placeholder="Código de 6 dígitos o recuperación" />
                 <p x-show="totpError" class="mt-1 text-xs text-red-600" x-text="totpError"></p>
             </div>
