@@ -27,9 +27,8 @@
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Segundo Apellido</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">DNI</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Cargo</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Tipo</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Género</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Perfil</th>
+                            
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Usuario</th>
                         </tr>
                     </thead>
@@ -43,9 +42,8 @@
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_apellido ?? $p['segundo_apellido'] ?? '' }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->dni ?? $p['dni'] ?? '' }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->cargo ?? $p['cargo'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->tipoPersona->nombre_tipo_persona ?? null) ?? ($p['tipo_persona']['nombre'] ?? '') }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->genero->genero ?? null) ?? ($p['genero']['genero'] ?? '') }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->perfil->nombre_perfil ?? null) ?? ($p['perfil']['nombre'] ?? '') }}</td>
+                            
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_usuario_fk ?? $p['id_usuario_fk'] ?? '' }}</td>
                         </tr>
                         @endforeach

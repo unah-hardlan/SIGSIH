@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Persona;
 use App\Models\Usuario;
 use App\Models\HistorialContrasena;
+use App\Models\Parametro;
 use App\Http\Requests\StorePersonaRequest;
 use App\Http\Requests\UpdatePersonaRequest;
 use App\Services\BitacoraService;
@@ -57,16 +58,19 @@ class ProfileController extends Controller
         $existing = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
 
         // Validar usando reglas de StorePersonaRequest pero sin exigir dni único si ya existe y permitir id_usuario_fk auto
+    // Obtener regex de DNI desde un solo parámetro: FORMATO DNI
+    $format = Parametro::where('parametro', 'FORMATO DNI')->value('valor');
+    $dniRegex = $this->buildDniRegex($format);
+    $dniRule = 'regex:/' . $dniRegex . '/';
+
         $rules = [
             'primer_nombre' => 'required|string|max:50',
             'segundo_nombre' => 'nullable|string|max:50',
             'primer_apellido' => 'required|string|max:50',
             'segundo_apellido' => 'nullable|string|max:50',
-            'dni' => 'required|string|max:20',
+            'dni' => 'required|string|max:20|' . $dniRule,
             'cargo' => 'nullable|string|max:50',
-            'id_tipo_persona_fk' => 'required|integer|exists:tbl_tipo_persona,id_tipo_persona_pk',
             'id_genero_fk' => 'required|integer|exists:tbl_genero,id_genero_pk',
-            'id_perfil_fk' => 'required|integer|exists:tbl_perfil,id_perfil_pk',
         ];
 
         if ($existing) {
@@ -76,7 +80,25 @@ class ProfileController extends Controller
             $rules['dni'] .= '|unique:tbl_persona,dni';
         }
 
-        $validated = $request->validate($rules);
+        // Mensajes y atributos personalizados (español)
+        $messages = [
+            'dni.regex' => 'El DNI no cumple con el formato.' . (is_string($format) && trim($format) !== '' && !preg_match('/^\\d+$/', trim($format)) ? ' El formato es: ' . trim($format) . '.' : ''),
+            'dni.unique' => 'El DNI ya está registrado.',
+            'dni.required' => 'El DNI es obligatorio.',
+            'primer_nombre.required' => 'El primer nombre es obligatorio.',
+            'primer_apellido.required' => 'El primer apellido es obligatorio.',
+            'id_genero_fk.required' => 'El género es obligatorio.',
+        ];
+        $attributes = [
+            'dni' => 'DNI',
+            'primer_nombre' => 'primer nombre',
+            'segundo_nombre' => 'segundo nombre',
+            'primer_apellido' => 'primer apellido',
+            'segundo_apellido' => 'segundo apellido',
+            'id_genero_fk' => 'género',
+            'cargo' => 'cargo',
+        ];
+        $validated = $request->validate($rules, $messages, $attributes);
 
         $persona = Persona::updateOrCreate(
             ['id_usuario_fk' => $uid],
@@ -98,6 +120,35 @@ class ProfileController extends Controller
         }
 
         return response()->json(['ok' => true, 'persona' => $persona]);
+    }
+
+    private function buildDniRegex($format): string
+    {
+        $fallback = '^(?:\\d{13}|\\d{4}-\\d{4}-\\d{5})$';
+        if (!is_string($format) || trim($format) === '') {
+            return str_replace('/', '\/', $fallback);
+        }
+        $format = trim($format);
+        if (preg_match('/^\\d+$/', $format)) {
+            $min = max(1, (int)$format);
+            return '^\\d{' . $min . ',}$';
+        }
+        $regex = '^';
+        $len = strlen($format);
+        for ($i = 0; $i < $len; $i++) {
+            $ch = $format[$i];
+            if ($ch === '0') {
+                $regex .= '\\d';
+            } else {
+                if (preg_match('/[.\\+*?\[^\]$(){}=!<>|:-]/', $ch)) {
+                    $regex .= '\\' . $ch;
+                } else {
+                    $regex .= $ch;
+                }
+            }
+        }
+        $regex .= '$';
+        return str_replace('/', '\/', $regex);
     }
 
     public function uploadAvatar(Request $request)

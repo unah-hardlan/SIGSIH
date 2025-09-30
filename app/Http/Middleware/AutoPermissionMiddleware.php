@@ -74,8 +74,8 @@ class AutoPermissionMiddleware
             'Objeto' => ['Objetos', 'Objeto'],
             'Bitacora' => ['Bitácora', 'Bitacora'],
             'Profile' => ['Profile', 'Perfil'],
-            'Perfil' => ['Perfil', 'Profile'],
-            'TipoPersona' => ['Tipo Persona', 'Tipos Persona', 'Tipo de Persona', 'Tipos de Persona', 'Tipos de Personas', 'Tipo de Personas', 'Tipo Personas'],
+            // 'Perfil' removido del catálogo de objetos administrables
+            // 'TipoPersona' removido
             'Genero' => ['Género', 'Genero', 'Géneros', 'Generos'],
             'Persona' => ['Persona', 'Personas', 'Gestión de personas', 'Gestion de personas'],
             'Dashboard' => ['Dashboard'],

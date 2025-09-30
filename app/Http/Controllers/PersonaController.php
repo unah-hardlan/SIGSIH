@@ -12,7 +12,7 @@ class PersonaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Persona::query()->with(['tipoPersona','genero','perfil']);
+        $query = Persona::query()->with(['genero']);
         if($q = $request->input('q')){
             $query->where(function($sub) use ($q){
                 $sub->where('primer_nombre','like',"%$q%")
@@ -23,9 +23,7 @@ class PersonaController extends Controller
                     ->orWhere('cargo','like',"%$q%");
             });
         }
-        if($tipo = $request->input('id_tipo_persona_fk')) $query->where('id_tipo_persona_fk',$tipo);
-        if($genero = $request->input('id_genero_fk')) $query->where('id_genero_fk',$genero);
-        if($perfil = $request->input('id_perfil_fk')) $query->where('id_perfil_fk',$perfil);
+    if($genero = $request->input('id_genero_fk')) $query->where('id_genero_fk',$genero);
 
         $sortable = [
             'nombre' => 'primer_nombre',
@@ -54,14 +52,14 @@ class PersonaController extends Controller
 
     public function store(StorePersonaRequest $request)
     {
-        $persona = Persona::create($request->validated());
-        $persona->load(['tipoPersona','genero','perfil']);
+    $persona = Persona::create($request->validated());
+    $persona->load(['genero']);
         return (new PersonaResource($persona))->response()->setStatusCode(201);
     }
 
     public function show($id)
     {
-        $persona = Persona::with(['tipoPersona','genero','perfil'])->find($id);
+    $persona = Persona::with(['genero'])->find($id);
         if(!$persona) return response()->json(['error'=>'Persona no encontrada'],404);
         return (new PersonaResource($persona))->response();
     }
@@ -70,8 +68,8 @@ class PersonaController extends Controller
     {
         $persona = Persona::find($id);
         if(!$persona) return response()->json(['error'=>'Persona no encontrada'],404);
-        $persona->update($request->validated());
-        $persona->load(['tipoPersona','genero','perfil']);
+    $persona->update($request->validated());
+    $persona->load(['genero']);
         return (new PersonaResource($persona))->response();
     }
 
@@ -89,10 +87,10 @@ class PersonaController extends Controller
         $q = $request->input('q');
         $sort = $request->input('sort','nombre');
         $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
-        $tipo = $request->input('tipo'); // puede ser nombre o id
+    $tipo = $request->input('tipo'); // deprecado
         $genero = $request->input('genero'); // puede ser nombre
 
-        $query = Persona::query()->with(['tipoPersona','genero','perfil']);
+    $query = Persona::query()->with(['genero']);
         if($q){
             $query->where(function($sub) use ($q){
                 $sub->where('primer_nombre','like',"%$q%")
@@ -103,15 +101,7 @@ class PersonaController extends Controller
                     ->orWhere('cargo','like',"%$q%");
             });
         }
-        if($tipo){
-            if(is_numeric($tipo)){
-                $query->where('id_tipo_persona_fk',(int)$tipo);
-            } else {
-                $query->whereHas('tipoPersona', function($q2) use($tipo){
-                    $q2->whereRaw('LOWER(nombre_tipo_persona) = ?', [strtolower($tipo)]);
-                });
-            }
-        }
+        // filtro tipo persona eliminado
         if($genero){
             if(is_numeric($genero)){
                 $query->where('id_genero_fk',(int)$genero);
@@ -130,7 +120,7 @@ class PersonaController extends Controller
         ];
         $query->orderBy($sortable[$sort] ?? 'id_persona_pk', $direction);
 
-        $rows = $query->get();
+    $rows = $query->get();
         $fecha = $request->query('fecha', now()->format('d-M-Y'));
         $modulo = $request->query('modulo', 'Gestion de Personas');
 

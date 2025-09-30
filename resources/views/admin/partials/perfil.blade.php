@@ -49,9 +49,16 @@
         <div class="md:col-span-2 space-y-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 nunito-bold">Completa tu Información Personal</h3>
+                <!-- Alerta de error general -->
+                <div x-show="errorBanner" x-transition class="mb-4">
+                        <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert" x-cloak>
+                        <strong class="font-bold nunito-bold">Verifica los datos:</strong>
+                        <span class="block sm:inline nunito-regular" x-text="errorBanner"></span>
+                    </div>
+                </div>
                 <!-- Alerta de éxito -->
                 <div x-show="success" x-transition class="mb-4">
-                    <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative"
+                        <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative" x-cloak
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Información actualizada!</strong>
                         <span class="block sm:inline nunito-regular">Tus datos se guardaron correctamente.</span>
@@ -60,7 +67,7 @@
 
                 <!-- Alerta de cambios no guardados -->
                 <div x-show="hasChanges" x-transition class="mb-4">
-                    <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded relative"
+                        <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded relative" x-cloak
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Hay cambios sin guardar!</strong>
                         <span class="block sm:inline nunito-regular">Guarde los cambios para que surtan efecto.</span>
@@ -99,33 +106,17 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">DNI</label>
                         <input type="text" x-model="form.dni" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular"
+                            placeholder="Ej: 0000-0000-00000 o 0000000000000">
+                        
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Cargo</label>
                         <input type="text" x-model="form.cargo" @input="onFormChange()"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Tipo Persona</label>
-                        <select x-model="form.id_tipo_persona_fk" @change="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
-                            <option class="nunito-regular" value="">Seleccione…</option>
-                            <template x-for="tp in tiposPersona" :key="tp.id_tipo_persona_pk || tp.id">
-                                <option class="nunito-regular" :value="tp.id_tipo_persona_pk || tp.id" x-text="tp.nombre_tipo_persona || tp.nombre"></option>
-                            </template>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Perfil</label>
-                        <select x-model="form.id_perfil_fk" @change="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
-                            <option class="nunito-regular" value="">Seleccione…</option>
-                            <template x-for="pf in perfiles" :key="pf.id_perfil_pk || pf.id">
-                                <option class="nunito-regular" :value="pf.id_perfil_pk || pf.id" x-text="pf.nombre_perfil || pf.nombre"></option>
-                            </template>
-                        </select>
-                    </div>
+                    
+                    
                 </div>
             </div>
 
