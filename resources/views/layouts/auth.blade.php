@@ -17,137 +17,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     @livewireStyles
 
-    {{-- Cargar axios primero --}}
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
-    {{-- Cargar Alpine.js --}}
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
-    {{-- Cargar auth.js después --}}
+    <script src="{{ Vite::asset('resources/js/theme.js') }}"></script>
     <script src="{{ Vite::asset('resources/js/auth.js') }}" defer></script>
     
-    {{-- Otros scripts --}}
     <script src="/js/login-guard.js" defer></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
-    
-    {{-- Inline fallback para asegurar que switchMode esté disponible --}}
-    <script>
-        document.addEventListener('alpine:init', () => {
-            if (!window.authPage) {
-                console.warn('authPage not loaded, creating fallback');
-                window.authPage = () => ({
-                    isLogin: true,
-                    showPassword: false,
-                    showConfirmPassword: false,
-                    username: "",
-                    password: "",
-                    confirmPassword: "",
-                    nombre_usuario: "",
-                    email: "",
-                    loading: false,
-                    isDark: false,
-                    formError: "",
-                    fieldErrors: {},
-                    show2FAModal: false,
-                    totpCode: "",
-                    verifying2FA: false,
-                    totpError: "",
-                    
-                    init() {
-                        this.initTheme();
-                    },
-                    
-                    initTheme() {
-                        try {
-                            this.isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-                            document.documentElement.classList.toggle("dark", this.isDark);
-                        } catch (_) {}
-                    },
-                    
-                    toggleTheme() {
-                        this.isDark = !this.isDark;
-                        document.documentElement.classList.toggle("dark", this.isDark);
-                    },
-                    
-                    switchMode() {
-                        this.isLogin = !this.isLogin;
-                        this.formError = "";
-                        this.fieldErrors = {};
-                        this.password = "";
-                        this.confirmPassword = "";
-                    },
-                    
-                    resetErrors() {
-                        this.formError = "";
-                        this.fieldErrors = {};
-                    },
-                    
-                    clearFieldError(field) {
-                        if (this.fieldErrors[field]) {
-                            delete this.fieldErrors[field];
-                        }
-                    },
-                    
-                    passwordIssues(pw) {
-                        const value = pw || "";
-                        const issues = [];
-                        if (value.length < 8) issues.push("Debe tener al menos 8 caracteres.");
-                        if (/\s/.test(value)) issues.push("No debe contener espacios.");
-                        if (!this.isLogin && !/[A-Z]/.test(value)) issues.push("Debe incluir al menos una letra mayúscula.");
-                        return issues;
-                    },
-                    
-                    validatePassword(pw) {
-                        return this.passwordIssues(pw).length === 0;
-                    },
-                    
-                    validateConfirmPassword() {
-                        return this.password === this.confirmPassword;
-                    },
-                    
-                    async handleSubmit() {
-                        if (this.loading) return;
-                        this.loading = true;
-                        this.resetErrors();
-                        
-                        try {
-                            if (this.isLogin) {
-                                const res = await axios.post("/api/login", {
-                                    usuario: this.username,
-                                    contrasena: this.password,
-                                });
-                                window.location.assign("/admin/dashboard");
-                            } else {
-                                await axios.post("/api/register", {
-                                    usuario: this.username,
-                                    nombre_usuario: this.nombre_usuario,
-                                    correo_electronico: this.email,
-                                    contrasena: this.password,
-                                });
-                                window.location.assign("/admin/perfil");
-                            }
-                        } catch (err) {
-                            const resp = err?.response;
-                            if (resp?.status === 422) {
-                                this.fieldErrors = resp.data?.errors || {};
-                                this.formError = resp.data?.message || "Hay errores de validación.";
-                            } else {
-                                this.formError = resp?.data?.error || resp?.data?.message || "Error de autenticación";
-                            }
-                        } finally {
-                            this.loading = false;
-                        }
-                    },
-                    
-                    handleGoogle() {
-                        alert("Redirigiendo a Google Sign-In…");
-                    }
-                });
-            }
-            
-            Alpine.data('authPage', window.authPage);
-        });
-    </script>
+
 </head>
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
@@ -198,7 +77,7 @@
                                 @input="handleNombreUsuarioInput"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario }"
-                                placeholder="UsuarioDemo" />
+                                placeholder="Usuario" />
                             <template x-if="fieldErrors.nombre_usuario">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.nombre_usuario[0]"></p>
@@ -285,7 +164,7 @@
                             title="Sólo letras y números"
                             class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario }"
-                            placeholder="Usuario123" />
+                            placeholder="John Doe" />
                         <template x-if="fieldErrors.usuario">
                             <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                 x-text="fieldErrors.usuario[0]"></p>

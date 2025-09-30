@@ -37,9 +37,9 @@ function createAuthPage() {
 
         initTheme() {
             try {
+                // Leer el estado actual del DOM en lugar de recalcular
                 this.isDark =
-                    window.matchMedia &&
-                    window.matchMedia("(prefers-color-scheme: dark)").matches;
+                    document.documentElement.classList.contains("dark");
             } catch (_) {
                 this.isDark = false;
             }
@@ -53,6 +53,9 @@ function createAuthPage() {
         toggleTheme() {
             this.isDark = !this.isDark;
             this.applyTheme();
+            try {
+                localStorage.setItem("theme", this.isDark ? "dark" : "light");
+            } catch (_) {}
         },
 
         switchMode() {

@@ -17,12 +17,29 @@
     'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js',
     'resources/js/tabla-responsive.js'])
 
+    <!-- Theme.js sin defer para ejecución inmediata -->
+    <script src="{{ Vite::asset('resources/js/theme.js') }}"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
         rel="stylesheet">
 
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
 
     <script type="application/json" id="auth-bootstrap">
         @json(['firstTime' => $authFirstTime ?? false, 'user' => $authUser ?? null, 'persona' => $authPersona ?? null])
@@ -73,12 +90,12 @@
             class="flex-1 min-h-screen p-3 sm:p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
             @include('partials.admin-header')
             @hasSection('page-header')
-            <div class="bg-white dark:bg-gray-900 p-4 rounded shadow mb-6">
+            <div class="bg-white dark:bg-gray-900 p-4 rounded mb-6">
                 @yield('page-header')
             </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg shadow">
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg">
                 @if(isset($partialView))
                 @include($partialView)
                 @else
@@ -93,8 +110,9 @@
             const html = document.documentElement;
 
             function applyThemeFromStorage() {
-                const saved = localStorage.getItem('theme');
-                const isDark = saved === 'dark';
+                // Leer el estado actual del DOM en lugar de recalcular
+                const isDark = html.classList.contains('dark');
+                // Solo aplicar si hay discrepancia (por seguridad)
                 html.classList.toggle('dark', isDark);
                 const sw = document.getElementById('theme-switch');
                 if (sw) sw.checked = isDark;
