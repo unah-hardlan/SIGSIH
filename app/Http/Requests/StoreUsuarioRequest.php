@@ -21,6 +21,9 @@ class StoreUsuarioRequest extends FormRequest
             // Sólo recortamos espacios, la transformación a mayúsculas la hará el modelo/controlador si aplica
             $this->merge(['usuario' => trim($this->input('usuario'))]);
         }
+        if ($this->has('nombre_usuario')) {
+            $this->merge(['nombre_usuario' => trim($this->input('nombre_usuario'))]);
+        }
         if ($this->has('correo_electronico')) {
             $this->merge(['correo_electronico' => trim($this->input('correo_electronico'))]);
         }
@@ -54,12 +57,12 @@ class StoreUsuarioRequest extends FormRequest
             $emailRule .= '|regex:/^[^@\s]+@'.preg_quote($correoDominio,'/').'$/i';
         }
 
-        // Regla dinámica para usuario usando muestra (solo mayúsculas, dígitos y _). Longitud mínima = len muestra (>=3)
+        // Regla dinámica para usuario usando muestra (solo letras y dígitos). Longitud mínima = len muestra (>=3)
         $usuarioMin = 3;
         if ($usuarioMuestra) { $usuarioMin = max(3, strlen($usuarioMuestra)); }
-    $this->usuarioMinUsed = $usuarioMin;
-    // Permitimos letras en minúscula también; luego se guarda en mayúscula.
-    $usuarioRegex = '/^[A-Za-z0-9_]{'.$usuarioMin.',50}$/';
+        $this->usuarioMinUsed = $usuarioMin;
+        // Permitimos letras en minúscula también; luego se guarda en mayúscula.
+        $usuarioRegex = '/^[A-Za-z0-9]{'.$usuarioMin.',50}$/';
         // Si la muestra parece ya una regex (tiene ^ y $) úsala directamente
         if ($usuarioMuestra && preg_match('/^\^.*\$$/',$usuarioMuestra)) {
             $usuarioRegex = $usuarioMuestra;
@@ -117,14 +120,16 @@ class StoreUsuarioRequest extends FormRequest
                         if (strlen($value) < $usuarioMin) {
                             $fail('El usuario debe tener al menos '.$usuarioMin.' caracteres.');
                         }
-                        if (preg_match('/[^A-Za-z0-9_]/',$value)) {
-                            $fail('Sólo se permiten letras, números y _.');
+                        if (preg_match('/[^A-Za-z0-9]/',$value)) {
+                            $fail('Sólo se permiten letras y números.');
                         }
                     }
                 },
                 'unique:tbl_ms_usuario,usuario'
             ],
-            'nombre_usuario' => 'required|string|max:100',
+            'nombre_usuario' => [
+                'required','string','max:100','regex:/^[A-Za-z0-9]+$/'
+            ],
             'correo_electronico' => $emailRule,
             'contrasena' => $passwordRules,
             'estado_usuario' => 'nullable|string|max:20',
@@ -142,6 +147,7 @@ class StoreUsuarioRequest extends FormRequest
             'usuario.required' => 'Debe indicar un usuario.',
             'usuario.max' => 'El usuario no puede superar 50 caracteres.',
             'usuario.unique' => 'Ese usuario ya está registrado.',
+            'nombre_usuario.regex' => 'El nombre de usuario sólo puede contener letras y números.',
             'contrasena.required' => 'La contraseña es obligatoria.',
             'contrasena.min' => 'La contraseña debe tener al menos '.$this->passwordMinUsed.' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',
