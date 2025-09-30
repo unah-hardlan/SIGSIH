@@ -17,8 +17,21 @@
     'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js',
     'resources/js/tabla-responsive.js'])
 
-    <!-- Theme.js sin defer para ejecución inmediata -->
-    <script src="{{ Vite::asset('resources/js/theme.js') }}"></script>
+    <!-- Theme script inline para evitar problemas de Vite -->
+    <script>
+        // Pre-render theme script adicional para admin
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
 
     <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
         rel="stylesheet">
