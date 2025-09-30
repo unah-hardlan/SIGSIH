@@ -61,6 +61,17 @@ function createAuthPage() {
             this.fieldErrors = {};
         },
 
+        setFieldError(field, message) {
+            if (!field || !message) return;
+            this.fieldErrors = {
+                ...this.fieldErrors,
+                [field]: [message],
+            };
+            if (!this.formError) {
+                this.formError = "Hay errores de validación.";
+            }
+        },
+
         clearFieldError(field) {
             if (!field) return;
             if (!this.fieldErrors[field]) return;
@@ -68,6 +79,35 @@ function createAuthPage() {
             this.fieldErrors = rest;
             if (Object.keys(this.fieldErrors).length === 0) {
                 this.formError = "";
+            }
+        },
+
+        isAlphaNumeric(value) {
+            if (!value) return false;
+            return /^[A-Za-z0-9]+$/.test(value);
+        },
+
+        handleNombreUsuarioInput() {
+            this.clearFieldError("nombre_usuario");
+            const value = (this.nombre_usuario || "").trim();
+            this.nombre_usuario = value;
+            if (value && !this.isAlphaNumeric(value)) {
+                this.setFieldError(
+                    "nombre_usuario",
+                    "El nombre de usuario sólo puede contener letras y números."
+                );
+            }
+        },
+
+        handleUsernameInput() {
+            this.clearFieldError("usuario");
+            const value = (this.username || "").trim();
+            this.username = value;
+            if (value && !this.isAlphaNumeric(value)) {
+                this.setFieldError(
+                    "usuario",
+                    "El usuario sólo puede contener letras y números."
+                );
             }
         },
 

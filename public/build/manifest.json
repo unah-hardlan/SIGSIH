@@ -1,8 +1,6 @@
 {
   "resources/css/app.css": {
-
-    "file": "assets/app-ZTmpJfVG.css",
-    "file": "assets/app-BS6Qppnm.css",
+    "file": "assets/app-OP1Y66ov.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -17,15 +15,10 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CeHzZSLg.js",
-
-    "file": "assets/app-DYYQqu0u.js",
+    "file": "assets/app-CHxbXfII.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true,
-    "imports": [
-      "resources/js/toast.js"
-    ]
+    "isEntry": true
   },
   "resources/js/auth-guard.js": {
     "file": "assets/auth-guard-l0sNRNKZ.js",
@@ -34,7 +27,7 @@
     "isEntry": true
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-dpEXEq9B.js",
+    "file": "assets/auth-DYFA9D0T.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true

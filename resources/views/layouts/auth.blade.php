@@ -72,10 +72,12 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
                                 de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
-                                @input="clearFieldError('nombre_usuario')"
+                                pattern="^[A-Za-z0-9]+$"
+                                title="Sólo letras y números"
+                                @input="handleNombreUsuarioInput"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario }"
-                                placeholder="John Doe" />
+                                placeholder="UsuarioDemo" />
                             <template x-if="fieldErrors.nombre_usuario">
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.nombre_usuario[0]"></p>
@@ -157,12 +159,12 @@
                     <div :class="{ 'mb-4': isLogin, 'mb-2': !isLogin }">
                         <label
                             class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
-                        <input type="text" name="username" x-model="username" required maxlength="50" pattern="^\S+$"
-                            @input="clearFieldError('usuario')"
-                            title="Sin espacios"
+                        <input type="text" name="username" x-model="username" required maxlength="50" pattern="^[A-Za-z0-9]+$"
+                            @input="handleUsernameInput"
+                            title="Sólo letras y números"
                             class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario }"
-                            placeholder="John Doe" />
+                            placeholder="Usuario123" />
                         <template x-if="fieldErrors.usuario">
                             <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                 x-text="fieldErrors.usuario[0]"></p>
