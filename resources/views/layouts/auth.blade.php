@@ -293,12 +293,12 @@
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-bold">
                         <span x-text="isLogin ? '¡Bienvenido a Hardlan!' : 'Crear cuenta'">¡Bienvenido a Hardlan!</span>
                     </h2>
-                    <div class="text-xs text-gray-700 dark:text-gray-200 mt-3 nunito-regular tracking-wide">
+                    <div x-show="isLogin" class="text-xs text-gray-700 dark:text-gray-200 mt-1 nunito-regular tracking-wide">
                         El lugar donde tu soporte TI es más fácil.
                     </div>
-                    <hr class="my-5 border-gray-200 dark:border-gray-700" />
-                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-2 nunito font-medium">
-                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Completa tus datos'">Por favor inicia sesión para continuar</span>
+                    <hr class="mt-3 mb-4 border-gray-200 dark:border-gray-700" />
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 mb-4 nunito font-medium">
+                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Únete a Hardlan y accede a todos nuestros servicios'" class="nunito-regular">Por favor inicia sesión para continuar</span>
                     </p>
                 </div>
 
