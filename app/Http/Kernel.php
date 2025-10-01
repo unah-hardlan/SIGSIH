@@ -77,5 +77,6 @@ class Kernel extends HttpKernel
     'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
         'client.only' => \App\Http\Middleware\ClientOnly::class,
         'block.client' => \App\Http\Middleware\BlockClientFromAdmin::class,
+        'admin.only' => \App\Http\Middleware\AdminOnly::class,
     ];
 }

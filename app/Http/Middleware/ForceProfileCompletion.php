@@ -29,13 +29,19 @@ class ForceProfileCompletion
             $needsProfile = $uid ? !Persona::query()->where('id_usuario_fk', $uid)->exists() : false;
 
             if ($needsProfile) {
-                // 1) Bloquear cualquier ruta admin/* que no sea el perfil con redirección dura
+                // ADMIN: bloquear cualquier ruta admin/* que no sea el perfil
                 if ($request->is('admin/*') && !$request->is('admin/perfil')) {
                     \session()->flash('must_complete_profile', true);
                     return \redirect()->route('admin.perfil');
                 }
 
-                // 2) Bloquear carga de vistas parciales del SPA (load-view) que no sean 'perfil'
+                // CLIENTE: bloquear rutas cliente/* que no sean cliente/perfil
+                if ($request->is('cliente/*') && !$request->is('cliente/perfil')) {
+                    \session()->flash('must_complete_profile', true);
+                    return \redirect()->route('cliente.perfil');
+                }
+
+                // Bloquear carga de vistas parciales del SPA (load-view) que no sean 'perfil'
                 if ($request->is('load-view')) {
                     $view = (string) $request->query('view', '');
                     if ($view !== 'perfil') {

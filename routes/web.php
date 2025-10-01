@@ -60,16 +60,16 @@ Route::get('/post-auth-redirect', function () {
 
 // API-like fallbacks (cookie-based auth) for SPA when Bearer token is missing/expirado
 Route::get('/api-web/dashboard/indicadores', [DashboardController::class, 'indicators'])
-    ->middleware(['auth.jwt.web'])
+    ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.indicators.web');
 Route::get('/api-web/dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado'])
-    ->middleware(['auth.jwt.web'])
+    ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.ordenes.estado.web');
 Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes'])
-    ->middleware(['auth.jwt.web'])
+    ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.cotizaciones.mes.web');
 Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
-    ->middleware(['auth.jwt.web'])
+    ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.proyectos.estado.web');
 
 // API-like fallback para cambiar contraseña del perfil (cookie-based auth)
@@ -79,14 +79,14 @@ Route::post('/api-web/me/password', [ProfileController::class, 'changePassword']
 
 // API-like para configuración del sistema (parámetros generales)
 Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show'])
-    ->middleware(['auth.jwt.web'])
+    ->middleware(['auth.jwt.web','admin.only'])
     ->name('system.settings.show.web');
 Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update'])
-    ->middleware(['auth.jwt.web'])
+    ->middleware(['auth.jwt.web','admin.only'])
     ->name('system.settings.update.web');
 
 // API-like fallbacks para Reportes (cookie-based auth)
-Route::middleware(['auth.jwt.web'])->group(function () {
+Route::middleware(['auth.jwt.web','admin.only'])->group(function () {
     // Reportes de visita CRUD básico
     Route::get('/api-web/reportes-visita', [\App\Http\Controllers\ReporteVisitaController::class, 'index']);
     Route::get('/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'show']);
@@ -280,7 +280,7 @@ Route::redirect('/cliente', '/cliente/perfil');
 // Usa autenticación JWT web + refresh + validación de rol cliente
 Route::prefix('cliente')
     ->name('cliente.')
-    ->middleware(['auth.jwt.web','jwt.refresh','client.only'])
+    ->middleware(['auth.jwt.web','jwt.refresh','client.only','force.profile'])
     ->group(function () {
         Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
         Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
