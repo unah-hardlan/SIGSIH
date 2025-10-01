@@ -21,13 +21,42 @@ use Illuminate\Http\Request;
 // Auth routes (públicas)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+// Logout (protegido) usado por portal admin y cliente
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware(['auth.jwt.web','jwt.refresh'])
+    ->name('logout');
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
 Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
 Route::get('/password/reset/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset.form');
 Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
 
-// Redirect root to admin dashboard
-Route::redirect('/', '/admin/dashboard');
+// Redirección dinámica según rol autenticado
+Route::get('/', function () {
+    // Si no está autenticado todavía, mostrar login
+    $user = auth()->user();
+    if (!$user) {
+        return redirect()->route('login');
+    }
+    $rolNombre = strtolower($user->rol->rol ?? '');
+    if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+        return redirect()->route('cliente.perfil');
+    }
+    // Por defecto admin
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth.jwt.web','jwt.refresh'])->name('home.redirect');
+
+// Ruta explícita reutilizable para redirecciones después de login via frontend
+Route::get('/post-auth-redirect', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return redirect()->route('login');
+    }
+    $rolNombre = strtolower($user->rol->rol ?? '');
+    if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+        return redirect()->route('cliente.perfil');
+    }
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth.jwt.web','jwt.refresh'])->name('post-auth.redirect');
 
 // API-like fallbacks (cookie-based auth) for SPA when Bearer token is missing/expirado
 Route::get('/api-web/dashboard/indicadores', [DashboardController::class, 'indicators'])
@@ -80,7 +109,7 @@ Route::get('/load-view', [ViewLoaderController::class, 'load'])
 // Admin routes group - SPA Entry Point (PROTEGIDO)
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh', 'force.profile'])
+    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh', 'force.profile', 'block.client'])
     ->group(function () {
 
         // Dashboard
@@ -243,3 +272,18 @@ Route::prefix('admin')
 
 // Login view (pública)
 Route::get('/login', fn() => view('auth.login'))->name('login');
+
+// Redirección rápida para raíz de cliente
+Route::redirect('/cliente', '/cliente/perfil');
+
+// Grupo de rutas Cliente (Portal Cliente) - con middleware propio
+// Usa autenticación JWT web + refresh + validación de rol cliente
+Route::prefix('cliente')
+    ->name('cliente.')
+    ->middleware(['auth.jwt.web','jwt.refresh','client.only'])
+    ->group(function () {
+        Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
+        Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
+        Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
+        Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
+    });

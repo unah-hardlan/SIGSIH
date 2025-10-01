@@ -113,6 +113,7 @@ class AuthService
                 'usuario' => $user->usuario,
                 'nombre'  => $user->nombre_usuario,
                 'correo'  => $user->correo_electronico,
+                'rol'     => $user->rol->rol ?? null,
             ]
         ];
     }
@@ -182,6 +183,7 @@ class AuthService
                 'usuario' => $user->usuario,
                 'nombre'  => $user->nombre_usuario,
                 'correo'  => $user->correo_electronico,
+                'rol'     => $user->rol->rol ?? null,
             ]
         ];
     }
