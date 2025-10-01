@@ -20,9 +20,46 @@ class UsuarioController extends Controller
         // DB-backed permisos por objeto/acción
         $this->middleware('permiso:usuarios,consultar')->only(['index', 'show']);
         $this->middleware('permiso:usuarios,insercion')->only(['store']);
-        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol']);
+        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles']);
         $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
-        $this->middleware('permiso:usuarios,consultar')->only(['rol']);
+        $this->middleware('permiso:usuarios,consultar')->only(['rol', 'getRoles']);
+    }
+
+    /**
+     * Determina si un usuario autenticado es administrador (rol principal o en roles N:M).
+     */
+    private function isUserAdmin(?Usuario $user): bool
+    {
+        if (!$user) return false;
+        static $adminRoleId = null;
+        if ($adminRoleId === null) {
+            $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        }
+        if (!$adminRoleId) return false;
+        if ((int)$user->id_rol_fk === (int)$adminRoleId) return true;
+        if ($user->relationLoaded('roles')) {
+            return $user->roles->pluck('id_rol_pk')->contains((int)$adminRoleId);
+        }
+        return $user->roles()->where('id_rol_pk', $adminRoleId)->exists();
+    }
+
+    /**
+     * Cuenta administradores restantes excluyendo uno dado.
+     */
+    private function remainingAdminsCountExcluding(int $excludeUserId): int
+    {
+        $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        if (!$adminRoleId) return 0;
+        return Usuario::where('id_usuario_pk', '!=', $excludeUserId)
+            ->where(function($q) use ($adminRoleId) {
+                $q->where('id_rol_fk', $adminRoleId)
+                  ->orWhereHas('roles', function($r) use ($adminRoleId){ $r->where('id_rol_pk',$adminRoleId); });
+            })->count();
+    }
+
+    private function logBlockedAttempt(string $accion, string $descripcion, ?int $idUsuario = null): void
+    {
+        try { $this->bitacora->logFor('Usuarios', $accion, $descripcion, $idUsuario); } catch (\Throwable $e) {}
     }
     public function index()
     {
@@ -158,15 +195,50 @@ class UsuarioController extends Controller
         $validated = $request->validate([
             'id_rol_fk' => 'required|integer|exists:tbl_ms_rol,id_rol_pk',
         ]);
+        $authUser = auth()->user();
+        if (!$this->isUserAdmin($authUser)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento no autorizado de asignar rol por usuario '.$authUser?->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No autorizado para asignar roles'], 403);
+        }
+        // Estado previo
+        $beforePrimary = (int) $usuario->id_rol_fk;
+        $beforePivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        $oldIsAdmin = $this->isUserAdmin($usuario);
+        $newIsAdmin = ((int)$validated['id_rol_fk'] === (int)$adminRoleId);
+        if ($oldIsAdmin && !$newIsAdmin) {
+            $remaining = $this->remainingAdminsCountExcluding($usuario->id_usuario_pk);
+            if ($remaining === 0) {
+                $this->logBlockedAttempt('Bloquear', 'Intento de dejar al sistema sin administradores al cambiar rol de usuario '.$usuario->id_usuario_pk, $usuario->id_usuario_pk);
+                return response()->json(['error' => 'No se puede remover el último administrador'], 422);
+            }
+        }
         $usuario->id_rol_fk = $validated['id_rol_fk'];
         $usuario->save();
-        // Log de asignación de rol
         try {
             $rolNombre = \App\Models\Rol::where('id_rol_pk', $validated['id_rol_fk'])->value('rol');
             $this->bitacora->logFor('Usuarios', 'Actualizar', 'Asignación de rol a usuario ' . $usuario->usuario . ' -> ' . $rolNombre, $usuario->id_usuario_pk);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $e) {}
+        // Comparar cambios y invalidar sesiones si hubo modificación real
+        $afterPrimary = (int) $usuario->id_rol_fk;
+        // pivot puede no cambiar aquí, pero lo capturamos por consistencia
+        $afterPivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $changed = ($beforePrimary !== $afterPrimary) || (implode(',', $beforePivot) !== implode(',', $afterPivot));
+        $reauth = false;
+        if ($changed) {
+            try {
+                cache()->forget('user_sessions:' . $usuario->getKey());
+                $this->bitacora->logFor('Usuarios', 'Seguridad', 'Invalidación de sesiones por cambio de rol', $usuario->id_usuario_pk, [
+                    'antes' => [ 'principal' => $beforePrimary, 'pivot' => $beforePivot ],
+                    'despues' => [ 'principal' => $afterPrimary, 'pivot' => $afterPivot ],
+                ]);
+                $reauth = true;
+            } catch (\Throwable $e) {}
         }
-        return response()->json(['message' => 'Rol asignado']);
+        return response()->json([
+            'message' => 'Rol asignado',
+            'reauth_required' => $reauth,
+        ]);
     }
 
     // Sincronizar múltiples roles (N:M). Mantiene id_rol_fk como rol principal por compatibilidad
@@ -181,28 +253,61 @@ class UsuarioController extends Controller
         ]);
         $roles = $validated['roles'] ?? [];
         $principal = $validated['rol_principal'] ?? (count($roles) ? $roles[0] : null);
-
-        DB::transaction(function () use ($usuario, $roles, $principal) {
-            // Sincronizar N:M
-            try {
-                $usuario->roles()->sync($roles);
-            } catch (\Throwable $e) {
+        $authUser = auth()->user();
+        if (!$this->isUserAdmin($authUser)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento no autorizado de sincronizar roles por usuario '.$authUser?->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No autorizado para sincronizar roles'], 403);
+        }
+        // Estado previo
+        $beforePrimary = (int) $usuario->id_rol_fk;
+        $beforePivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        $oldIsAdmin = $this->isUserAdmin($usuario);
+        $newIsAdmin = false;
+        if ($adminRoleId) {
+            $idsInt = array_map('intval', $roles);
+            $newIsAdmin = in_array((int)$adminRoleId, $idsInt, true) || ((int)$principal === (int)$adminRoleId);
+        }
+        if ($oldIsAdmin && !$newIsAdmin) {
+            $remaining = $this->remainingAdminsCountExcluding($usuario->id_usuario_pk);
+            if ($remaining === 0) {
+                $this->logBlockedAttempt('Bloquear', 'Intento de dejar al sistema sin administradores al sincronizar roles de usuario '.$usuario->id_usuario_pk, $usuario->id_usuario_pk);
+                return response()->json(['error' => 'No se puede remover el último administrador'], 422);
             }
-            // Mantener rol principal para compatibilidad con UI existente
+        }
+        DB::transaction(function () use ($usuario, $roles, $principal) {
+            try { $usuario->roles()->sync($roles); } catch (\Throwable $e) {}
             $usuario->id_rol_fk = $principal;
             $usuario->save();
         });
-
         try {
             $this->bitacora->logFor('Usuarios', 'Actualizar', 'Sincronización de roles', $usuario->id_usuario_pk, [
                 'tabla' => 'tbl_usuario_rol',
                 'id_registro' => $usuario->id_usuario_pk,
                 'despues' => ['roles' => $roles, 'rol_principal' => $principal],
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $e) {}
+        // Estado después
+        $afterPrimary = (int) $usuario->id_rol_fk;
+        $afterPivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $changed = ($beforePrimary !== $afterPrimary) || (implode(',', $beforePivot) !== implode(',', $afterPivot));
+        $reauth = false;
+        if ($changed) {
+            try {
+                cache()->forget('user_sessions:' . $usuario->getKey());
+                $this->bitacora->logFor('Usuarios', 'Seguridad', 'Invalidación de sesiones por cambio de roles', $usuario->id_usuario_pk, [
+                    'antes' => [ 'principal' => $beforePrimary, 'pivot' => $beforePivot ],
+                    'despues' => [ 'principal' => $afterPrimary, 'pivot' => $afterPivot ],
+                ]);
+                $reauth = true;
+            } catch (\Throwable $e) {}
         }
-
-        return response()->json(['message' => 'Roles sincronizados', 'roles' => $roles, 'rol_principal' => $principal]);
+        return response()->json([
+            'message' => 'Roles sincronizados',
+            'roles' => $roles,
+            'rol_principal' => $principal,
+            'reauth_required' => $reauth,
+        ]);
     }
 
     // Obtener roles asignados y rol principal para precargar el modal

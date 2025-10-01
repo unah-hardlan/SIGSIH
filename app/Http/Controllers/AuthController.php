@@ -73,6 +73,18 @@ class AuthController extends Controller
         $token = $result['token'] ?? null;
         $payload = $result;
         unset($payload['token']);
+        // Añadir redirect según rol
+        try {
+            $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
+            if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+                $payload['redirect_url'] = route('cliente.perfil');
+            } else {
+                $payload['redirect_url'] = route('admin.dashboard');
+            }
+        } catch (\Throwable $e) {
+            // fallback admin
+            $payload['redirect_url'] = route('admin.dashboard');
+        }
         $response = response()->json($payload, 200);
         if ($token) {
             $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
@@ -163,7 +175,9 @@ class AuthController extends Controller
         $token = $tokenResult['token'] ?? null;
         $payload = $tokenResult;
         unset($payload['token']);
-        $response = response()->json($payload, 201);
+    // Añadir sugerencia de redirección (frontend puede usarlo)
+    $payload['redirect_url'] = route('cliente.perfil');
+    $response = response()->json($payload, 201);
         if ($token) {
             $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';

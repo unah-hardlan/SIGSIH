@@ -75,5 +75,8 @@ class Kernel extends HttpKernel
     'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
     'auto.permiso' => \App\Http\Middleware\AutoPermissionMiddleware::class,
     'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
+        'client.only' => \App\Http\Middleware\ClientOnly::class,
+        'block.client' => \App\Http\Middleware\BlockClientFromAdmin::class,
+        'admin.only' => \App\Http\Middleware\AdminOnly::class,
     ];
 }
