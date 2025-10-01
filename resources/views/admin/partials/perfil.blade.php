@@ -50,14 +50,14 @@
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 nunito-bold">Completa tu Información Personal</h3>
                 <!-- Alerta de error general -->
-                <div x-show="errorBanner" x-transition class="mb-4">
+                <div x-show="typeof $data !== 'undefined' && $data.errorBanner" x-transition class="mb-4">
                         <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert" x-cloak>
                         <strong class="font-bold nunito-bold">Verifica los datos:</strong>
-                        <span class="block sm:inline nunito-regular" x-text="errorBanner"></span>
+                        <span class="block sm:inline nunito-regular" x-text="typeof $data !== 'undefined' && $data.errorBanner ? $data.errorBanner : ''"></span>
                     </div>
                 </div>
                 <!-- Alerta de éxito -->
-                <div x-show="success" x-transition class="mb-4">
+                <div x-show="typeof $data !== 'undefined' && $data.success" x-transition class="mb-4">
                         <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative" x-cloak
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Información actualizada!</strong>
@@ -66,7 +66,7 @@
                 </div>
 
                 <!-- Alerta de cambios no guardados -->
-                <div x-show="hasChanges" x-transition class="mb-4">
+                <div x-show="typeof $data !== 'undefined' && $data.hasChanges" x-transition class="mb-4">
                         <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded relative" x-cloak
                         role="alert">
                         <strong class="font-bold nunito-bold">¡Hay cambios sin guardar!</strong>
