@@ -21,6 +21,16 @@ body {
     object-fit: contain;
 }
 
+.serif {
+    font-family: "PT Serif", serif;
+    font-style: normal;
+}
+
+.nunito {
+    font-family: "Nunito", sans-serif;
+    font-style: normal;
+}
+
 .serif-regular {
     font-family: "PT Serif", serif;
     font-weight: 400;
