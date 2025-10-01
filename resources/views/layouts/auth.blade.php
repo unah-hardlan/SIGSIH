@@ -286,9 +286,9 @@
                 class="bg-white dark:bg-gray-900 rounded-lg border border-gray-400 dark:border-gray-600 p-4 transition-colors shadow-2xl">
                 <div class="text-center mb-4">
                     <div
-                        class="inline-flex items-center justify-center w-28 h-28 rounded-full mb-1 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
-                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo"
-                            style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
+                        class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
+                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo w-16 h-16 object-contain"
+                            style="--app-logo-max: 64px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-bold">
                         <span x-text="isLogin ? '¡Bienvenido a Hardlan!' : 'Crear cuenta'">¡Bienvenido a Hardlan!</span>
