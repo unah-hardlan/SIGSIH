@@ -20,7 +20,6 @@ if (IS_ADMIN) {
     console.debug("[app.js] Modo CLIENTE: módulos admin no cargados");
     window.__CLIENT_MODE__ = true;
 }
-import "./cliente";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
