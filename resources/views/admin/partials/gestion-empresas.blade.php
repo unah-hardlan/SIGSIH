@@ -408,7 +408,10 @@
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchEmpresaRegistrada',
                 'filtrosSelect' => [],
-                'ordenarOptions' => []
+                'ordenarOptions' => [
+                'nombre_empresa' => 'Nombre',
+                'descripcion_empresa' => 'Descripción'
+                ]
                 ])
             </x-slot>
             <x-slot name="boton">
@@ -417,7 +420,7 @@
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar empresa registrada</button>
                 </div>
             </x-slot>
-            <table class="min-w-full text-sm mt-2">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Nombre Empresa</th>
@@ -430,7 +433,6 @@
                         <tr class="border-b nunito-regular">
                             <td class="py-2 px-4 nunito-regular" x-text="empresa.nombre_empresa"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="empresa.descripcion_empresa"></td>
-
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click.prevent="openEmpresaRegistradaModal(true, empresa)"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>

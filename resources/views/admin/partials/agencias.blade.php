@@ -27,33 +27,35 @@
               <i class="fas fa-file-alt"></i> Generar Reporte
           </a>
         </div>
-        <table class="min-w-full text-sm w-full">
-          <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-            <tr>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Horario</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Dirección</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Ciudad</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Departamento</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">País</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b dark:border-gray-600 nunito-regular">
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Agencia Central</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Lunes a Viernes, 8am - 5pm</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Col. Centro</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Tegucigalpa</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Francisco Morazán</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Honduras</td>
-              <td class="py-2 px-4 flex gap-2">
-                <a href="#" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-eye"></i></a>
-                <a href="#" @click="isDeleteAgenciaModalOpen = true; agenciaToDelete = {nombre: 'Agencia Central'}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+              <tr class="border-0">
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">Nombre</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Horario</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Dirección</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Ciudad</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Departamento</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">País</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0">
+                <td class="py-2 px-4 nunito-regular first:rounded-bl-lg">Agencia Central</td>
+                <td class="py-2 px-4 nunito-regular">Lunes a Viernes, 8am - 5pm</td>
+                <td class="py-2 px-4 nunito-regular">Col. Centro</td>
+                <td class="py-2 px-4 nunito-regular">Tegucigalpa</td>
+                <td class="py-2 px-4 nunito-regular">Francisco Morazán</td>
+                <td class="py-2 px-4 nunito-regular">Honduras</td>
+                <td class="py-2 px-4 flex gap-2 last:rounded-br-lg">
+                  <a href="#" class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></a>
+                  <a href="#" @click="isDeleteAgenciaModalOpen = true; agenciaToDelete = {nombre: 'Agencia Central'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 

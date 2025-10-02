@@ -38,49 +38,51 @@
             </a>
           </div>
         </div>
-        <table class="min-w-full text-sm w-full">
-          <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-            <tr>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Cliente</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado</th>
-              <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b dark:border-gray-600 nunito-regular">
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Empresa Ejemplo S.A.</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">26/07/2025</td>
-              <td class="py-2 px-4"><span class="bg-yellow-100 dark:bg-yellow-600 text-yellow-700 dark:text-yellow-100 px-2 py-1 rounded nunito-regular">Pendiente</span></td>
-              <td class="py-2 px-4 flex gap-2">
-                <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 1, cliente: 'Empresa Ejemplo S.A.', fecha: '26/07/2025', estado: 'Pendiente'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
-                <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 1}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-              </td>
-            </tr>
-            <tr class="border-b dark:border-gray-600 nunito-regular">
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Bac Credomatic</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">27/07/2025</td>
-              <td class="py-2 px-4"><span class="bg-green-100 dark:bg-green-600 text-green-700 dark:text-green-100 px-2 py-1 rounded nunito-regular">En proceso</span></td>
-              <td class="py-2 px-4 flex gap-2">
-                <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 2, cliente: 'Bac Credomatic', fecha: '27/07/2025', estado: 'En proceso'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
-                <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 2}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-              </td>
-            </tr>
-            <tr class="border-b dark:border-gray-600 nunito-regular">
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">3</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Ficohsa</td>
-              <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">28/07/2025</td>
-              <td class="py-2 px-4"><span class="bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-100 px-2 py-1 rounded nunito-regular">Finalizado</span></td>
-              <td class="py-2 px-4 flex gap-2">
-                <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 3, cliente: 'Ficohsa', fecha: '28/07/2025', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"><i class="fas fa-edit"></i></a>
-                <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 3}" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><i class="fas fa-trash"></i></a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="overflow-x-auto mt-4">
+          <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+              <tr class="border-0">
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Cliente</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Fecha</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Estado</th>
+                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="nunito-regular">
+                <td class="py-2 px-4 nunito-regular border-t-0">1</td>
+                <td class="py-2 px-4 nunito-regular border-t-0">Empresa Ejemplo S.A.</td>
+                <td class="py-2 px-4 nunito-regular border-t-0">26/07/2025</td>
+                <td class="py-2 px-4 border-t-0"><span class="px-2 py-1 rounded nunito-regular bg-yellow-100 dark:bg-yellow-600 text-yellow-700 dark:text-yellow-100">Pendiente</span></td>
+                <td class="py-2 px-4 flex gap-2 border-t-0">
+                  <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 1, cliente: 'Empresa Ejemplo S.A.', fecha: '26/07/2025', estado: 'Pendiente'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                  <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 1}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                </td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                <td class="py-2 px-4 nunito-regular">2</td>
+                <td class="py-2 px-4 nunito-regular">Bac Credomatic</td>
+                <td class="py-2 px-4 nunito-regular">27/07/2025</td>
+                <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-600 text-green-700 dark:text-green-100">En proceso</span></td>
+                <td class="py-2 px-4 flex gap-2">
+                  <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 2, cliente: 'Bac Credomatic', fecha: '27/07/2025', estado: 'En proceso'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                  <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 2}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                </td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0">
+                <td class="py-2 px-4 nunito-regular first:rounded-bl-lg">3</td>
+                <td class="py-2 px-4 nunito-regular">Ficohsa</td>
+                <td class="py-2 px-4 nunito-regular">28/07/2025</td>
+                <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular bg-blue-100 dark:bg-blue-600 text-blue-700 dark:text-blue-100">Finalizado</span></td>
+                <td class="py-2 px-4 flex gap-2 last:rounded-br-lg">
+                  <a href="#" @click="isEditModalOpen = true; ticketToEdit = {id: 3, cliente: 'Ficohsa', fecha: '28/07/2025', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                  <a href="#" @click="isDeleteModalOpen = true; ticketToDelete = {id: 3}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
