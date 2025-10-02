@@ -17,7 +17,7 @@
         'resources/css/app.css',
         'resources/css/global.css',
         'resources/css/theme.css',
-    'resources/js/appCliente.js',
+        'resources/js/app.js',
         'resources/js/sidebar.js',
         'resources/js/session.js',
         'resources/js/auth-guard.js',
@@ -55,6 +55,8 @@
                 user: initial.user,
                 persona: initial.persona,
             });
+            // Store para controlar oscurecimiento del sidebar cuando modal logout abierto
+            Alpine.store('clienteLogout', { modalOpen: false });
         });
     </script>
 
