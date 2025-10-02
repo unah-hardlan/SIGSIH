@@ -103,7 +103,7 @@
                                         </a>
                                 </div>
                         </div>
-            <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
+            <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 overflow-x-auto">
                 <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <button @click="previousMonth()" class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">

@@ -267,7 +267,7 @@
         <div class="overflow-x-auto w-full">
             <div x-show="loading" class="p-3 text-sm text-gray-600 nunito-regular">Cargando…</div>
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>

@@ -60,29 +60,32 @@ x-init="fetchTipoVisitas()"
             </button>
         </x-slot>
         
-        <table class="min-w-full text-sm bg-white dark:bg-gray-900">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Tipo</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Nombre</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="tipoVisita in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">
-                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoVisita.id_tipo_visita_pk"></td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoVisita.nombre_tipo_visita"></td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoVisita.descripcion_tipo_visita"></td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="#" @click.prevent="isTipoVisitaEditModalOpen = true; itemToEdit = {id_tipo_visita_pk: tipoVisita.id_tipo_visita_pk, nombre_tipo_visita: tipoVisita.nombre_tipo_visita, descripcion_tipo_visita: tipoVisita.descripcion_tipo_visita}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click.prevent="isTipoVisitaDeleteModalOpen = true; itemToDelete = {id_tipo_visita_pk: tipoVisita.id_tipo_visita_pk, nombre: tipoVisita.nombre_tipo_visita}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">ID Tipo</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <template x-for="(tipoVisita, index) in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                            :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === tipoVisitas.length - 1 }">
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" :class="{ 'first:rounded-bl-lg': index === tipoVisitas.length - 1 }" x-text="tipoVisita.id_tipo_visita_pk"></td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoVisita.nombre_tipo_visita"></td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoVisita.descripcion_tipo_visita"></td>
+                            <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === tipoVisitas.length - 1 }">
+                                <a href="#" @click.prevent="isTipoVisitaEditModalOpen = true; itemToEdit = {id_tipo_visita_pk: tipoVisita.id_tipo_visita_pk, nombre_tipo_visita: tipoVisita.nombre_tipo_visita, descripcion_tipo_visita: tipoVisita.descripcion_tipo_visita}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="isTipoVisitaDeleteModalOpen = true; itemToDelete = {id_tipo_visita_pk: tipoVisita.id_tipo_visita_pk, nombre: tipoVisita.nombre_tipo_visita}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
         <x-slot name="mobileTemplate">
             <div class="space-y-4">
                 <template x-for="tipoVisita in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">

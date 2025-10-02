@@ -31,37 +31,39 @@
             </button>
         </div>
         <!-- TABLA -->
-        <table class="min-w-full text-sm w-full">
-            <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Acción</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Nombre</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descripción</th>
-                    <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="accion in acciones
-                    .filter(a =>
-                        (!filtroAccion || a.descripcion.toLowerCase().includes(filtroAccion.toLowerCase()))
-                        && (!filtroTipo || a.nombre === filtroTipo)
-                    )" :key="accion.id_accion">
-                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.id_accion"></td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.nombre"></td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="accion.descripcion"></td>
-                        <td class="py-2 px-4 flex gap-2 nunito-regular">
-                            <a href="#"
-                                @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
-                                class="text-blue-600 hover:text-blue-800 dark:text-blue-300"><i class="fas fa-edit"></i></a>
-                            <a href="#"
-                                @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
-                                class="text-red-600 hover:text-red-800 dark:text-red-400"><i class="fas fa-trash"></i></a>
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr class="border-0">
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID Acción</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <template x-for="accion in acciones
+                        .filter(a =>
+                            (!filtroAccion || a.descripcion.toLowerCase().includes(filtroAccion.toLowerCase()))
+                            && (!filtroTipo || a.nombre === filtroTipo)
+                        )" :key="accion.id_accion">
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0 bg-white dark:bg-gray-900">
+                            <td class="py-2 px-4 nunito-regular first:rounded-bl-lg border-t-0" x-text="accion.id_accion"></td>
+                            <td class="py-2 px-4 nunito-regular border-t-0" x-text="accion.nombre"></td>
+                            <td class="py-2 px-4 nunito-regular border-t-0" x-text="accion.descripcion"></td>
+                            <td class="py-2 px-4 flex gap-2 nunito-regular last:rounded-br-lg border-t-0">
+                                <a href="#"
+                                    @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
+                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#"
+                                    @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
+                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- MODAL AGREGAR ACCIÓN -->
