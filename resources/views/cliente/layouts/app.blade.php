@@ -17,7 +17,7 @@
         'resources/css/app.css',
         'resources/css/global.css',
         'resources/css/theme.css',
-        'resources/js/app.js',
+    'resources/js/appCliente.js',
         'resources/js/sidebar.js',
         'resources/js/session.js',
         'resources/js/auth-guard.js',
