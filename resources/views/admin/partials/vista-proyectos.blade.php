@@ -15,7 +15,7 @@
 
     </div>
     {{-- Tarjetas de estadísticas (diseño moderno) --}}
-    <div class="sticky top-4 z-10 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-800 -mx-6 px-6 py-4 rounded-lg">
+    <div class="top-4 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-800 -mx-6 px-6 py-4 rounded-lg">
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm dark:shadow-lg p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -52,7 +52,7 @@
     </div>
 
     {{-- Timeline de Movimientos (diseño temporal como en el adjunto) --}}
-    <div class="mt-6">
+    <div class="mt-6 z-0">
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm dark:shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg nunito-bold text-gray-800 dark:text-white">Historial de Movimientos</h3>

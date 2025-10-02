@@ -19,57 +19,59 @@
                 ]
             ])
         </div>
-        <table class="min-w-full text-sm w-full">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left">ID Estado</th>
-                    <th class="py-2 px-4 text-left">Nombre</th>
-                    <th class="py-2 px-4 text-left">Descripción</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b dark:border-gray-700 nunito-regular">
-                    <td class="py-2 px-4 dark:text-white">E-001</td>
-                    <td class="py-2 px-4 dark:text-white">Programado</td>
-                    <td class="py-2 px-4 dark:text-white">Evento programado en el calendario</td>
-                    <td class="py-2 px-4 flex gap-2 dark:text-white">
-                        <button @click="selectedEstado = {id: 'E-001', nombre: 'Programado', descripcion: 'Evento programado en el calendario'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="selectedEstado = {id: 'E-001', nombre: 'Programado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr class="border-b dark:border-gray-700 nunito-regular">
-                    <td class="py-2 px-4 dark:text-white">E-002</td>
-                    <td class="py-2 px-4 dark:text-white">Realizado</td>
-                    <td class="py-2 px-4 dark:text-white">Evento completado exitosamente</td>
-                    <td class="py-2 px-4 flex gap-2 dark:text-white">
-                        <button @click="selectedEstado = {id: 'E-002', nombre: 'Realizado', descripcion: 'Evento completado exitosamente'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="selectedEstado = {id: 'E-002', nombre: 'Realizado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr class="border-b dark:border-gray-700 nunito-regular">
-                    <td class="py-2 px-4 dark:text-white">E-003</td>
-                    <td class="py-2 px-4 dark:text-white">Cancelado</td>
-                    <td class="py-2 px-4 dark:text-white">Evento cancelado o suspendido</td>
-                    <td class="py-2 px-4 flex gap-2 dark:text-white">
-                        <button @click="selectedEstado = {id: 'E-003', nombre: 'Cancelado', descripcion: 'Evento cancelado o suspendido'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="selectedEstado = {id: 'E-003', nombre: 'Cancelado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr class="border-0">
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID Estado</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 border-t-0">E-001</td>
+                        <td class="py-2 px-4 border-t-0">Programado</td>
+                        <td class="py-2 px-4 border-t-0">Evento programado en el calendario</td>
+                        <td class="py-2 px-4 flex gap-2 border-t-0">
+                            <button @click="selectedEstado = {id: 'E-001', nombre: 'Programado', descripcion: 'Evento programado en el calendario'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button @click="selectedEstado = {id: 'E-001', nombre: 'Programado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 border-t-0">E-002</td>
+                        <td class="py-2 px-4 border-t-0">Realizado</td>
+                        <td class="py-2 px-4 border-t-0">Evento completado exitosamente</td>
+                        <td class="py-2 px-4 flex gap-2 border-t-0">
+                            <button @click="selectedEstado = {id: 'E-002', nombre: 'Realizado', descripcion: 'Evento completado exitosamente'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button @click="selectedEstado = {id: 'E-002', nombre: 'Realizado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0">
+                        <td class="py-2 px-4 first:rounded-bl-lg border-t-0">E-003</td>
+                        <td class="py-2 px-4 border-t-0">Cancelado</td>
+                        <td class="py-2 px-4 border-t-0">Evento cancelado o suspendido</td>
+                        <td class="py-2 px-4 flex gap-2 last:rounded-br-lg border-t-0">
+                            <button @click="selectedEstado = {id: 'E-003', nombre: 'Cancelado', descripcion: 'Evento cancelado o suspendido'}; isEditEstadoModalOpen = true" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button @click="selectedEstado = {id: 'E-003', nombre: 'Cancelado'}; isDeleteEstadoModalOpen = true" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Modal Agregar Estado -->

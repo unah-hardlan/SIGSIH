@@ -60,7 +60,7 @@
                 </div>
             </x-slot>
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Número</th>
@@ -280,7 +280,7 @@
             </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 dark:bg-gray-800 nunito-bold">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Detalle</th>
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Factura</th>

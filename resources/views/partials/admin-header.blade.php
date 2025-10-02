@@ -62,7 +62,7 @@
 
         <!-- Usuario y perfil (icono antes del nombre, icono con menú) -->
         <div class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-            <div x-data="{ open: false, logoutConfirm: false }" class="relative">
+            <div x-data="{ open: false, logoutConfirm: false }" class="relative" x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm)">
                 <button @click="open = !open"
                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold focus:outline-none">
                     <template x-if="$store.perfil.persona?.avatar_path">
@@ -79,21 +79,22 @@
                         <i class="fas fa-user-edit text-blue-500 dark:text-white"></i>
                         Editar perfil
                     </x-admin.header-menu-link>
-                    <x-admin.header-menu-link @click="logoutConfirm = true">
+                    <x-admin.header-menu-link @click="logoutConfirm = true; document.dispatchEvent(new CustomEvent('logout-modal-show'))">
                         <i class="fas fa-sign-out-alt text-red-500"></i>
                         Cerrar sesión
                     </x-admin.header-menu-link>
                 </div>
                 <!-- Inline logout confirmation modal (Alpine-only, avoids Blade component issues) -->
                 <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms
-                    class="fixed inset-0 bg-black/20 dark:bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300 ease-in-out">
-                    <div x-show="logoutConfirm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 backdrop-blur-none" x-transition:enter-end="opacity-100 scale-100 backdrop-blur-md" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100 backdrop-blur-md" x-transition:leave-end="opacity-0 scale-95 backdrop-blur-none"
-                        class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-lg shadow-xl border border-white/20 dark:border-gray-700/50 p-6 w-11/12 max-w-sm mx-auto" @click.stop>
+                    class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-300 ease-in-out bg-black/70 dark:bg-black/80"
+                    style="background:rgba(0,0,0,0.65);" @click.self="logoutConfirm=false" @keydown.window.escape="logoutConfirm=false">
+                    <div x-show="logoutConfirm" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-sm mx-auto" @click.stop>
                         
                         <p class="mt-3 text-lg nunito-bold text-gray-800 dark:text-gray-200">¿Estás seguro de que deseas cerrar sesión?</p>
                         <div class="mt-5 flex justify-end gap-2">
-                            <button type="button" @click="logoutConfirm = false" class="px-4 py-2 bg-gray-300/80 dark:bg-gray-600/80 backdrop-blur-sm rounded text-sm md:text-base text-gray-800 dark:text-gray-200 hover:bg-gray-400/80 dark:hover:bg-gray-500/80 transition-all serif-regular">Cancelar</button>
-                            <button type="button" @click="logoutConfirm = false; (window.appLogout && window.appLogout())" class="px-4 py-2 bg-red-600/90 hover:bg-red-700/90 backdrop-blur-sm text-white rounded text-sm md:text-base transition-all serif-regular">Confirmar</button>
+                            <button type="button" @click="logoutConfirm = false; document.dispatchEvent(new CustomEvent('logout-modal-hide'))" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm md:text-base text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition-all serif-regular">Cancelar</button>
+                            <button type="button" @click="logoutConfirm = false; document.dispatchEvent(new CustomEvent('logout-modal-hide')); (window.appLogout && window.appLogout())" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm md:text-base transition-all serif-regular">Confirmar</button>
                         </div>
                     </div>
                 </div>

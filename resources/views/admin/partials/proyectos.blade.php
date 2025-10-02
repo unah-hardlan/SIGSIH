@@ -43,7 +43,7 @@
     </ul>
 
     <div x-show="tab==='proyectos'" class="overflow-x-auto">
-        <x-admin.tabla-mobile class="nunito-bold bg-white dark:bg-gray-900" titulo="Proyectos">
+        <x-admin.tabla-crud class="nunito-bold" :titulo="'Proyectos'">
             <x-slot name="filtros">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'searchProyecto',
@@ -62,59 +62,55 @@
                 ])
             </x-slot>
             <x-slot name="boton">
-                <div class="flex flex-col sm:flex-row gap-2">
+                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                    <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo proyecto</button>
                     <a href="{{ url('/admin/reportes-header?modulo=Proyectos') }}" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+                        class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
-                    <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo proyecto</button>
                 </div>
             </x-slot>
-            <table class="min-w-full text-sm bg-white dark:bg-gray-900">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Nombre</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Inicial</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Fin Estimada</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Fin Real</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Actividades</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Orden de Servicio</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
-                        <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Inicial</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Fin Estimada</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Fin Real</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Actividades</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Orden de Servicio</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Estado</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">1</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Proyecto Alpha</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-01-15</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-30</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-07-29</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Implementación inicial del sistema</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">5 tareas</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">OS-00123</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200 px-2 py-1 rounded nunito-regular">Finalizado</span>
-                        </td>
+                    <tr class="border-b nunito-regular">
+                        <td class="py-2 px-4 nunito-regular">1</td>
+                        <td class="py-2 px-4 nunito-regular">Proyecto Alpha</td>
+                        <td class="py-2 px-4 nunito-regular">2025-01-15</td>
+                        <td class="py-2 px-4 nunito-regular">2025-07-30</td>
+                        <td class="py-2 px-4 nunito-regular">2025-07-29</td>
+                        <td class="py-2 px-4 nunito-regular">Implementación inicial del sistema</td>
+                        <td class="py-2 px-4 nunito-regular">5 tareas</td>
+                        <td class="py-2 px-4 nunito-regular">OS-00123</td>
+                        <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-100">Finalizado</span></td>
                         <td class="py-2 px-4 flex gap-2">
                             <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 1, nombre: 'Proyecto Alpha', fecha_inicio: '2025-01-15', fecha_estimada_fin: '2025-07-30', fecha_fin: '2025-07-29', descripcion: 'Implementación inicial del sistema', actividades: '5 tareas', orden_servicio: 'OS-00123', estado: 'Finalizado'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 1, nombre: 'Proyecto Alpha'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
-                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Proyecto Beta</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-02-01</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">2025-08-20</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">-</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">Planificación y diseño preliminar</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">3 tareas</td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">OS-00124</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-1 py-1 rounded nunito-regular">En Proceso</span>
-                        </td>
+                    <tr class="border-b nunito-regular">
+                        <td class="py-2 px-4 nunito-regular">2</td>
+                        <td class="py-2 px-4 nunito-regular">Proyecto Beta</td>
+                        <td class="py-2 px-4 nunito-regular">2025-02-01</td>
+                        <td class="py-2 px-4 nunito-regular">2025-08-20</td>
+                        <td class="py-2 px-4 nunito-regular">-</td>
+                        <td class="py-2 px-4 nunito-regular">Planificación y diseño preliminar</td>
+                        <td class="py-2 px-4 nunito-regular">3 tareas</td>
+                        <td class="py-2 px-4 nunito-regular">OS-00124</td>
+                        <td class="py-2 px-4"><span class="px-2 py-1 rounded nunito-regular bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-100">En Proceso</span></td>
                         <td class="py-2 px-4 flex gap-2">
                             <a href="#" @click="isEditProjectModalOpen = true; projectToEdit = {id: 2, nombre: 'Proyecto Beta', fecha_inicio: '2025-02-01', fecha_estimada_fin: '2025-08-20', fecha_fin: '', descripcion: 'Planificación y diseño preliminar', actividades: '3 tareas', orden_servicio: 'OS-00124', estado: 'En Proceso'}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                             <a href="#" @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 2, nombre: 'Proyecto Beta'}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
@@ -122,59 +118,7 @@
                     </tr>
                 </tbody>
             </table>
-            <x-slot name="mobileTemplate">
-                <div class="space-y-4">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold">Proyecto Alpha</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">OS-00123</p>
-                            </div>
-                            <span class="bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs nunito-regular">Finalizado</span>
-                        </div>
-                        <div class="space-y-1 text-sm">
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha Inicial:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">2025-01-15</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha Fin Estimada:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">2025-07-30</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha Fin Real:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">2025-07-29</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Actividades:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">5 tareas</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Descripción:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">Implementación inicial del sistema</span></div>
-                        </div>
-                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click="isEditProjectModalOpen = true; projectToEdit = {id: 1, nombre: 'Proyecto Alpha', fecha_inicio: '2025-01-15', fecha_estimada_fin: '2025-07-30', fecha_fin: '2025-07-29', descripcion: 'Implementación inicial del sistema', actividades: '5 tareas', orden_servicio: 'OS-00123', estado: 'Finalizado'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 1, nombre: 'Proyecto Alpha'}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold">Proyecto Beta</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 nunito-regular">OS-00124</p>
-                            </div>
-                            <span class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs nunito-regular">En Proceso</span>
-                        </div>
-                        <div class="space-y-1 text-sm">
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha Inicial:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">2025-02-01</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha Fin Estimada:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">2025-08-20</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha Fin Real:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">-</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Actividades:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">3 tareas</span></div>
-                            <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Descripción:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular">Planificación y diseño preliminar</span></div>
-                        </div>
-                        <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click="isEditProjectModalOpen = true; projectToEdit = {id: 2, nombre: 'Proyecto Beta', fecha_inicio: '2025-02-01', fecha_estimada_fin: '2025-08-20', fecha_fin: '', descripcion: 'Planificación y diseño preliminar', actividades: '3 tareas', orden_servicio: 'OS-00124', estado: 'En Proceso'}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button @click="isDeleteProjectModalOpen = true; projectToDelete = {id: 2, nombre: 'Proyecto Beta'}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </x-slot>
-        </x-admin.tabla-mobile>
+        </x-admin.tabla-crud>
     </div>
     <div x-show="tab==='movimientos'" class="space-y-6">
         <x-admin.tabla-crud class="nunito-bold">

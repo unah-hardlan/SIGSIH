@@ -30,36 +30,39 @@
             </button>
         </x-slot>
 
-        <table class="min-w-full text-sm bg-white dark:bg-gray-900">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left">ID Tipo Movimiento</th>
-                    <th class="py-2 px-4 text-left">Nombre</th>
-                    <th class="py-2 px-4 text-left">Descripción</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="tipo in [
-                    {id_tipo_movimiento_pk: 1, nombre_tipo_movimiento: 'Entrada', descipcion_tipo_movimiento: 'Movimiento de ingreso de productos'},
-                    {id_tipo_movimiento_pk: 2, nombre_tipo_movimiento: 'Salida', descipcion_tipo_movimiento: 'Movimiento de egreso de productos'}
-                ]" :key="tipo.id_tipo_movimiento_pk">
-                    <tr class="border-b dark:border-gray-700 nunito-regular"
-                        x-show="(!filtroNombre || tipo.nombre_tipo_movimiento.toLowerCase().includes(filtroNombre.toLowerCase())) && 
-                               (!filtroTipoMovimiento || tipo.nombre_tipo_movimiento === filtroTipoMovimiento)">>
-                        <td class="py-2 px-4 dark:text-white" x-text="tipo.id_tipo_movimiento_pk"></td>
-                        <td class="py-2 px-4 dark:text-white" x-text="tipo.nombre_tipo_movimiento"></td>
-                        <td class="py-2 px-4 dark:text-white" x-text="tipo.descipcion_tipo_movimiento"></td>
-                        <td class="py-2 px-4 flex gap-2 dark:text-white">
-                            <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = {...tipo}"
-                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = {...tipo}"
-                                class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">ID Tipo Movimiento</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <template x-for="(tipo, index) in [
+                        {id_tipo_movimiento_pk: 1, nombre_tipo_movimiento: 'Entrada', descipcion_tipo_movimiento: 'Movimiento de ingreso de productos'},
+                        {id_tipo_movimiento_pk: 2, nombre_tipo_movimiento: 'Salida', descipcion_tipo_movimiento: 'Movimiento de egreso de productos'}
+                    ]" :key="tipo.id_tipo_movimiento_pk">
+                        <tr class="border-b dark:border-gray-700 nunito-regular"
+                            :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === 1 }"
+                            x-show="(!filtroNombre || tipo.nombre_tipo_movimiento.toLowerCase().includes(filtroNombre.toLowerCase())) && 
+                                   (!filtroTipoMovimiento || tipo.nombre_tipo_movimiento === filtroTipoMovimiento)">
+                            <td class="py-2 px-4 dark:text-white" :class="{ 'first:rounded-bl-lg': index === 1 }" x-text="tipo.id_tipo_movimiento_pk"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.nombre_tipo_movimiento"></td>
+                            <td class="py-2 px-4 dark:text-white" x-text="tipo.descipcion_tipo_movimiento"></td>
+                            <td class="py-2 px-4 flex gap-2 dark:text-white" :class="{ 'last:rounded-br-lg': index === 1 }">
+                                <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = {...tipo}"
+                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = {...tipo}"
+                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
 
         <x-slot name="mobileTemplate">
             <div class="space-y-4">

@@ -56,29 +56,32 @@ x-init="fetchTipoProductos()"
             </button>
         </x-slot>
 
-        <table class="min-w-full text-sm bg-white dark:bg-gray-900">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Tipo</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Nombre</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
-                    <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="tipoProducto in tipoProductos" :key="tipoProducto.id_tipo_producto_pk">
-                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoProducto.id_tipo_producto_pk"></td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoProducto.nombre_tipo_producto"></td>
-                        <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoProducto.descripcion_tipo_producto"></td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="#" @click.prevent="isTipoProductoEditModalOpen = true; itemToEdit = {id_tipo_producto_pk: tipoProducto.id_tipo_producto_pk, nombre_tipo_producto: tipoProducto.nombre_tipo_producto, descripcion_tipo_producto: tipoProducto.descripcion_tipo_producto}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click.prevent="isTipoProductoDeleteModalOpen = true; itemToDelete = {id_tipo_producto_pk: tipoProducto.id_tipo_producto_pk, nombre: tipoProducto.nombre_tipo_producto}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">ID Tipo</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <template x-for="(tipoProducto, index) in tipoProductos" :key="tipoProducto.id_tipo_producto_pk">
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                            :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === tipoProductos.length - 1 }">
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" :class="{ 'first:rounded-bl-lg': index === tipoProductos.length - 1 }" x-text="tipoProducto.id_tipo_producto_pk"></td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoProducto.nombre_tipo_producto"></td>
+                            <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoProducto.descripcion_tipo_producto"></td>
+                            <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === tipoProductos.length - 1 }">
+                                <a href="#" @click.prevent="isTipoProductoEditModalOpen = true; itemToEdit = {id_tipo_producto_pk: tipoProducto.id_tipo_producto_pk, nombre_tipo_producto: tipoProducto.nombre_tipo_producto, descripcion_tipo_producto: tipoProducto.descripcion_tipo_producto}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="isTipoProductoDeleteModalOpen = true; itemToDelete = {id_tipo_producto_pk: tipoProducto.id_tipo_producto_pk, nombre: tipoProducto.nombre_tipo_producto}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
         <x-slot name="mobileTemplate">
             <div class="space-y-4">
                 <template x-for="tipoProducto in tipoProductos" :key="tipoProducto.id_tipo_producto_pk">

@@ -25,57 +25,59 @@
                 ]
             ])
         </div>
-        <table class="min-w-full text-sm w-full">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left nunito-bold">ID</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Nombre Estado CAI</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Descripción Estado CAI</th>
-                    <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b dark:border-gray-700 nunito-regular">
-                    <td class="py-2 px-4 nunito-regular dark:text-white">1</td>
-                    <td class="py-2 px-4 nunito-regular dark:text-white">Activo</td>
-                    <td class="py-2 px-4 nunito-regular dark:text-white">Estado activo para el CAI</td>
-                    <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                        <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 1, nombre: 'Activo', descripcion: 'Estado activo para el CAI'}" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 1}" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr class="border-b dark:border-gray-700 nunito-regular">
-                    <td class="py-2 px-4 nunito-regular dark:text-white">2</td>
-                    <td class="py-2 px-4 nunito-regular dark:text-white">Inactivo</td>
-                    <td class="py-2 px-4 nunito-regular dark:text-white">Estado inactivo para el CAI</td>
-                    <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                        <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 2, nombre: 'Inactivo', descripcion: 'Estado inactivo para el CAI'}" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 2}" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                <tr class="border-b dark:border-gray-700 nunito-regular">
-                    <td class="py-2 px-4 nunito-regular dark:text-white">3</td>
-                    <td class="py-2 px-4 nunito-regular dark:text-white">Por Vencer</td>
-                    <td class="py-2 px-4 nunito-regular dark:text-white">CAI próximo a vencer</td>
-                    <td class="py-2 px-4 flex gap-2 nunito-regular dark:text-white">
-                        <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 3, nombre: 'Por Vencer', descripcion: 'CAI próximo a vencer'}" class="text-blue-500 hover:text-blue-700" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 3}" class="text-red-500 hover:text-red-700" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr class="border-0">
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Nombre Estado CAI</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Descripción Estado CAI</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 nunito-regular border-t-0">1</td>
+                        <td class="py-2 px-4 nunito-regular border-t-0">Activo</td>
+                        <td class="py-2 px-4 nunito-regular border-t-0">Estado activo para el CAI</td>
+                        <td class="py-2 px-4 flex gap-2 nunito-regular border-t-0">
+                            <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 1, nombre: 'Activo', descripcion: 'Estado activo para el CAI'}" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 1}" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                        <td class="py-2 px-4 nunito-regular border-t-0">2</td>
+                        <td class="py-2 px-4 nunito-regular border-t-0">Inactivo</td>
+                        <td class="py-2 px-4 nunito-regular border-t-0">Estado inactivo para el CAI</td>
+                        <td class="py-2 px-4 flex gap-2 nunito-regular border-t-0">
+                            <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 2, nombre: 'Inactivo', descripcion: 'Estado inactivo para el CAI'}" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 2}" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0">
+                        <td class="py-2 px-4 nunito-regular first:rounded-bl-lg border-t-0">3</td>
+                        <td class="py-2 px-4 nunito-regular border-t-0">Por Vencer</td>
+                        <td class="py-2 px-4 nunito-regular border-t-0">CAI próximo a vencer</td>
+                        <td class="py-2 px-4 flex gap-2 nunito-regular last:rounded-br-lg border-t-0">
+                            <button @click="isEditEstadoModalOpen = true; estadoToEdit = {id: 3, nombre: 'Por Vencer', descripcion: 'CAI próximo a vencer'}" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button @click="isDeleteEstadoModalOpen = true; estadoToDelete = {id: 3}" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Modal Nuevo Estado CAI -->

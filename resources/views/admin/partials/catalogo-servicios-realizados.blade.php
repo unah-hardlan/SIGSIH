@@ -39,35 +39,37 @@
             </button>
         </x-slot>
 
-        <table class="min-w-full text-sm bg-white dark:bg-gray-900">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left">ID Servicio</th>
-                    <th class="py-2 px-4 text-left">Tipo de Servicio</th>
-                    <th class="py-2 px-4 text-left">Descripción</th>
-                    <th class="py-2 px-4 text-left">Fecha</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="servicio in servicios
-                    .filter(s => 
-                        (!filtroServicio || s.descripcion.toLowerCase().includes(filtroServicio.toLowerCase()))
-                        && (!filtroTipo || s.tipo_servicio === filtroTipo)
-                    )" :key="servicio.id_servicio">
-                    <tr class="border-b dark:border-gray-700 nunito-regular">
-                        <td class="py-2 px-4 dark:text-white" x-text="servicio.id_servicio"></td>
-                        <td class="py-2 px-4 dark:text-white" x-text="servicio.tipo_servicio"></td>
-                        <td class="py-2 px-4 dark:text-white" x-text="servicio.descripcion"></td>
-                        <td class="py-2 px-4 dark:text-white" x-text="servicio.fecha"></td>
-                        <td class="py-2 px-4 flex gap-2 dark:text-white">
-                            <a href="#" @click.prevent="isEditModalOpen = true; servicioToEdit = servicio" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click.prevent="isDeleteModalOpen = true; servicioToDelete = servicio" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr class="border-0">
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID Servicio</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Tipo de Servicio</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Fecha</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <template x-for="servicio in servicios
+                        .filter(s => 
+                            (!filtroServicio || s.descripcion.toLowerCase().includes(filtroServicio.toLowerCase()))
+                            && (!filtroTipo || s.tipo_servicio === filtroTipo)
+                        )" :key="servicio.id_servicio">
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0">
+                            <td class="py-2 px-4 first:rounded-bl-lg border-t-0" x-text="servicio.id_servicio"></td>
+                            <td class="py-2 px-4 border-t-0" x-text="servicio.tipo_servicio"></td>
+                            <td class="py-2 px-4 border-t-0" x-text="servicio.descripcion"></td>
+                            <td class="py-2 px-4 border-t-0" x-text="servicio.fecha"></td>
+                            <td class="py-2 px-4 flex gap-2 last:rounded-br-lg border-t-0">
+                                <a href="#" @click.prevent="isEditModalOpen = true; servicioToEdit = servicio" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="isDeleteModalOpen = true; servicioToDelete = servicio" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
 
         <x-slot name="mobileTemplate">
             <div class="space-y-4">

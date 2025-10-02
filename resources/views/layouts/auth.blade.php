@@ -339,19 +339,22 @@
 
         <div class="w-full max-w-sm mx-auto">
             <div
-                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-500 dark:border-gray-600 p-4 transition-colors shadow-lg">
+                class="bg-white dark:bg-gray-900 rounded-lg border border-gray-400 dark:border-gray-600 p-4 transition-colors shadow-2xl">
                 <div class="text-center mb-4">
                     <div
-                        class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
-                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo"
-                            style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
+                        class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
+                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo w-20 h-20 object-contain"
+                            style="--app-logo-max: 80px;">
                     </div>
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-boldy">
-                        <span x-text="isLogin ? 'Bienvenido de nuevo' : 'Crear cuenta'">Bienvenido de nuevo</span>
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-bold">
+                        <span x-text="isLogin ? '¡Bienvenido a Hardlan!' : 'Crear cuenta'">¡Bienvenido a Hardlan!</span>
                     </h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 nunito-regular">
-                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Completa tus datos'">Por
-                            favor inicia sesión para continuar</span>
+                    <div x-show="isLogin" class="text-xs text-gray-700 dark:text-gray-200 mt-1 nunito-regular tracking-wide">
+                        El lugar donde tu soporte TI es más fácil.
+                    </div>
+                    <hr class="mt-3 mb-4 border-gray-400 dark:border-gray-700" />
+                    <p class="text-xs text-gray-700 dark:text-gray-300 mt-1 mb-4 nunito font-medium">
+                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Únete a Hardlan y accede a todos nuestros servicios'" class="nunito-regular">Por favor inicia sesión para continuar</span>
                     </p>
                 </div>
 
@@ -562,7 +565,7 @@
                         <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'">¿No tienes una
                             cuenta?</span>
                         <button type="button"
-                            class="ml-1 text-green-600 dark:text-green-400 hover:text-green-700 font-semibold"
+                            class="ml-1 text-emerald-700 dark:text-green-400 hover:text-green-700 bm-2 border-b border-dotted border-emerald-700 dark:border-green-400 focus:outline-none nunito-regular font-medium"
                             @click="switchMode()">
                             <span x-text="isLogin ? 'Regístrate' : 'Inicia sesión'">Regístrate</span>
                         </button>

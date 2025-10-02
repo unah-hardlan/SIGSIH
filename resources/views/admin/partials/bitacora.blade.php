@@ -62,23 +62,23 @@
         </div>
         <!-- Table Section -->
         <div class="overflow-x-auto">
-            <table class="w-full text-sm text-gray-800 dark:text-gray-200 border-collapse">
-                <thead class="bg-gray-100 dark:bg-gray-800">
-                    <tr>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-16">ID</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-32">Fecha Evento</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-32">Usuario</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-32">Objeto</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-24">Acción</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white min-w-48">Descripción</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-32">Creado por</th>
-                        <th class="py-3 px-4 text-left nunito-bold text-gray-800 dark:text-white w-32">Fecha Creación</th>
+            <table class="w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr class="border-0">
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-16 first:rounded-tl-lg border-0">ID</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-32 border-0">Fecha Evento</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-32 border-0">Usuario</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-32 border-0">Objeto</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-24 border-0">Acción</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 min-w-48 border-0">Descripción</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-32 border-0">Creado por</th>
+                        <th class="py-3 px-4 text-left nunito-bold dark:text-gray-300 w-32 last:rounded-tr-lg border-0">Fecha Creación</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="8" class="py-8 px-4 text-center nunito-regular text-gray-700 dark:text-gray-300">
+                            <td colspan="8" class="py-8 px-4 text-center nunito-regular text-gray-700 dark:text-gray-300 border-t-0">
                                 <div class="flex items-center justify-center gap-2">
                                     <i class="fas fa-spinner fa-spin"></i>
                                     Cargando...
@@ -88,19 +88,19 @@
                     </template>
                     <template x-if="!loading && items.length===0">
                         <tr>
-                            <td colspan="8" class="py-8 px-4 text-center text-gray-500 dark:text-gray-400 nunito-regular">
+                            <td colspan="8" class="py-8 px-4 text-center text-gray-500 dark:text-gray-400 nunito-regular border-t-0">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Sin resultados
                             </td>
                         </tr>
                     </template>
                     <template x-for="b in items" :key="b.id">
-                        <tr class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ease-in-out">
-                            <td class="py-3 px-4 nunito-regular font-medium" x-text="b.id"></td>
-                            <td class="py-3 px-4 nunito-regular" x-text="b.fecha_evento_formatted || b.fecha_evento"></td>
-                            <td class="py-3 px-4 nunito-regular" x-text="b.usuario?.usuario || '-' "></td>
-                            <td class="py-3 px-4 nunito-regular" x-text="b.objeto?.nombre_objeto || '-' "></td>
-                            <td class="py-3 px-4 nunito-regular">
+                        <tr class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 ease-in-out last:border-b-0">
+                            <td class="py-3 px-4 nunito-regular font-medium first:rounded-bl-lg border-t-0" x-text="b.id"></td>
+                            <td class="py-3 px-4 nunito-regular border-t-0" x-text="b.fecha_evento_formatted || b.fecha_evento"></td>
+                            <td class="py-3 px-4 nunito-regular border-t-0" x-text="b.usuario?.usuario || '-' "></td>
+                            <td class="py-3 px-4 nunito-regular border-t-0" x-text="b.objeto?.nombre_objeto || '-' "></td>
+                            <td class="py-3 px-4 nunito-regular border-t-0">
                                 <span :class="{
                                     'px-2 py-1 rounded-full text-xs font-medium duration-200 ease-in-out': true,
                                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': b.accion === 'Login',
@@ -111,9 +111,9 @@
                                     'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': b.accion === 'Consulta'
                                 }" x-text="b.accion"></span>
                             </td>
-                            <td class="py-3 px-4 nunito-regular break-words" x-text="b.descripcion || '-' "></td>
-                            <td class="py-3 px-4 nunito-regular" x-text="b.creado_por || b.usuario?.usuario || '-' "></td>
-                            <td class="py-3 px-4 nunito-regular" x-text="b.fecha_creacion_formatted || b.fecha_creacion || '-' "></td>
+                            <td class="py-3 px-4 nunito-regular break-words border-t-0" x-text="b.descripcion || '-' "></td>
+                            <td class="py-3 px-4 nunito-regular border-t-0" x-text="b.creado_por || b.usuario?.usuario || '-' "></td>
+                            <td class="py-3 px-4 nunito-regular last:rounded-br-lg border-t-0" x-text="b.fecha_creacion_formatted || b.fecha_creacion || '-' "></td>
                         </tr>
                     </template>
                 </tbody>

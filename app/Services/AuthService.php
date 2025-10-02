@@ -74,9 +74,34 @@ class AuthService
         cache()->forget($cacheKey);
 
         // Enforce concurrent sessions limit (limpiar expiradas antes de contar)
-        $limit = (int) (Parametro::where('parametro', 'AUTH.LIMITE_SESIONES')->value('valor')
-            ?? Parametro::where('parametro', 'auth.sessions_limit')->value('valor')
-            ?? 1);
+        // Permitir parámetros diferenciados por rol:
+        //  - AUTH.LIMITE_SESIONES.ADMIN
+        //  - AUTH.LIMITE_SESIONES.CLIENTE
+        // Fallback: AUTH.LIMITE_SESIONES o auth.sessions_limit
+        $rolNombre = strtolower($user->rol->rol ?? '');
+        $limitParamKeys = [];
+        if ($rolNombre !== '') {
+            if (in_array($rolNombre, ['administrador','admin'])) {
+                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.ADMIN';
+            } elseif (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.CLIENTE';
+            } else {
+                // rol genérico específico
+                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.' . strtoupper($rolNombre);
+            }
+        }
+        $limitParamKeys[] = 'AUTH.LIMITE_SESIONES';
+        $limitParamKeys[] = 'auth.sessions_limit';
+        $limit = null;
+        foreach ($limitParamKeys as $k) {
+            $val = Parametro::where('parametro', $k)->value('valor');
+            if ($val !== null && $val !== '') {
+                if (is_numeric($val)) { $limit = (int)$val; break; }
+                $filtered = filter_var($val, FILTER_SANITIZE_NUMBER_INT);
+                if ($filtered !== '' && is_numeric($filtered)) { $limit = (int)$filtered; break; }
+            }
+        }
+        if ($limit === null) { $limit = 1; }
         $sessionsKey = 'user_sessions:' . $user->getKey();
         $sessions = cache()->get($sessionsKey, []);
         if (!is_array($sessions)) { $sessions = []; }
@@ -120,6 +145,7 @@ class AuthService
                 'usuario' => $user->usuario,
                 'nombre'  => $user->nombre_usuario,
                 'correo'  => $user->correo_electronico,
+                'rol'     => $user->rol->rol ?? null,
             ]
         ];
     }
@@ -189,6 +215,7 @@ class AuthService
                 'usuario' => $user->usuario,
                 'nombre'  => $user->nombre_usuario,
                 'correo'  => $user->correo_electronico,
+                'rol'     => $user->rol->rol ?? null,
             ]
         ];
     }
