@@ -15,7 +15,6 @@ export default defineConfig({
                 "resources/js/auth-guard.js",
                 "resources/js/toast.js",
                 "resources/js/tabla-responsive.js",
-                "resources/js/appCliente.js",
             ],
             refresh: true,
         }),
