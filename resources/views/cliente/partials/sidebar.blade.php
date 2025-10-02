@@ -1,7 +1,9 @@
-<aside x-data="{}" x-show="sidebarOpen" :class="{
+<aside x-data="{ logoutModalOpen:false }" x-init="document.addEventListener('logout-modal-show',()=>logoutModalOpen=true); document.addEventListener('logout-modal-hide',()=>logoutModalOpen=false);" x-show="sidebarOpen" :class="{
         'fixed inset-y-0 left-0 w-72 min-w-[18rem] h-full': isMobile,
         'w-72 min-w-[18rem]': !isMobile && sidebarOpen,
         'w-20 min-w-[5rem]': !isMobile && !sidebarOpen,
+        'brightness-50 pointer-events-none': logoutModalOpen,
+        'brightness-100 pointer-events-auto': !logoutModalOpen,
     }"
     class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 flex flex-col flex-shrink-0 p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto md:sticky md:top-0 md:h-screen"
     style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">

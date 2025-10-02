@@ -94,7 +94,7 @@ class AuthController extends Controller
         return $response;
     }
 
-    public function logout(): JsonResponse
+    public function logout(): \Illuminate\Http\Response|JsonResponse|\Illuminate\Http\RedirectResponse
     {
         // Intentar identificar usuario desde Authorization Bearer para loguear correctamente y liberar slot de sesión.
         $userId = null;
@@ -128,16 +128,20 @@ class AuthController extends Controller
         $req = request();
         $secure = ($req && $req->isSecure()) || str_starts_with((string) config('app.url'), 'https://');
         $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
-        return response()->json(['ok' => true])->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
+        if ($req && ($req->expectsJson() || $req->wantsJson())) {
+            return response()->json(['ok' => true, 'redirect' => route('login')])
+                ->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
+        }
+        $redirect = redirect()->route('login');
+        $redirect->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
+        return $redirect;
     }
 
-    // Registro que crea un usuario usando las mismas reglas que StoreUsuarioRequest.
-    // Si el usuario ya existe responde 409, si se crea devuelve el mismo formato que login.
+   
     public function register(StoreUsuarioRequest $request): JsonResponse
     {
         $data = $request->validated();
 
-        // verificar existencia por usuario o correo
         $exists = Usuario::where('usuario', $data['usuario'])
             ->orWhere('correo_electronico', $data['correo_electronico'])
             ->first();
@@ -145,10 +149,8 @@ class AuthController extends Controller
             return response()->json(['error' => 'El usuario o correo ya existe'], 409);
         }
 
-        // Asignar SIEMPRE rol Cliente (ignorando lo enviado) para registro público
         $rolPk = Rol::where('rol', 'Cliente')->value('id_rol_pk');
         if (!$rolPk) {
-            // fallback al primer rol disponible
             $rolPk = Rol::orderBy('id_rol_pk')->value('id_rol_pk');
         }
         if ($rolPk) {
@@ -161,10 +163,8 @@ class AuthController extends Controller
 
         $usuario = new Usuario();
         $usuario->fill($data);
-        // Forzar usuario en mayúsculas al persistir
         $usuario->usuario = strtoupper(trim($usuario->usuario));
         $usuario->contrasena = Hash::make($data['contrasena']);
-        // Forzar primer_ingreso = 1 (nuevo usuario debe completar perfil)
         $usuario->primer_ingreso = 1;
         $usuario->save();
 
@@ -175,7 +175,6 @@ class AuthController extends Controller
         $token = $tokenResult['token'] ?? null;
         $payload = $tokenResult;
         unset($payload['token']);
-    // Añadir sugerencia de redirección (frontend puede usarlo)
     $payload['redirect_url'] = route('cliente.perfil');
     $response = response()->json($payload, 201);
         if ($token) {
