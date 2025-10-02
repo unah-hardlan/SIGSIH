@@ -19,7 +19,7 @@ class PersonaController extends Controller
                     ->orWhere('segundo_nombre','like',"%$q%")
                     ->orWhere('primer_apellido','like',"%$q%")
                     ->orWhere('segundo_apellido','like',"%$q%")
-                    ->orWhere('dni','like',"%$q%");
+                        ->orWhere('dni','like',"%$q%");
             });
         }
     if($genero = $request->input('id_genero_fk')) $query->where('id_genero_fk',$genero);
@@ -95,7 +95,7 @@ class PersonaController extends Controller
                     ->orWhere('segundo_nombre','like',"%$q%")
                     ->orWhere('primer_apellido','like',"%$q%")
                     ->orWhere('segundo_apellido','like',"%$q%")
-                    ->orWhere('dni','like',"%$q%");
+                        ->orWhere('dni','like',"%$q%");
             });
         }
         // filtro tipo persona eliminado
