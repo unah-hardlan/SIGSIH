@@ -1,18 +1,25 @@
-// Nota: limpieza de authToken eliminada (migrado a sesiones Sanctum)
 import "./bootstrap";
-import "./usuarios";
-import "./parametros";
+import "./toast";
 import "./perfil";
 import "./dashboard";
-import "./seguridad";
-import "./objetos";
-import "./roles";
-import "./asignar-roles";
-import "./bitacora";
-import "./toast";
 import "./ubicaciones";
 import "./tipo-visitas";
 import "./tipo-productos";
+
+const IS_ADMIN = document.documentElement.classList.contains("is-admin");
+
+if (IS_ADMIN) {
+    import("./usuarios");
+    import("./parametros");
+    import("./seguridad");
+    import("./objetos");
+    import("./roles");
+    import("./asignar-roles");
+    import("./bitacora");
+} else {
+    console.debug("[app.js] Modo CLIENTE: módulos admin no cargados");
+    window.__CLIENT_MODE__ = true;
+}
 import "./cliente";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
