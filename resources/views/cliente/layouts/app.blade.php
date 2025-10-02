@@ -17,7 +17,8 @@
         'resources/css/app.css',
         'resources/css/global.css',
         'resources/css/theme.css',
-        'resources/js/app.js',
+        // Bundle ligero sólo para cliente (evita cargar módulos admin que hacen peticiones 403)
+        'resources/js/cliente.js',
         'resources/js/sidebar.js',
         'resources/js/session.js',
         'resources/js/auth-guard.js',

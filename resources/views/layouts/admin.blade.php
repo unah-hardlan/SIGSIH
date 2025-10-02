@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html class="is-admin">
 
 <head>
     <meta charset="utf-8">
