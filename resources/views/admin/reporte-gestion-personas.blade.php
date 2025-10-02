@@ -26,7 +26,6 @@
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Primer Apellido</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Segundo Apellido</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">DNI</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Cargo</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Género</th>
                             
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Usuario</th>
@@ -41,14 +40,13 @@
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_apellido ?? $p['primer_apellido'] ?? '' }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_apellido ?? $p['segundo_apellido'] ?? '' }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->dni ?? $p['dni'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->cargo ?? $p['cargo'] ?? '' }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->genero->genero ?? null) ?? ($p['genero']['genero'] ?? '') }}</td>
                             
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_usuario_fk ?? $p['id_usuario_fk'] ?? '' }}</td>
                         </tr>
                         @endforeach
                         @if(empty($rows))
-                        <tr><td colspan="11" class="border border-gray-300 py-4 px-3 text-center text-gray-500 nunito-regular">Sin resultados</td></tr>
+                        <tr><td colspan="8" class="border border-gray-300 py-4 px-3 text-center text-gray-500 nunito-regular">Sin resultados</td></tr>
                         @endif
                     </tbody>
                 </table>

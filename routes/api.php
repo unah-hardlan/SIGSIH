@@ -64,6 +64,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::post('register', [AuthController::class, 'register']);
+// Email verification
+Route::post('email/resend', [AuthController::class, 'resendVerification']);
+Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 // 2FA verify (public, tied to challenge cookie)
 Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 

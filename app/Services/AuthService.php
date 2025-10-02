@@ -40,6 +40,13 @@ class AuthService
         if (!$user) {
             return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
         }
+        // Bloquear si requiere verificación de correo y no verificado
+        $requireVerify = (bool) (Parametro::where('parametro','AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
+            ?? Parametro::where('parametro','auth.require_email_verification')->value('valor')
+            ?? false);
+        if ($requireVerify && is_null($user->email_verified_at)) {
+            return ['error' => 'Correo no verificado', 'code' => 403];
+        }
 
         // Campo estado_usuario se usa para bloqueo
         if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {

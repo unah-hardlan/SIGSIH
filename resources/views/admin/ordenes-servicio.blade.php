@@ -223,7 +223,7 @@
                         <div class="firma-space">Juan Pérez</div>
                         <div class="firma-label">C.I.</div>
                         <div class="firma-space">12345678-9</div>
-                        <div class="firma-label">CARGO</div>
+                        
                         <div class="firma-space">Gerente de Operaciones</div>
                         <div class="firma-label">FIRMA</div>
                         <div class="firma-space-larger"></div>
@@ -241,7 +241,7 @@
                         <div class="firma-space">Carlos López</div>
                         <div class="firma-label">C.I.</div>
                         <div class="firma-space">87654321-0</div>
-                        <div class="firma-label">CARGO</div>
+                        
                         <div class="firma-space">Técnico ACF</div>
                         <div class="firma-label">FIRMA</div>
                         <div class="firma-space-larger"></div>

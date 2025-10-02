@@ -21,6 +21,9 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         'estado_usuario',
         'contrasena',
         'correo_electronico',
+    'email_verified_at',
+    'email_verification_token',
+    'email_verification_sent_at',
         'id_rol_fk',
         'primer_ingreso',
         'fecha_ultima_conexion',
@@ -46,6 +49,8 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         'fecha_vencimiento' => 'date',
         'fecha_creacion' => 'datetime',
         'fecha_modificacion' => 'datetime',
+        'email_verified_at' => 'datetime',
+        'email_verification_sent_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_enabled' => 'boolean',
     ];
@@ -154,5 +159,19 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
     public function routeNotificationForMail($notification)
     {
         return $this->correo_electronico;
+    }
+
+    // Email verification helpers
+    public function hasVerifiedEmail(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    public function markEmailAsVerified(): void
+    {
+        $this->email_verified_at = now();
+        $this->email_verification_token = null;
+        $this->email_verification_sent_at = null;
+        $this->save();
     }
 }

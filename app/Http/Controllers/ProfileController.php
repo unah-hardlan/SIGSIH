@@ -69,7 +69,6 @@ class ProfileController extends Controller
             'primer_apellido' => 'required|string|max:50',
             'segundo_apellido' => 'nullable|string|max:50',
             'dni' => 'required|string|max:20|' . $dniRule,
-            'cargo' => 'nullable|string|max:50',
             'id_genero_fk' => 'required|integer|exists:tbl_genero,id_genero_pk',
         ];
 
@@ -96,7 +95,6 @@ class ProfileController extends Controller
             'primer_apellido' => 'primer apellido',
             'segundo_apellido' => 'segundo apellido',
             'id_genero_fk' => 'género',
-            'cargo' => 'cargo',
         ];
         $validated = $request->validate($rules, $messages, $attributes);
 

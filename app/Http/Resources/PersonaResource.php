@@ -16,7 +16,6 @@ class PersonaResource extends JsonResource
             'primer_apellido' => $this->primer_apellido,
             'segundo_apellido' => $this->segundo_apellido,
             'dni' => $this->dni,
-            'cargo' => $this->cargo,
             'id_genero_fk' => $this->id_genero_fk,
             'id_usuario_fk' => $this->id_usuario_fk,
             'genero' => $this->whenLoaded('genero', fn() => [

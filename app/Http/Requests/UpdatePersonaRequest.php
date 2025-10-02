@@ -25,7 +25,6 @@ class UpdatePersonaRequest extends FormRequest
             'primer_apellido' => 'required|string|max:50',
             'segundo_apellido' => 'sometimes|nullable|string|max:50',
             'dni' => 'sometimes|required|string|max:20|' . $dniRule . '|unique:tbl_persona,dni,' . $id . ',id_persona_pk',
-            'cargo' => 'sometimes|nullable|string|max:50',
             'id_genero_fk' => 'sometimes|required|integer|exists:tbl_genero,id_genero_pk',
             'id_usuario_fk' => 'sometimes|nullable|integer|exists:tbl_ms_usuario,id_usuario_pk',
         ];
@@ -62,7 +61,6 @@ class UpdatePersonaRequest extends FormRequest
             'primer_apellido' => 'primer apellido',
             'segundo_apellido' => 'segundo apellido',
             'id_genero_fk' => 'género',
-            'cargo' => 'cargo',
         ];
     }
 

@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Notifications\PasswordResetNotification;
+use App\Notifications\VerifyEmailNotification;
 
 
 class AuthController extends Controller
@@ -44,6 +45,18 @@ class AuthController extends Controller
         }
         /** @var \App\Models\Usuario $user */
         $user = $cred['user'];
+
+        // Si el sistema requiere verificación de correo, bloquear login hasta verificar
+        $requireVerify = (bool) (\App\Models\Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
+            ?? \App\Models\Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
+            ?? false);
+        if ($requireVerify && !$user->hasVerifiedEmail()) {
+            return response()->json([
+                'status' => 'email_verification_required',
+                'message' => 'Debes verificar tu correo antes de iniciar sesión.',
+                'email' => (string) $user->correo_electronico,
+            ], 403);
+        }
 
         // Si 2FA está habilitado, emite challenge y no setea auth_token todavía
         if ($user->two_factor_enabled) {
@@ -168,6 +181,22 @@ class AuthController extends Controller
         $usuario->primer_ingreso = 1;
         $usuario->save();
 
+        // Si se requiere verificación de correo, generar token y enviar mail; no iniciar sesión aún
+        $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
+            ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
+            ?? false);
+        if ($requireVerify) {
+            $usuario->email_verification_token = bin2hex(random_bytes(20));
+            $usuario->email_verification_sent_at = now();
+            $usuario->save();
+            try {
+                $usuario->notify(new VerifyEmailNotification($usuario->email_verification_token));
+            } catch (\Throwable $e) {
+            }
+            return response()->json(['status' => 'verification_sent'], 201);
+        }
+
+        // Si no se requiere verificación, iniciar sesión como antes
         $tokenResult = $this->authService->tokenForUser($usuario);
         if (isset($tokenResult['error'])) {
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
@@ -183,6 +212,149 @@ class AuthController extends Controller
             $response->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         }
         return $response;
+    }
+
+    // Reenvía correo de verificación (público después del registro)
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $request->validate(['email' => 'required|email']);
+        $email = strtolower($request->input('email'));
+        /** @var \App\Models\Usuario|null $user */
+        $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['status' => 'already_verified']);
+        }
+
+        // Throttle: cooldown + máximo por día controlado por parámetros
+        $cooldownMinutes = $this->getParametroInt([
+            'AUTH.VERIFY_EMAIL.COOLDOWN_MINUTES',
+            'auth.verify_email.cooldown_minutes',
+        ], 5);
+        $maxPerDay = $this->getParametroInt([
+            'AUTH.VERIFY_EMAIL.MAX_PER_DAY',
+            'auth.verify_email.max_per_day',
+        ], 5);
+
+        // Enforce cooldown based on last sent timestamp
+        if ($cooldownMinutes > 0 && $user->email_verification_sent_at) {
+            $nextAllowed = \Illuminate\Support\Carbon::parse($user->email_verification_sent_at)->addMinutes($cooldownMinutes);
+            if (now()->lt($nextAllowed)) {
+                $secondsRemaining = now()->diffInSeconds($nextAllowed);
+                $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
+                return response()->json([
+                    'message' => "Debes esperar {$minutesRemaining} minuto(s) antes de solicitar otro correo de verificación.",
+                    'retry_after_seconds' => $secondsRemaining,
+                ], 429);
+            }
+        }
+
+        // Enforce max per day using RateLimiter
+        $rateLimiterKey = null;
+        $rateLimiterTtl = 60 * 60 * 24;
+        if ($maxPerDay > 0) {
+            $rateLimiterKey = 'verify-email:max-per-day:' . sha1($email);
+            if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($rateLimiterKey, $maxPerDay)) {
+                $secondsRemaining = \Illuminate\Support\Facades\RateLimiter::availableIn($rateLimiterKey);
+                $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
+                return response()->json([
+                    'message' => "Alcanzaste el límite de reenvíos por hoy. Intenta nuevamente en {$minutesRemaining} minuto(s).",
+                    'retry_after_seconds' => $secondsRemaining,
+                ], 429);
+            }
+        }
+
+        // Generate and send new token
+        $user->email_verification_token = bin2hex(random_bytes(20));
+        $user->email_verification_sent_at = now();
+        $user->save();
+        try {
+            $user->notify(new VerifyEmailNotification($user->email_verification_token));
+        } catch (\Throwable $e) {
+        }
+
+        if ($rateLimiterKey) {
+            \Illuminate\Support\Facades\RateLimiter::hit($rateLimiterKey, $rateLimiterTtl);
+        }
+
+        return response()->json([
+            'status' => 'verification_sent',
+            'retry_after_seconds' => max(1, (int) $cooldownMinutes) * 60,
+        ]);
+    }
+
+    // Verifica el correo a partir de token + email
+    public function verifyEmail(Request $request)
+    {
+        // Si el cliente es un navegador (HTML), redirigir a la página estilizada
+        if (!($request->expectsJson() || $request->wantsJson())) {
+            return redirect()->route('verify.email.page', [
+                'token' => $request->query('token'),
+                'email' => $request->query('email'),
+            ]);
+        }
+        $request->validate(['token' => 'required|string', 'email' => 'required|email']);
+        $email = strtolower($request->input('email'));
+        /** @var \App\Models\Usuario|null $user */
+        $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
+        if (!$user) return response()->json(['message' => 'Usuario no encontrado'], 404);
+        if ($user->hasVerifiedEmail()) return response()->json(['status' => 'already_verified']);
+        if (!hash_equals((string)$user->email_verification_token, (string)$request->input('token'))) {
+            return response()->json(['message' => 'Token inválido'], 422);
+        }
+        $user->markEmailAsVerified();
+        return response()->json(['status' => 'verified']);
+    }
+
+    // Versión con vista estilizada (web) para mostrar resultado de verificación acorde al login
+    public function verifyEmailPage(Request $request)
+    {
+        $status = 'error';
+        $title = 'Hubo un problema';
+        $message = 'El enlace de verificación no es válido.';
+
+        $token = (string) $request->query('token', '');
+        $email = strtolower((string) $request->query('email', ''));
+        if ($token === '' || $email === '') {
+            // Sin datos suficientes, redirigir al login
+            return redirect()->route('login');
+        }
+
+        /** @var \App\Models\Usuario|null $user */
+        $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
+        if (!$user) {
+            return view('auth.verify-email', [
+                'status' => 'not_found',
+                'title' => 'Usuario no encontrado',
+                'message' => 'No pudimos encontrar una cuenta asociada a este correo.',
+            ]);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return view('auth.verify-email', [
+                'status'  => 'already_verified',
+                'title'   => 'Tu correo ya está verificado',
+                'message' => 'Ahora puedes iniciar sesión con normalidad.',
+            ]);
+        }
+
+        if (!hash_equals((string) $user->email_verification_token, $token)) {
+            return view('auth.verify-email', [
+                'status'  => 'invalid_token',
+                'title'   => 'Enlace no válido',
+                'message' => 'El enlace de verificación es inválido o ya fue utilizado. Solicita uno nuevo desde el inicio de sesión.',
+            ]);
+        }
+
+        // Éxito
+        $user->markEmailAsVerified();
+        return view('auth.verify-email', [
+            'status'  => 'verified',
+            'title'   => '¡Correo verificado!',
+            'message' => 'Tu correo fue verificado correctamente. Ya puedes iniciar sesión.',
+        ]);
     }
 
     public function showPasswordRecoverForm()
@@ -364,7 +536,9 @@ class AuthController extends Controller
 
         $hashes = $historialQuery->pluck('contrasena');
         foreach ($hashes as $hash) {
-            if (!is_string($hash) || $hash === '') { continue; }
+            if (!is_string($hash) || $hash === '') {
+                continue;
+            }
             $hashStr = (string) $hash;
             $isKnownHash = preg_match('/^\$(2y|argon2id|argon2i)\$/', $hashStr) === 1;
             $reused = false;

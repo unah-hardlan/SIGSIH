@@ -237,6 +237,12 @@ function createAuthPage() {
         totpCode: "",
         verifying2FA: false,
         totpError: "",
+    // Verify email
+    showVerifyEmailModal: false,
+    verifyEmailMessage: "",
+    verifyEmailAddress: "",
+    resendCooldown: 0,
+    resendTimerId: null,
 
         init() {
             // Ensure all properties are properly initialized
@@ -378,6 +384,13 @@ function createAuthPage() {
                         contrasena: this.password,
                     });
                     const data = res?.data || {};
+                    if (data.status === "email_verification_required") {
+                        this.verifyEmailAddress = data?.email || this.email || this.username;
+                        this.verifyEmailMessage = "Debes verificar tu correo antes de iniciar sesión.";
+                        this.showVerifyEmailModal = true;
+                        this.loading = false;
+                        return;
+                    }
                     if (data.status === "2fa_required") {
                         this.totpCode = "";
                         this.totpError = "";
@@ -396,13 +409,20 @@ function createAuthPage() {
                     return;
                 }
 
-                await axios.post("/api/register", {
+                const regRes = await axios.post("/api/register", {
                     usuario: this.username,
                     nombre_usuario: this.nombre_usuario,
                     correo_electronico: this.email,
                     contrasena: this.password,
                 });
-
+                const regData = regRes?.data || {};
+                if (regData?.status === 'verification_sent') {
+                    // Mostrar modal sin recargar
+                    this.verifyEmailAddress = this.email;
+                    this.verifyEmailMessage = "Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.";
+                    this.showVerifyEmailModal = true;
+                    return;
+                }
                 window.location.assign("/admin/perfil");
             } catch (err) {
                 try {
@@ -422,6 +442,10 @@ function createAuthPage() {
                         resp.data?.message ||
                         resp.data?.error ||
                         "Credenciales incorrectas.";
+                } else if (resp?.status === 403 && resp?.data?.status === 'email_verification_required') {
+                    this.verifyEmailAddress = resp?.data?.email || this.email || this.username;
+                    this.verifyEmailMessage = resp?.data?.message || 'Debes verificar tu correo antes de continuar.';
+                    this.showVerifyEmailModal = true;
                 } else {
                     this.formError =
                         resp?.data?.error ||
@@ -431,6 +455,44 @@ function createAuthPage() {
             } finally {
                 this.loading = false;
             }
+        },
+
+        async resendVerification() {
+            if (!this.verifyEmailAddress) return;
+            try {
+                const resp = await axios.post('/api/email/resend', { email: this.verifyEmailAddress });
+                try { window.showToast && window.showToast('Correo reenviado', 'success', { duration: 1500 }); } catch (_) {}
+                // Start cooldown using server value if present
+                const cool = resp?.data?.retry_after_seconds;
+                if (cool && Number.isFinite(+cool) && +cool > 0) {
+                    this.startResendCooldown(+cool);
+                } else {
+                    this.startResendCooldown(60);
+                }
+            } catch (err) {
+                const retry = err?.response?.data?.retry_after_seconds;
+                const msg = err?.response?.data?.message || err?.response?.data?.error || 'No se pudo reenviar';
+                try { window.showToast && window.showToast(msg, 'error', { duration: 2000 }); } catch (_) {}
+                if (retry && Number.isFinite(+retry) && +retry > 0) {
+                    this.startResendCooldown(+retry);
+                }
+            }
+        },
+
+        startResendCooldown(seconds) {
+            try {
+                if (this.resendTimerId) clearInterval(this.resendTimerId);
+                this.resendCooldown = Math.max(1, Math.floor(seconds));
+                this.resendTimerId = setInterval(() => {
+                    if (this.resendCooldown > 0) {
+                        this.resendCooldown -= 1;
+                    }
+                    if (this.resendCooldown <= 0 && this.resendTimerId) {
+                        clearInterval(this.resendTimerId);
+                        this.resendTimerId = null;
+                    }
+                }, 1000);
+            } catch (_) {}
         },
 
         async submit2FA() {

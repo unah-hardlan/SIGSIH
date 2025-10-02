@@ -65,7 +65,7 @@
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    @livewireStyles
+    {{-- Livewire no requerido en la pantalla de login; evitar doble Alpine --}}
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
@@ -104,6 +104,12 @@
                     totpCode: "",
                     verifying2FA: false,
                     totpError: "",
+                    // verify email modal state (fallback)
+                    showVerifyEmailModal: false,
+                    verifyEmailMessage: "",
+                    verifyEmailAddress: "",
+                    resendCooldown: 0,
+                    resendTimerId: null,
                     
                     init() {
                         this.initTheme();
@@ -231,14 +237,30 @@
                                     usuario: this.username,
                                     contrasena: this.password,
                                 });
+                                const data = res?.data || {};
+                                if (data.status === 'email_verification_required') {
+                                    this.verifyEmailAddress = (data && data.email) ? data.email : (this.email || this.username);
+                                    this.verifyEmailMessage = data.message || 'Debes verificar tu correo antes de iniciar sesión.';
+                                    this.showVerifyEmailModal = true;
+                                    this.loading = false;
+                                    return;
+                                }
                                 window.location.assign("/admin/dashboard");
                             } else {
-                                await axios.post("/api/register", {
+                                const regRes = await axios.post("/api/register", {
                                     usuario: this.username,
                                     nombre_usuario: this.nombre_usuario,
                                     correo_electronico: this.email,
                                     contrasena: this.password,
                                 });
+                                const regData = regRes?.data || {};
+                                if (regData.status === 'verification_sent') {
+                                    this.verifyEmailAddress = this.email;
+                                    this.verifyEmailMessage = 'Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.';
+                                    this.showVerifyEmailModal = true;
+                                    this.loading = false;
+                                    return;
+                                }
                                 window.location.assign("/admin/perfil");
                             }
                         } catch (err) {
@@ -246,6 +268,10 @@
                             if (resp?.status === 422) {
                                 this.fieldErrors = resp.data?.errors || {};
                                 this.formError = resp.data?.message || "Hay errores de validación.";
+                            } else if (resp?.status === 403 && resp?.data?.status === 'email_verification_required') {
+                                this.verifyEmailAddress = (resp?.data?.email) || this.email || this.username;
+                                this.verifyEmailMessage = resp?.data?.message || 'Debes verificar tu correo antes de continuar.';
+                                this.showVerifyEmailModal = true;
                             } else {
                                 this.formError = resp?.data?.error || resp?.data?.message || "Error de autenticación";
                             }
@@ -254,6 +280,36 @@
                         }
                     },
                     
+                    async resendVerification() {
+                        if (!this.verifyEmailAddress) return;
+                        try {
+                            const resp = await axios.post('/api/email/resend', { email: this.verifyEmailAddress });
+                            try { window.showToast && window.showToast('Correo reenviado', 'success', { duration: 1500 }); } catch (_) {}
+                            const cool = resp?.data?.retry_after_seconds;
+                            this.startResendCooldown((cool && Number.isFinite(+cool) && +cool > 0) ? +cool : 60);
+                        } catch (err) {
+                            const retry = err?.response?.data?.retry_after_seconds;
+                            const msg = err?.response?.data?.message || err?.response?.data?.error || 'No se pudo reenviar';
+                            try { window.showToast && window.showToast(msg, 'error', { duration: 2000 }); } catch (_) {}
+                            if (retry && Number.isFinite(+retry) && +retry > 0) {
+                                this.startResendCooldown(+retry);
+                            }
+                        }
+                    },
+                    startResendCooldown(seconds) {
+                        try {
+                            if (this.resendTimerId) clearInterval(this.resendTimerId);
+                            this.resendCooldown = Math.max(1, Math.floor(seconds));
+                            this.resendTimerId = setInterval(() => {
+                                if (this.resendCooldown > 0) this.resendCooldown -= 1;
+                                if (this.resendCooldown <= 0 && this.resendTimerId) {
+                                    clearInterval(this.resendTimerId);
+                                    this.resendTimerId = null;
+                                }
+                            }, 1000);
+                        } catch (_) {}
+                    },
+
                     handleGoogle() {
                         alert("Redirigiendo a Google Sign-In…");
                     }
@@ -519,7 +575,33 @@
         </div>
     </div>
 
-    @livewireScripts
+    {{-- Livewire scripts removidos en login para evitar múltiples instancias de Alpine --}}
+
+    <!-- Modal: Verifica tu correo -->
+    <div x-show="typeof $data !== 'undefined' && $data.showVerifyEmailModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-xl">
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Verifica tu correo</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" x-text="typeof $data !== 'undefined' && $data.verifyEmailMessage ? $data.verifyEmailMessage : ''"></p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-2" x-show="typeof $data !== 'undefined' && $data.verifyEmailAddress">
+                Enviado a: <span class="font-mono" x-text="typeof $data !== 'undefined' ? $data.verifyEmailAddress : ''"></span>
+            </p>
+            <div class="mt-4 flex items-center gap-2 justify-end">
+                <button type="button"
+                        :disabled="typeof $data !== 'undefined' && $data.resendCooldown > 0"
+                        @click="$data && $data.resendVerification ? resendVerification() : null"
+                        class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span x-show="typeof $data !== 'undefined' && $data.resendCooldown > 0">
+                        Reenviar (espera <span x-text="$data ? $data.resendCooldown : 0"></span>s)
+                    </span>
+                    <span x-show="!(typeof $data !== 'undefined' && $data.resendCooldown > 0)">Reenviar</span>
+                </button>
+                <button type="button" @click="typeof $data !== 'undefined' ? ($data.showVerifyEmailModal=false) : null"
+                        class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div x-show="show2FAModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div

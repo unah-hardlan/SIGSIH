@@ -41,7 +41,6 @@ class OrdenServicioResource extends JsonResource
                     'primer_nombre' => $this->tecnico->primer_nombre,
                     'primer_apellido' => $this->tecnico->primer_apellido,
                     'dni' => $this->tecnico->dni,
-                    'cargo' => $this->tecnico->cargo,
                 ];
             }),
             'calificacion_servicio' => $this->whenLoaded('calificacionServicio', function () {

@@ -28,14 +28,12 @@ function perfilPage() {
             primer_apellido: "",
             segundo_apellido: "",
             dni: "",
-            cargo: "",
             id_genero_fk: "",
 
         },
 
         email: "",
         displayName: "Mi Perfil",
-        cargo: "",
         avatarUrl: "",
         personaAvatar: "",
         removing: false,
@@ -93,7 +91,7 @@ function perfilPage() {
                             primer_apellido: p.primer_apellido || "",
                             segundo_apellido: p.segundo_apellido || "",
                             dni: p.dni || "",
-                            cargo: p.cargo || "",
+                            // cargo eliminado
                             id_genero_fk: p.id_genero_fk || "",
                         };
                         this.personaAvatar = p.avatar_path
@@ -203,7 +201,7 @@ function perfilPage() {
                             primer_apellido: data.persona.primer_apellido || "",
                             segundo_apellido: data.persona.segundo_apellido || "",
                             dni: data.persona.dni || "",
-                            cargo: data.persona.cargo || "",
+                            // cargo eliminado
                             id_genero_fk: data.persona.id_genero_fk || "",
 
                         };

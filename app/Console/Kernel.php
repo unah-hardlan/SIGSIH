@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
     {
         // Programar recordatorios de calendario
         $schedule->command('calendario:programar-recordatorios')->hourly();
+        // Prune usuarios no verificados diariamente a las 03:00
+        $schedule->command('users:prune-unverified')->dailyAt('03:00');
     }
 
     /**

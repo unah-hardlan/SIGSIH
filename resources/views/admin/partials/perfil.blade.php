@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <h3 class="text-xl font-bold mt-4 text-gray-800 dark:text-white nunito-bold" x-text="displayNameComputed"></h3>
-                <p class="text-sm text-gray-500 dark:text-gray-300 nunito-regular" x-text="form.cargo || '-' "></p>
+                
                 <p class="text-sm text-gray-500 dark:text-gray-300 mt-1 nunito-regular" x-text="email"></p>
 
                 <!-- Botón de guardar para cambios de avatar -->
@@ -110,11 +110,7 @@
                             placeholder="Ej: 0000-0000-00000 o 0000000000000">
                         
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 nunito-bold">Cargo</label>
-                        <input type="text" x-model="form.cargo" @input="onFormChange()"
-                            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
-                    </div>
+                    
                     
                     
                 </div>
