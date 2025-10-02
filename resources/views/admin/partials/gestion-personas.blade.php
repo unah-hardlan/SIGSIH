@@ -41,7 +41,7 @@
         // forms
         addForm: {
             primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
-            dni: '', cargo: '', id_genero_fk: ''
+            dni: '', id_genero_fk: ''
         },
 
         init(){
@@ -153,7 +153,7 @@
             };
         },
         sortLocal(){
-            const map = { nombre: 'primer_nombre', dni: 'dni', cargo: 'cargo' };
+            const map = { nombre: 'primer_nombre', dni: 'dni' };
             const key = map[this.ordenarPor] || 'primer_nombre';
             const dir = this.ordenarDir === 'desc' ? -1 : 1;
             this.personas.sort((a,b)=>{
@@ -171,7 +171,7 @@
             this.personas.splice(i,0,persona);
         },
         openAdd(){
-            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', cargo: '', id_genero_fk: '' };
+            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '' };
             this.isModalOpenPersonas = true;
         },
         async createPersona(){
@@ -204,7 +204,7 @@
             try{
                 const id = this.itemToEdit?.id; if(!id) return;
                 // enviar solo campos editables simples
-                const payload = (({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo,id_genero_fk}) => ({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,cargo,id_genero_fk}))(this.itemToEdit);
+                const payload = (({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,id_genero_fk}) => ({primer_nombre,segundo_nombre,primer_apellido,segundo_apellido,dni,id_genero_fk}))(this.itemToEdit);
                 const res = await fetch(`/api/personas/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type':'application/json' },
@@ -257,8 +257,7 @@
             ],
             'ordenarOptions' => [
             'nombre' => 'Nombre',
-            'dni' => 'DNI',
-            'cargo' => 'Cargo'
+            'dni' => 'DNI'
             ]
             ])
         </x-slot>
@@ -275,7 +274,6 @@
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
                         <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Cargo</th>
                         
                         <th class="py-2 px-4 text-left nunito-bold">Género</th>
                         
@@ -292,7 +290,6 @@
                             <td class="py-2 px-4 nunito-regular" x-text="persona.primer_apellido"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_apellido"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.dni"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.cargo"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.genero_nombre"></td>
                             <td class="py-2 px-4 nunito-regular" x-text="persona.usuario || '-' "></td>
                             <td class="py-2 px-4 flex gap-2 nunito-regular">
@@ -338,10 +335,7 @@
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
                 <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" />
             </div>
-            <div>
-                <label class="block text-sm font-medium mb-1 nunito-bold">Cargo</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.cargo" placeholder="Ej: Analista" />
-            </div>
+            
             
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
@@ -379,10 +373,7 @@
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
                 <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" />
             </div>
-            <div>
-                <label class="block text-sm font-medium mb-1 nunito-bold">Cargo</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.cargo" />
-            </div>
+            
             
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>

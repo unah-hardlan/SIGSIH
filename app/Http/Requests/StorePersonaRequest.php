@@ -27,7 +27,6 @@ class StorePersonaRequest extends FormRequest
             'primer_apellido' => 'required|string|max:50',
             'segundo_apellido' => 'nullable|string|max:50',
             'dni' => 'required|string|max:20|' . $dniRule . '|unique:tbl_persona,dni',
-            'cargo' => 'nullable|string|max:50',
             'id_genero_fk' => 'required|integer|exists:tbl_genero,id_genero_pk',
             'id_usuario_fk' => 'nullable|integer|exists:tbl_ms_usuario,id_usuario_pk',
         ];
@@ -64,7 +63,6 @@ class StorePersonaRequest extends FormRequest
             'primer_apellido' => 'primer apellido',
             'segundo_apellido' => 'segundo apellido',
             'id_genero_fk' => 'género',
-            'cargo' => 'cargo',
         ];
     }
 

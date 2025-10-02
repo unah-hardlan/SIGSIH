@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-C98YaQlW.css",
+    "file": "assets/app-O2PudLsF.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -27,7 +27,7 @@
     "isEntry": true
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-CTfmFn1g.js",
+    "file": "assets/auth-IjqwCdgE.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true

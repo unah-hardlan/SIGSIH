@@ -19,8 +19,7 @@ class PersonaController extends Controller
                     ->orWhere('segundo_nombre','like',"%$q%")
                     ->orWhere('primer_apellido','like',"%$q%")
                     ->orWhere('segundo_apellido','like',"%$q%")
-                    ->orWhere('dni','like',"%$q%")
-                    ->orWhere('cargo','like',"%$q%");
+                    ->orWhere('dni','like',"%$q%");
             });
         }
     if($genero = $request->input('id_genero_fk')) $query->where('id_genero_fk',$genero);
@@ -29,7 +28,6 @@ class PersonaController extends Controller
             'nombre' => 'primer_nombre',
             'apellido' => 'primer_apellido',
             'dni' => 'dni',
-            'cargo' => 'cargo',
         ];
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
@@ -97,8 +95,7 @@ class PersonaController extends Controller
                     ->orWhere('segundo_nombre','like',"%$q%")
                     ->orWhere('primer_apellido','like',"%$q%")
                     ->orWhere('segundo_apellido','like',"%$q%")
-                    ->orWhere('dni','like',"%$q%")
-                    ->orWhere('cargo','like',"%$q%");
+                    ->orWhere('dni','like',"%$q%");
             });
         }
         // filtro tipo persona eliminado
@@ -116,7 +113,6 @@ class PersonaController extends Controller
             'nombre' => 'primer_nombre',
             'apellido' => 'primer_apellido',
             'dni' => 'dni',
-            'cargo' => 'cargo',
         ];
         $query->orderBy($sortable[$sort] ?? 'id_persona_pk', $direction);
 

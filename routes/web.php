@@ -21,6 +21,14 @@ use Illuminate\Http\Request;
 // Auth routes (públicas)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+// Página bonita de verificación de correo (ES) y alias en EN para compatibilidad
+Route::get('/verificar-correo', [AuthController::class, 'verifyEmailPage'])->name('verify.email.page');
+Route::get('/verify-email', function (\Illuminate\Http\Request $request) {
+    return redirect()->route('verify.email.page', [
+        'token' => $request->query('token'),
+        'email' => $request->query('email'),
+    ]);
+});
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
 Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
 Route::get('/password/reset/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset.form');
