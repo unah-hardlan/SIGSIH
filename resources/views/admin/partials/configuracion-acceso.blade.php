@@ -517,14 +517,19 @@
             <div class="mb-2">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Roles adicionales</label>
                 <div class="max-h-48 overflow-auto border rounded p-2 space-y-1">
+                    <template x-if="$store.assignRoles.rolesLoading">
+                        <div class="text-sm text-gray-500">Cargando roles asignados…</div>
+                    </template>
+                    <template x-if="!$store.assignRoles.rolesLoading">
+                        <div>
                     <template x-for="r in $store.assignRoles.roles" :key="'rol-check-'+r.id">
                         <label class="flex items-center gap-2 text-sm nunito-regular">
                             <input type="checkbox" class="rounded accent-blue-600 dark:accent-blue-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                                 :value="String(r.id)"
                                 :checked="$store.assignRoles.rol_principal==String(r.id) || $store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
                                 @change="$store.assignRoles.toggleRole(String(r.id))"
-                                :disabled="$store.assignRoles.rol_principal==String(r.id)"
-                                :title="$store.assignRoles.rol_principal==String(r.id) ? 'El rol principal siempre está asignado' : 'Asignar/Remover rol'" />
+                                :disabled="$store.assignRoles.isRoleDisabled(r.id)"
+                                :title="$store.assignRoles.isRoleDisabled(r.id) ? ($store.assignRoles.rol_principal==String(r.id) ? 'El rol principal siempre está asignado' : 'Combinación inválida con el rol seleccionado') : 'Asignar/Remover rol'" />
                             <span x-text="r.rol"></span>
                             <div class="ml-auto flex items-center gap-2">
                                 <span x-show="$store.assignRoles.rol_principal==String(r.id)"
@@ -533,6 +538,8 @@
                                     class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">Asignado</span>
                             </div>
                         </label>
+                    </template>
+                        </div>
                     </template>
                 </div>
                 <p class="text-xs text-gray-500 mt-1">El rol principal no puede desmarcarse. Puedes agregar roles adicionales marcando las casillas.</p>
