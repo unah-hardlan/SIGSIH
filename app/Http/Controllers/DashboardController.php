@@ -15,6 +15,7 @@ use App\Models\Bitacora;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -30,10 +31,15 @@ class DashboardController extends Controller
         // Usuarios
         $totalUsuarios = \App\Models\Usuario::query()->count();
 
-        // Empresas: preferimos catálogo de nombres; si está vacío, usamos EmpresaCliente
-        $empresasActivas = NombreEmpresa::query()->count();
+        // Empresas: preferimos catálogo de nombres si existe; de lo contrario, EmpresaCliente
+        $empresasActivas = 0;
+        try {
+            if (Schema::hasTable('tbl_nombre_empresa')) {
+                $empresasActivas = NombreEmpresa::query()->count();
+            }
+        } catch (\Throwable $e) { $empresasActivas = 0; }
         if ($empresasActivas === 0) {
-            $empresasActivas = EmpresaCliente::query()->count();
+            try { $empresasActivas = EmpresaCliente::query()->count(); } catch (\Throwable $e) { $empresasActivas = 0; }
         }
 
         // Órdenes de servicio, Cotizaciones
@@ -48,23 +54,29 @@ class DashboardController extends Controller
         $proyectosActivos = 0;
         $proyectosFinalizados = 0;
         if (class_exists(Proyecto::class)) {
-            // 1) Intentar por catálogo de estados (más confiable que la fecha)
-            $idsFinalizado = EstadoProyecto::query()
-                ->where(function ($q) {
-                    $q->where('nombre_estado', 'like', 'Finaliz%')
-                      ->orWhere('nombre_estado', 'like', 'Cerrad%')
-                      ->orWhere('nombre_estado', 'like', 'Terminad%');
-                })
-                ->pluck('id_estado_proyecto_pk');
+            // 1) Intentar por catálogo de estados (columna real 'nombre')
+            $idsFinalizado = collect();
+            $idsActivo = collect();
+            try {
+                if (Schema::hasTable('tbl_estado_proyecto')) {
+                    $idsFinalizado = EstadoProyecto::query()
+                        ->where(function ($q) {
+                            $q->where('nombre', 'like', 'Finaliz%')
+                              ->orWhere('nombre', 'like', 'Cerrad%')
+                              ->orWhere('nombre', 'like', 'Terminad%');
+                        })
+                        ->pluck('id_estado_proyecto_pk');
 
-            $idsActivo = EstadoProyecto::query()
-                ->where(function ($q) {
-                    $q->where('nombre_estado', 'like', 'Activo%')
-                      ->orWhere('nombre_estado', 'like', 'En%')
-                      ->orWhere('nombre_estado', 'like', 'Progres%')
-                      ->orWhere('nombre_estado', 'like', 'Proceso%');
-                })
-                ->pluck('id_estado_proyecto_pk');
+                    $idsActivo = EstadoProyecto::query()
+                        ->where(function ($q) {
+                            $q->where('nombre', 'like', 'Activo%')
+                              ->orWhere('nombre', 'like', 'En%')
+                              ->orWhere('nombre', 'like', 'Progres%')
+                              ->orWhere('nombre', 'like', 'Proceso%');
+                        })
+                        ->pluck('id_estado_proyecto_pk');
+                }
+            } catch (\Throwable $e) { /* fallback por fecha */ }
 
             if ($idsFinalizado->isNotEmpty() || $idsActivo->isNotEmpty()) {
                 if ($idsFinalizado->isNotEmpty()) {
@@ -100,20 +112,26 @@ class DashboardController extends Controller
         $ticketsAbiertos = 0;
         $ticketsCerrados = 0;
         if (class_exists(Ticket::class)) {
-            $idsAbierto = EstadoTicket::query()
-                ->where(function($q){
-                    $q->where('nombre_estado', 'like', 'Abierto%')
-                      ->orWhere('nombre_estado', 'like', 'En%')
-                      ->orWhere('nombre_estado', 'like', 'Pendiente%');
-                })
-                ->pluck('id_estado_ticket_pk');
-            $idsCerrado = EstadoTicket::query()
-                ->where(function($q){
-                    $q->where('nombre_estado', 'like', 'Cerrado%')
-                      ->orWhere('nombre_estado', 'like', 'Resuelto%')
-                      ->orWhere('nombre_estado', 'like', 'Finaliz%');
-                })
-                ->pluck('id_estado_ticket_pk');
+            $idsAbierto = collect();
+            $idsCerrado = collect();
+            try {
+                if (Schema::hasTable('tbl_estado_ticket')) {
+                    $idsAbierto = EstadoTicket::query()
+                        ->where(function($q){
+                            $q->where('nombre', 'like', 'Abierto%')
+                              ->orWhere('nombre', 'like', 'En%')
+                              ->orWhere('nombre', 'like', 'Pendiente%');
+                        })
+                        ->pluck('id_estado_ticket_pk');
+                    $idsCerrado = EstadoTicket::query()
+                        ->where(function($q){
+                            $q->where('nombre', 'like', 'Cerrado%')
+                              ->orWhere('nombre', 'like', 'Resuelto%')
+                              ->orWhere('nombre', 'like', 'Finaliz%');
+                        })
+                        ->pluck('id_estado_ticket_pk');
+                }
+            } catch (\Throwable $e) { /* fallback total abierto abajo */ }
 
             if ($idsAbierto->isNotEmpty()) {
                 $ticketsAbiertos = Ticket::query()->whereIn('id_estado_ticket_fk', $idsAbierto)->count();
@@ -198,9 +216,15 @@ class DashboardController extends Controller
             ->groupBy('id_estado_proyecto_fk')
             ->get();
 
-        $estados = EstadoProyecto::query()
-            ->whereIn('id_estado_proyecto_pk', $rows->pluck('id_estado_proyecto_fk')->filter())
-            ->pluck('nombre_estado', 'id_estado_proyecto_pk');
+        $estadoIds = $rows->pluck('id_estado_proyecto_fk')->filter();
+        $estados = collect();
+        try {
+            if ($estadoIds->isNotEmpty() && Schema::hasTable('tbl_estado_proyecto')) {
+                $estados = EstadoProyecto::query()
+                    ->whereIn('id_estado_proyecto_pk', $estadoIds)
+                    ->pluck('nombre', 'id_estado_proyecto_pk');
+            }
+        } catch (\Throwable $e) { $estados = collect(); }
 
         $labels = [];
         $data = [];

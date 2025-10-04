@@ -39,6 +39,11 @@ document.addEventListener('alpine:init', () => {
     // Multi-rol
     rolesSelected: [],
     rol_principal: '',
+  rolesLoading: false,
+
+    // Mapeos de roles por nombre para validaciones
+    _roleKeyById: {}, // { id: 'cliente'|'administrador'|'tecnico'|... }
+    _roleIdByKey: {}, // { 'cliente': id, 'administrador': id, 'tecnico': id }
 
     async init() {
       await Promise.all([this.fetchRoles(), this.fetchUsers(1)]);
@@ -55,8 +60,40 @@ document.addEventListener('alpine:init', () => {
         if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
         const data = await r.json();
         this.roles = normalizeList(data);
+        this._rebuildRoleMaps();
       } catch (e) { this.error = (e && e.message) ? e.message : 'Error cargando roles'; }
     },
+
+    _normalizeRoleName(n) {
+      try {
+        return String(n || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+      } catch (_) { return String(n || '').toLowerCase().trim(); }
+    },
+    _rebuildRoleMaps() {
+      this._roleKeyById = {};
+      this._roleIdByKey = {};
+      for (const r of (this.roles || [])) {
+        const key = this._normalizeRoleName(r.rol);
+        this._roleKeyById[String(r.id)] = key;
+        // primer id gana por si hay duplicados
+        if (!this._roleIdByKey[key]) this._roleIdByKey[key] = String(r.id);
+      }
+    },
+    _roleIs(key, id) {
+      return (this._roleKeyById[String(id)] || '') === key;
+    },
+    _idForRole(key) { return this._roleIdByKey[key] || null; },
+    // Helpers de validación Cliente vs Admin/Técnico
+    _isCliente(id) { return this._roleIs('cliente', id); },
+    _isAdmin(id) { return this._roleIs('administrador', id); },
+    _isTecnico(id) { return this._roleIs('tecnico', id); },
+    _hasClienteSelected() { return this.rolesSelected.map(String).some(id => this._isCliente(id)) || this._isCliente(this.rol_principal); },
+    _hasAdminOTecnicoSelected() { return this.rolesSelected.map(String).some(id => this._isAdmin(id) || this._isTecnico(id)) || this._isAdmin(this.rol_principal) || this._isTecnico(this.rol_principal); },
+    _notify(msg, type='warning') { try { window.showToast ? window.showToast(msg, type) : alert(msg); } catch (_) { alert(msg); } },
 
     buildQuery(page) {
       const p = new URLSearchParams();
@@ -106,14 +143,33 @@ document.addEventListener('alpine:init', () => {
       this.error = '';
       // Pre-cargar desde cache o backend los roles asignados actualmente
       if (user?.id) {
-        this.fetchUserRoles(user.id, { preferCache: true });
+        const hasCache = !!this._rolesCache[user.id];
+        if (hasCache) {
+          // aplicar cache de inmediato (evita parpadeo y trae técnico en re-apertura)
+          this.applyCachedRoles(user.id);
+          this.rolesLoading = false;
+        } else {
+          // mostrar cargando para evitar que se vea el chequeo activándose "al instante"
+          this.rolesLoading = true;
+          this.fetchUserRoles(user.id, { preferCache: true, ttlMs: Number.POSITIVE_INFINITY })
+            .finally(() => { this.rolesLoading = false; });
+        }
       }
+    },
+
+    applyCachedRoles(id) {
+      const cached = this._rolesCache[id];
+      if (!cached) return false;
+      this.rolesSelected = (cached.roles || []).map(String);
+      if (cached.rol_principal) this.rol_principal = String(cached.rol_principal);
+      this.setPrincipal(this.rol_principal);
+      return true;
     },
 
     async fetchUserRoles(id, { preferCache = false, ttlMs = 30000 } = {}) {
       const now = Date.now();
       const cached = this._rolesCache[id];
-      if (preferCache && cached && (now - (cached.ts || 0) < ttlMs)) {
+      if (preferCache && cached && (ttlMs === Number.POSITIVE_INFINITY || (now - (cached.ts || 0) < ttlMs))) {
         this.rolesSelected = (cached.roles || []).map(String);
         this.rol_principal = cached.rol_principal ? String(cached.rol_principal) : this.rol_principal;
         this.setPrincipal(this.rol_principal);
@@ -173,10 +229,24 @@ document.addEventListener('alpine:init', () => {
       const sid = String(id);
       // no permitir quitar el principal
       if (this.rol_principal === sid) return;
+      // Regla: Cliente no se puede combinar con Admin/Técnico
+      const adding = !this.rolesSelected.map(String).includes(sid);
+      if (adding) {
+        if (this._isCliente(sid) && this._hasAdminOTecnicoSelected()) {
+          this._notify('Un usuario con rol Cliente no puede tener Administrador ni Técnico.');
+          return; // no agregar Cliente
+        }
+        if ((this._isAdmin(sid) || this._isTecnico(sid)) && this._hasClienteSelected()) {
+          this._notify('No se puede combinar Cliente con Administrador/Técnico.');
+          return; // no agregar Admin/Técnico
+        }
+      }
       const idx = this.rolesSelected.map(String).findIndex(x => x === sid);
       if (idx > -1) this.rolesSelected.splice(idx, 1);
       else this.rolesSelected.push(sid);
       this.rolesSelected = this.rolesSelected.map(String);
+      // enforcement post-cambio
+      this._enforceClienteRule();
     },
     setPrincipal(id) {
       this.rol_principal = String(id || '');
@@ -187,6 +257,56 @@ document.addEventListener('alpine:init', () => {
       }
       // Normalizar a strings para x-model, convertimos a number en el guardado
       this.rolesSelected = this.rolesSelected.map(x => String(x));
+      // Aplicar regla Cliente vs Admin/Tecnico
+      this._enforceClienteRule();
+    },
+
+    _enforceClienteRule() {
+      // Si el principal es Cliente, remover Admin/Técnico adicionales
+      const clienteId = this._idForRole('cliente');
+      const adminId = this._idForRole('administrador');
+      const tecnicoId = this._idForRole('tecnico');
+      if (!clienteId && !adminId && !tecnicoId) return;
+
+      const rs = this.rolesSelected.map(String);
+      let changed = false;
+      if (this._isCliente(this.rol_principal)) {
+        // quitar admin/tecnico
+        const forbid = [adminId, tecnicoId].filter(Boolean).map(String);
+        this.rolesSelected = rs.filter(x => !forbid.includes(x) || x === String(this.rol_principal));
+        changed = rs.length !== this.rolesSelected.length;
+        if (changed) this._notify('Con rol principal Cliente no se permiten roles Administrador ni Técnico.');
+      } else {
+        // si hay admin/tecnico como principal o adicional, quitar Cliente de adicionales
+        const hasAdminOTec = this._hasAdminOTecnicoSelected();
+        if (hasAdminOTec && clienteId) {
+          this.rolesSelected = rs.filter(x => String(x) !== String(clienteId));
+          changed = rs.length !== this.rolesSelected.length;
+          if (changed) this._notify('Cliente no puede combinarse con Administrador/Técnico. Rol Cliente removido.');
+        }
+      }
+      // mantener principal siempre incluido
+      if (this.rol_principal && !this.rolesSelected.includes(String(this.rol_principal))) {
+        this.rolesSelected.push(String(this.rol_principal));
+      }
+    },
+
+    isRoleDisabled(id) {
+      const sid = String(id);
+      if (this.rol_principal === sid) return true;
+      // deshabilitar combinaciones inválidas para mejorar UX
+      if (this._isCliente(this.rol_principal)) {
+        return this._isAdmin(sid) || this._isTecnico(sid);
+      }
+      if (this._isAdmin(this.rol_principal) || this._isTecnico(this.rol_principal)) {
+        return this._isCliente(sid);
+      }
+      // si cliente está seleccionado como adicional, bloquear admin/tecnico; y viceversa
+      const clienteSel = this.rolesSelected.map(String).some(x => this._isCliente(x));
+      const adminOTecSel = this.rolesSelected.map(String).some(x => this._isAdmin(x) || this._isTecnico(x));
+      if (clienteSel) return this._isAdmin(sid) || this._isTecnico(sid);
+      if (adminOTecSel) return this._isCliente(sid);
+      return false;
     },
 
     async saveAssignMulti() {
@@ -195,6 +315,16 @@ document.addEventListener('alpine:init', () => {
       // x-model en checkboxes usa strings; convertimos a números limpios
       const roles = (this.rolesSelected || []).map(v => Number(String(v).trim())).filter(v => Number.isFinite(v) && v > 0);
       const rol_principal = this.rol_principal ? Number(this.rol_principal) : null;
+      // Validación previa: Cliente no se combina con Admin/Técnico
+      const clienteId = this._idForRole('cliente');
+      const adminId = this._idForRole('administrador');
+      const tecnicoId = this._idForRole('tecnico');
+      const hasCliente = roles.map(String).includes(String(clienteId)) || String(rol_principal) === String(clienteId);
+      const hasAdminOTec = roles.map(String).some(x => [adminId, tecnicoId].filter(Boolean).map(String).includes(String(x))) || [adminId, tecnicoId].filter(Boolean).map(String).includes(String(rol_principal));
+      if (hasCliente && hasAdminOTec) {
+        this._notify('No se puede guardar: Cliente no puede combinarse con Administrador/Técnico.', 'error');
+        return;
+      }
       try {
         this.loading = true; this.error = '';
         const r = await fetch(`${API.users}/${id}/roles`, {
@@ -206,6 +336,8 @@ document.addEventListener('alpine:init', () => {
         if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
         const idx = this.items.findIndex(u => u.id === id);
         if (idx > -1) this.items[idx].id_rol_fk = rol_principal ?? (roles[0] || null);
+        // actualizar cache local para evitar refetchs posteriores
+        this._rolesCache[id] = { roles: this.rolesSelected.map(String), rol_principal: String(this.rol_principal || ''), ts: Date.now() };
         this.isAssignOpen = false;
         try { window.showToast && window.showToast('Roles actualizados para el usuario', 'success'); } catch (_) { }
       } catch (e) { this.error = (e && e.message) ? e.message : 'Error asignando roles'; }
