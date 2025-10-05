@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Services\PermissionService;
+use App\Support\AdminModuleRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -127,59 +128,30 @@ Route::prefix('admin')
         // Dashboard
         Route::get('dashboard', fn() => view('layouts.admin')->with('partialView', 'admin.partials.dashboard'))->name('dashboard');
 
-        // Seguridad
-        Route::get('gestion-usuarios', function () {
-            $user = auth()->user();
-            if (!app(PermissionService::class)->can($user, ['Usuarios'], 'consultar')) {
-                abort(403, 'Permiso denegado');
+        // Vistas parciales administradas por registro
+        foreach (AdminModuleRegistry::views() as $viewKey => $definition) {
+            if ($viewKey === 'dashboard') {
+                continue; // ya definido
             }
-            return view('layouts.admin')->with('partialView', 'admin.partials.gestion-usuarios');
-        })->name('gestion-usuarios');
-
-        Route::get('parametros', function () {
-            $user = auth()->user();
-            if (!app(PermissionService::class)->can($user, ['Parámetros', 'Parametros'], 'consultar')) {
-                abort(403, 'Permiso denegado');
+            if (($definition['type'] ?? 'partial') !== 'partial') {
+                continue; // se manejan más abajo (p.ej., reportes completos)
             }
-            return view('layouts.admin')->with('partialView', 'admin.partials.parametros');
-        })->name('parametros');
 
-        Route::get('configuracion-acceso', function () {
-            $user = auth()->user();
-            if (!app(PermissionService::class)->can($user, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar')) {
-                abort(403, 'Permiso denegado');
-            }
-            return view('layouts.admin')->with('partialView', 'admin.partials.configuracion-acceso');
-        })->name('configuracion-acceso');
+            Route::get($viewKey, function () use ($viewKey, $definition) {
+                $user = auth()->user();
+                $candidates = AdminModuleRegistry::permissionCandidates($viewKey);
+                if (!empty($candidates)) {
+                    $perm = app(PermissionService::class);
+                    if (!$perm->can($user, $candidates, 'consultar')) {
+                        abort(403, 'Permiso denegado');
+                    }
+                }
 
-        // Clientes
-        Route::get('gestion-empresas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-empresas'))->name('gestion-empresas');
-        Route::get('cotizaciones', fn() => view('layouts.admin')->with('partialView', 'admin.partials.cotizaciones'))->name('cotizaciones');
+                $partialBlade = $definition['blade'] ?? "admin.partials.{$viewKey}";
 
-        // Solicitudes
-        Route::get('solicitudes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.solicitudes'))->name('solicitudes');
-
-        // Órdenes de Servicio
-        Route::get('gestion-ordenes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-ordenes'))->name('gestion-ordenes');
-        Route::get('calificaciones-servicio', fn() => view('layouts.admin')->with('partialView', 'admin.partials.calificaciones-servicio'))->name('calificaciones-servicio');
-
-        // Proyectos
-        Route::get('vista-proyectos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.vista-proyectos'))->name('vista-proyectos');
-        Route::get('proyectos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.proyectos'))->name('proyectos');
-
-        // Tickets
-        Route::get('tickets', fn() => view('layouts.admin')->with('partialView', 'admin.partials.tickets'))->name('tickets');
-
-        // Agencias y Calendario
-        Route::get('agencias', fn() => view('layouts.admin')->with('partialView', 'admin.partials.agencias'))->name('agencias');
-        Route::get('calendario', fn() => view('layouts.admin')->with('partialView', 'admin.partials.calendario'))->name('calendario');
-
-        // Facturas y CAI
-        Route::get('facturas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.facturas'))->name('facturas');
-        Route::get('cai', fn() => view('layouts.admin')->with('partialView', 'admin.partials.cai'))->name('cai');
-
-        // Reportes
-        Route::get('reportes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.reportes'))->name('reportes');
+                return view('layouts.admin')->with('partialView', $partialBlade);
+            })->name($viewKey);
+        }
 
         // Reportes Header (con mapeo completo)
         Route::get('reportes-header', function (Request $request) {
@@ -254,45 +226,6 @@ Route::prefix('admin')
             }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
-
-        // Inventario
-        Route::get('productos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.productos'))->name('productos');
-        Route::get('kardex', fn() => view('layouts.admin')->with('partialView', 'admin.partials.kardex'))->name('kardex');
-
-        // Catálogo
-        $catalogos = [
-            'genero',
-            'estados-solicitud',
-            'categorias-ingresos-gastos',
-            'estados-proyecto',
-            'estados-tickets',
-            'ubicaciones',
-            'estados-calendario',
-            'admin-facturas',
-            'estados-cai',
-            'tipo-visita',
-            'tipo-persona',
-            'perfil',
-            'tipo-producto',
-            'tipo-movimiento',
-            'servicios-realizados',
-            'acciones-realizadas',
-            'servicios-factura',
-            'tipo-objeto'
-        ];
-
-        foreach ($catalogos as $cat) {
-            Route::get("catalogo-$cat", fn() => view('layouts.admin')->with('partialView', "admin.partials.catalogo-$cat"))->name("catalogo-$cat");
-        }
-
-        // Administración
-        Route::get('gestion-personas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-personas'))->name('gestion-personas');
-        Route::get('perfil', fn() => view('layouts.admin')->with('partialView', 'admin.partials.perfil'))->name('perfil');
-        Route::get('bitacora', fn() => view('layouts.admin')->with('partialView', 'admin.partials.bitacora'))->name('bitacora');
-        Route::get('gestion-db', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-db'))->name('gestion-db');
-
-        // Mantenimiento
-        Route::get('mantenimiento-general', fn() => view('layouts.admin')->with('partialView', 'admin.partials.mantenimiento-general'))->name('mantenimiento-general');
 
         // Vistas PDF o externas
         Route::get('detalle-cotizacion', fn() => view('admin.detalle-cotizacion'))->name('detalle-cotizacion');

@@ -13,9 +13,27 @@
     <meta name="spa-view" content="{{ request()->header('X-SPA-View') }}">
     @endif
 
+    @php
+        $adminModulesDataset = \App\Support\AdminModuleRegistry::modulesForFrontend();
+    @endphp
+
     @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/css/theme.css', 'resources/js/app.js',
     'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js',
     'resources/js/tabla-responsive.js'])
+
+    <script type="application/json" id="admin-modules-dataset">
+        @json($adminModulesDataset)
+    </script>
+    <script>
+        (function () {
+            try {
+                const el = document.getElementById('admin-modules-dataset');
+                window.__ADMIN_MODULES__ = el && el.textContent ? JSON.parse(el.textContent) : [];
+            } catch (err) {
+                window.__ADMIN_MODULES__ = [];
+            }
+        })();
+    </script>
 
     <!-- Theme script inline para evitar problemas de Vite -->
     <script>

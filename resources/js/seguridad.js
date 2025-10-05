@@ -4,8 +4,8 @@
 // de permisos (agrupación por módulo, encabezado de módulo con toggle y columnas condensadas).
 // Si se pierde el commit, usar este bloque como punto de anclaje para reconstruir.
 (function () {
-  // Sidebar-driven module ordering and submodule labels for grouping/ordering
-  const SIDEBAR_ORDER = [
+  // Sidebar-driven module ordering and submódulo labels for grouping/ordering
+  const DEFAULT_SIDEBAR_ORDER = [
     { id: 'seguridad', title: 'Seguridad', items: ['Usuarios', 'Parámetros', 'Parametros', 'Configuración de accesos', 'Configuracion de accesos'] },
     { id: 'clientes', title: 'Clientes', items: ['Empresas', 'Cotizaciones', 'Solicitudes', 'Órdenes de Servicios', 'Ordenes de Servicios'] },
     { id: 'proyectos', title: 'Proyectos', items: ['Proyectos', 'Gestión de proyectos', 'Gestion de proyectos', 'Vista de proyectos'] },
@@ -18,10 +18,34 @@
     { id: 'mantenimiento', title: 'Mantenimiento', items: ['Mantenimiento del Sistema', 'Mantenimiento del sistema'] },
     {
       id: 'catalogo', title: 'Catalogo', items: [
-  'Acciones Realizadas', 'Administración de Facturas', 'Categorias de Ingresos y Gastos', 'Categorías de Ingresos y Gastos', 'Estados CAI', 'Estados de Proyecto', 'Estados de Solicitud', 'Estados de Tickets', 'Estados del Calendario', 'Género', 'Genero', 'Servicio Factura', 'Servicios Realizados', 'Tipo de Movimiento', 'Tipo de Objeto', 'Tipo de Producto', 'Tipo de Visita', 'Ubicaciones'
+        'Acciones Realizadas', 'Administración de Facturas', 'Categorias de Ingresos y Gastos', 'Categorías de Ingresos y Gastos', 'Estados CAI', 'Estados de Proyecto', 'Estados de Solicitud', 'Estados de Tickets', 'Estados del Calendario', 'Género', 'Genero', 'Servicio Factura', 'Servicios Realizados', 'Tipo de Movimiento', 'Tipo de Objeto', 'Tipo de Producto', 'Tipo de Visita', 'Ubicaciones'
       ]
     },
   ];
+
+  const hydrateFromDataset = () => {
+    const dataset = Array.isArray(window.__ADMIN_MODULES__) ? window.__ADMIN_MODULES__ : [];
+    if (!dataset.length) return [];
+    return dataset
+      .filter((module) => module && module.key && module.key !== 'dashboard' && Array.isArray(module.submodules) && module.submodules.length)
+      .map((module) => {
+        const names = new Set();
+        (module.object_names || []).forEach((name) => { if (name) names.add(name); });
+        module.submodules.forEach((sub) => {
+          (sub.object_names || []).forEach((name) => { if (name) names.add(name); });
+        });
+        return {
+          id: module.key,
+          title: module.label || module.key,
+          items: Array.from(names.values()),
+        };
+      });
+  };
+
+  const SIDEBAR_ORDER = (() => {
+    const fromConfig = hydrateFromDataset();
+    return fromConfig.length ? fromConfig : DEFAULT_SIDEBAR_ORDER;
+  })();
 
   const norm = (s) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   // Tipo/grupo de fallback que no deben mostrarse en la matriz
