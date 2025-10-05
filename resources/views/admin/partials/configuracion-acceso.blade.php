@@ -149,8 +149,10 @@
                                                             <template x-for="col in $store.access.permColumns" :key="col.field">
                                                                 <td class="p-3 text-center">
                                                                     <button type="button"
-                                                                        class="h-6 w-6 rounded-full border flex items-center justify-center transition"
-                                                                        :class="$store.access.isChecked(o.id,col.field) ? 'bg-blue-600 border-blue-600' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'"
+                                                                        class="h-6 w-6 rounded-full border flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                                                                        :class="$store.access.isChecked(o.id,col.field)
+                                                                            ? 'bg-blue-600 border-blue-600'
+                                                                            : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-white/70 hover:border-gray-500 dark:hover:border-white focus-visible:border-white'"
                                                                         :title="$store.access.isChecked(o.id,col.field) ? 'Permitido' : 'No permitido'"
                                                                         @click="$store.access.toggle(o.id, col.field)"
                                                                         :aria-pressed="$store.access.isChecked(o.id,col.field) ? 'true' : 'false'">
