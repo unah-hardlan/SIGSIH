@@ -3,6 +3,15 @@
 
   const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
+  const hasConfiguracionAcceso = () => {
+    try {
+      const main = document.querySelector('main');
+      return (main?.dataset?.canConfiguracionAcceso || '') === '1';
+    } catch (_) {
+      return false;
+    }
+  };
+
   function normalizeList(payload){
     if(Array.isArray(payload)) return payload;
     if(Array.isArray(payload?.data)) return payload.data;
@@ -31,6 +40,7 @@
       direction: 'asc',
       perPage: 10,
       _abortCtrl: null,
+  blocked: false,
 
       isCreateOpen: false,
       isEditOpen: false,
@@ -39,6 +49,14 @@
       current: null,
 
       async init(){
+        if(!hasConfiguracionAcceso()){
+          this.blocked = true;
+          this.items = [];
+          this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 };
+          this.error = 'No tienes permisos para ver los roles del sistema.';
+          return;
+        }
+        this.blocked = false;
         await this.fetchList(1);
       },
       buildQuery(page){
@@ -51,12 +69,21 @@
         return `${API.roles}?${params.toString()}`;
       },
       async fetchList(page=1){
+        if(!hasConfiguracionAcceso()){
+          this.blocked = true;
+          this.items = [];
+          this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 };
+          this.error = 'No tienes permisos para ver los roles del sistema.';
+          return;
+        }
+        this.blocked = false;
         try{
           this.loading = true; this.error = '';
           if(this._abortCtrl){ try{ this._abortCtrl.abort(); }catch(_){} }
           this._abortCtrl = new AbortController();
           const url = this.buildQuery(page);
           const r = await fetch(url, { headers: authHeaders(), signal: this._abortCtrl.signal, credentials: 'same-origin' });
+            if(r.status === 403){ this.items = []; this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 }; this.error = 'No tienes permisos para ver los roles del sistema.'; return; }
           if(!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
           const data = await r.json();
           this.items = normalizeList(data);
@@ -67,8 +94,8 @@
         } finally { this.loading = false; this._abortCtrl = null; }
       },
       setSearch(val){ this.q = val; this.debouncedFetch(); },
-      setSort(val){ this.sort = val || 'rol'; this.fetchList(1); },
-      setDirection(val){ this.direction = (val==='desc'?'desc':'asc'); this.fetchList(1); },
+  setSort(val){ this.sort = val || 'rol'; if(!this.blocked) this.fetchList(1); },
+  setDirection(val){ this.direction = (val==='desc'?'desc':'asc'); if(!this.blocked) this.fetchList(1); },
 
       openCreate(){ this.form = { rol: '', descripcion_rol: '' }; this.isCreateOpen = true; this.error=''; },
       openEdit(item){ this.current = item; this.form = { rol: item?.rol||'', descripcion_rol: item?.descripcion_rol||'' }; this.isEditOpen = true; this.error=''; },

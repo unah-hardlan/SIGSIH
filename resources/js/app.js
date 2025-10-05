@@ -298,11 +298,13 @@ document.addEventListener("alpine:init", () => {
                     window.location.assign("/login");
                     return;
                 }
+                if (res.status === 403) {
+                    const deniedHtml = await res.text();
+                    this.setContent(deniedHtml);
+                    this.updateState(url, viewName);
+                    return;
+                }
                 if (!res.ok) {
-                    if (res.status === 403) {
-                        await this.navigate("/admin/perfil", "perfil");
-                        return;
-                    }
                     throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 }
                 const html = await res.text();
@@ -418,6 +420,10 @@ document.addEventListener("alpine:init", () => {
             // Actualizar la URL sin recargar la página
             window.history.pushState({ viewName }, "", url);
             this.currentView = viewName;
+            try {
+                const main = document.querySelector("main");
+                if (main) main.dataset.currentView = viewName;
+            } catch (_) {}
             this.updateActiveLinks(url);
         },
 
@@ -512,6 +518,10 @@ document.addEventListener("alpine:init", () => {
             } else {
                 // Establecer dashboard como vista actual
                 this.currentView = "dashboard";
+                try {
+                    const main = document.querySelector("main");
+                    if (main) main.dataset.currentView = "dashboard";
+                } catch (_) {}
                 this.updateActiveLinks(path);
             }
         },

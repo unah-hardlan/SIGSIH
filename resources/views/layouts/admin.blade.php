@@ -83,6 +83,19 @@
     @livewireStyles
 </head>
 
+@php
+    use Illuminate\Support\Str;
+    $currentPartial = $partialView ?? null;
+    $initialViewName = $currentPartial ? Str::after($currentPartial, 'admin.partials.') : trim($__env->yieldContent('page-view-name', 'dashboard'));
+    if ($initialViewName === '') {
+        $initialViewName = 'dashboard';
+    }
+    $permissionService = app(\App\Services\PermissionService::class);
+    $authUser = auth()->user();
+    $canConfigAcceso = $permissionService->can($authUser, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar');
+    $canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consultar');
+@endphp
+
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
@@ -100,7 +113,10 @@
         @include('partials.admin-sidebar')
 
         <main
-            class="flex-1 min-h-screen p-3 sm:p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+            class="flex-1 min-h-screen p-3 sm:p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            data-current-view="{{ $initialViewName }}"
+            data-can-configuracion-acceso="{{ $canConfigAcceso ? '1' : '0' }}"
+            data-can-gestion-usuarios="{{ $canGestionUsuarios ? '1' : '0' }}">
             @include('partials.admin-header')
             @hasSection('page-header')
             <div class="bg-white dark:bg-gray-900 p-4 rounded mb-6">

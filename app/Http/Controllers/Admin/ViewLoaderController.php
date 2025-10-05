@@ -77,7 +77,7 @@ class ViewLoaderController extends Controller
         ];
 
         if (!in_array($view, $validViews)) {
-            return response('View not allowed', 403);
+            return $this->denyAccessResponse($view, __('La vista solicitada no está disponible.'));
         }
 
         // Enforce permisos for specific admin views (consultar)
@@ -96,27 +96,32 @@ class ViewLoaderController extends Controller
                         'mantenimiento-general' => ['Mantenimiento del sistema'],
                         'gestion-db' => ['Gestión de base de datos','Gestion de base de datos'],
                     ];
+                    $viewLabels = [
+                        'parametros' => 'Parámetros',
+                        'configuracion-acceso' => 'Configuración de accesos',
+                        'gestion-usuarios' => 'Gestión de usuarios',
+                        'bitacora' => 'Bitácora',
+                        'gestion-personas' => 'Gestión de personas',
+                        'mantenimiento-general' => 'Mantenimiento del sistema',
+                        'gestion-db' => 'Gestión de base de datos',
+                    ];
                     if (isset($viewObjetoMap[$view])) {
                         $perm = app(PermissionService::class);
                         if (!$perm->can($user, $viewObjetoMap[$view], 'consultar')) {
-                            return response('Permiso denegado para ver esta sección', 403);
+                            return $this->denyAccessResponse($view, null, $viewLabels[$view] ?? null);
                         }
                     }
                 }
             } catch (\Throwable $e) {
                 // Si falla relación u otro error, negar por seguridad
-                return response('Permiso denegado', 403);
+                return $this->denyAccessResponse($view);
             }
         }
 
         // Primero verificar si existe una vista parcial específica
         $partialView = "admin.partials.{$view}";
         if (View::exists($partialView)) {
-            // Incluir header para vistas parciales
-            $headerHtml = view('partials.admin-header')->render();
-            $contentHtml = view($partialView)->render();
-
-            return $headerHtml . '<div class="p-6 rounded-lg shadow">' . $contentHtml . '</div>';
+            return $this->renderPartial($partialView);
         }
 
         // Si no existe vista parcial, intentar cargar la vista completa y extraer contenido
@@ -142,5 +147,54 @@ class ViewLoaderController extends Controller
         } catch (\Exception $e) {
             return response('Error loading view: ' . $e->getMessage(), 500);
         }
+    }
+
+    private function renderPartial(string $view, array $data = []): string
+    {
+        $headerHtml = view('partials.admin-header')->render();
+        $contentHtml = view($view, $data)->render();
+
+        return $headerHtml . '<div class="p-6 rounded-lg shadow bg-white dark:bg-gray-900">' . $contentHtml . '</div>';
+    }
+
+    private function denyAccessResponse(string $view, ?string $customMessage = null, ?string $label = null)
+    {
+        $message = $customMessage ?? __('No cuentas con los permisos necesarios para acceder a esta sección.');
+        $targetLabel = $label ?? $this->resolveViewLabel($view);
+
+        $content = $this->renderPartial('admin.partials.access-denied', [
+            'code' => 403,
+            'title' => __('Acceso restringido'),
+            'message' => $message,
+            'targetLabel' => $targetLabel,
+            'actionUrl' => route('admin.dashboard'),
+            'actionText' => __('Ir al panel principal'),
+            'helpText' => __('Comunícate con un administrador si consideras que deberías tener acceso.'),
+        ]);
+
+        return response($content, 403);
+    }
+
+    private function resolveViewLabel(string $view): string
+    {
+        $customLabels = [
+            'gestion-usuarios' => 'Gestión de usuarios',
+            'configuracion-acceso' => 'Configuración de accesos',
+            'gestion-empresas' => 'Gestión de empresas',
+            'gestion-ordenes' => 'Gestión de órdenes',
+            'vista-proyectos' => 'Vista de proyectos',
+            'gestion-personas' => 'Gestión de personas',
+            'mantenimiento-general' => 'Mantenimiento general',
+            'gestion-db' => 'Gestión de base de datos',
+        ];
+
+        if (isset($customLabels[$view])) {
+            return $customLabels[$view];
+        }
+
+        return \Illuminate\Support\Str::of($view)
+            ->replace(['-', '_'], ' ')
+            ->trim()
+            ->title();
     }
 }

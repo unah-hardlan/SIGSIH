@@ -1,3 +1,12 @@
+const hasGestionUsuariosAccess = () => {
+    try {
+        const main = document.querySelector('main');
+        return (main?.dataset?.canGestionUsuarios || '') === '1';
+    } catch (_) {
+        return false;
+    }
+};
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('usuariosCrud', () => ({
         isModalOpen:false,isEditUserModalOpen:false,showDeleteModal:false,
@@ -10,6 +19,7 @@ document.addEventListener('alpine:init', () => {
     editForm:{id:null,usuario:'',nombre_usuario:'',correo_electronico:'',estado_usuario:'ACTIVO',contrasena:'',id_rol_fk:null},
         userToEdit:null,userToInactivate:null,
         apiBase:'/api/usuarios',
+        canAccess(){ return hasGestionUsuariosAccess(); },
         notify(msg,type='success'){
             const el=document.createElement('div');
             el.textContent=msg;
@@ -19,6 +29,10 @@ document.addEventListener('alpine:init', () => {
             setTimeout(()=> el.remove(),3000);
         },
         init(){
+            if(!this.canAccess()){
+                this.error='No tienes permisos para ver los usuarios.';
+                return;
+            }
             window.addEventListener('modal-submit', e=>{ if(e.detail?.formId==='formCrear'){ this.createUser(); } if(e.detail?.formId==='formEditar'){ this.updateUser(); } });
             this.$watch('search', () => this.debounceFetch());
             this.$watch('filtroPerfil', () => { this.pagination.page=1; this.fetchUsers(); });
@@ -38,8 +52,12 @@ document.addEventListener('alpine:init', () => {
             this.fetchRoles();
         },
         async fetchRoles(){
+            if(!this.canAccess()){
+                this.rolesLoading=false; this.roles=[]; this.rolesError='No tienes permisos para listar roles.'; return;
+            }
             try{ this.rolesLoading=true; this.rolesError='';
                 const r=await fetch('/api/roles?all=1',{headers:this.authHeaders(),credentials:'include'});
+                if(r.status===403){ this.rolesError='No tienes permisos para listar roles.'; this.roles=[]; return; }
                 if(!r.ok) throw await r.json();
                 const data=await r.json();
                 this.roles = Array.isArray(data?.data)?data.data:data;
@@ -50,6 +68,9 @@ document.addEventListener('alpine:init', () => {
         getToken(){ const t=localStorage.getItem('token'); if(t) return t; const m=document.cookie.match(/auth_token=([^;]+)/); return m?decodeURIComponent(m[1]):''; },
         authHeaders(){ return { 'Authorization':'Bearer '+this.getToken(),'Content-Type':'application/json','Accept':'application/json' }; },
         async fetchUsers(){
+            if(!this.canAccess()){
+                this.loading=false; this.error='No tienes permisos para ver los usuarios.'; this.users=[]; return;
+            }
             this.loading=true; this.error='';
             const params=new URLSearchParams({per_page:this.pagination.per_page,page:this.pagination.page});
             if(this.search) params.append('q',this.search);
@@ -65,6 +86,7 @@ document.addEventListener('alpine:init', () => {
             }
             try {
                 const r=await fetch(`${this.apiBase}?${params.toString()}`,{headers:this.authHeaders(),credentials:'include'});
+                if(r.status===403){ this.error='No tienes permisos para ver los usuarios.'; this.users=[]; return; }
                 if(r.status===401){ this.error='Sesión expirada. Inicia sesión.'; this.users=[]; return; }
                 if(!r.ok) throw await r.json();
                 const data=await r.json();
@@ -76,14 +98,15 @@ document.addEventListener('alpine:init', () => {
         },
     userRole(u){ return (u && u.rol) ? u.rol : '-'; },
         changePage(p){ if(p>=1 && p<=this.pagination.last_page){ this.pagination.page=p; this.fetchUsers(); } },
-    openCreate(){ if(this.isSubmitting)return; this.createForm={usuario:'',nombre_usuario:'',correo_electronico:'',estado_usuario:'ACTIVO',contrasena:'',id_rol_fk:''}; this.formError=''; this.isModalOpen=true; if(!this.roles.length) this.fetchRoles(); },
-        async createUser(){ if(this.isSubmitting) return; this.isSubmitting=true; this.formError='';
+    openCreate(){ if(!this.canAccess()||this.isSubmitting)return; this.createForm={usuario:'',nombre_usuario:'',correo_electronico:'',estado_usuario:'ACTIVO',contrasena:'',id_rol_fk:''}; this.formError=''; this.isModalOpen=true; if(!this.roles.length) this.fetchRoles(); },
+        async createUser(){ if(!this.canAccess()||this.isSubmitting) return; this.isSubmitting=true; this.formError='';
             if(!this.createForm.id_rol_fk){ this.formError='Debe seleccionar un rol'; this.isSubmitting=false; return; }
             try{ const payload={...this.createForm}; const r=await fetch(this.apiBase,{method:'POST',headers:this.authHeaders(),body:JSON.stringify(payload)}); if(!r.ok) throw await r.json(); const data=await r.json(); this.isModalOpen=false; if(this.pagination.page===1 && !this.ordenarPor){ this.users.unshift(data.data||data); if(this.users.length>this.pagination.per_page){ this.users.pop(); } this.pagination.total+=1; } else { this.fetchUsers(); } this.notify('Usuario creado'); }catch(e){ this.formError=(e.errors && Object.values(e.errors).flat().join('\n'))||e.error||'Error creando'; this.notify(this.formError,'error'); } finally { this.isSubmitting=false; } },
-    openEdit(u){ if(this.isSubmitting)return; this.editForm={id:u.id,usuario:u.usuario,nombre_usuario:u.nombre_usuario,correo_electronico:u.correo_electronico,estado_usuario:u.estado_usuario,contrasena:'',id_rol_fk:u.id_rol_fk||null}; this.formError=''; this.userToEdit=u; this.isEditUserModalOpen=true; if(!this.roles.length) this.fetchRoles(); },
-    async updateUser(){ if(this.isSubmitting) return; this.isSubmitting=true; this.formError=''; const payload={nombre_usuario:this.editForm.nombre_usuario,correo_electronico:this.editForm.correo_electronico,estado_usuario:this.editForm.estado_usuario}; if(this.editForm.contrasena) payload.contrasena=this.editForm.contrasena; if(this.editForm.id_rol_fk) payload.id_rol_fk=this.editForm.id_rol_fk; try{ const r=await fetch(`${this.apiBase}/${this.editForm.id}`,{method:'PUT',headers:this.authHeaders(),body:JSON.stringify(payload)}); if(!r.ok) throw await r.json(); const data=await r.json(); this.isEditUserModalOpen=false; const idx=this.users.findIndex(x=>x.id===this.editForm.id); if(idx>-1){ this.users[idx]=data.data||data; } if(this.ordenarPor) this.fetchUsers(); this.notify('Usuario actualizado'); }catch(e){ this.formError=(e.errors && Object.values(e.errors).flat().join('\n'))||e.error||'Error actualizando'; this.notify(this.formError,'error'); } finally { this.isSubmitting=false; } },
-        openInactivar(user){ this.userToInactivate=user; this.showDeleteModal=true; },
+    openEdit(u){ if(!this.canAccess()||this.isSubmitting)return; this.editForm={id:u.id,usuario:u.usuario,nombre_usuario:u.nombre_usuario,correo_electronico:u.correo_electronico,estado_usuario:u.estado_usuario,contrasena:'',id_rol_fk:u.id_rol_fk||null}; this.formError=''; this.userToEdit=u; this.isEditUserModalOpen=true; if(!this.roles.length) this.fetchRoles(); },
+    async updateUser(){ if(!this.canAccess()||this.isSubmitting) return; this.isSubmitting=true; this.formError=''; const payload={nombre_usuario:this.editForm.nombre_usuario,correo_electronico:this.editForm.correo_electronico,estado_usuario:this.editForm.estado_usuario}; if(this.editForm.contrasena) payload.contrasena=this.editForm.contrasena; if(this.editForm.id_rol_fk) payload.id_rol_fk=this.editForm.id_rol_fk; try{ const r=await fetch(`${this.apiBase}/${this.editForm.id}`,{method:'PUT',headers:this.authHeaders(),body:JSON.stringify(payload)}); if(!r.ok) throw await r.json(); const data=await r.json(); this.isEditUserModalOpen=false; const idx=this.users.findIndex(x=>x.id===this.editForm.id); if(idx>-1){ this.users[idx]=data.data||data; } if(this.ordenarPor) this.fetchUsers(); this.notify('Usuario actualizado'); }catch(e){ this.formError=(e.errors && Object.values(e.errors).flat().join('\n'))||e.error||'Error actualizando'; this.notify(this.formError,'error'); } finally { this.isSubmitting=false; } },
+        openInactivar(user){ if(!this.canAccess()) return; this.userToInactivate=user; this.showDeleteModal=true; },
         openReporte(){
+            if(!this.canAccess()) return;
             const params=new URLSearchParams();
             params.append('modulo','usuarios');
             if(this.search) params.append('q',this.search);

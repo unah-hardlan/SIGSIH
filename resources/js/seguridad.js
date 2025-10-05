@@ -34,6 +34,15 @@
     upsertPerm: (rolId, objId) => `/api/permisos/roles/${rolId}/objetos/${objId}`,
   };
 
+  const hasConfiguracionAcceso = () => {
+    try {
+      const main = document.querySelector('main');
+      return (main?.dataset?.canConfiguracionAcceso || '') === '1';
+    } catch (_) {
+      return false;
+    }
+  };
+
   // Adapter: support new mapping fields if backend includes ruta/clave_permiso
   function mapObjeto(o) {
     return {
@@ -51,6 +60,11 @@
 
   async function apiGet(url, opts = {}) {
     const res = await fetch(url, { headers: authHeaders(), credentials: 'same-origin', signal: opts.signal });
+    if (res.status === 403) {
+      const err = new Error('Permiso denegado');
+      err.status = 403;
+      throw err;
+    }
     if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
     return res.json();
   }
@@ -62,6 +76,11 @@
   }
   async function apiSend(url, method, body, opts = {}) {
     const res = await fetch(url, { method, headers: authHeaders(), credentials: 'same-origin', body: JSON.stringify(body), signal: opts.signal });
+    if (res.status === 403) {
+      const err = new Error('Permiso denegado');
+      err.status = 403;
+      throw err;
+    }
     if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
     return res.json();
   }
@@ -85,6 +104,8 @@
       _roleLoadingId: null,
       _selectRoleDebounce: null,
       _fetchPermRetries: 3,
+  _initialized: false,
+  blocked: false,
       pending: {},
       commitTimers: {},
       permsByObj: {},
@@ -96,8 +117,18 @@
       ],
 
       async init() {
+        if (this.blocked) return;
+        if (!hasConfiguracionAcceso()) {
+          this.blocked = true;
+          this.error = 'No tienes permisos para ver esta sección';
+          this.roles = [];
+          this.objetos = [];
+          this.tipos = [];
+          return;
+        }
         try {
           this.loading = true; this.error = '';
+          this._initialized = true;
           const [rolesRes, objetosRes, tiposRes] = await Promise.all([
             apiGet(`${API.roles}?all=1`),
             apiGet(`${API.objetos}?all=1`),
@@ -113,17 +144,26 @@
           if (this.roles.length && !this.selectedRoleId) {
             await this.selectRole(this.roles[0].id);
           }
-        } catch (e) { this.error = parseErr(e); }
+        } catch (e) {
+          if (e && e.status === 403) {
+            this.blocked = true;
+            this.error = 'No tienes permisos para ver esta sección';
+            return;
+          }
+          this.error = parseErr(e);
+        }
         finally { this.loading = false; }
       },
 
       async selectRole(roleId) {
+        if (this.blocked) return;
         this.selectedRoleId = roleId;
         if (this._selectRoleDebounce) clearTimeout(this._selectRoleDebounce);
         this._selectRoleDebounce = setTimeout(() => { this.ensureRolePerms(roleId); }, 120);
       },
 
       async ensureRolePerms(roleId) {
+        if (this.blocked) return;
         if (!roleId) return;
         try { await this.loadPermisosForRole(roleId); } catch (_) { }
       },
@@ -229,6 +269,12 @@
       },
 
       async loadPermisosForRole(roleId) {
+        if (this.blocked) return;
+        if (!hasConfiguracionAcceso()) {
+          this.blocked = true;
+          this.error = 'No tienes permisos para ver esta sección';
+          return;
+        }
         if (this._roleLoadPromise && this._roleLoadingId === roleId) {
           return this._roleLoadPromise;
         }
@@ -300,6 +346,7 @@
       },
 
       async toggle(objId, field) {
+        if (this.blocked) return;
         const roleId = this.selectedRoleId; if (!roleId) return;
         const rec = this.permsByObj[objId]; if (!rec) return;
         const prev = rec[field];
@@ -318,6 +365,12 @@
       },
 
       async commitNow(objId, field) {
+        if (this.blocked) return;
+        if (!hasConfiguracionAcceso()) {
+          this.blocked = true;
+          this.error = 'No tienes permisos para ver esta sección';
+          return;
+        }
         const roleId = this.selectedRoleId; if (!roleId) return;
         const rec = this.permsByObj[objId]; if (!rec) return;
         const desired = !!rec[field];
@@ -416,15 +469,33 @@
   document.addEventListener('alpine:init', () => {
     const store = createAccessStore();
     Alpine.store('access', store);
-    // Cargar perezoso: sólo auto-init si estamos en la vista de Configuración de accesos
-    try {
-      const main = document.querySelector('main');
-      const isAccessView = main && /admin\.partials\.configuracion-acceso|configuracion-acceso/i.test(main.innerHTML || '');
-      if (isAccessView) {
-        // defer para dar tiempo a Alpine a hidratar
+    const shouldInit = () => {
+      try {
+        const current = document.querySelector('main')?.dataset?.currentView || '';
+        return current === 'configuracion-acceso';
+      } catch (_) {
+        return false;
+      }
+    };
+
+    const ensureInit = () => {
+      if (store.blocked) return;
+      if (!hasConfiguracionAcceso()) {
+        store.blocked = true;
+        store.error = 'No tienes permisos para ver esta sección';
+        store.roles = [];
+        store.objetos = [];
+        store.tipos = [];
+        return;
+      }
+      if (shouldInit() && !store._initialized) {
+        store._initialized = true;
         setTimeout(() => { store.init().catch(() => { }); }, 0);
       }
-    } catch (_) { }
+    };
+
+    ensureInit();
+    document.addEventListener('app:view-loaded', ensureInit);
   });
 
 })();

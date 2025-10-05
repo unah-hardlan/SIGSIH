@@ -3,6 +3,15 @@ const API = { users: '/api/usuarios', roles: '/api/roles' };
 
 const authHeaders = () => ({ 'Accept': 'application/json' });
 
+const hasConfiguracionAcceso = () => {
+  try {
+    const main = document.querySelector('main');
+    return (main?.dataset?.canConfiguracionAcceso || '') === '1';
+  } catch (_) {
+    return false;
+  }
+};
+
 function normalizeList(payload) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
@@ -32,6 +41,7 @@ document.addEventListener('alpine:init', () => {
   // cache simple por usuario para roles asignados
   _rolesCache: {}, // { [userId]: { roles: string[], rol_principal: string, ts: number } }
   _rolesInflight: {}, // { [userId]: Promise }
+  blocked: false,
 
     isAssignOpen: false,
     current: null,
@@ -46,6 +56,14 @@ document.addEventListener('alpine:init', () => {
     _roleIdByKey: {}, // { 'cliente': id, 'administrador': id, 'tecnico': id }
 
     async init() {
+      if (!hasConfiguracionAcceso()) {
+        this.blocked = true;
+        this.error = 'No tienes permisos para asignar roles.';
+        this.items = [];
+        this.roles = [];
+        return;
+      }
+      this.blocked = false;
       await Promise.all([this.fetchRoles(), this.fetchUsers(1)]);
     },
 
@@ -55,8 +73,16 @@ document.addEventListener('alpine:init', () => {
     },
 
     async fetchRoles() {
+      if (!hasConfiguracionAcceso()) {
+        this.blocked = true;
+        this.roles = [];
+        this.error = 'No tienes permisos para listar roles.';
+        return;
+      }
+      this.blocked = false;
       try {
         const r = await fetch(`${API.roles}?all=1`, { headers: authHeaders(), credentials: 'same-origin' });
+        if (r.status === 403) { this.error = 'No tienes permisos para listar roles.'; this.roles = []; return; }
         if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
         const data = await r.json();
         this.roles = normalizeList(data);
@@ -108,12 +134,21 @@ document.addEventListener('alpine:init', () => {
     },
 
     async fetchUsers(page = 1) {
+      if (!hasConfiguracionAcceso()) {
+        this.blocked = true;
+        this.items = [];
+        this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 };
+        this.error = 'No tienes permisos para listar usuarios.';
+        return;
+      }
+      this.blocked = false;
       try {
         this.loading = true; this.error = '';
         if (this._abortCtrl) { try { this._abortCtrl.abort(); } catch (_) { } }
         this._abortCtrl = new AbortController();
         const url = this.buildQuery(page);
         const r = await fetch(url, { headers: authHeaders(), signal: this._abortCtrl.signal, credentials: 'same-origin' });
+  if (r.status === 403) { this.error = 'No tienes permisos para listar usuarios.'; this.items = []; return; }
         if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
         const data = await r.json();
         let list = normalizeList(data);
@@ -131,6 +166,7 @@ document.addEventListener('alpine:init', () => {
     setFilterRol(v) { this.filterRol = v || ''; this.fetchUsers(1); },
 
     openAssign(user) {
+      if (this.blocked) return;
       this.current = user;
       this.form.id_rol_fk = String(user?.id_rol_fk || '');
       // por defecto, usar el rol principal como seleccionado

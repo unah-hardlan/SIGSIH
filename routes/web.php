@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ViewLoaderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Services\PermissionService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -127,9 +128,29 @@ Route::prefix('admin')
         Route::get('dashboard', fn() => view('layouts.admin')->with('partialView', 'admin.partials.dashboard'))->name('dashboard');
 
         // Seguridad
-        Route::get('gestion-usuarios', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-usuarios'))->name('gestion-usuarios');
-        Route::get('parametros', fn() => view('layouts.admin')->with('partialView', 'admin.partials.parametros'))->name('parametros');
-        Route::get('configuracion-acceso', fn() => view('layouts.admin')->with('partialView', 'admin.partials.configuracion-acceso'))->name('configuracion-acceso');
+        Route::get('gestion-usuarios', function () {
+            $user = auth()->user();
+            if (!app(PermissionService::class)->can($user, ['Usuarios'], 'consultar')) {
+                abort(403, 'Permiso denegado');
+            }
+            return view('layouts.admin')->with('partialView', 'admin.partials.gestion-usuarios');
+        })->name('gestion-usuarios');
+
+        Route::get('parametros', function () {
+            $user = auth()->user();
+            if (!app(PermissionService::class)->can($user, ['Parámetros', 'Parametros'], 'consultar')) {
+                abort(403, 'Permiso denegado');
+            }
+            return view('layouts.admin')->with('partialView', 'admin.partials.parametros');
+        })->name('parametros');
+
+        Route::get('configuracion-acceso', function () {
+            $user = auth()->user();
+            if (!app(PermissionService::class)->can($user, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar')) {
+                abort(403, 'Permiso denegado');
+            }
+            return view('layouts.admin')->with('partialView', 'admin.partials.configuracion-acceso');
+        })->name('configuracion-acceso');
 
         // Clientes
         Route::get('gestion-empresas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-empresas'))->name('gestion-empresas');
