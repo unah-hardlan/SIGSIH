@@ -48,6 +48,99 @@
   })();
 
   const norm = (s) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const SECURITY_MODULE_KEY = 'seguridad';
+  const ADMIN_ROLE_KEY = 'administrador';
+  const CLIENT_ROLE_KEY = 'cliente';
+  const HIDDEN_OBJECTS_BY_MODULE = (() => {
+    const raw = new Map([
+      [SECURITY_MODULE_KEY, ['permisos']],
+    ]);
+    const normalized = new Map();
+    for (const [moduleKey, names] of raw.entries()) {
+      const moduleNorm = norm(moduleKey || '');
+      if (!moduleNorm) continue;
+      const set = new Set();
+      for (const name of names || []) {
+        const nameNorm = norm(name || '');
+        if (nameNorm) set.add(nameNorm);
+      }
+      if (set.size) {
+        normalized.set(moduleNorm, set);
+      }
+    }
+    return normalized;
+  })();
+  const SECURITY_OBJECT_NAMES = (() => {
+    const names = new Set();
+
+    for (const mod of SIDEBAR_ORDER) {
+      if (!mod) continue;
+      const modId = mod.id ? norm(mod.id) : '';
+      const modTitle = mod.title ? norm(mod.title) : '';
+      if (modId !== SECURITY_MODULE_KEY && modTitle !== SECURITY_MODULE_KEY) {
+        continue;
+      }
+      if (modTitle) names.add(modTitle);
+      if (Array.isArray(mod.items)) {
+        for (const item of mod.items) {
+          const normalized = norm(item);
+          if (normalized) names.add(normalized);
+        }
+      }
+      if (Array.isArray(mod.object_names)) {
+        for (const objName of mod.object_names) {
+          const normalized = norm(objName);
+          if (normalized) names.add(normalized);
+        }
+      }
+      if (Array.isArray(mod.submodules)) {
+        for (const sub of mod.submodules) {
+          if (sub?.label) {
+            const normalizedLabel = norm(sub.label);
+            if (normalizedLabel) names.add(normalizedLabel);
+          }
+          if (Array.isArray(sub?.object_names)) {
+            for (const subObj of sub.object_names) {
+              const normalizedSub = norm(subObj);
+              if (normalizedSub) names.add(normalizedSub);
+            }
+          }
+        }
+      }
+    }
+
+    if (!names.size) {
+      const fallback = ['seguridad', 'configuracion de accesos', 'gestion de usuarios', 'usuarios', 'parametros', 'permisos'];
+      fallback.forEach(value => names.add(value));
+    }
+
+    return names;
+  })();
+
+  const ALL_HIDDEN_OBJECT_NAMES = (() => {
+    const set = new Set();
+    for (const hidden of HIDDEN_OBJECTS_BY_MODULE.values()) {
+      for (const name of hidden) {
+        const nameNorm = norm(name || '');
+        if (nameNorm) set.add(nameNorm);
+      }
+    }
+    return set;
+  })();
+
+  const shouldHideObject = (moduleKeyLike, objectNameLike) => {
+    const moduleNorm = norm(moduleKeyLike || '');
+    const objectNorm = norm(objectNameLike || '');
+    if (!moduleNorm || !objectNorm) return false;
+    const hidden = HIDDEN_OBJECTS_BY_MODULE.get(moduleNorm);
+    return hidden ? hidden.has(objectNorm) : false;
+  };
+
+  const isGloballyHiddenObject = (objectNameLike) => {
+    const nameNorm = norm(objectNameLike || '');
+    if (!nameNorm) return false;
+    return ALL_HIDDEN_OBJECT_NAMES.has(nameNorm);
+  };
   // Tipo/grupo de fallback que no deben mostrarse en la matriz
   const HIDDEN_FALLBACK_GROUPS = new Set(['configuracion', 'modulo']);
   const API = {
@@ -128,11 +221,12 @@
       _roleLoadingId: null,
       _selectRoleDebounce: null,
       _fetchPermRetries: 3,
-  _initialized: false,
-  blocked: false,
+      _initialized: false,
+      blocked: false,
       pending: {},
       commitTimers: {},
       permsByObj: {},
+      _lastGuardToast: 0,
       permColumns: [
         { field: 'permiso_consultar', label: 'Ver' },
         { field: 'permiso_insercion', label: 'Crear' },
@@ -158,7 +252,12 @@
             apiGet(`${API.objetos}?all=1`),
             apiGet(`${API.tipos}?all=1`),
           ]);
-          this.roles = normalizeCollection(rolesRes);
+          const rawRoles = normalizeCollection(rolesRes);
+          const filteredRoles = rawRoles.filter(role => norm(role?.rol || '') !== CLIENT_ROLE_KEY);
+          this.roles = filteredRoles;
+          if (this.selectedRoleId && !filteredRoles.some(role => role?.id === this.selectedRoleId)) {
+            this.selectedRoleId = null;
+          }
           this.objetos = normalizeCollection(objetosRes).map(mapObjeto);
           this.tipos = normalizeCollection(tiposRes).map(t => ({
             id: t.id ?? t.id_tipo_objeto_pk ?? t.id_tipo_objetos_fk ?? t.id,
@@ -181,6 +280,7 @@
 
       async selectRole(roleId) {
         if (this.blocked) return;
+        if (!this.roles.some(role => role?.id === roleId)) return;
         this.selectedRoleId = roleId;
         if (this._selectRoleDebounce) clearTimeout(this._selectRoleDebounce);
         this._selectRoleDebounce = setTimeout(() => { this.ensureRolePerms(roleId); }, 120);
@@ -211,6 +311,7 @@
           // Intentar localizar el Objeto del MÓDULO (p.ej. "Seguridad", "Clientes", etc.)
           // Preferir SIEMPRE coincidencia exacta con el título del módulo, no con los submódulos
           const moduleTitle = norm(mod.title);
+          const moduleKeyLike = mod.id ?? mod.title;
           let moduleObjId = null;
           for (const [id, n] of nameMap.entries()) {
             if (n === moduleTitle) { moduleObjId = id; break; }
@@ -219,6 +320,7 @@
           for (const o of objetosByName) {
             if (assigned.has(o.id)) continue;
             const n = nameMap.get(o.id);
+            if (shouldHideObject(moduleKeyLike, n)) continue;
             if (labelOrder.includes(n)) {
               // Evitar incluir el Objeto del módulo como submódulo
               if (moduleObjId != null && o.id === moduleObjId) continue;
@@ -241,6 +343,7 @@
           // Try to cluster by tipo names (if available)
           const byTipo = new Map();
           for (const o of restantes) {
+            if (isGloballyHiddenObject(o.nombre_objeto)) continue;
             const tname = (o.tipo?.nombre || o.tipo_nombre || 'Otros') + '';
             if (!byTipo.has(tname)) byTipo.set(tname, []);
             byTipo.get(tname).push(o);
@@ -253,6 +356,36 @@
           }
         }
         return groups;
+      },
+      currentRole() {
+        return this.roles.find(role => role?.id === this.selectedRoleId) || null;
+      },
+      isAdminSelected() {
+        const role = this.currentRole();
+        if (!role) return false;
+        return norm(role.rol || '') === ADMIN_ROLE_KEY;
+      },
+      isSecurityObject(objId) {
+        const obj = this.objetos.find(o => o.id === objId);
+        if (!obj) return false;
+        const normalized = norm(obj.nombre_objeto || '');
+        return !!normalized && SECURITY_OBJECT_NAMES.has(normalized);
+      },
+      isProtectedModule(groupId) {
+        return this.isAdminSelected() && norm(groupId || '') === SECURITY_MODULE_KEY;
+      },
+      shouldBlockSecurityToggle(objId, nextValue) {
+        if (!this.isAdminSelected()) return false;
+        if (!this.isSecurityObject(objId)) return false;
+        return nextValue === false;
+      },
+      notifySecurityGuard() {
+        const now = Date.now();
+        if (now - this._lastGuardToast < 800) return;
+        this._lastGuardToast = now;
+        try {
+          window.showToast && window.showToast('El rol Administrador debe conservar los permisos de Seguridad.', 'warning');
+        } catch (_) { }
       },
       moduloTieneAcceso(groupId) {
         const g = this.grupos().find(x => x.id === groupId);
@@ -267,16 +400,22 @@
         return false;
       },
       async toggleModulo(groupId, desired) {
+        if (this.blocked) return;
         const g = this.grupos().find(x => x.id === groupId);
         if (!g) return;
+        const target = !!desired;
+        if (this.isProtectedModule(g.id) && !target) {
+          this.notifySecurityGuard();
+          return;
+        }
         // Preferir togglear el Objeto del Módulo si existe
         if (g.moduleObjId != null) {
           const cur = this.isChecked(g.moduleObjId, 'permiso_consultar');
-          if (cur !== desired) {
+          if (cur !== target) {
             // set explicit desired value
             const rec = this.permsByObj[g.moduleObjId];
             if (rec) {
-              rec.permiso_consultar = !!desired;
+              rec.permiso_consultar = target;
               this.scheduleCommit(g.moduleObjId, 'permiso_consultar');
             } else {
               await this.toggle(g.moduleObjId, 'permiso_consultar');
@@ -288,7 +427,7 @@
         const objs = g.objetos || [];
         for (const o of objs) {
           const cur = this.isChecked(o.id, 'permiso_consultar');
-          if (cur !== desired) { await this.toggle(o.id, 'permiso_consultar'); }
+          if (cur !== target) { await this.toggle(o.id, 'permiso_consultar'); }
         }
       },
 
@@ -374,7 +513,12 @@
         const roleId = this.selectedRoleId; if (!roleId) return;
         const rec = this.permsByObj[objId]; if (!rec) return;
         const prev = rec[field];
-        rec[field] = !prev; // optimistic flip
+        const next = !prev;
+        if (this.shouldBlockSecurityToggle(objId, next)) {
+          this.notifySecurityGuard();
+          return;
+        }
+        rec[field] = next; // optimistic flip
         this.scheduleCommit(objId, field);
       },
 
@@ -404,6 +548,7 @@
         const controller = new AbortController();
         const token = Symbol('toggle');
         this.pending[key] = { controller, token };
+        let saved = false;
         try {
           if (rec.id) {
             const payload = { [field]: desired };
@@ -465,6 +610,7 @@
               }
             }
           }
+          saved = true;
         } catch (e) {
           if (e && (e.name === 'AbortError' || /aborted|abort/i.test(e.message || ''))) {
             return;
@@ -472,15 +618,19 @@
           if (this.pending[key]?.token === token) {
             rec[field] = !desired;
           }
-          this.error = parseErr(e);
-          try { window.showToast && window.showToast('No se pudo guardar el cambio de permiso', 'error'); } catch (_) { }
+          const message = parseErr(e);
+          this.error = message;
+          const toastMessage = /administrador/i.test(message) ? message : 'No se pudo guardar el cambio de permiso';
+          try { window.showToast && window.showToast(toastMessage, 'error'); } catch (_) { }
           setTimeout(() => { this.error = ''; }, 2500);
         } finally {
           if (this.pending[key]?.token === token) {
             delete this.pending[key];
           }
         }
-        try { window.showToast && window.showToast('Permiso actualizado', 'success', { duration: 2500 }); } catch (_) { }
+        if (saved) {
+          try { window.showToast && window.showToast('Permiso actualizado', 'success', { duration: 2500 }); } catch (_) { }
+        }
       },
     };
   }

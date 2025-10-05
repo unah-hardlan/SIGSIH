@@ -104,6 +104,10 @@
                                             <div class="flex items-center gap-2">
                                                 <i class="fas fa-folder text-gray-500 dark:text-gray-400"></i>
                                                 <h4 class="font-semibold text-gray-800 dark:text-gray-100" x-text="g.nombre"></h4>
+                                                <span x-show="$store.access.isProtectedModule(g.id)" class="inline-flex items-center gap-1 text-xs text-amber-500">
+                                                    <i class="fas fa-lock"></i>
+                                                    Protegido
+                                                </span>
                                             </div>
                                             <div class="flex items-center gap-3">
                                                 <span class="text-xs text-gray-500 dark:text-gray-400" x-text="(g.objetos||[]).length + ' submódulos'"></span>
@@ -111,6 +115,7 @@
                                                     <span>Acceso</span>
                                                     <button type="button" @click.prevent="$store.access.toggleModulo(g.id, !$store.access.moduloTieneAcceso(g.id))"
                                                         class="relative inline-flex flex-shrink-0 h-6 w-11 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                                        :title="$store.access.isProtectedModule(g.id) ? 'Protegido: el rol Administrador debe mantener Seguridad habilitado.' : ($store.access.moduloTieneAcceso(g.id) ? 'Desactivar acceso al módulo' : 'Activar acceso al módulo')"
                                                         :class="$store.access.moduloTieneAcceso(g.id) ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-600'"
                                                         role="switch" :aria-checked="$store.access.moduloTieneAcceso(g.id)">
 
@@ -522,23 +527,23 @@
                     </template>
                     <template x-if="!$store.assignRoles.rolesLoading">
                         <div>
-                    <template x-for="r in $store.assignRoles.roles" :key="'rol-check-'+r.id">
-                        <label class="flex items-center gap-2 text-sm nunito-regular">
-                            <input type="checkbox" class="rounded accent-blue-600 dark:accent-blue-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                                :value="String(r.id)"
-                                :checked="$store.assignRoles.rol_principal==String(r.id) || $store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
-                                @change="$store.assignRoles.toggleRole(String(r.id))"
-                                :disabled="$store.assignRoles.isRoleDisabled(r.id)"
-                                :title="$store.assignRoles.isRoleDisabled(r.id) ? ($store.assignRoles.rol_principal==String(r.id) ? 'El rol principal siempre está asignado' : 'Combinación inválida con el rol seleccionado') : 'Asignar/Remover rol'" />
-                            <span x-text="r.rol"></span>
-                            <div class="ml-auto flex items-center gap-2">
-                                <span x-show="$store.assignRoles.rol_principal==String(r.id)"
-                                    class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Principal</span>
-                                <span x-show="$store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
-                                    class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">Asignado</span>
-                            </div>
-                        </label>
-                    </template>
+                            <template x-for="r in $store.assignRoles.roles" :key="'rol-check-'+r.id">
+                                <label class="flex items-center gap-2 text-sm nunito-regular">
+                                    <input type="checkbox" class="rounded accent-blue-600 dark:accent-blue-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                                        :value="String(r.id)"
+                                        :checked="$store.assignRoles.rol_principal==String(r.id) || $store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
+                                        @change="$store.assignRoles.toggleRole(String(r.id))"
+                                        :disabled="$store.assignRoles.isRoleDisabled(r.id)"
+                                        :title="$store.assignRoles.isRoleDisabled(r.id) ? ($store.assignRoles.rol_principal==String(r.id) ? 'El rol principal siempre está asignado' : 'Combinación inválida con el rol seleccionado') : 'Asignar/Remover rol'" />
+                                    <span x-text="r.rol"></span>
+                                    <div class="ml-auto flex items-center gap-2">
+                                        <span x-show="$store.assignRoles.rol_principal==String(r.id)"
+                                            class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Principal</span>
+                                        <span x-show="$store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
+                                            class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">Asignado</span>
+                                    </div>
+                                </label>
+                            </template>
                         </div>
                     </template>
                 </div>
