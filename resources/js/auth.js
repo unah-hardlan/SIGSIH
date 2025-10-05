@@ -1,221 +1,21 @@
+// Consolidated authentication module for login/register + theme + 2FA + email verify
+// Load axios defaults if present
 if (window.axios) {
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 }
 
-(function () {
+// Initial theme sync (before Alpine mounts to avoid FOUC)
+(function syncInitialTheme() {
     try {
         const saved = localStorage.getItem("theme");
-        const isDark = saved
+        const preferDark = saved
             ? saved === "dark"
             : window.matchMedia &&
               window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (isDark) {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
+        document.documentElement.classList.toggle("dark", preferDark);
     } catch (_) {}
 })();
-
-document.addEventListener("alpine:init", () => {
-    if (!window.authPage) {
-        console.warn("authPage not loaded, creating fallback");
-        window.authPage = () => ({
-            isLogin: true,
-            showPassword: false,
-            showConfirmPassword: false,
-            username: "",
-            password: "",
-            confirmPassword: "",
-            nombre_usuario: "",
-            email: "",
-            loading: false,
-            isDark: false,
-            formError: "",
-            fieldErrors: {},
-            show2FAModal: false,
-            totpCode: "",
-            verifying2FA: false,
-            totpError: "",
-
-            init() {
-                this.initTheme();
-            },
-
-            initTheme() {
-                try {
-                    this.isDark =
-                        document.documentElement.classList.contains("dark");
-                    document.documentElement.classList.toggle(
-                        "dark",
-                        this.isDark
-                    );
-                } catch (_) {}
-            },
-
-            toggleTheme() {
-                this.isDark = !this.isDark;
-                document.documentElement.classList.toggle("dark", this.isDark);
-                try {
-                    localStorage.setItem(
-                        "theme",
-                        this.isDark ? "dark" : "light"
-                    );
-                } catch (_) {}
-            },
-
-            switchMode() {
-                this.isLogin = !this.isLogin;
-                this.formError = "";
-                this.fieldErrors = {};
-                this.password = "";
-                this.confirmPassword = "";
-            },
-
-            resetErrors() {
-                this.formError = "";
-                this.fieldErrors = {};
-            },
-
-            clearFieldError(field) {
-                if (this.fieldErrors[field]) {
-                    delete this.fieldErrors[field];
-                }
-            },
-
-            usernameIssues(username) {
-                const value = username || "";
-                const issues = [];
-                if (value.length === 0) {
-                    issues.push("El usuario es requerido.");
-                } else if (!/^[A-Za-z0-9]+$/.test(value)) {
-                    issues.push(
-                        "Solo se permiten letras y números, sin espacios ni símbolos."
-                    );
-                } else if (value.length > 50) {
-                    issues.push("Máximo 50 caracteres permitidos.");
-                }
-                return issues;
-            },
-
-            validateUsername(username) {
-                return this.usernameIssues(username).length === 0;
-            },
-
-            nombreUsuarioIssues(nombre) {
-                const value = nombre || "";
-                const issues = [];
-                if (!this.isLogin && value.length === 0) {
-                    issues.push("El nombre de usuario es requerido.");
-                } else if (value.length > 0 && !/^[A-Za-z0-9]+$/.test(value)) {
-                    issues.push(
-                        "Solo se permiten letras y números, sin espacios ni símbolos."
-                    );
-                }
-                return issues;
-            },
-
-            validateNombreUsuario(nombre) {
-                return this.nombreUsuarioIssues(nombre).length === 0;
-            },
-
-            emailIssues(email) {
-                const value = email || "";
-                const issues = [];
-                if (!this.isLogin && value.length === 0) {
-                    issues.push("El correo electrónico es requerido.");
-                } else if (value.length > 0) {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(value)) {
-                        issues.push("Ingresa un correo electrónico válido.");
-                    }
-                }
-                return issues;
-            },
-
-            validateEmail(email) {
-                return this.emailIssues(email).length === 0;
-            },
-
-            confirmPasswordIssues() {
-                const issues = [];
-                if (!this.isLogin && this.confirmPassword.length === 0) {
-                    issues.push("Debes confirmar tu contraseña.");
-                } else if (
-                    this.confirmPassword.length > 0 &&
-                    this.password !== this.confirmPassword
-                ) {
-                    issues.push("Las contraseñas no coinciden.");
-                }
-                return issues;
-            },
-
-            passwordIssues(pw) {
-                const value = pw || "";
-                const issues = [];
-                if (value.length < 8)
-                    issues.push("Debe tener al menos 8 caracteres.");
-                if (/\s/.test(value)) issues.push("No debe contener espacios.");
-                if (!this.isLogin && !/[A-Z]/.test(value))
-                    issues.push("Debe incluir al menos una letra mayúscula.");
-                return issues;
-            },
-
-            validatePassword(pw) {
-                return this.passwordIssues(pw).length === 0;
-            },
-
-            validateConfirmPassword() {
-                return this.confirmPasswordIssues().length === 0;
-            },
-
-            async handleSubmit() {
-                if (this.loading) return;
-                this.loading = true;
-                this.resetErrors();
-
-                try {
-                    if (this.isLogin) {
-                        const res = await axios.post("/api/login", {
-                            usuario: this.username,
-                            contrasena: this.password,
-                        });
-                        window.location.assign("/admin/dashboard");
-                    } else {
-                        await axios.post("/api/register", {
-                            usuario: this.username,
-                            nombre_usuario: this.nombre_usuario,
-                            correo_electronico: this.email,
-                            contrasena: this.password,
-                        });
-                        window.location.assign("/admin/perfil");
-                    }
-                } catch (err) {
-                    const resp = err?.response;
-                    if (resp?.status === 422) {
-                        this.fieldErrors = resp.data?.errors || {};
-                        this.formError =
-                            resp.data?.message || "Hay errores de validación.";
-                    } else {
-                        this.formError =
-                            resp?.data?.error ||
-                            resp?.data?.message ||
-                            "Error de autenticación";
-                    }
-                } finally {
-                    this.loading = false;
-                }
-            },
-
-            handleGoogle() {
-                alert("Redirigiendo a Google Sign-In…");
-            },
-        });
-    }
-
-    Alpine.data("authPage", window.authPage);
-});
 
 function createAuthPage() {
     return {
@@ -237,12 +37,12 @@ function createAuthPage() {
         totpCode: "",
         verifying2FA: false,
         totpError: "",
-    // Verify email
-    showVerifyEmailModal: false,
-    verifyEmailMessage: "",
-    verifyEmailAddress: "",
-    resendCooldown: 0,
-    resendTimerId: null,
+        // Verify email
+        showVerifyEmailModal: false,
+        verifyEmailMessage: "",
+        verifyEmailAddress: "",
+        resendCooldown: 0,
+        resendTimerId: null,
 
         init() {
             // Ensure all properties are properly initialized
@@ -385,8 +185,10 @@ function createAuthPage() {
                     });
                     const data = res?.data || {};
                     if (data.status === "email_verification_required") {
-                        this.verifyEmailAddress = data?.email || this.email || this.username;
-                        this.verifyEmailMessage = "Debes verificar tu correo antes de iniciar sesión.";
+                        this.verifyEmailAddress =
+                            data?.email || this.email || this.username;
+                        this.verifyEmailMessage =
+                            "Debes verificar tu correo antes de iniciar sesión.";
                         this.showVerifyEmailModal = true;
                         this.loading = false;
                         return;
@@ -416,10 +218,11 @@ function createAuthPage() {
                     contrasena: this.password,
                 });
                 const regData = regRes?.data || {};
-                if (regData?.status === 'verification_sent') {
+                if (regData?.status === "verification_sent") {
                     // Mostrar modal sin recargar
                     this.verifyEmailAddress = this.email;
-                    this.verifyEmailMessage = "Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.";
+                    this.verifyEmailMessage =
+                        "Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.";
                     this.showVerifyEmailModal = true;
                     return;
                 }
@@ -442,9 +245,15 @@ function createAuthPage() {
                         resp.data?.message ||
                         resp.data?.error ||
                         "Credenciales incorrectas.";
-                } else if (resp?.status === 403 && resp?.data?.status === 'email_verification_required') {
-                    this.verifyEmailAddress = resp?.data?.email || this.email || this.username;
-                    this.verifyEmailMessage = resp?.data?.message || 'Debes verificar tu correo antes de continuar.';
+                } else if (
+                    resp?.status === 403 &&
+                    resp?.data?.status === "email_verification_required"
+                ) {
+                    this.verifyEmailAddress =
+                        resp?.data?.email || this.email || this.username;
+                    this.verifyEmailMessage =
+                        resp?.data?.message ||
+                        "Debes verificar tu correo antes de continuar.";
                     this.showVerifyEmailModal = true;
                 } else {
                     this.formError =
@@ -460,8 +269,15 @@ function createAuthPage() {
         async resendVerification() {
             if (!this.verifyEmailAddress) return;
             try {
-                const resp = await axios.post('/api/email/resend', { email: this.verifyEmailAddress });
-                try { window.showToast && window.showToast('Correo reenviado', 'success', { duration: 1500 }); } catch (_) {}
+                const resp = await axios.post("/api/email/resend", {
+                    email: this.verifyEmailAddress,
+                });
+                try {
+                    window.showToast &&
+                        window.showToast("Correo reenviado", "success", {
+                            duration: 1500,
+                        });
+                } catch (_) {}
                 // Start cooldown using server value if present
                 const cool = resp?.data?.retry_after_seconds;
                 if (cool && Number.isFinite(+cool) && +cool > 0) {
@@ -471,8 +287,14 @@ function createAuthPage() {
                 }
             } catch (err) {
                 const retry = err?.response?.data?.retry_after_seconds;
-                const msg = err?.response?.data?.message || err?.response?.data?.error || 'No se pudo reenviar';
-                try { window.showToast && window.showToast(msg, 'error', { duration: 2000 }); } catch (_) {}
+                const msg =
+                    err?.response?.data?.message ||
+                    err?.response?.data?.error ||
+                    "No se pudo reenviar";
+                try {
+                    window.showToast &&
+                        window.showToast(msg, "error", { duration: 2000 });
+                } catch (_) {}
                 if (retry && Number.isFinite(+retry) && +retry > 0) {
                     this.startResendCooldown(+retry);
                 }
@@ -535,30 +357,17 @@ function createAuthPage() {
     };
 }
 
-// Make authPage available globally
+// Expose factory
 window.authPage = createAuthPage;
 
-// Register with Alpine.js
-function registerWithAlpine() {
+// Alpine registration (idempotent)
+function registerAuth() {
     try {
-        if (window.Alpine && typeof window.Alpine.data === "function") {
-            window.Alpine.data("authPage", createAuthPage);
-        }
+        if (!window.Alpine) return;
+        window.Alpine.data("authPage", createAuthPage);
     } catch (e) {
         console.warn("Alpine.js registration failed:", e);
     }
 }
-
-// Try to register immediately if Alpine is already loaded
-if (window.Alpine) {
-    registerWithAlpine();
-}
-
-// Also register when Alpine initializes
-document.addEventListener("alpine:init", () => {
-    try {
-        window.Alpine.data("authPage", createAuthPage);
-    } catch (e) {
-        console.warn("Alpine.js init registration failed:", e);
-    }
-});
+if (window.Alpine) registerAuth();
+document.addEventListener("alpine:init", registerAuth);

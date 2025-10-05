@@ -120,6 +120,7 @@ class UpdateUsuarioRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'correo_electronico.unique' => 'Ese correo electrónico ya está registrado.',
             'correo_electronico.regex' => $this->correoDominioUsed
                 ? 'El correo debe pertenecer al dominio: ' . $this->correoDominioUsed
                 : 'El correo no cumple el formato requerido.',
@@ -133,7 +134,8 @@ class UpdateUsuarioRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'contrasena' => 'contraseña'
+            'contrasena' => 'contraseña',
+            'correo_electronico' => 'correo electrónico'
         ];
     }
 }

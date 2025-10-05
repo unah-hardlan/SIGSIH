@@ -5,67 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css'])
+    @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css', 'resources/css/auth.css'])
     <title>Iniciar Sesión – SIGSIH</title>
 
-    <style>
-        [x-cloak] {
-            display: none !important
-        }
-        
-        input[type="text"].auth-input,
-        input[type="email"].auth-input,
-        input[type="password"].auth-input,
-        input.auth-input,
-        .auth-input {
-            border-width: 1px !important;
-            border-style: solid !important;
-            border-color: #374151 !important;
-        }
-
-        input[type="text"].auth-input:focus,
-        input[type="email"].auth-input:focus,
-        input[type="password"].auth-input:focus,
-        input.auth-input:focus,
-        .auth-input:focus {
-            border-width: 1px !important;
-            border-color: #374151 !important;
-            outline: none !important;
-            box-shadow: none !important;
-        }
-
-        .dark input[type="text"].auth-input,
-        .dark input[type="email"].auth-input,
-        .dark input[type="password"].auth-input,
-        .dark input.auth-input,
-        .dark .auth-input {
-            border-width: 1px !important;
-            border-style: solid !important;
-            border-color: #6b7280 !important;
-        }
-
-        .dark input[type="text"].auth-input:focus,
-        .dark input[type="email"].auth-input:focus,
-        .dark input[type="password"].auth-input:focus,
-        .dark input.auth-input:focus,
-        .dark .auth-input:focus {
-            border-width: 1px !important;
-            border-color: #6b7280 !important;
-            outline: none !important;
-            box-shadow: none !important;
-        }
-
-        .auth-input.border-red-500 {
-            border-color: #ef4444 !important;
-        }
-
-        .auth-input.border-red-500:focus {
-            border-color: #ef4444 !important;
-        }
-    </style>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    {{-- Livewire no requerido en la pantalla de login; evitar doble Alpine --}}
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     
@@ -104,7 +47,6 @@
                     totpCode: "",
                     verifying2FA: false,
                     totpError: "",
-                    // verify email modal state (fallback)
                     showVerifyEmailModal: false,
                     verifyEmailMessage: "",
                     verifyEmailAddress: "",
@@ -321,8 +263,7 @@
     </script>
     
     <script src="{{ Vite::asset('resources/js/auth.js') }}" defer></script>
-    
-    <script src="/js/login-guard.js" defer></script>
+    <script src="{{ Vite::asset('resources/js/login-guard.js') }}" defer></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
 
 </head>
