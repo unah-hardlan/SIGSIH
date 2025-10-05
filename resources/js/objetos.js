@@ -4,6 +4,15 @@
   tipos: '/api/tipos-objeto',
   };
 
+  const hasConfiguracionAcceso = () => {
+    try {
+      const main = document.querySelector('main');
+      return (main?.dataset?.canConfiguracionAcceso || '') === '1';
+    } catch (_) {
+      return false;
+    }
+  };
+
   const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
   async function apiGet(url){
@@ -44,6 +53,7 @@
       tipoId: '', // id_tipo_objetos_fk
       perPage: 10,
       _abortCtrl: null,
+    blocked: false,
 
   // catalogos
   tipos: [], // [{id,nombre}]
@@ -56,6 +66,15 @@
       current: null, // objeto seleccionado para editar/eliminar
 
       async init(){
+        if(!hasConfiguracionAcceso()){
+          this.blocked = true;
+          this.items = [];
+          this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 };
+          this.tipos = [];
+          this.error = 'No tienes permisos para ver los objetos del sistema.';
+          return;
+        }
+        this.blocked = false;
         await Promise.allSettled([
           this.fetchTipos(),
           this.fetchList(1),
@@ -63,10 +82,17 @@
       },
 
       async fetchTipos(){
+        if(!hasConfiguracionAcceso()){
+          this.blocked = true;
+          this.tipos = [];
+          this.error = 'No tienes permisos para ver los catálogos de objetos.';
+          return;
+        }
+        this.blocked = false;
         try{
           const res = await apiGet(`${API.tipos}?all=1`);
           this.tipos = normalizeList(res);
-        }catch(e){ /* no bloquear UI principal */ }
+  }catch(e){ if(e && e.status === 403){ this.error = 'No tienes permisos para ver los catálogos de objetos.'; this.tipos = []; } /* no bloquear UI principal */ }
       },
 
       buildQuery(page){
@@ -81,12 +107,21 @@
       },
 
       async fetchList(page=1){
+        if(!hasConfiguracionAcceso()){
+          this.blocked = true;
+          this.items = [];
+          this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 };
+          this.error = 'No tienes permisos para ver los objetos del sistema.';
+          return;
+        }
+        this.blocked = false;
         try{
           this.loading = true; this.error = '';
           if(this._abortCtrl){ try{ this._abortCtrl.abort(); } catch(_){} }
           this._abortCtrl = new AbortController();
           const url = this.buildQuery(page);
           const r = await fetch(url, { headers: authHeaders(), signal: this._abortCtrl.signal, credentials: 'same-origin' });
+          if(r.status === 403){ this.items = []; this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 }; this.error = 'No tienes permisos para ver los objetos del sistema.'; return; }
           if(!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
           const data = await r.json();
           this.items = normalizeList(data);
@@ -99,12 +134,12 @@
       setSearch(val){
   this.q = val;
   this.error = '';
-        this.debouncedFetch();
+        if(!this.blocked) this.debouncedFetch();
       },
       setTipo(val){
   this.tipoId = val;
   this.error = '';
-        this.fetchList(1);
+        if(!this.blocked) this.fetchList(1);
       },
       nextPage(){ if(this.meta.page < this.meta.last_page) this.fetchList(this.meta.page + 1); },
       prevPage(){ if(this.meta.page > 1) this.fetchList(this.meta.page - 1); },

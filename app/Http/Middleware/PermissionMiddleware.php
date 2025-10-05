@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\Objeto;
 use App\Models\Permiso;
 use App\Models\Usuario;
+use App\Services\PermissionService;
 
 class PermissionMiddleware
 {
@@ -75,6 +76,15 @@ class PermissionMiddleware
             ->exists();
 
         if (!$allowed) {
+            // Permitir acceso a Usuarios si el rol posee Configuración de accesos con la misma acción
+            if (mb_strtolower($objetoKey) === 'usuarios') {
+                $permService = app(PermissionService::class);
+                $altKeys = ['Configuración de accesos', 'Configuracion de accesos', 'Permisos'];
+                if ($permService->can($user, $altKeys, $accion)) {
+                    return $next($request);
+                }
+            }
+
             return response()->json(['error' => 'Permiso denegado', 'objeto' => $objetoKey, 'accion' => $accion], 403);
         }
 

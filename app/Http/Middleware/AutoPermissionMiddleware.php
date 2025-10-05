@@ -41,8 +41,10 @@ class AutoPermissionMiddleware
         } catch (\Throwable $e) {
         }
 
+        $method = strtoupper($request->method());
+
         // Allow listing roles/objetos/tipos-objeto if user can view "Permisos" (to cargar matriz de permisos)
-        if (in_array(strtoupper($request->method()), ['GET', 'HEAD'], true)) {
+        if (in_array($method, ['GET', 'HEAD'], true)) {
             $path = trim($request->path(), '/');
             if (preg_match('#^api/(roles|objetos|tipos-objeto)(/.*)?$#i', $path)) {
                 $perm = app(PermissionService::class);
@@ -56,6 +58,22 @@ class AutoPermissionMiddleware
                     if ($perm->can($user, ['Usuarios'], 'consultar')) {
                         return $next($request);
                     }
+                }
+            }
+            if (preg_match('#^api/usuarios(?:/|$)#i', $path)) {
+                $perm = app(PermissionService::class);
+                if ($perm->can($user, ['Configuración de accesos', 'Configuracion de accesos'], 'consultar')) {
+                    return $next($request);
+                }
+            }
+        }
+
+        if ($method === 'PUT') {
+            $path = trim($request->path(), '/');
+            if (preg_match('#^api/usuarios/\d+/(rol|roles)$#i', $path)) {
+                $perm = app(PermissionService::class);
+                if ($perm->can($user, ['Configuración de accesos', 'Configuracion de accesos'], 'actualizacion')) {
+                    return $next($request);
                 }
             }
         }
@@ -88,7 +106,6 @@ class AutoPermissionMiddleware
         $first = explode('/', trim($request->path(), '/'))[1] ?? '';
         if ($first) $candidates[] = ucfirst($first);
 
-        $method = strtoupper($request->method());
         $accion = match ($method) {
             'POST' => 'insercion',
             'PUT', 'PATCH' => 'actualizacion',
