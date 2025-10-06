@@ -60,15 +60,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Público: login y logout (logout borra cookie aunque el token haya expirado)
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::post('register', [AuthController::class, 'register']);
-// Email verification
 Route::post('email/resend', [AuthController::class, 'resendVerification']);
 Route::get('verify-email', [AuthController::class, 'verifyEmail']);
-// 2FA verify (public, tied to challenge cookie)
 Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
+
+// Get de genero para cliente
+Route::middleware(['jwt.auth','throttle:30,1'])->get('catalogos/generos', function() {
+    $items = \App\Models\Genero::select('id_genero_pk as id','genero')->orderBy('genero')->get();
+    return response()->json([
+        'data' => $items,
+        'meta' => ['count' => $items->count()]
+    ]);
+});
+
 
 // Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
 Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
@@ -96,7 +103,8 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('tipos-objeto', TipoObjetoController::class)->only(['index']);
 
     // MODULO DE PERSONAS (sin tipos-persona ni perfiles)
-    Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
+    // CRUD de géneros solo para admin (cliente usa únicamente GET /api/catalogos/generos)
+    Route::middleware('block.client')->apiResource('generos', \App\Http\Controllers\GeneroController::class);
     Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
     Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);
     Route::apiResource('agencias', AgenciasController::class);
