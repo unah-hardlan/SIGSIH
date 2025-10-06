@@ -467,9 +467,6 @@
             </x-slot>
             <x-slot name="boton">
                 <div class="w-full flex justify-end gap-2">
-                    <button @click="$store.assignRoles.openAssign(null)" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
-                        <span class="nunito-regular">Asignar Rol</span>
-                    </button>
                     <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','asignar'); if($store.assignRoles.q) p.set('q',$store.assignRoles.q); if($store.assignRoles.filterRol) p.set('id_rol_fk',$store.assignRoles.filterRol); if($store.assignRoles.sort){ p.set('sort',$store.assignRoles.sort); p.set('direction',$store.assignRoles.direction||'asc'); } p.set('all','1'); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
                         <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
                     </button>

@@ -38,6 +38,7 @@ document.addEventListener("alpine:init", () => {
             totpCode: "",
             verifying2FA: false,
             totpError: "",
+            needsRecovery: false,
 
             init() {
                 this.initTheme();
@@ -71,6 +72,7 @@ document.addEventListener("alpine:init", () => {
                 this.fieldErrors = {};
                 this.password = "";
                 this.confirmPassword = "";
+                this.needsRecovery = false;
             },
 
             resetErrors() {
@@ -237,6 +239,7 @@ function createAuthPage() {
         totpCode: "",
         verifying2FA: false,
         totpError: "",
+    needsRecovery: false,
     // Verify email
     showVerifyEmailModal: false,
     verifyEmailMessage: "",
@@ -283,6 +286,7 @@ function createAuthPage() {
             this.resetErrors();
             this.password = "";
             this.confirmPassword = "";
+            this.needsRecovery = false;
         },
 
         resetErrors() {
@@ -391,9 +395,11 @@ function createAuthPage() {
                         this.loading = false;
                         return;
                     }
+                    this.needsRecovery = false;
                     if (data.status === "2fa_required") {
                         this.totpCode = "";
                         this.totpError = "";
+                        this.needsRecovery = false;
                         this.show2FAModal = true;
                         this.loading = false;
                         return;
@@ -499,6 +505,7 @@ function createAuthPage() {
             if (this.verifying2FA || !this.totpCode) return;
             this.verifying2FA = true;
             this.totpError = "";
+            this.needsRecovery = false;
             try {
                 await axios.post("/api/2fa/verify", { code: this.totpCode });
                 try {
@@ -509,6 +516,7 @@ function createAuthPage() {
                 } catch (_) {}
                 window.location.assign("/admin/dashboard");
             } catch (err) {
+                this.needsRecovery = !!err?.response?.data?.needs_recovery;
                 const msg =
                     err?.response?.data?.message ||
                     err?.response?.data?.error ||
@@ -523,6 +531,7 @@ function createAuthPage() {
             this.show2FAModal = false;
             this.totpCode = "";
             this.totpError = "";
+            this.needsRecovery = false;
         },
 
         // Extras

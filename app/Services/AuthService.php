@@ -36,7 +36,7 @@ class AuthService
             ?? \App\Models\Parametro::where('parametro','ADMIN_INTENTOS_INICIO SESION')->value('valor')
             ?? 3);
 
-        $user = Usuario::where('usuario', $usuario)->first();
+    $user = Usuario::where('usuario', $usuario)->first();
         if (!$user) {
             return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
         }
@@ -78,46 +78,8 @@ class AuthService
         //  - AUTH.LIMITE_SESIONES.ADMIN
         //  - AUTH.LIMITE_SESIONES.CLIENTE
         // Fallback: AUTH.LIMITE_SESIONES o auth.sessions_limit
-        $rolNombre = strtolower($user->rol->rol ?? '');
-        $limitParamKeys = [];
-        if ($rolNombre !== '') {
-            if (in_array($rolNombre, ['administrador','admin'])) {
-                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.ADMIN';
-            } elseif (in_array($rolNombre, ['cliente','client','usuario','user'])) {
-                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.CLIENTE';
-            } else {
-                // rol genérico específico
-                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.' . strtoupper($rolNombre);
-            }
-        }
-        $limitParamKeys[] = 'AUTH.LIMITE_SESIONES';
-        $limitParamKeys[] = 'auth.sessions_limit';
-        $limit = null;
-        foreach ($limitParamKeys as $k) {
-            $val = Parametro::where('parametro', $k)->value('valor');
-            if ($val !== null && $val !== '') {
-                if (is_numeric($val)) { $limit = (int)$val; break; }
-                $filtered = filter_var($val, FILTER_SANITIZE_NUMBER_INT);
-                if ($filtered !== '' && is_numeric($filtered)) { $limit = (int)$filtered; break; }
-            }
-        }
-        if ($limit === null) { $limit = 1; }
-        $sessionsKey = 'user_sessions:' . $user->getKey();
-        $sessions = cache()->get($sessionsKey, []);
-        if (!is_array($sessions)) { $sessions = []; }
-        $nowTs = time();
-        // limpiar expiradas previas
-        $sessions = array_filter($sessions, fn($exp) => (int)$exp > $nowTs);
-        cache()->put($sessionsKey, $sessions, now()->addHours(1));
-        if ($limit > 0 && count($sessions) >= $limit) {
-            // Política: si se alcanzó el límite, expulsar la sesión que expira primero (más antigua)
-            asort($sessions); // orden por exp asc
-            $firstKey = array_key_first($sessions);
-            if ($firstKey !== null) {
-                unset($sessions[$firstKey]);
-                cache()->put($sessionsKey, $sessions, now()->addHours(1));
-            }
-        }
+        $limit = $this->determineSessionLimit($user);
+        $sessions = $this->prepareSessions($user, $limit);
 
         $payload = [
             'sub'  => $user->getKey(),
@@ -129,14 +91,7 @@ class AuthService
         $token = JWT::encode($payload, $secret, 'HS256');
 
         // Registrar la sesión (token hash) en cache por 1h
-        try {
-            $tokenId = substr(hash('sha256', $token), 0, 32);
-            $sessions[$tokenId] = time() + 3600;
-            // Limpiar expiradas post-inserción
-            $now = time();
-            $sessions = array_filter($sessions, fn($exp) => $exp > $now);
-            cache()->put($sessionsKey, $sessions, now()->addHours(1));
-        } catch (\Throwable $e) {}
+        $this->storeSessionToken($user, $sessions, $token);
 
         return [
             'token' => $token,
@@ -207,6 +162,9 @@ class AuthService
         ];
 
         $token = JWT::encode($payload, $secret, 'HS256');
+        $limit = $this->determineSessionLimit($user);
+        $sessions = $this->prepareSessions($user, $limit);
+        $this->storeSessionToken($user, $sessions, $token);
 
         return [
             'token' => $token,
@@ -218,5 +176,78 @@ class AuthService
                 'rol'     => $user->rol->rol ?? null,
             ]
         ];
+    }
+
+    private function determineSessionLimit(Usuario $user): int
+    {
+        $rolNombre = strtolower($user->rol->rol ?? '');
+        $limitParamKeys = [];
+        if ($rolNombre !== '') {
+            if (in_array($rolNombre, ['administrador', 'admin'])) {
+                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.ADMIN';
+            } elseif (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
+                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.CLIENTE';
+            } else {
+                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.' . strtoupper($rolNombre);
+            }
+        }
+        $limitParamKeys[] = 'AUTH.LIMITE_SESIONES';
+        $limitParamKeys[] = 'auth.sessions_limit';
+
+        foreach ($limitParamKeys as $k) {
+            $val = Parametro::where('parametro', $k)->value('valor');
+            if ($val !== null && $val !== '') {
+                if (is_numeric($val)) {
+                    return max(0, (int) $val);
+                }
+                $filtered = filter_var($val, FILTER_SANITIZE_NUMBER_INT);
+                if ($filtered !== '' && is_numeric($filtered)) {
+                    return max(0, (int) $filtered);
+                }
+            }
+        }
+
+        return 1;
+    }
+
+    private function prepareSessions(Usuario $user, int $limit): array
+    {
+        $sessionsKey = 'user_sessions:' . $user->getKey();
+        $sessions = cache()->get($sessionsKey, []);
+        if (!is_array($sessions)) {
+            $sessions = [];
+        }
+
+        $nowTs = time();
+        $sessions = array_filter($sessions, fn($exp) => (int) $exp > $nowTs);
+
+        if ($limit > 0) {
+            while (count($sessions) >= $limit) {
+                asort($sessions);
+                $firstKey = array_key_first($sessions);
+                if ($firstKey === null) {
+                    break;
+                }
+                unset($sessions[$firstKey]);
+            }
+        }
+
+        cache()->put($sessionsKey, $sessions, now()->addHours(1));
+
+        return $sessions;
+    }
+
+    private function storeSessionToken(Usuario $user, array $sessions, string $token): void
+    {
+        try {
+            $tokenId = substr(hash('sha256', $token), 0, 32);
+            $sessions[$tokenId] = time() + 3600;
+            $now = time();
+            $sessions = array_filter($sessions, fn($exp) => $exp > $now);
+            $sessionsKey = 'user_sessions:' . $user->getKey();
+            cache()->put($sessionsKey, $sessions, now()->addHours(1));
+        } catch (\Throwable $e) {
+            // noop: evitar que un fallo en cache bloquee el login
+        }
     }
 }

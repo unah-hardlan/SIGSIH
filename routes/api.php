@@ -68,7 +68,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('email/resend', [AuthController::class, 'resendVerification']);
 Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 // 2FA verify (public, tied to challenge cookie)
-Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
+Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
 // Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
 Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {

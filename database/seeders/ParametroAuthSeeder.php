@@ -14,6 +14,7 @@ class ParametroAuthSeeder extends Seeder
             ['parametro' => 'ADMIN_CORREO', 'valor' => 'correo@dominio.com'],
             ['parametro' => 'ADMIN_CUSER', 'valor' => 'USUARIO'],
             ['parametro' => 'ADMIN_CPASS', 'valor' => 'PASSWORD'],
+            ['parametro' => 'AUTH.2FA.MAX_TOTP_ATTEMPTS', 'valor' => '5'],
         ];
         foreach ($defaults as $d) {
             Parametro::updateOrCreate(

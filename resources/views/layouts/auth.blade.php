@@ -104,6 +104,7 @@
                     totpCode: "",
                     verifying2FA: false,
                     totpError: "",
+                    needsRecovery: false,
                     // verify email modal state (fallback)
                     showVerifyEmailModal: false,
                     verifyEmailMessage: "",
@@ -136,6 +137,7 @@
                         this.fieldErrors = {};
                         this.password = "";
                         this.confirmPassword = "";
+                        this.needsRecovery = false;
                     },
                     
                     resetErrors() {
@@ -245,7 +247,19 @@
                                     this.loading = false;
                                     return;
                                 }
+                                if (data.status === '2fa_required') {
+                                    this.totpCode = "";
+                                    this.totpError = "";
+                                    this.needsRecovery = false;
+                                    this.show2FAModal = true;
+                                    this.loading = false;
+                                    return;
+                                }
+                                try {
+                                    window.showToast && window.showToast('Sesión iniciada', 'success', { duration: 1200 });
+                                } catch (_) {}
                                 window.location.assign("/admin/dashboard");
+                                return;
                             } else {
                                 const regRes = await axios.post("/api/register", {
                                     usuario: this.username,
@@ -268,6 +282,8 @@
                             if (resp?.status === 422) {
                                 this.fieldErrors = resp.data?.errors || {};
                                 this.formError = resp.data?.message || "Hay errores de validación.";
+                            } else if (resp?.status === 401) {
+                                this.formError = resp?.data?.message || resp?.data?.error || 'Credenciales incorrectas.';
                             } else if (resp?.status === 403 && resp?.data?.status === 'email_verification_required') {
                                 this.verifyEmailAddress = (resp?.data?.email) || this.email || this.username;
                                 this.verifyEmailMessage = resp?.data?.message || 'Debes verificar tu correo antes de continuar.';
@@ -278,6 +294,33 @@
                         } finally {
                             this.loading = false;
                         }
+                    },
+                    
+                    async submit2FA() {
+                        if (this.verifying2FA || !this.totpCode) return;
+                        this.verifying2FA = true;
+                        this.totpError = "";
+                        this.needsRecovery = false;
+                        try {
+                            await axios.post('/api/2fa/verify', { code: this.totpCode });
+                            try {
+                                window.showToast && window.showToast('2FA verificado', 'success', { duration: 1200 });
+                            } catch (_) {}
+                            window.location.assign('/admin/dashboard');
+                        } catch (err) {
+                            this.needsRecovery = !!err?.response?.data?.needs_recovery;
+                            const msg = err?.response?.data?.message || err?.response?.data?.error || 'Código inválido';
+                            this.totpError = msg;
+                        } finally {
+                            this.verifying2FA = false;
+                        }
+                    },
+
+                    close2FA() {
+                        this.show2FAModal = false;
+                        this.totpCode = "";
+                        this.totpError = "";
+                        this.needsRecovery = false;
                     },
                     
                     async resendVerification() {
@@ -611,6 +654,19 @@
                 Abre tu app de autenticación (Google Authenticator, Microsoft Authenticator, Authy)
                 e ingresa el código de 6 dígitos. También puedes usar un código de recuperación.
             </p>
+            <div x-show="needsRecovery" x-cloak
+                class="mt-3 px-3 py-2 rounded border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500 dark:bg-amber-900/20 dark:text-amber-200 text-xs space-y-1">
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-key mt-[1px]"></i>
+                    <p class="leading-snug">
+                        Demasiados intentos incorrectos. Usa uno de tus códigos de recuperación o comunícate con el
+                        administrador para regenerarlos.
+                    </p>
+                </div>
+                <p class="leading-snug">
+                    Introduce el código exactamente como aparece (con guiones si los tiene). Se consumirá al usarlo.
+                </p>
+            </div>
             <div class="mt-3">
                 <input type="text" inputmode="numeric" pattern="^\\d{6}$" maxlength="10" x-model="totpCode"
                     class="auth-input w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
