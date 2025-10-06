@@ -10,6 +10,7 @@ use App\Models\Persona;
 use App\Models\Genero;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\SpaHelper;
 
 class ClienteController extends Controller
 {
@@ -75,35 +76,35 @@ class ClienteController extends Controller
     /**
      * Muestra la vista de perfil del cliente.
      */
-    public function perfil(): View
+    public function perfil()
     {
         $user = auth()->user();
         $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->with('genero')->first();
         
-        return view('cliente.perfil', compact('persona'));
+        return SpaHelper::clienteView('cliente.perfil', compact('persona'));
     }
 
     /**
      * Muestra las órdenes de servicio del cliente.
      */
-    public function ordenes(): View
+    public function ordenes()
     {
-        return view('cliente.ordenes');
+        return SpaHelper::clienteView('cliente.ordenes');
     }
 
     /**
      * Muestra las facturas del cliente.
      */
-    public function facturas(): View
+    public function facturas()
     {
-        return view('cliente.facturas');
+        return SpaHelper::clienteView('cliente.facturas');
     }
 
     /**
      * Muestra las cotizaciones del cliente.
      */
-    public function cotizaciones(): View
+    public function cotizaciones()
     {
-        return view('cliente.cotizaciones');
+        return SpaHelper::clienteView('cliente.cotizaciones');
     }
 }

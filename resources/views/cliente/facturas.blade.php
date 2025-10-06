@@ -94,55 +94,56 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
-function facturasCliente(){
-    return {
-        page:1,pageSize:8,
-        filtros:{search:'',estado:'',desde:'',hasta:''},
-        estados:['Pagada','Pendiente','Vencida','Anulada'],
-        datos: Array.from({length:25}).map((_,i)=>({
-            numero:'FAC-'+(500+i),
-            fecha:new Date(Date.now() - (i*43200000)).toISOString().substring(0,10),
-            estado:['Pagada','Pendiente','Vencida'][i%3],
-            monto:Math.round(200 + Math.random()*8000)
-        })),
-        get filtradas(){
-            return this.datos.filter(d=>{
-                const s=this.filtros.search.toLowerCase();
-                const eOk=!this.filtros.estado||d.estado===this.filtros.estado;
-                const sOk=!s||d.numero.toLowerCase().includes(s);
-                const dOk=!this.filtros.desde||d.fecha>=this.filtros.desde;
-                const hOk=!this.filtros.hasta||d.fecha<=this.filtros.hasta;
-                return eOk&&sOk&&dOk&&hOk;
-            });
-        },
-        get totalPages(){return Math.max(1,Math.ceil(this.filtradas.length/this.pageSize));},
-        get paginadas(){const s=(this.page-1)*this.pageSize;return this.filtradas.slice(s,s+this.pageSize);},
-        get inicioPagina(){return this.filtradas.length===0?0:((this.page-1)*this.pageSize+1);},
-        get finPagina(){return Math.min(this.filtradas.length,this.page*this.pageSize);},
-        prev(){if(this.page>1)this.page--;},next(){if(this.page<this.totalPages)this.page++;},
-        resetFiltros(){this.filtros={search:'',estado:'',desde:'',hasta:''};this.page=1;},
-        estadoBadge(e){return {
-            'Pagada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-            'Pendiente':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-            'Vencida':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-            'Anulada':'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
-        }[e]||'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';},
-        get resumen(){
-            const total=this.datos.length;
-            const pagadas=this.datos.filter(d=>d.estado==='Pagada').length;
-            const pendiente=this.datos.filter(d=>d.estado==='Pendiente').length;
-            const monto='$'+this.datos.reduce((a,b)=>a+b.monto,0).toLocaleString();
-            return [
-                {key:'tot',label:'Total',valor:total,icon:'fas fa-file-invoice'},
-                {key:'pag',label:'Pagadas',valor:pagadas,icon:'fas fa-check-circle'},
-                {key:'pen',label:'Pendientes',valor:pendiente,icon:'fas fa-hourglass-half'},
-                {key:'mon',label:'Importe Total',valor:monto,icon:'fas fa-hand-holding-usd'}
-            ];
+// Definir la función globalmente para que pueda ser usada por Alpine.js en navegación SPA
+if (typeof window.facturasCliente === 'undefined') {
+    window.facturasCliente = function() {
+        return {
+            page:1,pageSize:8,
+            filtros:{search:'',estado:'',desde:'',hasta:''},
+            estados:['Pagada','Pendiente','Vencida','Anulada'],
+            datos: Array.from({length:25}).map((_,i)=>({
+                numero:'FAC-'+(500+i),
+                fecha:new Date(Date.now() - (i*43200000)).toISOString().substring(0,10),
+                estado:['Pagada','Pendiente','Vencida'][i%3],
+                monto:Math.round(200 + Math.random()*8000)
+            })),
+            get filtradas(){
+                return this.datos.filter(d=>{
+                    const s=this.filtros.search.toLowerCase();
+                    const eOk=!this.filtros.estado||d.estado===this.filtros.estado;
+                    const sOk=!s||d.numero.toLowerCase().includes(s);
+                    const dOk=!this.filtros.desde||d.fecha>=this.filtros.desde;
+                    const hOk=!this.filtros.hasta||d.fecha<=this.filtros.hasta;
+                    return eOk&&sOk&&dOk&&hOk;
+                });
+            },
+            get totalPages(){return Math.max(1,Math.ceil(this.filtradas.length/this.pageSize));},
+            get paginadas(){const s=(this.page-1)*this.pageSize;return this.filtradas.slice(s,s+this.pageSize);},
+            get inicioPagina(){return this.filtradas.length===0?0:((this.page-1)*this.pageSize+1);},
+            get finPagina(){return Math.min(this.filtradas.length,this.page*this.pageSize);},
+            prev(){if(this.page>1)this.page--;},next(){if(this.page<this.totalPages)this.page++;},
+            resetFiltros(){this.filtros={search:'',estado:'',desde:'',hasta:''};this.page=1;},
+            estadoBadge(e){return {
+                'Pagada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                'Pendiente':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                'Vencida':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                'Anulada':'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+            }[e]||'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';},
+            get resumen(){
+                const total=this.datos.length;
+                const pagadas=this.datos.filter(d=>d.estado==='Pagada').length;
+                const pendiente=this.datos.filter(d=>d.estado==='Pendiente').length;
+                const monto='$'+this.datos.reduce((a,b)=>a+b.monto,0).toLocaleString();
+                return [
+                    {key:'tot',label:'Total',valor:total,icon:'fas fa-file-invoice'},
+                    {key:'pag',label:'Pagadas',valor:pagadas,icon:'fas fa-check-circle'},
+                    {key:'pen',label:'Pendientes',valor:pendiente,icon:'fas fa-hourglass-half'},
+                    {key:'mon',label:'Importe Total',valor:monto,icon:'fas fa-hand-holding-usd'}
+                ];
+            }
         }
-    }
+    };
 }
 </script>
-@endpush
 @endsection

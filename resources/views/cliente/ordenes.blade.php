@@ -92,49 +92,50 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
-function ordenesCliente(){
-    return {
-        page:1,pageSize:8,
-        filtros:{search:'',estado:'',desde:'',hasta:''},
-        estados:['Programada','En Proceso','Finalizada','Cancelada'],
-        datos: Array.from({length:22}).map((_,i)=>({
-            codigo:'ORD-'+(800+i),
-            programada: new Date(Date.now() + (i*86400000)).toISOString().substring(0,10),
-            estado:['Programada','En Proceso','Finalizada','Cancelada'][i%4],
-            tecnico:['Equipo A','Equipo B','Equipo C'][i%3]
-        })),
-        get filtradas(){
-            return this.datos.filter(d=>{
-                const s=this.filtros.search.toLowerCase();
-                const estadoOk=!this.filtros.estado||d.estado===this.filtros.estado;
-                const textoOk=!s||d.codigo.toLowerCase().includes(s)||d.tecnico.toLowerCase().includes(s);
-                const desdeOk=!this.filtros.desde||d.programada>=this.filtros.desde;
-                const hastaOk=!this.filtros.hasta||d.programada<=this.filtros.hasta;
-                return estadoOk&&textoOk&&desdeOk&&hastaOk;
-            });
-        },
-        get totalPages(){return Math.max(1,Math.ceil(this.filtradas.length/this.pageSize));},
-        get paginadas(){const s=(this.page-1)*this.pageSize;return this.filtradas.slice(s,s+this.pageSize);},
-        get inicioPagina(){return this.filtradas.length===0?0:((this.page-1)*this.pageSize+1);},
-        get finPagina(){return Math.min(this.filtradas.length,this.page*this.pageSize);},
-        prev(){if(this.page>1)this.page--;},next(){if(this.page<this.totalPages)this.page++;},
-        resetFiltros(){this.filtros={search:'',estado:'',desde:'',hasta:''};this.page=1;},
-        estadoBadge(e){return {
-            'Programada':'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-            'En Proceso':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-            'Finalizada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-            'Cancelada':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-        }[e]||'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';},
-        get resumen(){return [
-            {key:'tot',label:'Total',valor:this.datos.length,icon:'fas fa-list',delta:0},
-            {key:'proc',label:'En Proceso',valor:this.datos.filter(d=>d.estado==='En Proceso').length,icon:'fas fa-spinner',delta:null},
-            {key:'fin',label:'Finalizadas',valor:this.datos.filter(d=>d.estado==='Finalizada').length,icon:'fas fa-check',delta:null},
-            {key:'can',label:'Canceladas',valor:this.datos.filter(d=>d.estado==='Cancelada').length,icon:'fas fa-ban',delta:null},
-        ];}
-    }
+// Definir la función globalmente para que pueda ser usada por Alpine.js en navegación SPA
+if (typeof window.ordenesCliente === 'undefined') {
+    window.ordenesCliente = function() {
+        return {
+            page:1,pageSize:8,
+            filtros:{search:'',estado:'',desde:'',hasta:''},
+            estados:['Programada','En Proceso','Finalizada','Cancelada'],
+            datos: Array.from({length:22}).map((_,i)=>({
+                codigo:'ORD-'+(800+i),
+                programada: new Date(Date.now() + (i*86400000)).toISOString().substring(0,10),
+                estado:['Programada','En Proceso','Finalizada','Cancelada'][i%4],
+                tecnico:['Equipo A','Equipo B','Equipo C'][i%3]
+            })),
+            get filtradas(){
+                return this.datos.filter(d=>{
+                    const s=this.filtros.search.toLowerCase();
+                    const estadoOk=!this.filtros.estado||d.estado===this.filtros.estado;
+                    const textoOk=!s||d.codigo.toLowerCase().includes(s)||d.tecnico.toLowerCase().includes(s);
+                    const desdeOk=!this.filtros.desde||d.programada>=this.filtros.desde;
+                    const hastaOk=!this.filtros.hasta||d.programada<=this.filtros.hasta;
+                    return estadoOk&&textoOk&&desdeOk&&hastaOk;
+                });
+            },
+            get totalPages(){return Math.max(1,Math.ceil(this.filtradas.length/this.pageSize));},
+            get paginadas(){const s=(this.page-1)*this.pageSize;return this.filtradas.slice(s,s+this.pageSize);},
+            get inicioPagina(){return this.filtradas.length===0?0:((this.page-1)*this.pageSize+1);},
+            get finPagina(){return Math.min(this.filtradas.length,this.page*this.pageSize);},
+            prev(){if(this.page>1)this.page--;},next(){if(this.page<this.totalPages)this.page++;},
+            resetFiltros(){this.filtros={search:'',estado:'',desde:'',hasta:''};this.page=1;},
+            estadoBadge(e){return {
+                'Programada':'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                'En Proceso':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                'Finalizada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                'Cancelada':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+            }[e]||'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';},
+            get resumen(){return [
+                {key:'tot',label:'Total',valor:this.datos.length,icon:'fas fa-list',delta:0},
+                {key:'proc',label:'En Proceso',valor:this.datos.filter(d=>d.estado==='En Proceso').length,icon:'fas fa-spinner',delta:null},
+                {key:'fin',label:'Finalizadas',valor:this.datos.filter(d=>d.estado==='Finalizada').length,icon:'fas fa-check',delta:null},
+                {key:'can',label:'Canceladas',valor:this.datos.filter(d=>d.estado==='Cancelada').length,icon:'fas fa-ban',delta:null},
+            ];}
+        }
+    };
 }
 </script>
-@endpush
 @endsection

@@ -18,11 +18,13 @@
         'resources/css/global.css',
         'resources/css/theme.css',
         'resources/js/app.js',
+        'resources/js/cliente.js',
         'resources/js/sidebar.js',
         'resources/js/session.js',
         'resources/js/auth-guard.js',
         'resources/js/toast.js',
-        'resources/js/tabla-responsive.js'
+        'resources/js/tabla-responsive.js',
+        'resources/js/spa-cliente.js'
     ])
 
     <!-- Script de tema (idéntico al admin para consistencia) -->
@@ -79,7 +81,7 @@
             </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg">
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg transition-all duration-300" style="opacity: 1; transform: translateY(0);">
                 @yield('content')
             </div>
         </main>
