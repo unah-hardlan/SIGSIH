@@ -90,7 +90,18 @@ class AuthController extends Controller
         try {
             $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
             if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
-                $payload['redirect_url'] = route('cliente.perfil');
+                // Verificar si el cliente necesita configurar su perfil
+                $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+                
+                if (!$persona || 
+                    empty($persona->primer_nombre) || 
+                    empty($persona->primer_apellido) || 
+                    empty($persona->dni) || 
+                    empty($persona->id_genero_fk)) {
+                    $payload['redirect_url'] = route('cliente.configurar-perfil');
+                } else {
+                    $payload['redirect_url'] = route('cliente.perfil');
+                }
             } else {
                 $payload['redirect_url'] = route('admin.dashboard');
             }

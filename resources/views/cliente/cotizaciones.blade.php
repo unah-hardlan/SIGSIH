@@ -107,61 +107,62 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
-function cotizacionesCliente(){
-    return {
-        page: 1,
-        pageSize: 8,
-        filtros: { search:'', estado:'', desde:'', hasta:'' },
-        estados: ['Pendiente','Aprobada','Rechazada','Vencida'],
-        datos: Array.from({length:19}).map((_,i)=>({
-            codigo: 'COT-' + String(1000+i),
-            fecha: new Date(Date.now()- (i*86400000)).toISOString().substring(0,10),
-            estado: ['Pendiente','Aprobada','Rechazada'][i%3],
-            total: Math.round(500 + Math.random()*5000)
-        })),
-        get filtradas(){
-            return this.datos.filter(d=>{
-                const s = this.filtros.search.toLowerCase();
-                const estadoOk = !this.filtros.estado || d.estado === this.filtros.estado;
-                const textoOk = !s || d.codigo.toLowerCase().includes(s);
-                const desdeOk = !this.filtros.desde || d.fecha >= this.filtros.desde;
-                const hastaOk = !this.filtros.hasta || d.fecha <= this.filtros.hasta;
-                return estadoOk && textoOk && desdeOk && hastaOk;
-            });
-        },
-        get totalPages(){ return Math.max(1, Math.ceil(this.filtradas.length/ this.pageSize)); },
-        get paginadas(){
-            const start = (this.page-1)*this.pageSize;
-            return this.filtradas.slice(start, start+this.pageSize);
-        },
-        get inicioPagina(){ return this.filtradas.length ===0 ? 0 : ( (this.page-1)*this.pageSize + 1); },
-        get finPagina(){ return Math.min(this.filtradas.length, this.page*this.pageSize); },
-        prev(){ if(this.page>1) this.page--; },
-        next(){ if(this.page<this.totalPages) this.page++; },
-        resetFiltros(){ this.filtros={search:'',estado:'',desde:'',hasta:''}; this.page=1; },
-        estadoBadge(e){
-            return {
-                'Pendiente':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                'Aprobada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-                'Rechazada':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                'Vencida':'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
-            }[e] || 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
-        },
-        get resumen(){
-            const total = this.datos.length;
-            const aprob = this.datos.filter(d=>d.estado==='Aprobada').length;
-            const pend = this.datos.filter(d=>d.estado==='Pendiente').length;
-            return [
-                {key:'total',label:'Total',valor: total,icon:'fas fa-layer-group',delta:5},
-                {key:'aprob',label:'Aprobadas',valor: aprob,icon:'fas fa-check-circle',delta:2},
-                {key:'pend',label:'Pendientes',valor: pend,icon:'fas fa-hourglass-half',delta:-3},
-                {key:'importe',label:'Importe Estimado',valor: '$' + this.datos.reduce((a,b)=>a+b.total,0).toLocaleString(),icon:'fas fa-dollar-sign',delta:8},
-            ];
+// Definir la función globalmente para que pueda ser usada por Alpine.js en navegación SPA
+if (typeof window.cotizacionesCliente === 'undefined') {
+    window.cotizacionesCliente = function() {
+        return {
+            page: 1,
+            pageSize: 8,
+            filtros: { search:'', estado:'', desde:'', hasta:'' },
+            estados: ['Pendiente','Aprobada','Rechazada','Vencida'],
+            datos: Array.from({length:19}).map((_,i)=>({
+                codigo: 'COT-' + String(1000+i),
+                fecha: new Date(Date.now()- (i*86400000)).toISOString().substring(0,10),
+                estado: ['Pendiente','Aprobada','Rechazada'][i%3],
+                total: Math.round(500 + Math.random()*5000)
+            })),
+            get filtradas(){
+                return this.datos.filter(d=>{
+                    const s = this.filtros.search.toLowerCase();
+                    const estadoOk = !this.filtros.estado || d.estado === this.filtros.estado;
+                    const textoOk = !s || d.codigo.toLowerCase().includes(s);
+                    const desdeOk = !this.filtros.desde || d.fecha >= this.filtros.desde;
+                    const hastaOk = !this.filtros.hasta || d.fecha <= this.filtros.hasta;
+                    return estadoOk && textoOk && desdeOk && hastaOk;
+                });
+            },
+            get totalPages(){ return Math.max(1, Math.ceil(this.filtradas.length/ this.pageSize)); },
+            get paginadas(){
+                const start = (this.page-1)*this.pageSize;
+                return this.filtradas.slice(start, start+this.pageSize);
+            },
+            get inicioPagina(){ return this.filtradas.length ===0 ? 0 : ( (this.page-1)*this.pageSize + 1); },
+            get finPagina(){ return Math.min(this.filtradas.length, this.page*this.pageSize); },
+            prev(){ if(this.page>1) this.page--; },
+            next(){ if(this.page<this.totalPages) this.page++; },
+            resetFiltros(){ this.filtros={search:'',estado:'',desde:'',hasta:''}; this.page=1; },
+            estadoBadge(e){
+                return {
+                    'Pendiente':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                    'Aprobada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                    'Rechazada':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                    'Vencida':'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                }[e] || 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
+            },
+            get resumen(){
+                const total = this.datos.length;
+                const aprob = this.datos.filter(d=>d.estado==='Aprobada').length;
+                const pend = this.datos.filter(d=>d.estado==='Pendiente').length;
+                return [
+                    {key:'total',label:'Total',valor: total,icon:'fas fa-layer-group',delta:5},
+                    {key:'aprob',label:'Aprobadas',valor: aprob,icon:'fas fa-check-circle',delta:2},
+                    {key:'pend',label:'Pendientes',valor: pend,icon:'fas fa-hourglass-half',delta:-3},
+                    {key:'importe',label:'Importe Estimado',valor: '$' + this.datos.reduce((a,b)=>a+b.total,0).toLocaleString(),icon:'fas fa-dollar-sign',delta:8},
+                ];
+            }
         }
-    }
+    };
 }
 </script>
-@endpush
 @endsection
