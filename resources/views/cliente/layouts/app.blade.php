@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="overflow-y-scroll">
 
 <head>
     <meta charset="utf-8">
@@ -66,7 +66,7 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}" x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile" @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
+<body class="font-sans bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}" x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile" @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
     <div class="flex min-h-screen relative">
         <!-- Overlay móvil -->
     <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="sidebarOpen=false" class="fixed inset-0 bg-black bg-opacity-50" style="z-index:9990"></div>

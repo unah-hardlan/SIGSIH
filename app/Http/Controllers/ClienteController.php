@@ -107,4 +107,12 @@ class ClienteController extends Controller
     {
         return SpaHelper::clienteView('cliente.cotizaciones');
     }
+
+    /**
+     * Muestra las solicitudes de soporte del cliente.
+     */
+    public function solicitudes()
+    {
+        return SpaHelper::clienteView('cliente.solicitudes');
+    }
 }
