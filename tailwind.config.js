@@ -7,7 +7,12 @@ export default {
     ],
     darkMode: "class",
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                sans: ["Nunito", "sans-serif"],
+                serif: ["PT Serif", "serif"],
+            },
+        },
     },
     variants: {
         extend: {},
