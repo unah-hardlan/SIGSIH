@@ -64,6 +64,37 @@ class AdminModuleRegistry
         return $def['module'] ?? null;
     }
 
+    public static function moduleKeyForObjectName(?string $objectName): ?string
+    {
+        if (!$objectName) {
+            return null;
+        }
+
+        $needle = self::normalizeLabel($objectName);
+
+        foreach (self::modules() as $key => $module) {
+            foreach (Arr::wrap($module['objects'] ?? []) as $candidate) {
+                if ($needle === self::normalizeLabel($candidate)) {
+                    return $key;
+                }
+            }
+        }
+
+        foreach (self::views() as $view) {
+            $moduleKey = $view['module'] ?? null;
+            if (!$moduleKey) {
+                continue;
+            }
+            foreach (Arr::wrap($view['objects'] ?? []) as $candidate) {
+                if ($needle === self::normalizeLabel($candidate)) {
+                    return $moduleKey;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static function modulesForFrontend(): array
     {
         $modules = self::modules();
@@ -119,8 +150,13 @@ class AdminModuleRegistry
     protected static function sortSubmodules(array $submodules): array
     {
         return Collection::make($submodules)
-            ->sortBy(fn ($item) => Str::lower($item['label'] ?? ''))
+            ->sortBy(fn($item) => Str::lower($item['label'] ?? ''))
             ->values()
             ->all();
+    }
+
+    protected static function normalizeLabel(string $value): string
+    {
+        return Str::of($value)->ascii()->lower()->replaceMatches('/\s+/', ' ')->trim();
     }
 }
