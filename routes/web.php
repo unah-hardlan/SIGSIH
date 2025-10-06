@@ -279,5 +279,6 @@ Route::prefix('cliente')
             Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
             Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
+            Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
         });
     });

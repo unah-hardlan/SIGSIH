@@ -2,8 +2,9 @@
     $authUser = Auth::user();
     $clienteUsuario = $authUser->usuario ?? 'Usuario';
     $clienteIniciales = strtoupper(substr($clienteUsuario, 0, 2));
+    $clienteAvatar = $authPersona->avatar_path ?? null;
 @endphp
-<header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900 sticky top-0 z-50 will-change-auto" style="contain: layout;">
+<header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900 sticky top-0 z-50">
     <!-- Botón colapsar sidebar móvil -->
     <button @click="sidebarOpen = !sidebarOpen"
         class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
@@ -61,8 +62,14 @@
     <div class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
             <div class="relative">
                 <button @click="open = !open"
-                    class="w-11 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm sm:text-base font-bold tracking-wide shadow focus:outline-none dark:ring-blue-600/40 hover:shadow-md transition">
-                    <span>{{ $clienteIniciales }}</span>
+                    class="w-11 h-9 sm:w-10 sm:h-10 rounded-full {{ $clienteAvatar ? 'p-0' : 'bg-blue-500 text-white' }} flex items-center justify-center text-sm sm:text-base font-bold tracking-wide shadow focus:outline-none dark:ring-blue-600/40 hover:shadow-md transition overflow-hidden">
+                    @if($clienteAvatar)
+                        <img src="{{ asset('storage/' . $clienteAvatar) }}" 
+                             alt="Avatar de {{ $clienteUsuario }}" 
+                             class="w-full h-full object-cover">
+                    @else
+                        <span>{{ $clienteIniciales }}</span>
+                    @endif
                 </button>
                 <div x-show="open" x-cloak @click.away="open = false"
                     class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-blue-200 dark:border-gray-700 shadow-lg rounded-md py-1 backdrop-blur-md/0">

@@ -49,6 +49,9 @@ class ClienteSPA {
     }
 
     createLoadingOverlay() {
+        // Overlay deshabilitado para transición más fluida
+        // Si quieres reactivarlo, descomenta el código a continuación
+        /*
         this.loadingOverlay = document.createElement("div");
         this.loadingOverlay.className =
             "fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-[9998] hidden items-center justify-center";
@@ -62,6 +65,7 @@ class ClienteSPA {
             </div>
         `;
         document.body.appendChild(this.loadingOverlay);
+        */
     }
 
     setupEventListeners() {
@@ -130,7 +134,7 @@ class ClienteSPA {
         if (this.isLoading) return;
 
         this.isLoading = true;
-        this.showLoading();
+        // this.showLoading(); // Deshabilitado para transición más fluida
 
         try {
             // Verificar si está en caché
@@ -168,7 +172,7 @@ class ClienteSPA {
             }, 2000);
         } finally {
             this.isLoading = false;
-            this.hideLoading();
+            // this.hideLoading(); // Deshabilitado para transición más fluida
         }
     }
 
