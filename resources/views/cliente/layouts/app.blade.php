@@ -81,7 +81,8 @@
             </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg transition-all duration-300" style="opacity: 1; transform: translateY(0);">
+            <!-- Removido transform para evitar crear stacking context que limita overlays de modales -->
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg transition-all duration-300" style="opacity: 1;">
                 @yield('content')
             </div>
         </main>

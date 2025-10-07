@@ -82,6 +82,7 @@ class ClienteController extends Controller
     {
         $user = auth()->user();
         $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->with('genero')->first();
+        $generos = Genero::all();
         
         // Verificar si también tiene datos de empresa
         $cliente = Cliente::where('id_cliente_pk', $user->id_usuario_pk)->first();
@@ -91,7 +92,7 @@ class ClienteController extends Controller
             $empresa = EmpresaCliente::where('id_cliente_fk', $cliente->id_cliente_pk)->first();
         }
         
-        return SpaHelper::clienteView('cliente.perfil', compact('persona', 'empresa'));
+        return SpaHelper::clienteView('cliente.perfil', compact('persona', 'empresa', 'generos'));
     }
 
     /**
@@ -261,6 +262,75 @@ class ClienteController extends Controller
         }
         
         return false;
+    }
+
+    /**
+     * Actualiza el perfil personal del cliente.
+     */
+    public function perfilUpdate(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            
+            // Validar datos básicos
+            $request->validate([
+                'primer_nombre' => 'required|string|max:50',
+                'segundo_nombre' => 'nullable|string|max:50',
+                'primer_apellido' => 'required|string|max:50',
+                'segundo_apellido' => 'nullable|string|max:50',
+                'dni' => 'required|string|max:15',
+                'id_genero_fk' => 'nullable|exists:tbl_genero,id_genero_pk',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+
+            DB::beginTransaction();
+
+            // Buscar la persona del usuario
+            $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+            
+            if (!$persona) {
+                return response()->json(['success' => false, 'message' => 'Perfil no encontrado'], 404);
+            }
+
+            $data = $request->only([
+                'primer_nombre',
+                'segundo_nombre', 
+                'primer_apellido',
+                'segundo_apellido',
+                'dni',
+                'id_genero_fk'
+            ]);
+
+            // Manejar la subida del avatar si existe
+            if ($request->hasFile('avatar')) {
+                // Eliminar avatar anterior si existe
+                if ($persona->avatar_path && Storage::disk('public')->exists($persona->avatar_path)) {
+                    Storage::disk('public')->delete($persona->avatar_path);
+                }
+
+                $avatar = $request->file('avatar');
+                $avatarName = 'avatar_' . $user->id_usuario_pk . '_' . time() . '.' . $avatar->getClientOriginalExtension();
+                $avatarPath = $avatar->storeAs('avatars', $avatarName, 'public');
+                $data['avatar_path'] = $avatarPath;
+            }
+
+            // Actualizar la persona
+            $persona->update($data);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perfil actualizado correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el perfil: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
