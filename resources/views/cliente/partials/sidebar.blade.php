@@ -28,12 +28,12 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('cliente.solicitudes') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.solicitudes') ? $activeClasses : $inactiveClasses }}">
-                    <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
-                    <i class="fas fa-life-ring w-5 text-center"></i>
-                    <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Solicitudes</span>
-                </a>
-            </li>
+    <a href="{{ route('cliente.solicitudes') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.solicitudes') ? $activeClasses : $inactiveClasses }}">
+        <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
+        <i class="fas fa-clipboard-question w-5 text-center"></i>
+        <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Solicitudes</span>
+    </a>
+</li>
             <li>
                 <a href="{{ route('cliente.cotizaciones') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.cotizaciones') ? $activeClasses : $inactiveClasses }}">
                     <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>

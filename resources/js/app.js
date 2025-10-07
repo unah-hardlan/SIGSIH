@@ -137,8 +137,9 @@ import {
     faInfoCircle,
     faCalendarDay,
     faFolder,
+    faClipboardQuestion,
 } from "@fortawesome/free-solid-svg-icons";
-
+// ...existing code...
 library.add(
     faEye,
     faEyeSlash,
@@ -219,7 +220,8 @@ library.add(
     faRedo,
     faInfoCircle,
     faCalendarDay,
-    faFolder
+    faFolder,
+    faClipboardQuestion,
 );
 dom.watch();
 

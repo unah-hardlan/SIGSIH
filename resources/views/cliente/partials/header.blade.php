@@ -4,7 +4,7 @@
     $clienteIniciales = strtoupper(substr($clienteUsuario, 0, 2));
     $clienteAvatar = $authPersona->avatar_path ?? null;
 @endphp
-<header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900 sticky top-0 z-1">
+<header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-gray-50 dark:bg-gray-900 top-0 z-1">
     <!-- Botón colapsar sidebar móvil -->
     <button @click="sidebarOpen = !sidebarOpen"
         class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
