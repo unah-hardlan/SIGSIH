@@ -56,6 +56,29 @@ window.perfilData = function (el) {
             };
         })(),
 
+        // Propiedades para 2FA (mismo patrón que admin)
+        twoFAEnabled: false,
+        show2FASetup: false,
+        twoFASetup: {
+            loading: false,
+            otpauthUrl: "",
+            qrUrl: "",
+            code: "",
+            error: "",
+            confirming: false,
+            recoveryCodes: [],
+            currentPassword: ""
+        },
+        showPasswordModal: false,
+        modalError: "",
+        passwordModal: {
+            title: "",
+            description: "",
+            password: "",
+            loading: false
+        },
+        pendingAction: null, // 'start2fa' | 'disable2fa' | 'confirm2fa'
+
         openEditModal() {
             this.showEditModal = true;
             if (!this._scrollLocked) {
@@ -271,5 +294,262 @@ window.perfilData = function (el) {
                 this.empresaLoading = false;
             }
         },
+
+        // Métodos para 2FA (exactamente como el admin)
+        async load2FAStatus() {
+            try {
+                const response = await fetch('/cliente/2fa/status', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.twoFAEnabled = !!result.data?.is_enabled;
+                }
+            } catch (error) {
+                console.error('Error loading 2FA status:', error);
+            }
+        },
+
+        // 2FA setup flow (igual que admin)
+        async start2FA() {
+            if (!this.twoFASetup.currentPassword) {
+                this.openPasswordModal({
+                    action: 'start2fa',
+                    title: 'Activar 2FA',
+                    description: 'Ingresa tu contraseña actual para activar 2FA.'
+                });
+                return;
+            }
+            try {
+                this.twoFASetup.loading = true;
+                this.twoFASetup.error = "";
+                const res = await fetch("/cliente/2fa/setup/start", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ current_password: this.twoFASetup.currentPassword })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: 'No se pudo iniciar el setup 2FA' }));
+                    throw new Error(err.message || 'No se pudo iniciar el setup 2FA');
+                }
+                const data = await res.json();
+                this.twoFASetup.otpauthUrl = data?.otpauth_url || "";
+                const enc = encodeURIComponent(this.twoFASetup.otpauthUrl);
+                this.twoFASetup.qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=192x192&data=${enc}`;
+                this.show2FASetup = true;
+                this.lockScroll();
+            } catch (e) {
+                this.modalError = e.message || 'Error al iniciar 2FA';
+                this.showPasswordModal = true; // keep modal visible to correct password
+                return;
+            } finally {
+                this.twoFASetup.loading = false;
+            }
+        },
+
+        async confirm2FA() {
+            if (!this.twoFASetup.currentPassword) {
+                this.openPasswordModal({
+                    action: 'confirm2fa',
+                    title: 'Confirmar 2FA',
+                    description: 'Ingresa tu contraseña actual para confirmar 2FA.'
+                });
+                return;
+            }
+            try {
+                this.twoFASetup.confirming = true;
+                this.twoFASetup.error = "";
+                const res = await fetch("/cliente/2fa/setup/confirm", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ code: this.twoFASetup.code, current_password: this.twoFASetup.currentPassword })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: "Error" }));
+                    this.twoFASetup.error = err.message || "Código inválido";
+                    return;
+                }
+                const data = await res.json();
+                this.twoFASetup.recoveryCodes = Array.isArray(data?.recovery_codes) ? data.recovery_codes : [];
+                this.twoFAEnabled = true;
+                this.twoFASetup.code = "";
+                this.twoFASetup.currentPassword = "";
+                // Mantener el setup visible para mostrar códigos de recuperación
+                // El usuario podrá cerrar manualmente con cancel2FA()
+            } catch (e) {
+                this.twoFASetup.error = e.message || "Error al confirmar 2FA";
+            } finally {
+                this.twoFASetup.confirming = false;
+            }
+        },
+
+        async disable2FA() {
+            if (!this.twoFASetup.currentPassword) {
+                this.openPasswordModal({
+                    action: 'disable2fa',
+                    title: 'Desactivar 2FA',
+                    description: 'Confirma tu contraseña para desactivar 2FA.'
+                });
+                return;
+            }
+            await this._performDisable2FA();
+        },
+
+        // Modal de contraseña (igual que admin)
+        openPasswordModal(config) {
+            this.pendingAction = config?.action || null;
+            this.passwordModal.title = config?.title || '';
+            this.passwordModal.description = config?.description || '';
+            this.passwordModal.password = '';
+            this.passwordModal.loading = false;
+            this.modalError = '';
+            this.showPasswordModal = true;
+            this.lockScroll();
+        },
+
+        closePasswordModal() {
+            this.showPasswordModal = false;
+            this.pendingAction = null;
+            this.passwordModal = { title: "", description: "", password: "", loading: false };
+            this.modalError = "";
+            this.unlockScroll();
+        },
+
+        lockScroll() {
+            if (!this._scrollLocked) {
+                this._scrollY = window.scrollY || window.pageYOffset;
+                this._prev = {
+                    position: document.body.style.position,
+                    top: document.body.style.top,
+                    width: document.body.style.width,
+                    overflow: document.body.style.overflow,
+                    height: document.body.style.height,
+                };
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${this._scrollY}px`;
+                document.body.style.width = '100%';
+                document.body.style.overflow = 'hidden';
+                document.body.style.height = '100vh';
+                this._scrollLocked = true;
+            }
+        },
+
+        unlockScroll() {
+            if (this._scrollLocked) {
+                document.body.style.position = this._prev.position || '';
+                document.body.style.top = this._prev.top || '';
+                document.body.style.width = this._prev.width || '';
+                document.body.style.overflow = this._prev.overflow || '';
+                document.body.style.height = this._prev.height || '';
+                window.scrollTo(0, this._scrollY || 0);
+                this._scrollLocked = false;
+            }
+        },
+
+        async submitPasswordModal() {
+            if (!this.passwordModal.password.trim()) return;
+            this.passwordModal.loading = true;
+            this.modalError = '';
+            
+            this.twoFASetup.currentPassword = this.passwordModal.password;
+            
+            const action = this.pendingAction;
+            this.closePasswordModal();
+            
+            if (action === 'start2fa') {
+                await this.start2FA();
+            } else if (action === 'disable2fa') {
+                await this._performDisable2FA();
+            } else if (action === 'confirm2fa') {
+                await this.confirm2FA();
+            }
+        },
+
+        async _performDisable2FA() {
+            try {
+                const res = await fetch("/cliente/2fa/disable", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ current_password: this.twoFASetup.currentPassword })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: 'No se pudo desactivar 2FA' }));
+                    throw new Error(err.message || 'No se pudo desactivar 2FA');
+                }
+                this.twoFAEnabled = false;
+                this.show2FASetup = false;
+                this.twoFASetup = { loading: false, otpauthUrl: "", qrUrl: "", code: "", error: "", confirming: false, recoveryCodes: [], currentPassword: "" };
+                this.unlockScroll();
+            } catch (e) {
+                this.modalError = e.message || 'Error al desactivar 2FA';
+                this.openPasswordModal({ action: 'disable2fa', title: 'Desactivar 2FA', description: 'Confirma tu contraseña para desactivar 2FA.' });
+            }
+        },
+
+        cancel2FA() {
+            this.show2FASetup = false;
+            this.twoFASetup = { loading: false, otpauthUrl: "", qrUrl: "", code: "", error: "", confirming: false, recoveryCodes: [], currentPassword: "" };
+            this.unlockScroll();
+        },
+
+        copyOtpUrl() {
+            if (!this.twoFASetup.otpauthUrl) return;
+            navigator.clipboard?.writeText?.(this.twoFASetup.otpauthUrl);
+        },
+
+        copyRecoveryCodes() {
+            const txt = (this.twoFASetup.recoveryCodes || []).join("\n");
+            if (!txt) return;
+            navigator.clipboard?.writeText?.(txt);
+        },
+
+        async generateRecoveryCodes() {
+            try {
+                this.loading = true;
+                const response = await fetch('/cliente/2fa/recovery-codes', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.twoFASetup.recoveryCodes = result.data.recovery_codes;
+                } else {
+                    alert(result.message || 'Error al generar códigos de recuperación');
+                }
+            } catch (error) {
+                console.error('Error generating recovery codes:', error);
+                alert('Error al generar códigos de recuperación');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // Inicializar al cargar el componente
+        init() {
+            this.load2FAStatus();
+        }
     };
 };
