@@ -73,7 +73,7 @@
 
         @include('cliente.partials.sidebar')
 
-        <main class="flex-1 min-h-screen p-3 sm:p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+    <main class="flex-1 min-h-screen p-3 sm:p-6 text-gray-900 dark:text-white dark:bg-gray-900">
             @include('cliente.partials.header')
             @hasSection('page-header')
             <div class="bg-white dark:bg-gray-900 p-4 rounded mb-6">
@@ -81,8 +81,8 @@
             </div>
             @endif
 
-            <!-- Removido transform para evitar crear stacking context que limita overlays de modales -->
-            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg transition-all duration-300" style="opacity: 1;">
+            <!-- Contenido principal sin fondo envolvente -->
+            <div class="p-3 sm:p-6 rounded-lg">
                 @yield('content')
             </div>
         </main>
