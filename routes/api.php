@@ -65,7 +65,8 @@ Route::post('logout', [AuthController::class, 'logout']);
 Route::post('register', [AuthController::class, 'register']);
 Route::post('email/resend', [AuthController::class, 'resendVerification']);
 Route::get('verify-email', [AuthController::class, 'verifyEmail']);
-Route::middleware('throttle:5,1')->post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
+// 2FA verify (public, tied to challenge cookie)
+Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
 // Get de genero para cliente
 Route::middleware(['jwt.auth','throttle:30,1'])->get('catalogos/generos', function() {

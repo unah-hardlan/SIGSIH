@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Models\Parametro;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -101,7 +102,9 @@ class TwoFactorController extends Controller
         if (!$challengeId) {
             return response()->json(['message' => 'Challenge no encontrado'], 401);
         }
-        $userId = Cache::get($this->challengeKey($challengeId));
+    $challengeKey = $this->challengeKey($challengeId);
+    $attemptKey = self::attemptKey($challengeId);
+    $userId = Cache::get($challengeKey);
         if (!$userId) {
             return response()->json(['message' => 'Challenge expirado o inválido'], 401);
         }
@@ -110,15 +113,39 @@ class TwoFactorController extends Controller
         if (!$user || !$user->two_factor_secret) {
             return response()->json(['message' => 'Usuario/2FA inválidos'], 401);
         }
-        $code = $request->string('code');
+        $maxAttempts = $this->maxTotpAttempts();
+        $attempts = Cache::get($attemptKey, 0);
+
+        $code = trim($request->string('code'));
         $g2fa = new Google2FA();
         $secret = decrypt($user->two_factor_secret);
-        $valid = $g2fa->verifyKey($secret, $code, 1);
-        if (!$valid) {
-            $codes = $user->two_factor_recovery_codes ? explode(',', decrypt($user->two_factor_recovery_codes)) : [];
-            if (!in_array($code, $codes, true)) {
-                return response()->json(['message' => 'Código inválido'], 422);
+
+        $allowTotp = ($maxAttempts <= 0) || ($attempts < $maxAttempts);
+        $valid = $allowTotp ? $g2fa->verifyKey($secret, $code, 1) : false;
+
+        $codes = $user->two_factor_recovery_codes ? explode(',', decrypt($user->two_factor_recovery_codes)) : [];
+        $isRecovery = in_array($code, $codes, true);
+
+        if (!$valid && !$isRecovery) {
+            if ($allowTotp && $maxAttempts > 0) {
+                $attempts++;
+                Cache::put($attemptKey, $attempts, now()->addMinutes(5));
             }
+            $needsRecovery = $maxAttempts > 0 && ($attempts >= $maxAttempts);
+            $payload = [
+                'message' => $needsRecovery
+                    ? 'Demasiados intentos. Usa un código de recuperación para continuar.'
+                    : 'Código inválido',
+            ];
+            if ($needsRecovery) {
+                $payload['needs_recovery'] = true;
+                $payload['attempts'] = $attempts;
+                $payload['max_attempts'] = $maxAttempts;
+            }
+            return response()->json($payload, 422);
+        }
+
+        if ($isRecovery) {
             $codes = array_values(array_diff($codes, [$code]));
             $user->two_factor_recovery_codes = encrypt(implode(',', $codes));
             $user->save();
@@ -129,7 +156,8 @@ class TwoFactorController extends Controller
         if (isset($tokenResult['error'])) {
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
         }
-        Cache::forget($this->challengeKey($challengeId));
+        Cache::forget($challengeKey);
+        Cache::forget($attemptKey);
         $res = response()->json(['ok' => true]);
         // Clear challenge cookie
     $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
@@ -144,7 +172,9 @@ class TwoFactorController extends Controller
     public static function issueChallengeForUser(Usuario $user, Request $request): JsonResponse
     {
         $challengeId = (string) Str::uuid();
-        Cache::put(self::challengeKey($challengeId), $user->getKey(), now()->addMinutes(5));
+    $ttl = now()->addMinutes(5);
+    Cache::put(self::challengeKey($challengeId), $user->getKey(), $ttl);
+    Cache::put(self::attemptKey($challengeId), 0, $ttl);
     $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
     $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
         return response()->json(['status' => '2fa_required'])
@@ -154,5 +184,39 @@ class TwoFactorController extends Controller
     private static function challengeKey(string $id): string
     {
         return '2fa:challenge:' . $id;
+    }
+
+    private static function attemptKey(string $id): string
+    {
+        return '2fa:attempts:' . $id;
+    }
+
+    private function maxTotpAttempts(): int
+    {
+        $candidates = [
+            'AUTH.2FA.MAX_TOTP_ATTEMPTS',
+            'AUTH.2FA.MAX_ATTEMPTS',
+            'auth.2fa.max_totp_attempts',
+        ];
+        foreach ($candidates as $param) {
+            $val = Parametro::where('parametro', $param)->value('valor');
+            if ($val !== null && $val !== '') {
+                if (is_numeric($val)) {
+                    $intVal = (int) $val;
+                    if ($intVal >= 0) {
+                        return $intVal;
+                    }
+                }
+                $filtered = filter_var($val, FILTER_SANITIZE_NUMBER_INT);
+                if ($filtered !== '' && is_numeric($filtered)) {
+                    $intVal = (int) $filtered;
+                    if ($intVal >= 0) {
+                        return $intVal;
+                    }
+                }
+            }
+        }
+
+        return 5;
     }
 }
