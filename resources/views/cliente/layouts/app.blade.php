@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="overflow-y-scroll">
 
 <head>
     <meta charset="utf-8">
@@ -18,11 +18,13 @@
         'resources/css/global.css',
         'resources/css/theme.css',
         'resources/js/app.js',
+        'resources/js/cliente.js',
         'resources/js/sidebar.js',
         'resources/js/session.js',
         'resources/js/auth-guard.js',
         'resources/js/toast.js',
-        'resources/js/tabla-responsive.js'
+        'resources/js/tabla-responsive.js',
+        'resources/js/spa-cliente.js'
     ])
 
     <!-- Script de tema (idéntico al admin para consistencia) -->
@@ -64,7 +66,7 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}" x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile" @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
+<body class="font-sans bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}" x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile" @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
     <div class="flex min-h-screen relative">
         <!-- Overlay móvil -->
     <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="sidebarOpen=false" class="fixed inset-0 bg-black bg-opacity-50" style="z-index:9990"></div>
@@ -79,7 +81,7 @@
             </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg">
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg transition-all duration-300" style="opacity: 1; transform: translateY(0);">
                 @yield('content')
             </div>
         </main>

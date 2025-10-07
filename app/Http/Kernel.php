@@ -78,5 +78,6 @@ class Kernel extends HttpKernel
         'client.only' => \App\Http\Middleware\ClientOnly::class,
         'block.client' => \App\Http\Middleware\BlockClientFromAdmin::class,
         'admin.only' => \App\Http\Middleware\AdminOnly::class,
+        'check.cliente.perfil' => \App\Http\Middleware\CheckClientePerfilCompleto::class,
     ];
 }

@@ -147,6 +147,7 @@ class StoreUsuarioRequest extends FormRequest
             'usuario.required' => 'Debe indicar un usuario.',
             'usuario.max' => 'El usuario no puede superar 50 caracteres.',
             'usuario.unique' => 'Ese usuario ya está registrado.',
+            'correo_electronico.unique' => 'Ese correo electrónico ya está registrado.',
             'nombre_usuario.regex' => 'El nombre de usuario sólo puede contener letras y números.',
             'contrasena.required' => 'La contraseña es obligatoria.',
             'contrasena.min' => 'La contraseña debe tener al menos '.$this->passwordMinUsed.' caracteres.',
@@ -162,7 +163,8 @@ class StoreUsuarioRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'contrasena' => 'contraseña'
+            'contrasena' => 'contraseña',
+            'correo_electronico' => 'correo electrónico'
         ];
     }
 }

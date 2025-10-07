@@ -21,28 +21,35 @@
                 $inactiveClasses = 'text-gray-300 hover:bg-gray-700 hover:text-white';
             @endphp
             <li>
-                <a href="{{ route('cliente.perfil') }}" class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.perfil') ? $activeClasses : $inactiveClasses }}">
+                <a href="{{ route('cliente.perfil') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.perfil') ? $activeClasses : $inactiveClasses }}">
                     <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
                     <i class="fas fa-user w-5 text-center"></i>
                     <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Perfil</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('cliente.cotizaciones') }}" class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.cotizaciones') ? $activeClasses : $inactiveClasses }}">
+                <a href="{{ route('cliente.cotizaciones') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.cotizaciones') ? $activeClasses : $inactiveClasses }}">
                     <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
                     <i class="fas fa-file-invoice w-5 text-center"></i>
                     <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Cotizaciones</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('cliente.ordenes') }}" class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.ordenes') ? $activeClasses : $inactiveClasses }}">
+                <a href="{{ route('cliente.solicitudes') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.solicitudes') ? $activeClasses : $inactiveClasses }}">
+                    <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
+                    <i class="fas fa-life-ring w-5 text-center"></i>
+                    <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Solicitudes</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('cliente.ordenes') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.ordenes') ? $activeClasses : $inactiveClasses }}">
                     <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
                     <i class="fas fa-clipboard-list w-5 text-center"></i>
                     <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Órdenes de Servicio</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('cliente.facturas') }}" class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.facturas') ? $activeClasses : $inactiveClasses }}">
+                <a href="{{ route('cliente.facturas') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.facturas') ? $activeClasses : $inactiveClasses }}">
                     <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
                     <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
                     <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Facturación</span>

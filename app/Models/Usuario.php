@@ -130,6 +130,11 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         return $this->hasMany(Parametro::class, 'id_usuario_fk');
     }
 
+    public function persona()
+    {
+        return $this->hasOne(Persona::class, 'id_usuario_fk', 'id_usuario_pk');
+    }
+
     // Normaliza primer_ingreso: true para 1/'1'/true/'S'/'Y'; false para 0/'0'/false/'N' o null
     public function getPrimerIngresoAttribute($value)
     {

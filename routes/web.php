@@ -23,7 +23,6 @@ use Illuminate\Http\Request;
 // Auth routes (públicas)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-
 // Página bonita de verificación de correo (ES) y alias en EN para compatibilidad
 Route::get('/verificar-correo', [AuthController::class, 'verifyEmailPage'])->name('verify.email.page');
 Route::get('/verify-email', function (\Illuminate\Http\Request $request) {
@@ -52,6 +51,17 @@ Route::get('/', function () {
     }
     $rolNombre = strtolower($user->rol->rol ?? '');
     if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+        // Verificar si el cliente necesita configurar su perfil
+        $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+        
+        if (!$persona || 
+            empty($persona->primer_nombre) || 
+            empty($persona->primer_apellido) || 
+            empty($persona->dni) || 
+            empty($persona->id_genero_fk)) {
+            return redirect()->route('cliente.configurar-perfil');
+        }
+        
         return redirect()->route('cliente.perfil');
     }
     // Por defecto admin
@@ -66,6 +76,17 @@ Route::get('/post-auth-redirect', function () {
     }
     $rolNombre = strtolower($user->rol->rol ?? '');
     if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+        // Verificar si el cliente necesita configurar su perfil
+        $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+        
+        if (!$persona || 
+            empty($persona->primer_nombre) || 
+            empty($persona->primer_apellido) || 
+            empty($persona->dni) || 
+            empty($persona->id_genero_fk)) {
+            return redirect()->route('cliente.configurar-perfil');
+        }
+        
         return redirect()->route('cliente.perfil');
     }
     return redirect()->route('admin.dashboard');
@@ -245,10 +266,22 @@ Route::redirect('/cliente', '/cliente/perfil');
 // Usa autenticación JWT web + refresh + validación de rol cliente
 Route::prefix('cliente')
     ->name('cliente.')
-    ->middleware(['auth.jwt.web','jwt.refresh','client.only','force.profile'])
+    ->middleware(['auth.jwt.web','jwt.refresh','client.only'])
     ->group(function () {
-        Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
-        Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
-        Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
-        Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
+        // Rutas para configuración inicial del perfil (sin middleware de verificación de perfil)
+        Route::get('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfil'])->name('configurar-perfil');
+        Route::post('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfilStore'])->name('configurar-perfil.store');
+        
+        // Rutas para configuración de empresa
+        Route::get('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresa'])->name('configurar-empresa');
+        Route::post('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresaStore'])->name('configurar-empresa.store');
+        
+        // Rutas que requieren perfil completo
+        Route::middleware(['check.cliente.perfil'])->group(function () {
+            Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
+            Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
+            Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
+            Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
+            Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
+        });
     });
