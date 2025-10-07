@@ -334,6 +334,65 @@ class ClienteController extends Controller
     }
 
     /**
+     * Actualiza los datos de la empresa del cliente.
+     */
+    public function empresaUpdate(Request $request)
+    {
+        try {
+            $user = auth()->user();
+
+            $request->validate([
+                'nombre_comercial' => 'required|string|max:150',
+                'razon_social' => 'nullable|string|max:150',
+                'rtn' => 'nullable|string|max:30',
+                'descripcion_empresa' => 'nullable|string|max:255',
+                'horario_atencion' => [
+                    'nullable','string','max:100',
+                    function ($attribute,$value,$fail){
+                        if ($value && !$this->isValidHorarioFormat($value)) {
+                            $fail('El formato del horario no es válido.');
+                        }
+                    }
+                ],
+                'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048'
+            ]);
+
+            DB::beginTransaction();
+
+            $cliente = Cliente::where('id_cliente_pk',$user->id_usuario_pk)->first();
+            if (!$cliente) {
+                return response()->json(['success'=>false,'message'=>'Cliente no encontrado'],404);
+            }
+
+            $empresa = EmpresaCliente::where('id_cliente_fk',$cliente->id_cliente_pk)->first();
+            if (!$empresa) {
+                return response()->json(['success'=>false,'message'=>'Empresa no configurada'],404);
+            }
+
+            $data = $request->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']);
+
+            // Avatar
+            if ($request->hasFile('avatar')) {
+                if ($empresa->avatar && Storage::disk('public')->exists($empresa->avatar)) {
+                    Storage::disk('public')->delete($empresa->avatar);
+                }
+                $file = $request->file('avatar');
+                $name = 'empresa_'.$cliente->id_cliente_pk.'_'.time().'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('avatars/empresas',$name,'public');
+                $data['avatar'] = $path;
+            }
+
+            $empresa->update($data);
+
+            DB::commit();
+            return response()->json(['success'=>true,'message'=>'Empresa actualizada correctamente']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success'=>false,'message'=>'Error al actualizar la empresa: '.$e->getMessage()],500);
+        }
+    }
+
+    /**
      * Valida que las horas y minutos estén en rangos correctos.
      */
     private function validateTimeValues($horario): bool

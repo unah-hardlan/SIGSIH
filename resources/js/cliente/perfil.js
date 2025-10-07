@@ -26,10 +26,35 @@ window.perfilData = function (el) {
 
     return {
         showEditModal: false,
+        showEmpresaModal: false,
         loading: false,
+        empresaLoading: false,
         avatarFile: null,
+        empresaAvatarFile: null,
         originalData: originalData,
         formData: { ...originalData },
+        empresaForm: (function () {
+            try {
+                const elEmp = document.getElementById("empresa-json");
+                if (elEmp && elEmp.textContent) {
+                    const data = JSON.parse(elEmp.textContent);
+                    return {
+                        nombre_comercial: data.nombre_comercial || "",
+                        razon_social: data.razon_social || "",
+                        rtn: data.rtn || "",
+                        descripcion_empresa: data.descripcion_empresa || "",
+                        horario_atencion: data.horario_atencion || "",
+                    };
+                }
+            } catch (_) {}
+            return {
+                nombre_comercial: "",
+                razon_social: "",
+                rtn: "",
+                descripcion_empresa: "",
+                horario_atencion: "",
+            };
+        })(),
 
         openEditModal() {
             this.showEditModal = true;
@@ -68,6 +93,52 @@ window.perfilData = function (el) {
             }
             this.formData = { ...this.originalData };
             this.avatarFile = null;
+        },
+
+        openEmpresaModal() {
+            this.showEmpresaModal = true;
+            if (!this._scrollLocked) {
+                this._scrollY = window.scrollY || window.pageYOffset;
+                this._prev = {
+                    position: document.body.style.position,
+                    top: document.body.style.top,
+                    width: document.body.style.width,
+                    overflow: document.body.style.overflow,
+                    height: document.body.style.height,
+                };
+                document.body.style.position = "fixed";
+                document.body.style.top = `-${this._scrollY}px`;
+                document.body.style.width = "100%";
+                document.body.style.overflow = "hidden";
+                document.body.style.height = "100vh";
+                this._scrollLocked = true;
+            }
+        },
+        closeEmpresaModal() {
+            this.showEmpresaModal = false;
+            if (this._scrollLocked) {
+                document.body.style.position = this._prev.position || "";
+                document.body.style.top = this._prev.top || "";
+                document.body.style.width = this._prev.width || "";
+                document.body.style.overflow = this._prev.overflow || "";
+                document.body.style.height = this._prev.height || "";
+                window.scrollTo(0, this._scrollY || 0);
+                this._scrollLocked = false;
+            }
+            this.empresaAvatarFile = null;
+        },
+        handleEmpresaAvatar(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Archivo demasiado grande (máx 2MB)");
+                return;
+            }
+            if (!file.type.startsWith("image/")) {
+                alert("Solo imágenes");
+                return;
+            }
+            this.empresaAvatarFile = file;
         },
 
         handleAvatarChange(event) {
@@ -156,6 +227,48 @@ window.perfilData = function (el) {
                 );
             } finally {
                 this.loading = false;
+            }
+        },
+        async updateEmpresa() {
+            if (!this.empresaForm.nombre_comercial.trim()) {
+                alert("Nombre comercial requerido");
+                return;
+            }
+            const empresaUrl = el?.dataset?.empresaUpdateUrl;
+            if (!empresaUrl) {
+                alert("No se encontró URL de empresa");
+                return;
+            }
+            this.empresaLoading = true;
+            try {
+                const fd = new FormData();
+                Object.entries(this.empresaForm).forEach(([k, v]) => {
+                    if (v !== null && v !== "") fd.append(k, v);
+                });
+                if (this.empresaAvatarFile)
+                    fd.append("avatar", this.empresaAvatarFile);
+                const csrfMeta = document.querySelector(
+                    'meta[name="csrf-token"]'
+                );
+                const csrf = csrfMeta ? csrfMeta.getAttribute("content") : null;
+                if (csrf) fd.append("_token", csrf);
+                fd.append("_method", "PUT");
+                const resp = await fetch(empresaUrl, {
+                    method: "POST",
+                    body: fd,
+                });
+                const json = await resp.json();
+                if (json.success) {
+                    alert("Empresa actualizada correctamente");
+                    window.location.reload();
+                } else {
+                    alert(json.message || "Error al actualizar empresa");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error al actualizar empresa");
+            } finally {
+                this.empresaLoading = false;
             }
         },
     };

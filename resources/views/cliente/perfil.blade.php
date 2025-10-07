@@ -1,7 +1,7 @@
 @extends('cliente.layouts.app')
 @section('title','Perfil - Cliente')
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="perfilData($el)" data-update-url="{{ route('cliente.perfil.update') }}">
+<div class="max-w-4xl mx-auto space-y-6" x-data="perfilData($el)" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Mi Perfil</h1>
         @if($persona && !$empresa)
@@ -10,6 +10,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
             </svg>
             Editar Perfil
+        </button>
+        @elseif($empresa)
+        <button @click="openEmpresaModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Editar Empresa
         </button>
         @endif
     </div>
@@ -408,6 +415,81 @@
     </div>
     </template>
     @endif
+
+    @if($empresa)
+    <template x-if="showEmpresaModal">
+        <div x-cloak class="fixed inset-0 z-[12000] overflow-y-auto" x-transition.opacity.duration.250ms @keydown.escape.window="closeEmpresaModal()" @click.self="closeEmpresaModal()" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-black/70" x-transition:enter="transition-opacity ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closeEmpresaModal()" aria-hidden="true"></div>
+            <div class="modal-content relative flex min-h-full items-center justify-center p-4" @click.self="closeEmpresaModal()">
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" @click.stop>
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Editar Empresa</h3>
+                        <button @click="closeEmpresaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <form @submit.prevent="updateEmpresa()" class="p-6 space-y-6">
+                        <div class="flex items-center space-x-6">
+                            <div class="flex-shrink-0">
+                                <div class="relative">
+                                    @if($empresa->avatar)
+                                        <img src="{{ asset('storage/' . $empresa->avatar) }}" alt="Logo actual" class="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600" />
+                                    @else
+                                        <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-gray-300 dark:border-gray-600">
+                                            <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M5 21H3m2 0h5m4 0h5M9 7h1m4 0h1M9 11h1m4 0h1"/></svg>
+                                        </div>
+                                    @endif
+                                    <label class="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-1 cursor-pointer shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        <input type="file" x-ref="empresaAvatar" @change="handleEmpresaAvatar($event)" accept="image/*" class="hidden" />
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Logo</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">JPEG, PNG, WEBP. Máx 2MB.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre Comercial *</label>
+                                <input type="text" x-model="empresaForm.nombre_comercial" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Razón Social</label>
+                                <input type="text" x-model="empresaForm.razon_social" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RTN</label>
+                                <input type="text" x-model="empresaForm.rtn" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Horario de Atención</label>
+                                <input type="text" x-model="empresaForm.horario_atencion" placeholder="L-V 8:00-17:00" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción de la Empresa</label>
+                            <textarea x-model="empresaForm.descripcion_empresa" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <button type="button" @click="closeEmpresaModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Cancelar</button>
+                            <button type="submit" :disabled="empresaLoading" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                                <span x-show="!empresaLoading">Guardar Cambios</span>
+                                <span x-show="empresaLoading" class="flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    Guardando...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+    @endif
 </div>
 
 @php
@@ -430,6 +512,10 @@
 
 <!-- Alpine.js bootstrap JSON -->
 <script type="application/json" id="persona-json">@json($personaData)</script>
+@if($empresa)
+@php $empresaJson = json_encode($empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion'])); @endphp
+<script type="application/json" id="empresa-json">{!! $empresaJson !!}</script>
+@endif
 
 
 @endsection

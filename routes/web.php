@@ -280,6 +280,7 @@ Route::prefix('cliente')
         Route::middleware(['check.cliente.perfil'])->group(function () {
             Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
             Route::put('perfil', [\App\Http\Controllers\ClienteController::class, 'perfilUpdate'])->name('perfil.update');
+            Route::put('empresa', [\App\Http\Controllers\ClienteController::class, 'empresaUpdate'])->name('empresa.update');
             Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
             Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
