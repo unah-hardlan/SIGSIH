@@ -1,7 +1,7 @@
 @extends('cliente.layouts.app')
 @section('title','Perfil - Cliente')
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="perfilData()">
+<div class="max-w-4xl mx-auto space-y-6" x-data="perfilData($el)" data-update-url="{{ route('cliente.perfil.update') }}">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Mi Perfil</h1>
         @if($persona && !$empresa)
@@ -428,158 +428,8 @@
     ];
 @endphp
 
-<!-- Alpine.js Script -->
+<!-- Alpine.js bootstrap JSON -->
 <script type="application/json" id="persona-json">@json($personaData)</script>
-<script>
-function perfilData() {
-    const originalData = JSON.parse(document.getElementById('persona-json').textContent);
 
-    return {
-        showEditModal: false,
-        loading: false,
-        avatarFile: null,
-        originalData: originalData,
-        formData: { ...originalData },
 
-        openEditModal() {
-            this.showEditModal = true;
-            // Scroll lock preservando posición
-            if (!this._scrollLocked) {
-                this._scrollY = window.scrollY || window.pageYOffset;
-                this._prev = {
-                    position: document.body.style.position,
-                    top: document.body.style.top,
-                    width: document.body.style.width,
-                    overflow: document.body.style.overflow,
-                    height: document.body.style.height
-                };
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${this._scrollY}px`;
-                document.body.style.width = '100%';
-                document.body.style.overflow = 'hidden';
-                document.body.style.height = '100vh';
-                this._scrollLocked = true;
-            }
-            requestAnimationFrame(()=>{
-                const modal = document.querySelector('.modal-content');
-                if (modal) modal.scrollTop = 0;
-            });
-        },
-
-        closeEditModal() {
-            this.showEditModal = false;
-            // Restaurar scroll
-            if (this._scrollLocked) {
-                document.body.style.position = this._prev.position || '';
-                document.body.style.top = this._prev.top || '';
-                document.body.style.width = this._prev.width || '';
-                document.body.style.overflow = this._prev.overflow || '';
-                document.body.style.height = this._prev.height || '';
-                window.scrollTo(0, this._scrollY || 0);
-                this._scrollLocked = false;
-            }
-            // Reset datos
-            this.formData = { ...this.originalData };
-            this.avatarFile = null;
-        },
-
-        handleAvatarChange(event) {
-            const file = event.target.files[0];
-            if (file) {
-                // Validar tamaño (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('El archivo es demasiado grande. Máximo 2MB.');
-                    return;
-                }
-                
-                // Validar tipo
-                if (!file.type.startsWith('image/')) {
-                    alert('Solo se permiten archivos de imagen.');
-                    return;
-                }
-                
-                this.avatarFile = file;
-            }
-        },
-
-        formatDNI(event) {
-            let value = event.target.value.replace(/\D/g, ''); // Solo números
-            if (value.length >= 4) {
-                value = value.substring(0, 4) + '-' + value.substring(4);
-            }
-            if (value.length >= 9) {
-                value = value.substring(0, 9) + '-' + value.substring(9);
-            }
-            if (value.length > 15) {
-                value = value.substring(0, 15);
-            }
-            this.formData.dni = value;
-        },
-
-        async updateProfile() {
-            // Validaciones básicas antes de enviar
-            if (!this.formData.primer_nombre.trim()) {
-                alert('El primer nombre es requerido');
-                return;
-            }
-            if (!this.formData.primer_apellido.trim()) {
-                alert('El primer apellido es requerido');
-                return;
-            }
-            if (!this.formData.dni.trim()) {
-                alert('El DNI es requerido');
-                return;
-            }
-
-            this.loading = true;
-            
-            try {
-                const formData = new FormData();
-                
-                // Agregar datos del formulario
-                Object.keys(this.formData).forEach(key => {
-                    if (this.formData[key] !== null && this.formData[key] !== '') {
-                        formData.append(key, this.formData[key]);
-                    }
-                });
-                
-                // Agregar avatar si existe
-                if (this.avatarFile) {
-                    formData.append('avatar', this.avatarFile);
-                }
-                
-                // Token CSRF
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-                formData.append('_method', 'PUT');
-                
-                const response = await fetch('{{ route("cliente.perfil.update") }}', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Mostrar mensaje de éxito y recargar página
-                    alert('Perfil actualizado correctamente');
-                    window.location.reload();
-                } else {
-                    alert(result.message || 'Error al actualizar el perfil');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al actualizar el perfil. Por favor, intenta nuevamente.');
-            } finally {
-                this.loading = false;
-            }
-        }
-    }
-}
-</script>
-
-<style>
-[x-cloak] { display: none !important; }
-
-/* Estilos específicos del modal ya se controlan con utilidades Tailwind y estilos inline */
-</style>
 @endsection
