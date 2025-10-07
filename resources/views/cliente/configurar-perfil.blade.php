@@ -16,32 +16,33 @@
     </button>
 </div>
 
-<div class="w-full max-w-2xl mx-auto">
+<div class="w-full max-w-4xl mx-auto">
     <!-- Tarjeta principal -->
     <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
         <!-- Header de la tarjeta -->
-        <div class="bg-gradient-to-r from-blue-800 to-blue-900 p-8 text-center">
-            <div class="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
+        <div class="bg-gradient-to-r from-blue-800 to-blue-900 p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-lg">
+                <!-- Logo de la empresa -->
+                <div class="w-15 h-15 rounded-full overflow-hidden bg-white flex items-center justify-center p-1">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo SIGSIH" class="w-full h-full object-contain">
+                </div>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">¡Bienvenido!</h1>
-            <p class="text-blue-100">Completa tu perfil para comenzar a usar SIGSIH</p>
+            <h1 class="text-2xl font-bold text-white mb-2">¡Bienvenido!</h1>
+            <p class="text-blue-100 text-sm">Completa tu perfil para comenzar a usar Hardlan.</p>
         </div>
 
         <!-- Contenido del formulario -->
-        <div class="p-8">
+        <div class="p-6">
             <form action="{{ route('cliente.configurar-perfil.store') }}" method="POST" id="profile-form" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 
                 <!-- Sección de Avatar -->
-                <div class="text-center mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Foto de Perfil</h3>
+                <div class="text-center mb-6">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Foto de Perfil</h3>
                     <div class="flex flex-col items-center">
                         <!-- Preview del avatar -->
-                        <div class="relative mb-4">
-                            <div class="w-32 h-32 rounded-full border-4 border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                        <div class="relative mb-3">
+                            <div class="w-24 h-24 rounded-full border-3 border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700">
                                 <img id="avatar-preview" class="w-full h-full object-cover hidden" alt="Preview">
                                 <div id="avatar-placeholder" class="w-full h-full flex items-center justify-center">
                                     <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,16 +53,16 @@
                         </div>
                         
                         <!-- Zona de drag and drop -->
-                        <div id="avatar-drop-zone" class="w-full max-w-sm border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-300 ease-in-out">
+                        <div id="avatar-drop-zone" class="w-full max-w-xs border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-300 ease-in-out">
                             <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="previewImage(this)">
                             <label for="avatar" class="cursor-pointer">
-                                <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-6 h-6 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="font-medium text-blue-600 dark:text-blue-400">Haz clic para subir</span> o arrastra una imagen
+                                <p class="text-xs text-gray-600 dark:text-gray-400">
+                                    <span class="font-medium text-blue-600 dark:text-blue-400">Clic para subir</span> o arrastra
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">PNG, JPG, WEBP hasta 2MB (no GIF ni videos)</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, WEBP (2MB máx)</p>
                             </label>
                         </div>
                         
@@ -72,9 +73,9 @@
                 </div>
 
                 <!-- Grid de campos -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Primer Nombre -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label for="primer_nombre" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Primer Nombre <span class="text-red-500">*</span>
                         </label>
@@ -83,7 +84,7 @@
                             name="primer_nombre" 
                             type="text" 
                             required 
-                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-sm"
                             placeholder="Tu primer nombre"
                             value="{{ old('primer_nombre') }}"
                         >
@@ -93,7 +94,7 @@
                     </div>
 
                     <!-- Segundo Nombre -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label for="segundo_nombre" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Segundo Nombre
                         </label>
@@ -101,7 +102,7 @@
                             id="segundo_nombre" 
                             name="segundo_nombre" 
                             type="text" 
-                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                             placeholder="Tu segundo nombre (opcional)"
                             value="{{ old('segundo_nombre') }}"
                         >
@@ -111,7 +112,7 @@
                     </div>
 
                     <!-- Primer Apellido -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label for="primer_apellido" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Primer Apellido <span class="text-red-500">*</span>
                         </label>
@@ -120,7 +121,7 @@
                             name="primer_apellido" 
                             type="text" 
                             required 
-                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                             placeholder="Tu primer apellido"
                             value="{{ old('primer_apellido') }}"
                         >
@@ -130,7 +131,7 @@
                     </div>
 
                     <!-- Segundo Apellido -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label for="segundo_apellido" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Segundo Apellido
                         </label>
@@ -138,7 +139,7 @@
                             id="segundo_apellido" 
                             name="segundo_apellido" 
                             type="text" 
-                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                             placeholder="Tu segundo apellido (opcional)"
                             value="{{ old('segundo_apellido') }}"
                         >
@@ -148,7 +149,7 @@
                     </div>
 
                     <!-- DNI -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label for="dni" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             DNI <span class="text-red-500">*</span>
                         </label>
@@ -157,7 +158,7 @@
                             name="dni" 
                             type="text" 
                             required 
-                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                             placeholder="Número de documento"
                             value="{{ old('dni') }}"
                         >
@@ -167,7 +168,7 @@
                     </div>
 
                     <!-- Género -->
-                    <div class="space-y-2">
+                    <div class="space-y-1">
                         <label for="id_genero_fk" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Género <span class="text-red-500">*</span>
                         </label>
@@ -175,7 +176,7 @@
                             id="id_genero_fk" 
                             name="id_genero_fk" 
                             required 
-                            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                         >
                             <option value="">Selecciona tu género</option>
                             @foreach($generos as $genero)
@@ -191,10 +192,10 @@
                 </div>
 
                 <!-- Botón de envío -->
-                <div class="pt-6">
+                <div class="pt-4">
                     <button 
                         type="submit" 
-                        class="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        class="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         id="submit-btn"
                     >
                         <span class="flex items-center justify-center">
@@ -206,9 +207,31 @@
                     </button>
                 </div>
 
+                <!-- Separador o mensaje de empresa -->
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-2">¿Tu cuenta pertenece a una empresa?</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                            Si representas a una empresa, puedes completar los datos corporativos como nombre comercial, RTN y logo empresarial.
+                        </p>
+                        <a href="{{ route('cliente.configurar-empresa') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded-md text-blue-700 dark:text-blue-300 font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200 text-sm">
+                            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Configurar empresa
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Mensaje de error global -->
                 @if(session('error'))
-                    <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

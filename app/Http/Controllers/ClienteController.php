@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\ConfigurarPerfilClienteRequest;
 use App\Models\Persona;
 use App\Models\Genero;
+use App\Models\Cliente;
+use App\Models\EmpresaCliente;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\SpaHelper;
@@ -81,7 +83,15 @@ class ClienteController extends Controller
         $user = auth()->user();
         $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->with('genero')->first();
         
-        return SpaHelper::clienteView('cliente.perfil', compact('persona'));
+        // Verificar si también tiene datos de empresa
+        $cliente = Cliente::where('id_cliente_pk', $user->id_usuario_pk)->first();
+        $empresa = null;
+        
+        if ($cliente && $cliente->tipo_cliente === 'empresa') {
+            $empresa = EmpresaCliente::where('id_cliente_fk', $cliente->id_cliente_pk)->first();
+        }
+        
+        return SpaHelper::clienteView('cliente.perfil', compact('persona', 'empresa'));
     }
 
     /**
@@ -114,5 +124,164 @@ class ClienteController extends Controller
     public function solicitudes()
     {
         return SpaHelper::clienteView('cliente.solicitudes');
+    }
+
+    /**
+     * Muestra la vista de configuración de empresa.
+     */
+    public function configurarEmpresa(): View
+    {
+        return view('cliente.configurar-empresa');
+    }
+
+    /**
+     * Guarda los datos de la empresa.
+     */
+    public function configurarEmpresaStore(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'nombre_comercial' => 'required|string|max:150',
+            'razon_social' => 'nullable|string|max:150',
+            'rtn' => 'nullable|string|max:30',
+            'descripcion_empresa' => 'nullable|string|max:255',
+            'horario_atencion' => [
+                'nullable',
+                'string',
+                'max:100',
+                function ($attribute, $value, $fail) {
+                    if ($value && !$this->isValidHorarioFormat($value)) {
+                        $fail('El formato del horario no es válido. Ejemplos: "L-V 8:00-17:00", "L-S 9:00-18:00", "24 horas"');
+                    }
+                }
+            ],
+            'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $user = auth()->user();
+            
+            // Crear o actualizar cliente
+            $cliente = Cliente::firstOrCreate(
+                ['id_cliente_pk' => $user->id_usuario_pk],
+                [
+                    'tipo_cliente' => 'empresa',
+                    'estado_cliente' => 'activo',
+                    'fecha_registro' => now()
+                ]
+            );
+
+            // Para empresas, crear un registro de persona mínimo para satisfacer el middleware
+            // Usar el nombre comercial como nombre de la persona representante
+            $persona = \App\Models\Persona::firstOrCreate(
+                ['id_usuario_fk' => $user->id_usuario_pk],
+                [
+                    'primer_nombre' => $request->nombre_comercial,
+                    'primer_apellido' => 'Empresa',
+                    'dni' => $request->rtn ?: 'EMPRESA-' . $user->id_usuario_pk,
+                    'id_genero_fk' => 1, // Valor por defecto, puede ajustarse
+                ]
+            );
+
+            // Subir avatar si existe
+            $avatarPath = null;
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('avatars/empresas', 'public');
+            }
+
+            // Crear o actualizar datos de empresa
+            $empresaData = [
+                'id_cliente_fk' => $cliente->id_cliente_pk,
+                'nombre_comercial' => $request->nombre_comercial,
+                'razon_social' => $request->razon_social,
+                'rtn' => $request->rtn,
+                'descripcion_empresa' => $request->descripcion_empresa,
+                'horario_atencion' => $request->horario_atencion,
+            ];
+
+            // Solo agregar avatar si se subió uno
+            if ($avatarPath) {
+                $empresaData['avatar'] = $avatarPath;
+            }
+
+            EmpresaCliente::updateOrCreate(
+                ['id_cliente_fk' => $cliente->id_cliente_pk],
+                $empresaData
+            );
+
+            DB::commit();
+
+            return redirect()->route('cliente.perfil')
+                ->with('success', 'Datos de empresa guardados correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->withInput()
+                ->with('error', 'Error al guardar los datos de empresa: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Valida el formato del horario de atención.
+     */
+    private function isValidHorarioFormat($horario): bool
+    {
+        $horario = trim($horario);
+        
+        // Si está vacío, es válido (campo opcional)
+        if (empty($horario)) {
+            return true;
+        }
+        
+        // Patrones de validación para horarios
+        $patterns = [
+            // L-V 8:00-17:00 (rango de días con horario)
+            '/^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
+            // L-V 8:00-12:00, 14:00-18:00 (con pausa de almuerzo)
+            '/^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2},\s*\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
+            // L 8:00-17:00 (día individual)
+            '/^[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
+            // L-V 8:00-12:00, S 9:00-13:00 (días diferentes)
+            '/^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2},\s*[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
+            // 24 horas
+            '/^24\s*horas?$/i',
+            // Cerrado
+            '/^cerrado$/i'
+        ];
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $horario)) {
+                // Validación adicional de horas (0-23) y minutos (0-59)
+                if ($this->validateTimeValues($horario)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Valida que las horas y minutos estén en rangos correctos.
+     */
+    private function validateTimeValues($horario): bool
+    {
+        // Extraer todas las horas del formato HH:MM
+        preg_match_all('/\d{1,2}:\d{2}/', $horario, $matches);
+        
+        foreach ($matches[0] as $time) {
+            [$hour, $minute] = explode(':', $time);
+            $hour = (int) $hour;
+            $minute = (int) $minute;
+            
+            // Validar rango de horas (0-23) y minutos (0-59)
+            if ($hour < 0 || $hour > 23 || $minute < 0 || $minute > 59) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }

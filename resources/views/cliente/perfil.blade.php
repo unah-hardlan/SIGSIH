@@ -28,7 +28,13 @@
 
     <div class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Información Personal</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                @if($empresa)
+                    Información de la Empresa
+                @else
+                    Información Personal
+                @endif
+            </h2>
         </div>
         
         <div class="px-6 py-4">
@@ -36,43 +42,96 @@
                 <!-- Avatar y nombre principal -->
                 <div class="flex items-center space-x-6 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex-shrink-0">
-                        @if($persona->avatar_path)
+                        @if($empresa && $empresa->avatar)
+                            <img src="{{ asset('storage/' . $empresa->avatar) }}" 
+                                 alt="Logo de {{ $empresa->nombre_comercial }}" 
+                                 class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300">
+                        @elseif($persona->avatar_path)
                             <img src="{{ asset('storage/' . $persona->avatar_path) }}" 
                                  alt="Avatar de {{ $persona->primer_nombre }}" 
                                  class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300">
                         @else
                             <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-blue-200 dark:border-blue-300">
-                                <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
+                                @if($empresa)
+                                    <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                @else
+                                    <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                @endif
                             </div>
                         @endif
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                            {{ trim($persona->primer_nombre . ' ' . ($persona->segundo_nombre ?? '') . ' ' . $persona->primer_apellido . ' ' . ($persona->segundo_apellido ?? '')) }}
-                        </h3>
-                        <p class="text-gray-600 dark:text-gray-400">{{ auth()->user()->correo_electronico }}</p>
+                        @if($empresa)
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                {{ $empresa->nombre_comercial }}
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-400">{{ auth()->user()->correo_electronico }}</p>
+                            @if($empresa->razon_social)
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $empresa->razon_social }}</p>
+                            @endif
+                        @else
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                {{ trim($persona->primer_nombre . ' ' . ($persona->segundo_nombre ?? '') . ' ' . $persona->primer_apellido . ' ' . ($persona->segundo_apellido ?? '')) }}
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-400">{{ auth()->user()->correo_electronico }}</p>
+                        @endif
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            DNI
-                        </label>
-                        <p class="text-sm text-gray-900 dark:text-gray-100">{{ $persona->dni }}</p>
+                @if($empresa)
+                    <!-- Información de Empresa -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @if($empresa->rtn)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                RTN
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ $empresa->rtn }}</p>
+                        </div>
+                        @endif
+
+                        @if($empresa->horario_atencion)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Horario de Atención
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ $empresa->horario_atencion }}</p>
+                        </div>
+                        @endif
                     </div>
 
-                        @if($persona->genero)
-                    <div>
+                    @if($empresa->descripcion_empresa)
+                    <div class="mt-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Género
+                            Descripción de la Empresa
                         </label>
-                        <p class="text-sm text-gray-900 dark:text-gray-100">{{ $persona->genero->genero }}</p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">{{ $empresa->descripcion_empresa }}</p>
                     </div>
                     @endif
-                </div>
+                @else
+                    <!-- Información Personal -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                DNI
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ $persona->dni }}</p>
+                        </div>
+
+                        @if($persona->genero)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Género
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ $persona->genero->genero }}</p>
+                        </div>
+                        @endif
+                    </div>
+                @endif
 
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Mi Actividad</h3>
