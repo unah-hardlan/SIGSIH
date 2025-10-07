@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" x-data="passwordRecoverPage()" x-init="init()" :class="{ 'dark': isDark }">
+<html lang="es" x-data="passwordRecoverPage()" x-init="init()">
 
 <head>
     <meta charset="UTF-8" />
@@ -14,32 +14,27 @@
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
 </head>
 
-<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-    <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
-        <div class="fixed top-4 right-4">
-            <label @click.prevent="toggleTheme()" class="switch cursor-pointer rounded-full border border-gray-300 dark:border-gray-500">
-                <input type="checkbox" class="hidden" :checked="isDark">
-                <span class="slider"></span>
-            </label>
-        </div>
+<body class="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-800">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
+        <!-- Dark mode toggle removed -->
 
         <div class="w-full max-w-sm mx-auto">
-            <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-colors shadow-lg">
+            <div class="bg-white rounded-lg border border-gray-600 p-4 transition-colors shadow-lg">
                 <div class="text-center mb-4">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-500 transition-colors">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 border-2 border-white transition-colors">
                         <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo" style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
                     </div>
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-boldy">
+                    <h2 class="text-lg font-bold text-gray-800 serif-boldy">
                         Encuentra tu cuenta
                     </h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 nunito-regular">
+                    <p class="text-sm text-gray-600 mt-1 nunito-regular">
                         Ingresa tu correo electrónico o nombre de usuario para buscar tu cuenta.
                     </p>
                     <div x-show="statusMessage" x-transition
                         class="mt-3 text-xs font-semibold px-3 py-2 rounded-md"
                         :class="statusType === 'success'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'">
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-red-100 text-red-800'">
                         <span x-text="statusMessage"></span>
                     </div>
                 </div>
@@ -47,13 +42,13 @@
                 <form @submit.prevent="handleRecover" autocomplete="off">
                     <div class="mb-4">
                         <input type="text" name="recoverIdentifier" x-model="recoverIdentifier" required
-                            class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 focus:border-transparent transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                            class="w-full px-3 py-2 rounded border border-gray-600 focus:border-gray-600 transition-colors bg-white text-gray-800 nunito-regular text-xs"
                             placeholder="Correo electrónico o nombre de usuario" />
                     </div>
 
                     <div class="flex gap-2">
                         <a href="{{ route('login') }}"
-                            class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 py-2 rounded font-semibold hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors nunito-regular text-sm text-center">
+                            class="flex-1 bg-gray-300 text-gray-700 py-2 rounded font-semibold hover:bg-gray-400 transition-colors nunito-regular text-sm text-center">
                             Cancelar
                         </a>
                         <button type="submit"
@@ -82,17 +77,9 @@
             return {
                 recoverIdentifier: '',
                 loading: false,
-                isDark: false,
                 statusMessage: '',
                 statusType: 'info',
-                init() {
-                    // Tema almacenado
-                    this.isDark = localStorage.getItem('theme') === 'dark';
-                },
-                toggleTheme() {
-                    this.isDark = !this.isDark;
-                    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
-                },
+                init() {},
                 async handleRecover() {
                     if (!this.recoverIdentifier) return;
 

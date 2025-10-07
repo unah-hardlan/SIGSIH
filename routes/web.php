@@ -23,7 +23,6 @@ use Illuminate\Http\Request;
 // Auth routes (públicas)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-
 // Página bonita de verificación de correo (ES) y alias en EN para compatibilidad
 Route::get('/verificar-correo', [AuthController::class, 'verifyEmailPage'])->name('verify.email.page');
 Route::get('/verify-email', function (\Illuminate\Http\Request $request) {
@@ -272,6 +271,10 @@ Route::prefix('cliente')
         // Rutas para configuración inicial del perfil (sin middleware de verificación de perfil)
         Route::get('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfil'])->name('configurar-perfil');
         Route::post('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfilStore'])->name('configurar-perfil.store');
+        
+        // Rutas para configuración de empresa
+        Route::get('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresa'])->name('configurar-empresa');
+        Route::post('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresaStore'])->name('configurar-empresa.store');
         
         // Rutas que requieren perfil completo
         Route::middleware(['check.cliente.perfil'])->group(function () {

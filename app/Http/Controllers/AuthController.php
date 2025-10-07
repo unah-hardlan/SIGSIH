@@ -421,10 +421,7 @@ class AuthController extends Controller
             'AUTH.PASSWORD_RESET.COOLDOWN_MINUTES',
             'auth.password_reset.cooldown_minutes'
         ], 5);
-        $maxPerDay = $this->getParametroInt([
-            'AUTH.PASSWORD_RESET.MAX_PER_DAY',
-            'auth.password_reset.max_per_day'
-        ], 5);
+        $maxPerDay = 0; // Elimina el límite diario
         $expireMinutes = $this->getParametroInt([
             'AUTH.PASSWORD_RESET.EXPIRE_MINUTES',
             'auth.password_reset.expire_minutes'
@@ -435,7 +432,9 @@ class AuthController extends Controller
         }
 
         if ($cooldownMinutes > 0) {
-            config(['auth.passwords.users.throttle' => max(1, $cooldownMinutes) * 60]);
+            // Limita el cooldown a 25 minutos máximo
+            $cooldownMinutes = min(25, max(1, $cooldownMinutes));
+            config(['auth.passwords.users.throttle' => $cooldownMinutes * 60]);
         }
 
         if ($cooldownMinutes > 0) {
@@ -449,9 +448,14 @@ class AuthController extends Controller
                 if (now()->lt($nextAllowed)) {
                     $secondsRemaining = now()->diffInSeconds($nextAllowed);
                     $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
-
+                    $horas = intdiv($minutesRemaining, 60);
+                    $minutos = $minutesRemaining % 60;
+                    $tiempo = '';
+                    if ($horas > 0) $tiempo .= $horas . ' hora' . ($horas > 1 ? 's' : '');
+                    if ($horas > 0 && $minutos > 0) $tiempo .= ' y ';
+                    if ($minutos > 0) $tiempo .= $minutos . ' minuto' . ($minutos > 1 ? 's' : '');
                     return response()->json([
-                        'message' => "Debes esperar {$minutesRemaining} minuto(s) antes de solicitar otro correo de recuperación."
+                        'message' => "Debes esperar {$tiempo} antes de solicitar otro correo de recuperación."
                     ], 429);
                 }
             }
@@ -461,16 +465,7 @@ class AuthController extends Controller
         $rateLimiterTtl = 60 * 60 * 24;
 
         if ($maxPerDay > 0) {
-            $rateLimiterKey = 'password-reset:max-per-day:' . sha1($normalizedEmail);
-
-            if (RateLimiter::tooManyAttempts($rateLimiterKey, $maxPerDay)) {
-                $secondsRemaining = RateLimiter::availableIn($rateLimiterKey);
-                $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
-
-                return response()->json([
-                    'message' => "Alcanzaste el límite de solicitudes de recuperación. Intenta nuevamente en {$minutesRemaining} minuto(s)."
-                ], 429);
-            }
+            // Sin límite diario
         }
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
         $broker = Password::broker();
