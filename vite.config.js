@@ -20,6 +20,7 @@ export default defineConfig({
                 "resources/js/toast.js",
                 "resources/js/tabla-responsive.js",
                 "resources/js/spa-cliente.js",
+                "resources/js/cliente/perfil.js",
             ],
             refresh: true,
         }),

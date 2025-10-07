@@ -3,6 +3,7 @@
 
 import "./bootstrap"; // axios / window helpers
 import "./toast"; // notificaciones si las usas en cliente
+import "./cliente/perfil"; // lógica de perfil (modal editar)
 // Puedes añadir otros módulos específicos del cliente aquí (ej: './perfil', './dashboard-cliente')
 
 // FontAwesome: cargar solo el subconjunto usado en el portal cliente

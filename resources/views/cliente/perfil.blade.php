@@ -1,12 +1,17 @@
 @extends('cliente.layouts.app')
 @section('title','Perfil - Cliente')
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-4xl mx-auto space-y-6" x-data="perfilData($el)" data-update-url="{{ route('cliente.perfil.update') }}">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Mi Perfil</h1>
-        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+        @if($persona && !$empresa)
+        <button @click="openEditModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
             Editar Perfil
         </button>
+        @endif
     </div>
 
     @if(session('success'))
@@ -251,5 +256,180 @@
             @endif
         </div>
     </div>
+
+    <!-- Modal de Edición de Perfil Personal -->
+    @if($persona && !$empresa)
+    <template x-if="showEditModal">
+    <div x-cloak
+        class="fixed inset-0 z-[12000] overflow-y-auto overscroll-none" 
+        x-transition.opacity.duration.250ms
+        @keydown.escape.window="closeEditModal()"
+        @click.self="closeEditModal()"
+        role="dialog" aria-modal="true">
+        <!-- Overlay mejorado -->
+        <div class="fixed inset-0 bg-black/70 transition-opacity" @click="closeEditModal()" aria-hidden="true"></div>
+        <!-- Contenedor modal -->
+    <div class="modal-content relative flex min-h-full items-center justify-center p-4" @click.self="closeEditModal()">
+            <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 @click.stop>
+                
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Editar Información Personal
+                    </h3>
+                    <button @click="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Formulario -->
+                <form @submit.prevent="updateProfile()" class="p-6 space-y-6">
+                    <!-- Avatar -->
+                    <div class="flex items-center space-x-6">
+                        <div class="flex-shrink-0">
+                            <div class="relative">
+                                @if($persona->avatar_path)
+                                    <img src="{{ asset('storage/' . $persona->avatar_path) }}" 
+                                         alt="Avatar actual" 
+                                         class="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600">
+                                @else
+                                    <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-gray-300 dark:border-gray-600">
+                                        <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                @endif
+                                <label class="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-1 cursor-pointer shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <input type="file" x-ref="avatarInput" @change="handleAvatarChange($event)" accept="image/*" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Foto de perfil</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">JPG, PNG o GIF. Máximo 2MB.</p>
+                        </div>
+                    </div>
+
+                    <!-- Nombres -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Primer Nombre *
+                            </label>
+                            <input type="text" x-model="formData.primer_nombre" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Segundo Nombre
+                            </label>
+                            <input type="text" x-model="formData.segundo_nombre"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                    </div>
+
+                    <!-- Apellidos -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Primer Apellido *
+                            </label>
+                            <input type="text" x-model="formData.primer_apellido" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Segundo Apellido
+                            </label>
+                            <input type="text" x-model="formData.segundo_apellido"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                    </div>
+
+                    <!-- DNI y Género -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                DNI *
+                            </label>
+                            <input type="text" x-model="formData.dni" required maxlength="15"
+                                   placeholder="0000-0000-00000"
+                                   @input="formatDNI($event)"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Género
+                            </label>
+                            <select x-model="formData.id_genero_fk"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                <option value="">Seleccionar género</option>
+                                @foreach($generos as $genero)
+                                    <option value="{{ $genero->id_genero_pk }}">{{ $genero->genero }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" @click="closeEditModal()" 
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
+                            Cancelar
+                        </button>
+                        <button type="submit" :disabled="loading"
+                                class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                            <span x-show="!loading">Guardar Cambios</span>
+                            <span x-show="loading" class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Guardando...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </template>
+    @endif
 </div>
+
+@php
+    $personaData = $persona ? [
+        'primer_nombre' => $persona->primer_nombre ?? '',
+        'segundo_nombre' => $persona->segundo_nombre ?? '',
+        'primer_apellido' => $persona->primer_apellido ?? '',
+        'segundo_apellido' => $persona->segundo_apellido ?? '',
+        'dni' => $persona->dni ?? '',
+        'id_genero_fk' => $persona->id_genero_fk ?? ''
+    ] : [
+        'primer_nombre' => '',
+        'segundo_nombre' => '',
+        'primer_apellido' => '',
+        'segundo_apellido' => '',
+        'dni' => '',
+        'id_genero_fk' => ''
+    ];
+@endphp
+
+<!-- Alpine.js bootstrap JSON -->
+<script type="application/json" id="persona-json">@json($personaData)</script>
+
+
 @endsection
