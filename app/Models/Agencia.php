@@ -22,6 +22,6 @@ class Agencia extends Model
     // Relación con Dirección
     public function direccion()
     {
-        return $this->belongsTo(Direccion::class, 'id_direccion_fk', 'id_direccion_pk');
+        return $this->hasOne(Direccion::class, 'agencia_id', 'id_agencias_pk');
     }
 }

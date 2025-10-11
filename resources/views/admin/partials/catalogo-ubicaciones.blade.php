@@ -36,6 +36,9 @@
     codigo_postal: '',
     referencia: '',
     ciudad_direccion: '',
+    agencias: [],
+    loadingAgencias: false,
+    agencia_direccion: '',
     async fetchPaises() {
         await window.paisesApiHandlers.fetchPaises(this);
     },
@@ -75,6 +78,9 @@
     async fetchDirecciones() {
         await window.paisesApiHandlers.fetchDirecciones(this);
     },
+    async fetchAgencias() {
+        await window.paisesApiHandlers.fetchAgencias(this);
+    },
     async submitDireccion() {
         await window.paisesApiHandlers.submitDireccion(this);
     },
@@ -109,7 +115,7 @@
         }
     }
 }"
-x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()"
+x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones(); fetchAgencias()"
 @keydown.escape.window="
     isPaisModalOpen = false;
     isDepartamentoModalOpen = false;
@@ -203,7 +209,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                             <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
-                                            <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: direccion.direccion_completa}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                            <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa} (Agencia: ${direccion.agencia ? direccion.agencia.nombre_agencia : 'Sin agencia'})`}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -509,6 +515,15 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
+                <label for="agencia_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Agencia (Opcional)</label>
+                <select id="agencia_direccion" name="agencia_direccion" x-model="agencia_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Sin agencia</option>
+                    <template x-for="agencia in agencias" :key="agencia.id_agencias_pk">
+                        <option :value="agencia.id_agencias_pk" x-text="agencia.nombre_agencia"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
                 <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="">Selecciona una ciudad</option>
@@ -621,6 +636,15 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
             <div>
                 <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
                 <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_agencia_direccion" class="block text-sm font-medium text-gray-700">Agencia (Opcional)</label>
+                <select id="edit_agencia_direccion" name="edit_agencia_direccion" x-model="itemToEdit.agencia_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <option value="">Sin agencia</option>
+                    <template x-for="agencia in agencias" :key="agencia.id_agencias_pk">
+                        <option :value="agencia.id_agencias_pk" x-text="agencia.nombre_agencia"></option>
+                    </template>
+                </select>
             </div>
             <div>
                 <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>

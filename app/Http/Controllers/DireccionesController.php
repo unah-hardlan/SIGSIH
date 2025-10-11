@@ -49,7 +49,8 @@ class DireccionesController extends Controller
             'numero' => 'required|string|max:20',
             'colonia' => 'required|string|max:100',
             'codigo_postal' => 'nullable|string|max:10',
-            'referencia' => 'nullable|string'
+            'referencia' => 'nullable|string',
+            'agencia_id' => 'nullable|exists:tbl_agencias,id_agencias_pk'
         ]);
 
         $direccion = Direccion::create($validated);
@@ -102,7 +103,8 @@ class DireccionesController extends Controller
             'numero' => 'sometimes|required|string|max:20',
             'colonia' => 'sometimes|required|string|max:100',
             'codigo_postal' => 'nullable|string|max:10',
-            'referencia' => 'nullable|string'
+            'referencia' => 'nullable|string',
+            'agencia_id' => 'nullable|exists:tbl_agencias,id_agencias_pk'
         ]);
 
         $direccion->update($validated);

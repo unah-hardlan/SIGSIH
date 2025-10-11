@@ -568,6 +568,33 @@ window.paisesApiHandlers = {
     },
 
     /**
+     * Fetches the list of agencies from the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async fetchAgencias(component) {
+        component.loadingAgencias = true;
+        try {
+            const response = await fetch("/api/agencias", {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            component.agencias = Array.isArray(data?.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+        } catch (error) {
+            console.error("Error fetching agencias:", error);
+            window.showToast &&
+                window.showToast("Error al cargar agencias", "error");
+        } finally {
+            component.loadingAgencias = false;
+        }
+    },
+
+    /**
      * Submits a new address to the API.
      * @param {object} component - The Alpine.js component's `this` context.
      */
@@ -609,6 +636,7 @@ window.paisesApiHandlers = {
                 codigo_postal: component.codigo_postal.trim(),
                 referencia: component.referencia.trim(),
                 id_ciudad_fk: ciudadId,
+                agencia_id: component.agencia_direccion || null,
             };
             const response = await fetch("/api/direcciones", {
                 method: "POST",
@@ -629,6 +657,7 @@ window.paisesApiHandlers = {
             component.codigo_postal = "";
             component.referencia = "";
             component.ciudad_direccion = "";
+            component.agencia_direccion = "";
             component.isDireccionModalOpen = false;
             await this.fetchDirecciones(component);
         } catch (error) {
@@ -682,6 +711,7 @@ window.paisesApiHandlers = {
                 codigo_postal: component.itemToEdit.codigo_postal.trim(),
                 referencia: component.itemToEdit.referencia.trim(),
                 id_ciudad_fk: ciudadId,
+                agencia_id: component.itemToEdit.agencia_id || null,
             };
             const response = await fetch(
                 `/api/direcciones/${component.itemToEdit.id}`,

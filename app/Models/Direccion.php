@@ -19,7 +19,8 @@ class Direccion extends Model
         'numero',
         'colonia',
         'codigo_postal',
-        'referencia'
+        'referencia',
+        'agencia_id'
     ];
 
     // Relación con Ciudad
@@ -31,7 +32,7 @@ class Direccion extends Model
     // Relación con Agencia
     public function agencia()
     {
-        return $this->hasOne(Agencia::class, 'id_direccion_fk', 'id_direccion_pk');
+        return $this->belongsTo(Agencia::class, 'agencia_id', 'id_agencias_pk');
     }
 
     // Accessor para dirección completa
