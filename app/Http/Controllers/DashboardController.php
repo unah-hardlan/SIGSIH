@@ -16,7 +16,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -238,62 +237,5 @@ class DashboardController extends Controller
             'labels' => $labels,
             'data' => $data,
         ]);
-    }
-
-    /**
-     * Obtiene las últimas actividades de la bitácora para mostrar en el dashboard
-     * 
-     * FILTRO IMPORTANTE: Solo incluye actividades realizadas por usuarios ADMINISTRADORES.
-     * Se excluyen completamente las actividades realizadas por usuarios con roles de cliente.
-     * 
-     * Roles considerados como administradores: admin, administrador, superadmin, soporte, manager
-     */
-    public function actividadesRecientes(): JsonResponse
-    {
-        try {
-            // Obtener IDs de roles administrativos (case-insensitive)
-            // Nota: Los roles de "técnico" y "cliente" están excluidos intencionalmente
-            $adminRoleNames = ['admin', 'administrador', 'superadmin', 'soporte', 'manager'];
-            $adminRoles = \App\Models\Rol::where(function($query) use ($adminRoleNames) {
-                foreach ($adminRoleNames as $roleName) {
-                    $query->orWhereRaw('LOWER(rol) = ?', [strtolower($roleName)]);
-                }
-            })->pluck('id_rol_pk')->toArray();
-
-            // Si no se encontraron roles administrativos, devolver array vacío
-            if (empty($adminRoles)) {
-                return response()->json([]);
-            }
-
-            $actividades = Bitacora::query()
-                ->with(['usuario.rol', 'objeto'])
-                ->whereHas('usuario', function ($query) use ($adminRoles) {
-                    // FILTRO PRINCIPAL: Solo usuarios con roles administrativos
-                    $query->whereIn('id_rol_fk', $adminRoles);
-                })
-                ->whereNotNull('id_usuario_fk') // Asegurar que tiene usuario asociado
-                ->orderByDesc('fecha_evento')
-                ->limit(5)
-                ->get()
-                ->map(function ($bitacora) {
-                    return [
-                        'id' => $bitacora->id_bitacora_pk,
-                        'usuario' => $bitacora->usuario->usuario ?? 'Sistema',
-                        'accion' => $bitacora->accion,
-                        'modulo' => $bitacora->objeto->nombre_objeto ?? 'Sin módulo',
-                        'fecha_hora' => $bitacora->fecha_evento ? $bitacora->fecha_evento->format('d/m/Y H:i') : '',
-                        'descripcion' => $bitacora->descripcion ?? '',
-                        'rol_usuario' => $bitacora->usuario->rol->rol ?? 'Sin rol',
-                    ];
-                });
-
-            return response()->json($actividades);
-        } catch (\Throwable $e) {
-            Log::error('Error en actividadesRecientes: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'Error al obtener actividades recientes',
-                'message' => $e->getMessage()
-            ], 500);
-        }
     }
 }
