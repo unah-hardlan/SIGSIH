@@ -28,6 +28,12 @@ class Direccion extends Model
         return $this->belongsTo(Ciudad::class, 'id_ciudad_fk', 'id_ciudad_pk');
     }
 
+    // Relación con Agencia
+    public function agencia()
+    {
+        return $this->hasOne(Agencia::class, 'id_direccion_fk', 'id_direccion_pk');
+    }
+
     // Accessor para dirección completa
     public function getDireccionCompletaAttribute()
     {

@@ -14,7 +14,7 @@ class DireccionesController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Direccion::with(['ciudad.departamento.pais']);
+        $query = Direccion::with(['ciudad.departamento.pais', 'agencia']);
 
         // Filtro por ciudad
         if ($request->has('id_ciudad_fk')) {
@@ -53,7 +53,7 @@ class DireccionesController extends Controller
         ]);
 
         $direccion = Direccion::create($validated);
-        $direccion->load(['ciudad.departamento.pais']);
+        $direccion->load(['ciudad.departamento.pais', 'agencia']);
 
         return response()->json([
             'success' => true,
@@ -67,7 +67,7 @@ class DireccionesController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $direccion = Direccion::with(['ciudad.departamento.pais'])->find($id);
+        $direccion = Direccion::with(['ciudad.departamento.pais', 'agencia'])->find($id);
 
         if (!$direccion) {
             return response()->json([
@@ -106,7 +106,7 @@ class DireccionesController extends Controller
         ]);
 
         $direccion->update($validated);
-        $direccion->load(['ciudad.departamento.pais']);
+        $direccion->load(['ciudad.departamento.pais', 'agencia']);
 
         return response()->json([
             'success' => true,

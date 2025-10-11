@@ -167,6 +167,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                             <tr>
                                 <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Agencia</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Colonia</th>
@@ -179,17 +180,18 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             <template x-if="loadingDirecciones">
                                 <tr>
-                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                    <td colspan="9" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
                                 </tr>
                             </template>
                             <template x-if="!loadingDirecciones && direcciones.length === 0">
                                 <tr>
-                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
+                                    <td colspan="9" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
                                 </tr>
                             </template>
                             <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
                                 <tr class="nunito-regular">
                                     <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.id_direccion_pk"></td> -->
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.colonia"></td>
