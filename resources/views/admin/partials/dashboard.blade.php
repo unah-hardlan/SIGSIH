@@ -366,55 +366,102 @@
             </div>
             
             <!-- Tabla de actividades -->
-            <div x-show="!loading && !error" class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead>
-                        <tr class="bg-slate-50 dark:bg-slate-900/20 text-slate-800 dark:text-slate-200">
-                            <th class="py-3 px-4 text-left nunito-bold">Usuario</th>
-                            <th class="py-3 px-4 text-left nunito-bold">Acción</th>
-                            <th class="py-3 px-4 text-left nunito-bold">Módulo</th>
-                            <th class="py-3 px-4 text-left nunito-bold">Fecha / Hora</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Si no hay actividades -->
+            <div x-show="!loading && !error" class="p-4">
+                <x-responsive-table class="text-sm">
+                    <x-slot name="table">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-900/20 text-slate-800 dark:text-slate-200">
+                                    <th class="py-3 px-4 text-left nunito-bold">Usuario</th>
+                                    <th class="py-3 px-4 text-left nunito-bold">Acción</th>
+                                    <th class="py-3 px-4 text-left nunito-bold">Módulo</th>
+                                    <th class="py-3 px-4 text-left nunito-bold">Fecha / Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Si no hay actividades -->
+                                <template x-if="actividades.length === 0">
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                                            <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                            No hay actividades recientes registradas
+                                        </td>
+                                    </tr>
+                                </template>
+
+                                <!-- Lista de actividades -->
+                                <template x-if="actividades.length > 0">
+                                    <template x-for="(actividad, index) in actividades" :key="actividad.id">
+                                        <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center">
+                                                    <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2"
+                                                         :class="getColorUsuario(index)">
+                                                        <i class="fas fa-user text-xs"></i>
+                                                    </div>
+                                                    <div class="flex flex-col">
+                                                        <span class="nunito-regular" x-text="actividad.usuario"></span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400" x-text="actividad.rol_usuario || ''" x-show="actividad.rol_usuario"></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular"
+                                                      :class="getColorAccion(actividad.accion)">
+                                                    <i :class="getIconoAccion(actividad.accion) + ' mr-1'"></i>
+                                                    <span x-text="actividad.accion"></span>
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400" x-text="actividad.modulo"></td>
+                                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400" x-text="actividad.fecha_hora"></td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </x-slot>
+
+                    <x-slot name="cards">
                         <template x-if="actividades.length === 0">
-                            <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
-                                    <i class="fas fa-inbox text-2xl mb-2 block"></i>
-                                    No hay actividades recientes registradas
-                                </td>
-                            </tr>
+                            <div class="bg-white dark:bg-slate-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-slate-500 dark:text-slate-400">
+                                <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                No hay actividades recientes registradas
+                            </div>
                         </template>
-                        
-                        <!-- Lista de actividades -->
-                        <template x-for="(actividad, index) in actividades" :key="actividad.id">
-                            <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2" 
+
+                        <template x-if="actividades.length > 0">
+                            <template x-for="(actividad, index) in actividades" :key="actividad.id">
+                                <div class="bg-white dark:bg-slate-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center"
                                              :class="getColorUsuario(index)">
-                                            <i class="fas fa-user text-xs"></i>
+                                            <i class="fas fa-user text-sm"></i>
                                         </div>
-                                        <div class="flex flex-col">
-                                            <span class="nunito-regular" x-text="actividad.usuario"></span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400" x-text="actividad.rol_usuario || ''" x-show="actividad.rol_usuario"></span>
+                                        <div>
+                                            <h4 class="text-base nunito-bold text-slate-800 dark:text-slate-100" x-text="actividad.usuario"></h4>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="actividad.rol_usuario || ''" x-show="actividad.rol_usuario"></p>
                                         </div>
                                     </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular" 
-                                          :class="getColorAccion(actividad.accion)">
-                                        <i :class="getIconoAccion(actividad.accion) + ' mr-1'"></i>
-                                        <span x-text="actividad.accion"></span>
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400" x-text="actividad.modulo"></td>
-                                <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400" x-text="actividad.fecha_hora"></td>
-                            </tr>
+                                    <div>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular"
+                                              :class="getColorAccion(actividad.accion)">
+                                            <i :class="getIconoAccion(actividad.accion) + ' mr-1'"></i>
+                                            <span x-text="actividad.accion"></span>
+                                        </span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                                        <span class="block nunito-bold text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Módulo</span>
+                                        <span class="nunito-regular" x-text="actividad.modulo"></span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                                        <span class="block nunito-bold text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Fecha / Hora</span>
+                                        <span class="nunito-regular" x-text="actividad.fecha_hora"></span>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
-                    </tbody>
-                </table>
+                    </x-slot>
+                </x-responsive-table>
             </div>
         </div>
     </div>
