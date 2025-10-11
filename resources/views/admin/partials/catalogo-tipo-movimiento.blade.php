@@ -1,4 +1,4 @@
-<script src="{{ asset('js/tipo-movimientos.js') }}"></script>
+@vite(['resources/js/tipo-movimientos.js'])
 
 <div x-data="{
     isTipoMovimientoModalOpen: false,
