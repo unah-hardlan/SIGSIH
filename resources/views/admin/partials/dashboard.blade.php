@@ -45,7 +45,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             
             <!-- Card 1: Total Usuarios -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-400 dark:border-blue-700 border-l-4 border-l-blue-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-blue-500 dark:border-blue-700 border-l-4 border-l-blue-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
@@ -63,7 +63,7 @@
             </div>
 
             <!-- Card 2: Empresas Activas -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-green-300 dark:border-green-700 border-l-4 border-l-green-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-green-500 dark:border-green-700 border-l-4 border-l-green-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
@@ -81,7 +81,7 @@
             </div>
 
             <!-- Card 3: Órdenes de Servicio -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-purple-400 dark:border-purple-700 border-l-4 border-l-purple-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-purple-500 dark:border-purple-700 border-l-4 border-l-purple-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
@@ -99,7 +99,7 @@
             </div>
 
             <!-- Card 4: Cotizaciones -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-blue-300 dark:border-indigo-700 border-l-4 border-l-indigo-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-indigo-500 dark:border-indigo-700 border-l-4 border-l-indigo-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
@@ -117,7 +117,7 @@
             </div>
 
             <!-- Card 5: Proyectos -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-teal-300 dark:border-teal-700 border-l-4 border-l-teal-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-teal-00 dark:border-teal-700 border-l-4 border-l-teal-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-2">
@@ -141,7 +141,7 @@
             </div>
 
             <!-- Card 6: Tickets -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-orange-300 dark:border-orange-700 border-l-4 border-l-orange-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-orange-300 dark:border-orange-700 border-l-4 border-l-orange-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-2">
@@ -171,7 +171,7 @@
             </div>
 
             <!-- Card 7: Inventario -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-emerald-300 dark:border-emerald-700 border-l-4 border-l-emerald-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-emerald-300 dark:border-emerald-700 border-l-4 border-l-emerald-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
