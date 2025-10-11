@@ -166,59 +166,110 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                     </button>
                 </div>
             </div>
-            <div class="p-6 overflow-x-auto">
-                <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
-                    <x-slot name="filtros"></x-slot>
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Agencia</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden md:table-cell">Colonia</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden md:table-cell">Referencia</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                                <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <template x-if="loadingDirecciones">
+            <div class="p-6">
+                <x-responsive-table>
+                    <x-slot name="table">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <td colspan="9" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Agencia</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Colonia</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Referencia</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
-                            </template>
-                            <template x-if="!loadingDirecciones && direcciones.length === 0">
-                                <tr>
-                                    <td colspan="9" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
-                                </tr>
-                            </template>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <template x-if="loadingDirecciones">
+                                    <tr>
+                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingDirecciones && direcciones.length === 0">
+                                    <tr>
+                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingDirecciones && direcciones.length > 0">
+                                    <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
+                                        <tr class="nunito-regular">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white hidden lg:table-cell" x-text="direccion.colonia"></td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.codigo_postal"></td>
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white hidden lg:table-cell" x-text="direccion.referencia"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex justify-center gap-2">
+                                                    <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
+                                                    <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa} (Agencia: ${direccion.agencia ? direccion.agencia.nombre_agencia : 'Sin agencia'})`}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                        <i class="fas fa-trash text-sm"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </x-slot>
+
+                    <x-slot name="cards">
+                        <template x-if="loadingDirecciones">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando direcciones...
+                            </div>
+                        </template>
+                        <template x-if="!loadingDirecciones && direcciones.length === 0">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                No hay direcciones registradas
+                            </div>
+                        </template>
+                        <template x-if="!loadingDirecciones && direcciones.length > 0">
                             <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
-                                <tr class="nunito-regular">
-                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.id_direccion_pk"></td> -->
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white hidden md:table-cell" x-text="direccion.colonia"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.codigo_postal"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white hidden md:table-cell" x-text="direccion.referencia"></td>
-                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-2">
-                                            <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                <i class="fas fa-edit text-sm"></i>
-                                            </button>
-                                            <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa} (Agencia: ${direccion.agencia ? direccion.agencia.nombre_agencia : 'Sin agencia'})`}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                <i class="fas fa-trash text-sm"></i>
-                                            </button>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                    <div class="space-y-1">
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-bold">Agencia</p>
+                                        <p class="text-base text-gray-900 dark:text-white nunito-regular" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></p>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-bold">Dirección</p>
+                                        <p class="text-base text-gray-900 dark:text-white nunito-regular" x-text="direccion.calle + ' ' + direccion.numero"></p>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300" x-text="direccion.colonia"></p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <div>
+                                            <span class="block nunito-bold">Código Postal</span>
+                                            <span class="nunito-regular" x-text="direccion.codigo_postal"></span>
                                         </div>
-                                    </td>
-                                </tr>
+                                        <div>
+                                            <span class="block nunito-bold">Ciudad</span>
+                                            <span class="nunito-regular" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></span>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300">
+                                        <span class="block nunito-bold">Referencia</span>
+                                        <span class="nunito-regular" x-text="direccion.referencia"></span>
+                                    </div>
+                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa} (Agencia: ${direccion.agencia ? direccion.agencia.nombre_agencia : 'Sin agencia'})`}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
                             </template>
-                        </tbody>
-                    </table>
-                </x-admin.tabla-crud>
+                        </template>
+                    </x-slot>
+                </x-responsive-table>
             </div>
         </div>
 
@@ -245,46 +296,75 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </div>
             </div>
             <div class="p-6">
-                <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
-                    <x-slot name="filtros"></x-slot>
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <template x-if="loadingPaises">
+                <x-responsive-table>
+                    <x-slot name="table">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando países...</td>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
-                            </template>
-                            <template x-if="!loadingPaises && paises.length === 0">
-                                <tr>
-                                    <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay países registrados</td>
-                                </tr>
-                            </template>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <template x-if="loadingPaises">
+                                    <tr>
+                                        <td colspan="2" class="px-4 py-3 text-center text-gray-500">Cargando países...</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingPaises && paises.length === 0">
+                                    <tr>
+                                        <td colspan="2" class="px-4 py-3 text-center text-gray-500">No hay países registrados</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingPaises && paises.length > 0">
+                                    <template x-for="pais in paises" :key="pais.id_pais_pk">
+                                        <tr class="nunito-regular">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex justify-center gap-2">
+                                                    <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
+                                                    <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                        <i class="fas fa-trash text-sm"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </x-slot>
+
+                    <x-slot name="cards">
+                        <template x-if="loadingPaises">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando países...
+                            </div>
+                        </template>
+                        <template x-if="!loadingPaises && paises.length === 0">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                No hay países registrados
+                            </div>
+                        </template>
+                        <template x-if="!loadingPaises && paises.length > 0">
                             <template x-for="pais in paises" :key="pais.id_pais_pk">
-                                <tr class="nunito-regular">
-                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.id_pais_pk"></td> -->
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-2">
-                                            <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                <i class="fas fa-edit text-sm"></i>
-                                            </button>
-                                            <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                <i class="fas fa-trash text-sm"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
+                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
                             </template>
-                        </tbody>
-                    </table>
-                </x-admin.tabla-crud>
+                        </template>
+                    </x-slot>
+                </x-responsive-table>
             </div>
         </div>
 
@@ -309,48 +389,80 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </div>
             </div>
             <div class="p-6">
-                <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
-                    <x-slot name="filtros"></x-slot>
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
-                                <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <template x-if="loadingDepartamentos">
+                <x-responsive-table>
+                    <x-slot name="table">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Cargando departamentos...</td>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
-                            </template>
-                            <template x-if="!loadingDepartamentos && departamentos.length === 0">
-                                <tr>
-                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">No hay departamentos registrados</td>
-                                </tr>
-                            </template>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <template x-if="loadingDepartamentos">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando departamentos...</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingDepartamentos && departamentos.length === 0">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay departamentos registrados</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingDepartamentos && departamentos.length > 0">
+                                    <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                                        <tr class="nunito-regular">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex justify-center gap-2">
+                                                    <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
+                                                    <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                        <i class="fas fa-trash text-sm"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </x-slot>
+
+                    <x-slot name="cards">
+                        <template x-if="loadingDepartamentos">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando departamentos...
+                            </div>
+                        </template>
+                        <template x-if="!loadingDepartamentos && departamentos.length === 0">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                No hay departamentos registrados
+                            </div>
+                        </template>
+                        <template x-if="!loadingDepartamentos && departamentos.length > 0">
                             <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
-                                <tr class="nunito-regular">
-                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.id_departamento_pk"></td> -->
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
-                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-2">
-                                            <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                <i class="fas fa-edit text-sm"></i>
-                                            </button>
-                                            <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                <i class="fas fa-trash text-sm"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="departamento.nombre_departamento"></h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="departamento.pais?.nombre_pais || 'N/A'"></p>
+                                    </div>
+                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
                             </template>
-                        </tbody>
-                    </table>
-                </x-admin.tabla-crud>
+                        </template>
+                    </x-slot>
+                </x-responsive-table>
             </div>
         </div>
         </div>
@@ -376,48 +488,80 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </div>
             </div>
             <div class="p-6">
-                <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
-                    <x-slot name="filtros"></x-slot>
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
-                                <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <template x-if="loadingCiudades">
+                <x-responsive-table>
+                    <x-slot name="table">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Cargando ciudades...</td>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
-                            </template>
-                            <template x-if="!loadingCiudades && ciudades.length === 0">
-                                <tr>
-                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">No hay ciudades registradas</td>
-                                </tr>
-                            </template>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <template x-if="loadingCiudades">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando ciudades...</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingCiudades && ciudades.length === 0">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay ciudades registradas</td>
+                                    </tr>
+                                </template>
+                                <template x-if="!loadingCiudades && ciudades.length > 0">
+                                    <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                                        <tr class="nunito-regular">
+                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex justify-center gap-2">
+                                                    <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
+                                                    <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                        <i class="fas fa-trash text-sm"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </x-slot>
+
+                    <x-slot name="cards">
+                        <template x-if="loadingCiudades">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando ciudades...
+                            </div>
+                        </template>
+                        <template x-if="!loadingCiudades && ciudades.length === 0">
+                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                No hay ciudades registradas
+                            </div>
+                        </template>
+                        <template x-if="!loadingCiudades && ciudades.length > 0">
                             <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
-                                <tr class="nunito-regular">
-                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.id_ciudad_pk"></td> -->
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
-                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-2">
-                                            <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                <i class="fas fa-edit text-sm"></i>
-                                            </button>
-                                            <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                <i class="fas fa-trash text-sm"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="ciudad.nombre_ciudad"></h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></p>
+                                    </div>
+                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
                             </template>
-                        </tbody>
-                    </table>
-                </x-admin.tabla-crud>
+                        </template>
+                    </x-slot>
+                </x-responsive-table>
             </div>
         </div>
         </div>
