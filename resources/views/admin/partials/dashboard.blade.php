@@ -42,8 +42,7 @@
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
     </div>    <!-- Dashboard KPIs -->
     <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6"> <!-- Fila 1: Usuarios, Empresas, Órdenes -->
             <!-- Card 1: Total Usuarios -->
             <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-blue-500 dark:border-blue-700 border-l-4 border-l-blue-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -97,7 +96,9 @@
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6"> <!-- Fila 2: Cotizaciones, Inventario, Reportes -->
             <!-- Card 4: Cotizaciones -->
             <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-indigo-500 dark:border-indigo-700 border-l-4 border-l-indigo-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -116,6 +117,44 @@
                 </div>
             </div>
 
+            <!-- Card 7: Inventario -->
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-emerald-300 dark:border-emerald-700 border-l-4 border-l-emerald-500 overflow-hidden">
+                <div class="p-5 lg:p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Inventario</h3>
+                            <p class="text-2xl md:text-xl lg:text-3xl nunito-bold text-emerald-600 dark:text-emerald-400 truncate" x-text="fmt(inventarioProductos)">–</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total productos</p>
+                        </div>
+                        <div class="flex-shrink-0 ml-4">
+                            <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                                <i class="fas fa-boxes text-emerald-600 dark:text-emerald-400 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 8: Reportes -->
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-pink-500 dark:border-pink-700 border-l-4 border-l-pink-500 overflow-hidden">
+                <div class="p-5 lg:p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Reportes</h3>
+                            <p class="text-2xl md:text-xl lg:text-3xl nunito-bold text-pink-600 dark:text-pink-400 truncate" x-text="fmt(reportesGenerados)">–</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Generados</p>
+                        </div>
+                        <div class="flex-shrink-0 ml-4">
+                            <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                                <i class="fas fa-chart-line text-pink-600 dark:text-pink-400 text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6"> <!-- Fila 3: Proyectos, Tickets -->
             <!-- Card 5: Proyectos -->
             <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-teal-500 dark:border-teal-700 border-l-4 border-l-teal-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -169,43 +208,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Card 7: Inventario -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-emerald-300 dark:border-emerald-700 border-l-4 border-l-emerald-500 overflow-hidden">
-                <div class="p-5 lg:p-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Inventario</h3>
-                            <p class="text-2xl md:text-xl lg:text-3xl nunito-bold text-emerald-600 dark:text-emerald-400 truncate" x-text="fmt(inventarioProductos)">–</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total productos</p>
-                        </div>
-                        <div class="flex-shrink-0 ml-4">
-                            <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                                <i class="fas fa-boxes text-emerald-600 dark:text-emerald-400 text-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 8: Reportes -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-pink-500 dark:border-pink-700 border-l-4 border-l-pink-500 overflow-hidden">
-                <div class="p-5 lg:p-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-sm nunito-regular text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Reportes</h3>
-                            <p class="text-2xl md:text-xl lg:text-3xl nunito-bold text-pink-600 dark:text-pink-400 truncate" x-text="fmt(reportesGenerados)">–</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Generados</p>
-                        </div>
-                        <div class="flex-shrink-0 ml-4">
-                            <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                                <i class="fas fa-chart-line text-pink-600 dark:text-pink-400 text-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
