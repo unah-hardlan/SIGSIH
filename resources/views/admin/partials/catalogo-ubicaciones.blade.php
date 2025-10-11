@@ -31,6 +31,10 @@
     direcciones: [],
     loadingDirecciones: false,
     direccion: '',
+    numero: '',
+    colonia: '',
+    codigo_postal: '',
+    referencia: '',
     ciudad_direccion: '',
     async fetchPaises() {
         await window.paisesApiHandlers.fetchPaises(this);
@@ -135,8 +139,84 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Card Países -->
+    <div class="flex flex-col gap-8">
+        <!-- Card Direcciones -->
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
+            <div class="bg-gradient-to-r from-orange-700 to-orange-900 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                            <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white nunito-bold">Direcciones</h2>
+                            <p class="text-orange-100 text-sm nunito-regular">Gestiona las direcciones por ciudad</p>
+                        </div>
+                    </div>
+                    <button @click="isDireccionModalOpen = true"
+                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
+                        <i class="fas fa-plus text-sm"></i>
+                        <span class="text-sm">Nuevo</span>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
+                    <x-slot name="filtros"></x-slot>
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
+                            <tr>
+                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Colonia</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Referencia</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
+                                <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <template x-if="loadingDirecciones">
+                                <tr>
+                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                </tr>
+                            </template>
+                            <template x-if="!loadingDirecciones && direcciones.length === 0">
+                                <tr>
+                                    <td colspan="8" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
+                                </tr>
+                            </template>
+                            <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
+                                <tr class="nunito-regular">
+                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.id_direccion_pk"></td> -->
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.colonia"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.codigo_postal"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.referencia"></td>
+                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                <i class="fas fa-edit text-sm"></i>
+                                            </button>
+                                            <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: direccion.direccion_completa}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                <i class="fas fa-trash text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </x-admin.tabla-crud>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-8">
+            <!-- Países y Departamentos lado a lado -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-900 px-6 py-4">
                 <div class="flex items-center justify-between">
@@ -162,7 +242,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                     <table class="w-full text-sm">
                         <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
                                 <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                             </tr>
@@ -180,7 +260,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                             </template>
                             <template x-for="pais in paises" :key="pais.id_pais_pk">
                                 <tr class="nunito-regular">
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.id_pais_pk"></td>
+                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.id_pais_pk"></td> -->
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
                                     <td class="px-4 py-3">
                                         <div class="flex justify-center gap-2">
@@ -226,7 +306,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                     <table class="w-full text-sm">
                         <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
                                 <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
@@ -245,12 +325,12 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                             </template>
                             <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
                                 <tr class="nunito-regular">
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.id_departamento_pk"></td>
+                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.id_departamento_pk"></td> -->
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
                                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
                                     <td class="px-4 py-3">
                                         <div class="flex justify-center gap-2">
-                                            <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                            <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </button>
                                             <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
@@ -265,9 +345,10 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </x-admin.tabla-crud>
             </div>
         </div>
+        </div>
 
         <!-- Card Ciudades -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
             <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -292,7 +373,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                     <table class="w-full text-sm">
                         <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
+                                <!-- <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th> -->
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
                                 <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
@@ -311,7 +392,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                             </template>
                             <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                                 <tr class="nunito-regular">
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.id_ciudad_pk"></td>
+                                    <!-- <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.id_ciudad_pk"></td> -->
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
                                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
                                     <td class="px-4 py-3">
@@ -331,75 +412,6 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </x-admin.tabla-crud>
             </div>
         </div>
-
-        <!-- Card Direcciones -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
-            <div class="bg-gradient-to-r from-orange-700 to-orange-900 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-white bg-opacity-20 rounded-lg">
-                            <i class="fas fa-map-marker-alt text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-white nunito-bold">Direcciones</h2>
-                            <p class="text-orange-100 text-sm nunito-regular">Gestiona las direcciones por ciudad</p>
-                        </div>
-                    </div>
-                    <button @click="isDireccionModalOpen = true"
-                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
-                        <i class="fas fa-plus text-sm"></i>
-                        <span class="text-sm">Nuevo</span>
-                    </button>
-                </div>
-            </div>
-            <div class="p-6">
-                <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
-                    <x-slot name="filtros"></x-slot>
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">ID</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Colonia</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                                <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <template x-if="loadingDirecciones">
-                                <tr>
-                                    <td colspan="6" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
-                                </tr>
-                            </template>
-                            <template x-if="!loadingDirecciones && direcciones.length === 0">
-                                <tr>
-                                    <td colspan="6" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
-                                </tr>
-                            </template>
-                            <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
-                                <tr class="nunito-regular">
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.id_direccion_pk"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.colonia"></td>
-                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex justify-center gap-2">
-                                            <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                <i class="fas fa-edit text-sm"></i>
-                                            </button>
-                                            <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: direccion.direccion_completa}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                <i class="fas fa-trash text-sm"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </x-admin.tabla-crud>
-            </div>
         </div>
     </div>
 
@@ -471,12 +483,28 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         modalName="isDireccionModalOpen"
         title="Nueva Dirección"
         submitLabel="Guardar Dirección"
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-4xl"
         formId="formDireccion">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-                <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Dirección</label>
+                <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Calle</label>
                 <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="numero" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
+                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="colonia" class="block text-sm font-medium text-gray-700 nunito-bold">Colonia</label>
+                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
+                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
@@ -570,11 +598,27 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
     <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
 
     <!-- Modales Direcciones (Specific) -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditDireccion">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="formEditDireccion">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-                <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
-                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
+                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_numero" class="block text-sm font-medium text-gray-700">Número</label>
+                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_colonia" class="block text-sm font-medium text-gray-700">Colonia</label>
+                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
+                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
+                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
             </div>
             <div>
                 <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>

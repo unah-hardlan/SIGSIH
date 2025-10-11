@@ -15,12 +15,12 @@ class Departamento extends Model
 
     protected $fillable = [
         'nombre_departamento',
-        'id_pais_fk'
+        'id_pais_pk'
     ];
 
     // Relación con País
     public function pais()
     {
-        return $this->belongsTo(Pais::class, 'id_pais_fk', 'id_pais_pk');
+        return $this->belongsTo(Pais::class, 'id_pais_pk', 'id_pais_pk');
     }
 }

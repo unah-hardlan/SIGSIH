@@ -17,8 +17,8 @@ class DepartamentosController extends Controller
         $query = Departamento::with(['pais']);
 
         // Filtro por país
-        if ($request->has('id_pais_fk')) {
-            $query->where('id_pais_fk', $request->id_pais_fk);
+        if ($request->has('id_pais_pk')) {
+            $query->where('id_pais_pk', $request->id_pais_pk);
         }
 
         // Filtro de búsqueda
@@ -51,7 +51,7 @@ class DepartamentosController extends Controller
     {
         $validated = $request->validate([
             'nombre_departamento' => 'required|string|max:100',
-            'id_pais_fk' => 'required|exists:tbl_pais,id_pais_pk'
+            'id_pais_pk' => 'required|exists:tbl_pais,id_pais_pk'
         ]);
 
         $departamento = Departamento::create($validated);
@@ -100,7 +100,7 @@ class DepartamentosController extends Controller
 
         $validated = $request->validate([
             'nombre_departamento' => 'sometimes|required|string|max:100',
-            'id_pais_fk' => 'sometimes|required|exists:tbl_pais,id_pais_pk'
+            'id_pais_pk' => 'sometimes|required|exists:tbl_pais,id_pais_pk'
         ]);
 
         $departamento->update($validated);

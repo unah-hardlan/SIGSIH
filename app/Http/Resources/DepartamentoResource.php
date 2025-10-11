@@ -17,7 +17,7 @@ class DepartamentoResource extends JsonResource
         return [
             'id_departamento_pk' => $this->id_departamento_pk,
             'nombre_departamento' => $this->nombre_departamento,
-            'id_pais_fk' => $this->id_pais_fk,
+            'id_pais_pk' => $this->id_pais_pk,
             
             // Relaciones
             'pais' => $this->whenLoaded('pais')
