@@ -23,4 +23,10 @@ class Ciudad extends Model
     {
         return $this->belongsTo(Departamento::class, 'id_departamento_fk', 'id_departamento_pk');
     }
+
+    // Relación con Direcciones
+    public function direcciones()
+    {
+        return $this->hasMany(Direccion::class, 'id_ciudad_fk', 'id_ciudad_pk');
+    }
 }

@@ -330,16 +330,43 @@
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
     </div>
 
-    <div class="mb-12">
+    <!-- Bitácora de Actividad con datos dinámicos -->
+    <div class="mb-12" x-data="actividadesRecientesDashboard()" x-init="init()">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-gray-500 transition-colors duration-300">
             <div class="flex items-center px-4 py-3 bg-slate-50 dark:bg-slate-900/20 rounded-t-xl border-b border-slate-100 dark:border-slate-700">
                 <i class="fas fa-history text-slate-700 dark:text-slate-400 mr-2"></i>
                 <h3 class="text-base nunito-bold text-slate-700 dark:text-slate-300">Registro de acciones recientes de usuarios</h3>
                 <div class="ml-auto flex items-center space-x-2">
-                    <span class="text-xs nunito-regular text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">Últimas 10 acciones</span>
+                    <span class="text-xs nunito-regular text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">Últimas 5 acciones</span>
+                    <button @click="cargarActividades()" :disabled="loading" 
+                            class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md disabled:opacity-50 transition-colors">
+                        <i class="fas fa-sync-alt mr-1" :class="{ 'fa-spin': loading }"></i>Actualizar
+                    </button>
                 </div>
             </div>
-            <div class="overflow-x-auto">
+            
+            <!-- Estado de carga -->
+            <div x-show="loading" class="p-8 text-center">
+                <div class="inline-flex items-center text-slate-600 dark:text-slate-400">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                    Cargando actividades...
+                </div>
+            </div>
+            
+            <!-- Estado de error -->
+            <div x-show="error && !loading" class="p-8 text-center">
+                <div class="text-red-600 dark:text-red-400">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span x-text="error"></span>
+                </div>
+                <button @click="cargarActividades()" 
+                        class="mt-2 text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md transition-colors">
+                    Reintentar
+                </button>
+            </div>
+            
+            <!-- Tabla de actividades -->
+            <div x-show="!loading && !error" class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-900/20 text-slate-800 dark:text-slate-200">
@@ -350,91 +377,42 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-user text-blue-600 dark:text-blue-400 text-xs"></i>
+                        <!-- Si no hay actividades -->
+                        <template x-if="actividades.length === 0">
+                            <tr>
+                                <td colspan="4" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                                    <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                    No hay actividades recientes registradas
+                                </td>
+                            </tr>
+                        </template>
+                        
+                        <!-- Lista de actividades -->
+                        <template x-for="(actividad, index) in actividades" :key="actividad.id">
+                            <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2" 
+                                             :class="getColorUsuario(index)">
+                                            <i class="fas fa-user text-xs"></i>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="nunito-regular" x-text="actividad.usuario"></span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400" x-text="actividad.rol_usuario || ''" x-show="actividad.rol_usuario"></span>
+                                        </div>
                                     </div>
-                                    <span class="nunito-regular">jlopez</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
-                                    <i class="fas fa-sign-in-alt mr-1"></i>Login
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">Autenticación</td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">02/08/2025 09:15</td>
-                        </tr>
-                        <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                    </div>
-                                    <span class="nunito-regular">aruiz</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
-                                    <i class="fas fa-plus mr-1"></i>Creación
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">Cotizaciones</td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">02/08/2025 10:05</td>
-                        </tr>
-                        <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-user text-purple-600 dark:text-purple-400 text-xs"></i>
-                                    </div>
-                                    <span class="nunito-regular">cdiaz</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400">
-                                    <i class="fas fa-edit mr-1"></i>Actualización
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">Proyectos</td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">02/08/2025 11:30</td>
-                        </tr>
-                        <tr class="border-b hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-user text-red-600 dark:text-red-400 text-xs"></i>
-                                    </div>
-                                    <span class="nunito-regular">admin</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
-                                    <i class="fas fa-plus mr-1"></i>Creación
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">Usuarios</td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">02/08/2025 12:20</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-2">
-                                        <i class="fas fa-user text-green-600 dark:text-green-400 text-xs"></i>
-                                    </div>
-                                    <span class="nunito-regular">mgarcia</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
-                                    <i class="fas fa-trash mr-1"></i>Eliminación
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">Reportes</td>
-                            <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400">02/08/2025 13:45</td>
-                        </tr>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs nunito-regular" 
+                                          :class="getColorAccion(actividad.accion)">
+                                        <i :class="getIconoAccion(actividad.accion) + ' mr-1'"></i>
+                                        <span x-text="actividad.accion"></span>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400" x-text="actividad.modulo"></td>
+                                <td class="px-4 py-3 nunito-regular text-gray-600 dark:text-gray-400" x-text="actividad.fecha_hora"></td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>

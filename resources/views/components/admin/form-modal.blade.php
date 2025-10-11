@@ -63,18 +63,17 @@
 form input,
 form select,
 form textarea {
-  border-color: #A1A1A1 !important;
+  border-color: black !important;
   border-width: 1px;
   font-size: 1rem !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 1rem !important;
   border-radius: 0.5rem !important;
 }
 
 form input:focus,
 form select:focus,
 form textarea:focus {
-  outline: none;
-  border-color: black !important;
+  outline: none !important;
 }
 
 form label {
@@ -91,7 +90,7 @@ form label {
   background-color: #1f2937 !important;
   color: white !important;
   font-size: 1rem !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 1rem !important;
   border-radius: 0.5rem !important;
 }
 

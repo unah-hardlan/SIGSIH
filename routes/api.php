@@ -162,6 +162,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);
     Route::get('dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes']);
     Route::get('dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado']);
+    Route::get('dashboard/actividades-recientes', [DashboardController::class, 'actividadesRecientes']);
     // KPIs específicos de proyectos (opcional, por si el front los llama por separado)
     // Mantener sólo si el front los requiere; de lo contrario se usan los de 'indicadores'
 });

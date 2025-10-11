@@ -25,7 +25,8 @@ class DireccionResource extends JsonResource
             'direccion_completa' => $this->direccion_completa,
             
             // Relaciones
-            'ciudad' => $this->whenLoaded('ciudad')
+            'ciudad' => $this->whenLoaded('ciudad'),
+            'agencia' => $this->whenLoaded('agencia')
         ];
     }
 }
