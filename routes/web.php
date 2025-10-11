@@ -105,9 +105,6 @@ Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, '
 Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
     ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.proyectos.estado.web');
-Route::get('/api-web/dashboard/actividades-recientes', [DashboardController::class, 'actividadesRecientes'])
-    ->middleware(['auth.jwt.web','admin.only'])
-    ->name('dashboard.actividades.recientes.web');
 
 // API-like fallback para cambiar contraseña del perfil (cookie-based auth)
 Route::post('/api-web/me/password', [ProfileController::class, 'changePassword'])
