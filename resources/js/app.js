@@ -1,6 +1,4 @@
-// Nota: limpieza de authToken eliminada (migrado a sesiones Sanctum)
 import "./bootstrap";
-// Global fetch limiter to avoid 429 bursts on initial app bootstrap
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
     (function installFetchLimiter() {
@@ -15,10 +13,13 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             if (!next) return;
             inFlight++;
             const { args, resolve, reject, delay } = next;
-            const doFetch = () => origFetch(...args).then(resolve, reject).finally(() => {
-                inFlight--;
-                runNext();
-            });
+            const doFetch = () =>
+                origFetch(...args)
+                    .then(resolve, reject)
+                    .finally(() => {
+                        inFlight--;
+                        runNext();
+                    });
             if (delay) setTimeout(doFetch, delay);
             else doFetch();
         }
@@ -28,8 +29,11 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const url = (args && args[0] ? args[0].toString() : "") || "";
                 const isApi = url.includes("/api/");
                 const isDashboard = url.includes("/api/dashboard/");
-                // Stagger dashboard datasets a bit to avoid parallel spikes
-                const delay = isDashboard ? Math.floor(Math.random() * 180) + 60 : (isApi ? Math.floor(Math.random() * 80) : 0);
+                const delay = isDashboard
+                    ? Math.floor(Math.random() * 180) + 60
+                    : isApi
+                    ? Math.floor(Math.random() * 80)
+                    : 0;
                 if (!isApi) return origFetch(...args);
                 return new Promise((resolve, reject) => {
                     queue.push({ args, resolve, reject, delay });
@@ -54,6 +58,9 @@ import "./toast";
 import "./ubicaciones";
 import "./tipo-visitas";
 import "./tipo-productos";
+import "./tipo-objetos";
+import "./tipo-movimientos";
+import "./servicios-realizados";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -139,7 +146,6 @@ import {
     faFolder,
     faClipboardQuestion,
 } from "@fortawesome/free-solid-svg-icons";
-// ...existing code...
 library.add(
     faEye,
     faEyeSlash,
@@ -221,17 +227,15 @@ library.add(
     faInfoCircle,
     faCalendarDay,
     faFolder,
-    faClipboardQuestion,
+    faClipboardQuestion
 );
 dom.watch();
 
 library.add(faEye, faEyeSlash, faMoon, faSun);
 dom.watch();
 
-// Alpine.js collapse plugin
 document.addEventListener("alpine:init", () => {
     try {
-        // Evitar registrar el plugin 'collapse' múltiples veces
         if (!window.__ALPINE_COLLAPSE_REGISTERED__) {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
@@ -263,7 +267,6 @@ function collapse(Alpine) {
     );
 }
 
-// Navigation store for SPA-like navigation
 document.addEventListener("alpine:init", () => {
     Alpine.store("navigation", {
         isTransitioning: false,
@@ -271,12 +274,8 @@ document.addEventListener("alpine:init", () => {
         currentView: null,
 
         async navigate(url, viewName) {
-            // Ya no forzamos completar perfil desde el cliente; el backend controla acceso.
-
-            // Si ya estamos en esta vista, no hacer nada
             if (this.currentView === viewName) return;
 
-            // Si la vista ya está cargada, usarla directamente
             if (this.loadedViews[viewName]) {
                 this.setContent(this.loadedViews[viewName]);
                 this.updateState(url, viewName);
@@ -326,23 +325,19 @@ document.addEventListener("alpine:init", () => {
         },
 
         setContent(html) {
-            // Guardar posición del scroll del sidebar antes de cambiar contenido
             this.saveSidebarScrollPosition();
 
-            // Destruir instancias de Chart.js antes de reemplazar el DOM
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
             } catch (_) {}
 
             const mainEl = document.querySelector("main");
-            // Intentar destruir árbol Alpine anterior (si aplica)
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
             } catch (_) {}
 
-            // Sanitizar: evitar recargar Alpine desde vistas parciales (remueve scripts externos de Alpine)
             let sanitized = html;
             try {
                 sanitized = sanitized.replace(
@@ -352,10 +347,8 @@ document.addEventListener("alpine:init", () => {
             } catch (_) {}
 
             mainEl.innerHTML = sanitized;
-            // Reinicializar Alpine sólo en raíces nuevas (evita redefinir $nextTick)
             try {
                 if (window.Alpine) {
-                    // Limpieza defensiva: si alguna magia global quedó definida por doble carga, elimínala
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
                     } catch (_) {}
@@ -376,22 +369,18 @@ document.addEventListener("alpine:init", () => {
                 }
             } catch (_) {}
 
-            // Restaurar posición del scroll del sidebar después de cargar nuevo contenido
             this.restoreSidebarScrollPosition();
 
-            // Inicializar gráficos si estamos en el dashboard
             if (
                 html.includes('id="ordenesChart"') ||
                 html.includes('id="cotizacionesChart"') ||
                 html.includes('id="proyectosChart"')
             ) {
-                // Usar setTimeout para asegurar que el DOM esté listo
                 setTimeout(() => {
                     initializeDashboardChartsWithRetry();
                 }, 100);
             }
 
-            // Notificar a listeners (p.ej., re-vincular el switch de tema) que la vista se cargó
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
             } catch (_) {}
@@ -413,7 +402,6 @@ document.addEventListener("alpine:init", () => {
                 "sidebar-scroll-position"
             );
             if (sidebar && savedScrollTop !== null) {
-                // Usar requestAnimationFrame para asegurar que el DOM esté listo
                 requestAnimationFrame(() => {
                     sidebar.scrollTop = parseInt(savedScrollTop, 10);
                 });
@@ -453,15 +441,12 @@ document.addEventListener("alpine:init", () => {
             `;
         },
 
-        // Método para actualizar los enlaces activos en la barra lateral
         updateActiveLinks(url) {
-            // Eliminar la clase activa de todos los enlaces
             document.querySelectorAll(".sidebar-link").forEach((link) => {
                 link.classList.remove("bg-gray-800", "text-blue-400");
                 link.classList.add("hover:bg-gray-800", "hover:text-blue-400");
             });
 
-            // Encontrar y marcar el enlace activo actual
             document.querySelectorAll(".sidebar-link").forEach((link) => {
                 if (link.getAttribute("href") === url) {
                     link.classList.add("bg-gray-800", "text-blue-400");
@@ -470,7 +455,6 @@ document.addEventListener("alpine:init", () => {
                         "hover:text-blue-400"
                     );
 
-                    // Encontrar y abrir el menú padre si existe
                     const parentDropdown = link.closest(
                         '[x-data^="sidebarDropdown"]'
                     );
@@ -480,7 +464,6 @@ document.addEventListener("alpine:init", () => {
                             .match(/sidebarDropdown\('([^']+)'/)[1];
                         localStorage.setItem(`sidebar-${dropdownKey}`, "true");
 
-                        // Forzar actualización del menú desplegable
                         const event = new CustomEvent(
                             "update-sidebar-dropdown",
                             {
@@ -493,34 +476,28 @@ document.addEventListener("alpine:init", () => {
             });
         },
 
-        // Método para manejar navegación con botón atrás/adelante del navegador
         handlePopState(event) {
             if (event.state && event.state.viewName) {
                 const viewName = event.state.viewName;
                 const url = window.location.pathname;
 
-                // Cargar la vista sin cambiar el estado del historial
                 if (this.loadedViews[viewName]) {
                     this.setContent(this.loadedViews[viewName]);
                     this.currentView = viewName;
                     this.updateActiveLinks(url);
                 } else {
-                    // Si no está cargada, hacer un reload completo
                     window.location.reload();
                 }
             }
         },
 
-        // Método para cargar la vista inicial basada en la URL actual
         async loadInitialView() {
             const path = window.location.pathname;
             const viewName = this.extractViewNameFromPath(path);
 
             if (viewName && viewName !== "dashboard") {
-                // Si no estamos en dashboard, cargar la vista correspondiente
                 await this.navigate(path, viewName);
             } else {
-                // Establecer dashboard como vista actual
                 this.currentView = "dashboard";
                 try {
                     const main = document.querySelector("main");
@@ -530,19 +507,16 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
-        // Extraer el nombre de la vista desde el path
         extractViewNameFromPath(path) {
             const match = path.match(/\/admin\/(.+)$/);
             return match ? match[1] : "dashboard";
         },
     });
 
-    // Manejar navegación con botones del navegador
     window.addEventListener("popstate", (event) => {
         Alpine.store("navigation").handlePopState(event);
     });
 
-    // Cargar vista inicial cuando la página esté lista
     document.addEventListener("DOMContentLoaded", () => {
         // Verificar si la página es una SPA page
         const isSpaPage = document.querySelector('meta[name="spa-page"]');
@@ -565,7 +539,6 @@ if (typeof window !== "undefined" && window.Chart) {
     Chart.defaults.color = "#6B7280";
 }
 
-// Función para inicializar los gráficos del dashboard
 function initializeDashboardCharts() {
     const waitForCanvasReady = (el, cb, attempt = 0) => {
         const max = 20; // ~3s total (20 * 150ms)
@@ -588,7 +561,6 @@ function initializeDashboardCharts() {
             return { ok: false };
         }
     };
-    // Initialize 'ordenesChart' only if element exists
     const ordenesEl = document.getElementById("ordenesChart");
     if (ordenesEl) {
         // Destruir instancia existente si existe
@@ -666,10 +638,8 @@ function initializeDashboardCharts() {
         waitForCanvasReady(ordenesEl, initOrdenes);
     }
 
-    // Initialize 'cotizacionesChart' only if element exists
     const cotizacionesEl = document.getElementById("cotizacionesChart");
     if (cotizacionesEl) {
-        // Destruir instancia existente si existe
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
@@ -748,10 +718,8 @@ function initializeDashboardCharts() {
         waitForCanvasReady(cotizacionesEl, initCotizaciones);
     }
 
-    // Initialize 'proyectosChart' only if element exists
     const proyectosEl = document.getElementById("proyectosChart");
     if (proyectosEl) {
-        // Destruir instancia existente si existe
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
@@ -833,7 +801,6 @@ function initializeDashboardCharts() {
     }
 }
 
-// Destruir instancias activas de Chart.js antes de reemplazar el DOM
 function destroyExistingCharts() {
     try {
         if (window.ordenesChartInstance) {
@@ -855,11 +822,9 @@ function destroyExistingCharts() {
     window.proyectosChartInstance = null;
 }
 
-// Reintento robusto para inicializar gráficos cuando el DOM/tamaño/Chart están listos
 function initializeDashboardChartsWithRetry(retry = 0) {
     const maxRetries = 10;
     const delay = 200;
-    // Verificar disponibilidad de Chart y de al menos un canvas objetivo
     const hasTargets =
         document.getElementById("ordenesChart") ||
         document.getElementById("cotizacionesChart") ||
@@ -876,25 +841,19 @@ function initializeDashboardChartsWithRetry(retry = 0) {
     initializeDashboardCharts();
 }
 
-// Inicializar gráficos cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", () => {
     initializeDashboardChartsWithRetry();
 });
 
-// Utilidad: encabezados con token si existe
 function authHeaders() {
-    // Cookie auth_token se envía automáticamente; no usar localStorage.
     return { Accept: "application/json" };
 }
 
-// Parchar setContent para destruir charts antes de reemplazar el contenido
-// (ubicación original más arriba en la definición del store de navegación)
 (function patchSetContent() {
     const nav = window.Alpine?.store && window.Alpine.store("navigation");
     if (!nav || typeof nav.setContent !== "function") return;
     const original = nav.setContent.bind(nav);
     nav.setContent = function (html) {
-        // Destruir charts antes de cambiar el DOM
         destroyExistingCharts();
         return original(html);
     };
