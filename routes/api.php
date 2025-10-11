@@ -101,7 +101,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
-    Route::apiResource('tipos-objeto', TipoObjetoController::class)->only(['index']);
+    Route::apiResource('tipos-objeto', TipoObjetoController::class);
 
     // MODULO DE PERSONAS (sin tipos-persona ni perfiles)
     // CRUD de géneros solo para admin (cliente usa únicamente GET /api/catalogos/generos)
