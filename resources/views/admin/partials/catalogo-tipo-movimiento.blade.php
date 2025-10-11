@@ -34,13 +34,7 @@
         }
     }
 }"
-x-init="() => {
-    if (window.tipoMovimientosApiHandlers) {
-        fetchTipoMovimientos();
-    } else {
-        console.error('tipoMovimientosApiHandlers no está definido');
-    }
-}"
+x-init="fetchTipoMovimientos()"
 @keydown.escape.window="
     isTipoMovimientoModalOpen = false;
     isTipoMovimientoEditModalOpen = false;

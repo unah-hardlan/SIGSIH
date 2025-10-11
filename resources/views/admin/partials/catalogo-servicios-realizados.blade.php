@@ -1,4 +1,5 @@
-<script src="{{ asset('js/servicios-realizados.js') }}"></script>
+@vite(['resources/js/servicios-realizados.js'])
+
 
 <div x-data="{
     isServicioRealizadoModalOpen: false,
@@ -8,9 +9,8 @@
     itemToDelete: null,
     serviciosRealizados: [],
     loadingServiciosRealizados: false,
-    tipo_servicio: '',
+    nombre_servicio: '',
     descripcion_servicio: '',
-    fecha_servicio: '',
     async fetchServiciosRealizados() {
         await window.serviciosRealizadosApiHandlers.fetchServiciosRealizados(this);
     },
@@ -68,23 +68,22 @@ x-init="fetchServiciosRealizados()"
             <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Tipo de Servicio</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre del Servicio</th>
                         <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
-                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Fecha</th>
                         <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-if="loadingServiciosRealizados">
                         <tr>
-                            <td colspan="4" class="py-8 text-center text-gray-500 nunito-regular">
+                            <td colspan="3" class="py-8 text-center text-gray-500 nunito-regular">
                                 <i class="fas fa-spinner fa-spin mr-2"></i> Cargando servicios realizados...
                             </td>
                         </tr>
                     </template>
                     <template x-if="!loadingServiciosRealizados && serviciosRealizados.length === 0">
                         <tr>
-                            <td colspan="4" class="py-8 text-center text-gray-500 nunito-regular">
+                            <td colspan="3" class="py-8 text-center text-gray-500 nunito-regular">
                                 No hay servicios realizados registrados
                             </td>
                         </tr>
@@ -93,12 +92,11 @@ x-init="fetchServiciosRealizados()"
                         <template x-for="(servicioRealizado, index) in serviciosRealizados" :key="servicioRealizado.id_servicio_realizado_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === serviciosRealizados.length - 1 }">
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicioRealizado.tipo_servicio"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicioRealizado.nombre_servicio"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicioRealizado.descripcion_servicio"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicioRealizado.fecha_servicio"></td>
                                 <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === serviciosRealizados.length - 1 }">
-                                    <a href="#" @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, tipo_servicio: servicioRealizado.tipo_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio, fecha_servicio: servicioRealizado.fecha_servicio}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                    <a href="#" @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, tipo_servicio: servicioRealizado.tipo_servicio}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    <a href="#" @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
                         </template>
@@ -122,14 +120,14 @@ x-init="fetchServiciosRealizados()"
                 <template x-for="servicioRealizado in serviciosRealizados" :key="servicioRealizado.id_servicio_realizado_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="servicioRealizado.tipo_servicio"></h3>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="servicioRealizado.nombre_servicio"></h3>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="servicioRealizado.descripcion_servicio"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, tipo_servicio: servicioRealizado.tipo_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio, fecha_servicio: servicioRealizado.fecha_servicio}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <button @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, tipo_servicio: servicioRealizado.tipo_servicio}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                            <button @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
@@ -146,8 +144,8 @@ x-init="fetchServiciosRealizados()"
             submitLabel="Guardar Servicio Realizado" formId="formServicioRealizado" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="tipo_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Servicio</label>
-                    <input type="text" id="tipo_servicio" x-model="tipo_servicio" required
+                    <label for="nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Servicio</label>
+                    <input type="text" id="nombre_servicio" x-model="nombre_servicio" required
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
@@ -156,11 +154,6 @@ x-init="fetchServiciosRealizados()"
                     <textarea id="descripcion_servicio" x-model="descripcion_servicio" rows="2"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
-                <div>
-                    <label for="fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" id="fecha_servicio" x-model="fecha_servicio" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                </div>
             </div>
         </x-admin.form-modal>
 
@@ -168,8 +161,8 @@ x-init="fetchServiciosRealizados()"
         <x-admin.edit-modal class="nunito-bold" modalName="isServicioRealizadoEditModalOpen" title="Editar Servicio Realizado" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditServicioRealizado">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="edit_tipo_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Servicio</label>
-                    <input type="text" id="edit_tipo_servicio" x-model="itemToEdit.tipo_servicio" required
+                    <label for="edit_nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Servicio</label>
+                    <input type="text" id="edit_nombre_servicio" x-model="itemToEdit.nombre_servicio" required
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
@@ -177,11 +170,6 @@ x-init="fetchServiciosRealizados()"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion_servicio" x-model="itemToEdit.descripcion_servicio" rows="2"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
-                </div>
-                <div>
-                    <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" id="edit_fecha_servicio" x-model="itemToEdit.fecha_servicio" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
             </div>
         </x-admin.edit-modal>
