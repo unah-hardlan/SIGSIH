@@ -23,13 +23,11 @@ window.tipoObjetosApiHandlers = {
             const data = await resp.json().catch(() => ({}));
 
             if (!resp.ok) throw data;
-            // data may be a collection of resources (data property) or an array
             let items = [];
             if (Array.isArray(data)) items = data;
             else if (Array.isArray(data.data)) items = data.data;
             else if (data.data && Array.isArray(data.data)) items = data.data;
 
-            // Use the already mapped fields from TipoObjetoResource
             component.tipos = items.map((i) => ({
                 id: i.id,
                 nombre: i.nombre,
@@ -47,7 +45,6 @@ window.tipoObjetosApiHandlers = {
             component.loadingTipos = false;
         }
     },
-
     async storeTipoObjeto(component) {
         if (!component.tipoToEdit.nombre?.trim()) {
             window.showToast &&
@@ -102,7 +99,6 @@ window.tipoObjetosApiHandlers = {
             console.error("Error creating tipo objeto:", err);
         }
     },
-
     async updateTipoObjeto(component) {
         if (!component.tipoToEdit.id) return;
         if (!component.tipoToEdit.nombre?.trim()) {
@@ -161,7 +157,6 @@ window.tipoObjetosApiHandlers = {
             console.error("Error updating tipo objeto:", err);
         }
     },
-
     async deleteTipoObjeto(component) {
         if (!component.tipoToDelete.id) return;
 
