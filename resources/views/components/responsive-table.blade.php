@@ -4,10 +4,10 @@
 ])
 
 @php
-    $hasFilters = isset($filters) && !$filters->isEmpty();
-    $hasActions = isset($actions) && !$actions->isEmpty();
-    $hasTable = isset($table) && !$table->isEmpty();
-    $hasCards = isset($cards) && !$cards->isEmpty();
+    $hasFilters = isset($filters) && trim((string) $filters) !== '';
+    $hasActions = isset($actions) && trim((string) $actions) !== '';
+    $hasTable = isset($table) && trim((string) $table) !== '';
+    $hasCards = isset($cards) && trim((string) $cards) !== '';
     $hasHeader = $title || $description || $hasFilters || $hasActions;
 @endphp
 
