@@ -1,5 +1,4 @@
-@vite(['resources/js/servicios-realizados.js'])
-
+<script src="{{ asset('js/servicios-realizados.js') }}"></script>
 
 <div x-data="{
     isServicioRealizadoModalOpen: false,
