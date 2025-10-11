@@ -166,7 +166,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                     </button>
                 </div>
             </div>
-            <div class="p-6">
+            <div class="p-6 overflow-x-auto">
                 <x-admin.tabla-crud class="border border-gray-200 dark:border-gray-700 rounded-lg" titulo="">
                     <x-slot name="filtros"></x-slot>
                     <table class="w-full text-sm">
@@ -176,9 +176,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Agencia</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Colonia</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden md:table-cell">Colonia</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
-                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Referencia</th>
+                                <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden md:table-cell">Referencia</th>
                                 <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
                                 <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                             </tr>
@@ -200,9 +200,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.colonia"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white hidden md:table-cell" x-text="direccion.colonia"></td>
                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.codigo_postal"></td>
-                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.referencia"></td>
+                                    <td class="px-4 py-3 text-gray-900 dark:text-white hidden md:table-cell" x-text="direccion.referencia"></td>
                                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
                                     <td class="px-4 py-3">
                                         <div class="flex justify-center gap-2">

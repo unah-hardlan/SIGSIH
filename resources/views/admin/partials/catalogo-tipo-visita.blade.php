@@ -71,7 +71,21 @@ x-init="fetchTipoVisitas()"
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="(tipoVisita, index) in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">
+                    <template x-if="loadingTipoVisitas">
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de visita...
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingTipoVisitas && tipoVisitas.length === 0">
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-gray-500 nunito-regular">
+                                No hay tipos de visita registrados
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingTipoVisitas && tipoVisitas.length > 0" x-for="(tipoVisita, index) in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">
                         <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                             :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === tipoVisitas.length - 1 }">
                             <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" :class="{ 'first:rounded-bl-lg': index === tipoVisitas.length - 1 }" x-text="tipoVisita.id_tipo_visita_pk"></td>
@@ -88,7 +102,17 @@ x-init="fetchTipoVisitas()"
         </div>
         <x-slot name="mobileTemplate">
             <div class="space-y-4">
-                <template x-for="tipoVisita in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">
+                <template x-if="loadingTipoVisitas">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 nunito-regular">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de visita...
+                    </div>
+                </template>
+                <template x-if="!loadingTipoVisitas && tipoVisitas.length === 0">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 nunito-regular">
+                        No hay tipos de visita registrados
+                    </div>
+                </template>
+                <template x-if="!loadingTipoVisitas && tipoVisitas.length > 0" x-for="tipoVisita in tipoVisitas" :key="tipoVisita.id_tipo_visita_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
                         <div class="flex justify-between items-start mb-2">
                             <div>
@@ -121,7 +145,7 @@ x-init="fetchTipoVisitas()"
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="nombre_tipo_visita" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="nombre_tipo_visita" x-model="nombre_tipo_visita"
+                    <input type="text" id="nombre_tipo_visita" x-model="nombre_tipo_visita" required
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
@@ -138,7 +162,7 @@ x-init="fetchTipoVisitas()"
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_nombre_tipo_visita" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="edit_nombre_tipo_visita" x-model="itemToEdit.nombre_tipo_visita"
+                    <input type="text" id="edit_nombre_tipo_visita" x-model="itemToEdit.nombre_tipo_visita" required
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
