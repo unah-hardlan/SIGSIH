@@ -10,6 +10,8 @@
     loadingTipoMovimientos: false,
     nombre_tipo_movimiento: '',
     descripcion_tipo_movimiento: '',
+    filtroTipoMovimiento: '',
+    ordenarPor: '',
     async fetchTipoMovimientos() {
         await window.tipoMovimientosApiHandlers.fetchTipoMovimientos(this);
     },
@@ -32,7 +34,13 @@
         }
     }
 }"
-x-init="fetchTipoMovimientos()"
+x-init="() => {
+    if (window.tipoMovimientosApiHandlers) {
+        fetchTipoMovimientos();
+    } else {
+        console.error('tipoMovimientosApiHandlers no está definido');
+    }
+}"
 @keydown.escape.window="
     isTipoMovimientoModalOpen = false;
     isTipoMovimientoEditModalOpen = false;
