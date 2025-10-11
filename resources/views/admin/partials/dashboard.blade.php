@@ -117,7 +117,7 @@
             </div>
 
             <!-- Card 5: Proyectos -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-teal-00 dark:border-teal-700 border-l-4 border-l-teal-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-teal-500 dark:border-teal-700 border-l-4 border-l-teal-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-2">
@@ -141,7 +141,7 @@
             </div>
 
             <!-- Card 6: Tickets -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-orange-300 dark:border-orange-700 border-l-4 border-l-orange-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-orange-500 dark:border-orange-700 border-l-4 border-l-orange-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-2">
@@ -189,7 +189,7 @@
             </div>
 
             <!-- Card 8: Reportes -->
-            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-pink-300 dark:border-pink-700 border-l-4 border-l-pink-500 overflow-hidden">
+            <div class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-pink-500 dark:border-pink-700 border-l-4 border-l-pink-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
