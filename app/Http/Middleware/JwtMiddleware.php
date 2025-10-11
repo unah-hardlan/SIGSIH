@@ -19,10 +19,10 @@ class JwtMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Intentar primero header Authorization Bearer, luego cookie httpOnly
-        $token = $request->bearerToken();
+        // Priorizar cookies si están presentes
+        $token = $request->cookie('auth_token');
         if (!$token) {
-            $token = $request->cookie('auth_token');
+            $token = $request->bearerToken();
         }
 
         if (!$token) {
