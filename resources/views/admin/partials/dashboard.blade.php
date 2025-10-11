@@ -338,9 +338,9 @@
                 <h3 class="text-base nunito-bold text-slate-700 dark:text-slate-300">Registro de acciones recientes de usuarios</h3>
                 <div class="ml-auto flex items-center space-x-2">
                     <span class="text-xs nunito-regular text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">Últimas 5 acciones</span>
-                    <button @click="cargarActividades()" :disabled="loading" 
+                    <button @click="cargarActividades()" x-bind:disabled="loading" 
                             class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md disabled:opacity-50 transition-colors">
-                        <i class="fas fa-sync-alt mr-1" :class="{ 'fa-spin': loading }"></i>Actualizar
+                        <i class="fas fa-sync-alt mr-1" x-bind:class="loading ? 'fa-spin' : ''"></i>Actualizar
                     </button>
                 </div>
             </div>
