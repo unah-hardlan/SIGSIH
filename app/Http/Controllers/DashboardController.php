@@ -29,16 +29,20 @@ class DashboardController extends Controller
      */
     public function indicators(): JsonResponse
     {
-        // Usuarios
-        $totalUsuarios = \App\Models\Usuario::query()->count();
-
-        // Empresas: preferimos catálogo de nombres si existe; de lo contrario, EmpresaCliente
-        $empresasActivas = 0;
         try {
-            if (Schema::hasTable('tbl_nombre_empresa')) {
-                $empresasActivas = NombreEmpresa::query()->count();
+            // Usuarios
+            $totalUsuarios = \App\Models\Usuario::query()->count();
+
+            // Empresas: preferimos catálogo de nombres si existe; de lo contrario, EmpresaCliente
+            $empresasActivas = 0;
+            try {
+                if (Schema::hasTable('tbl_nombre_empresa')) {
+                    $empresasActivas = NombreEmpresa::query()->count();
+                }
+            } catch (\Throwable $e) { 
+                Log::warning('Error counting empresas from nombre_empresa: ' . $e->getMessage());
+                $empresasActivas = 0; 
             }
-        } catch (\Throwable $e) { $empresasActivas = 0; }
         if ($empresasActivas === 0) {
             try { $empresasActivas = EmpresaCliente::query()->count(); } catch (\Throwable $e) { $empresasActivas = 0; }
         }
@@ -146,26 +150,44 @@ class DashboardController extends Controller
             }
         }
 
-        // Inventario: total de productos
-        $inventarioProductos = class_exists(Producto::class)
-            ? Producto::query()->count()
-            : 0;
+            // Inventario: total de productos
+            $inventarioProductos = class_exists(Producto::class)
+                ? Producto::query()->count()
+                : 0;
 
-    // Reportes generados: total de registros en bitácora como proxy
-    $reportesGenerados = Bitacora::query()->count();
+            // Reportes generados: total de registros en bitácora como proxy
+            $reportesGenerados = Bitacora::query()->count();
 
-        return response()->json([
-            'totalUsuarios' => $totalUsuarios,
-            'empresasActivas' => $empresasActivas,
-            'ordenesServicio' => $ordenesServicio,
-            'cotizaciones' => $cotizaciones,
-            'proyectosActivos' => $proyectosActivos,
-            'proyectosFinalizados' => $proyectosFinalizados,
-            'ticketsAbiertos' => $ticketsAbiertos,
-            'ticketsCerrados' => $ticketsCerrados,
-            'inventarioProductos' => $inventarioProductos,
-            'reportesGenerados' => $reportesGenerados,
-        ]);
+            return response()->json([
+                'totalUsuarios' => $totalUsuarios,
+                'empresasActivas' => $empresasActivas,
+                'ordenesServicio' => $ordenesServicio,
+                'cotizaciones' => $cotizaciones,
+                'proyectosActivos' => $proyectosActivos,
+                'proyectosFinalizados' => $proyectosFinalizados,
+                'ticketsAbiertos' => $ticketsAbiertos,
+                'ticketsCerrados' => $ticketsCerrados,
+                'inventarioProductos' => $inventarioProductos,
+                'reportesGenerados' => $reportesGenerados,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error in Dashboard indicators: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->json([
+                'error' => 'Error al cargar indicadores',
+                'message' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor',
+                'totalUsuarios' => 0,
+                'empresasActivas' => 0,
+                'ordenesServicio' => 0,
+                'cotizaciones' => 0,
+                'proyectosActivos' => 0,
+                'proyectosFinalizados' => 0,
+                'ticketsAbiertos' => 0,
+                'ticketsCerrados' => 0,
+                'inventarioProductos' => 0,
+                'reportesGenerados' => 0,
+            ], 500);
+        }
     }
     public function ordenesPorEstado(): JsonResponse
     {

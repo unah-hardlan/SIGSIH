@@ -74,6 +74,9 @@ document.addEventListener("alpine:init", () => {
                 dashAuthHeaders()
             );
             if (!res.ok) {
+                console.warn(
+                    `Dashboard KPIs: /api/dashboard/indicadores failed with status ${res.status}, trying fallback route`
+                );
                 res = await dashTryFetch("/api-web/dashboard/indicadores", {
                     Accept: "application/json",
                 });
@@ -82,6 +85,10 @@ document.addEventListener("alpine:init", () => {
                 this.indicators = res.data;
                 this.lastFetched.indicators = now();
                 this.persist();
+            } else {
+                console.error(
+                    `Dashboard KPIs: Both routes failed. Status: ${res.status}`
+                );
             }
             return this.indicators;
         },
@@ -136,6 +143,9 @@ document.addEventListener("alpine:init", () => {
                 dashAuthHeaders()
             );
             if (!res.ok) {
+                console.warn(
+                    `Dashboard Actividades: /api/dashboard/actividades-recientes failed with status ${res.status}, trying fallback route`
+                );
                 res = await dashTryFetch(
                     "/api-web/dashboard/actividades-recientes",
                     { Accept: "application/json" }
@@ -145,6 +155,10 @@ document.addEventListener("alpine:init", () => {
                 this.actividadesRecientes = res.data;
                 this.lastFetched.actividades = now();
                 this.persist();
+            } else {
+                console.error(
+                    `Dashboard Actividades: Both routes failed. Status: ${res.status}`
+                );
             }
             return this.actividadesRecientes || [];
         },
