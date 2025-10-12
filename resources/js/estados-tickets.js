@@ -31,16 +31,11 @@ window.estadosTicketsApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitEstadoTicket(component) {
-        const payload = {
-            id: String(component.id_estado || "").trim(),
-            nombre: String(component.nombre || "").trim(),
-            descripcion: String(component.descripcion || "").trim(),
-            es_final: Boolean(component.es_final),
-            orden: Number(component.orden || 0),
-            codigo: String(component.codigo || "").trim(),
-        };
+        const nombreTrim = String(component.nombre || "").trim();
+        const codigoTrim = String(component.codigo || "").trim();
+        const descripcionTrim = String(component.descripcion || "").trim();
 
-        if (!payload.nombre) {
+        if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre del estado de ticket es obligatorio",
@@ -49,7 +44,46 @@ window.estadosTicketsApiHandlers = {
             return;
         }
 
+        if (!codigoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El código del estado de ticket es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        // Validar duplicados por nombre
+        if (
+            component.estadosTickets.some(
+                (et) => et.nombre.toLowerCase() === nombreTrim.toLowerCase()
+            )
+        ) {
+            window.showToast &&
+                window.showToast("El estado de ticket ya existe", "error");
+            return;
+        }
+
+        // Validar duplicados por código
+        if (
+            component.estadosTickets.some(
+                (et) => et.codigo.toLowerCase() === codigoTrim.toLowerCase()
+            )
+        ) {
+            window.showToast &&
+                window.showToast("El código ya existe", "error");
+            return;
+        }
+
         try {
+            const payload = {
+                codigo: codigoTrim,
+                nombre: nombreTrim,
+                descripcion: descripcionTrim,
+                es_final: component.es_final || false,
+                orden: parseInt(component.orden) || 0,
+            };
+
             const response = await fetch("/api/estados-ticket", {
                 method: "POST",
                 headers: {
@@ -60,18 +94,32 @@ window.estadosTicketsApiHandlers = {
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
-            console.log("Server response:", response);
-            console.log("Response data:", data);
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                // Mostrar errores de validación si existen
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                    return;
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast(
                     "Estado de ticket creado exitosamente",
                     "success"
                 );
-            component.id_estado = "";
+            component.codigo = "";
             component.nombre = "";
             component.descripcion = "";
-            component.isModalOpenEstadoTicket = false;
+            component.es_final = false;
+            component.orden = "";
+            component.isEstadoTicketModalOpen = false;
             await this.fetchEstadosTickets(component);
         } catch (error) {
             console.error("Error creating estado ticket:", error);
@@ -85,19 +133,16 @@ window.estadosTicketsApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async updateEstadoTicket(component) {
-        console.log("updateEstadoTicket called with:", component.itemToEdit);
-        if (!component.itemToEdit || !component.itemToEdit.id) return;
+        if (!component.itemToEdit || !component.itemToEdit.id_estado_ticket_pk)
+            return;
 
-        const payload = {
-            id: String(component.itemToEdit.id_estado_ticket_pk || "").trim(),
-            nombre: String(component.itemToEdit.nombre || "").trim(),
-            descripcion: String(component.itemToEdit.descripcion || "").trim(),
-            codigo: String(component.itemToEdit.codigo || "").trim(),
-            es_final: Boolean(component.itemToEdit.es_final),
-            orden: Number(component.itemToEdit.orden || 0),
-        };
+        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
+        const codigoTrim = String(component.itemToEdit.codigo || "").trim();
+        const descripcionTrim = String(
+            component.itemToEdit.descripcion || ""
+        ).trim();
 
-        if (!payload.nombre) {
+        if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre del estado de ticket es obligatorio",
@@ -106,9 +151,60 @@ window.estadosTicketsApiHandlers = {
             return;
         }
 
+        if (!codigoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El código del estado de ticket es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        // Validar duplicados por nombre
+        if (
+            component.estadosTickets.some(
+                (et) =>
+                    et.nombre.toLowerCase() === nombreTrim.toLowerCase() &&
+                    et.id_estado_ticket_pk !==
+                        component.itemToEdit.id_estado_ticket_pk
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otro estado de ticket con ese nombre",
+                    "error"
+                );
+            return;
+        }
+
+        // Validar duplicados por código
+        if (
+            component.estadosTickets.some(
+                (et) =>
+                    et.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
+                    et.id_estado_ticket_pk !==
+                        component.itemToEdit.id_estado_ticket_pk
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otro estado de ticket con ese código",
+                    "error"
+                );
+            return;
+        }
+
         try {
+            const payload = {
+                codigo: codigoTrim,
+                nombre: nombreTrim,
+                descripcion: descripcionTrim,
+                es_final: component.itemToEdit.es_final || false,
+                orden: parseInt(component.itemToEdit.orden) || 0,
+            };
+
             const response = await fetch(
-                `/api/estados-ticket/${component.itemToEdit.id}`,
+                `/api/estados-ticket/${component.itemToEdit.id_estado_ticket_pk}`,
                 {
                     method: "PUT",
                     headers: {
@@ -120,20 +216,36 @@ window.estadosTicketsApiHandlers = {
                 }
             );
             const data = await response.json().catch(() => ({}));
-            console.log("Server response:", response);
-            console.log("Response data:", data);
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                // Mostrar errores de validación si existen
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                } else {
+                    window.showToast &&
+                        window.showToast(
+                            "Error al actualizar el estado de ticket",
+                            "error"
+                        );
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast(
                     "Estado de ticket actualizado exitosamente",
                     "success"
                 );
-            component.isEditModalOpenEstadoTicket = false;
+            component.isEstadoTicketEditModalOpen = false;
             component.itemToEdit = null;
             await this.fetchEstadosTickets(component);
         } catch (error) {
             console.error("Error updating estado ticket:", error);
-            console.error("Validation errors:", error.errors);
         }
     },
 
@@ -142,11 +254,15 @@ window.estadosTicketsApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async deleteEstadoTicket(component) {
-        if (!component.itemToDelete || !component.itemToDelete.id) return;
+        if (
+            !component.itemToDelete ||
+            !component.itemToDelete.id_estado_ticket_pk
+        )
+            return;
 
         try {
             const response = await fetch(
-                `/api/estados-ticket/${component.itemToDelete.id}`,
+                `/api/estados-ticket/${component.itemToDelete.id_estado_ticket_pk}`,
                 {
                     method: "DELETE",
                     headers: { Accept: "application/json" },
@@ -154,21 +270,21 @@ window.estadosTicketsApiHandlers = {
                 }
             );
             const data = await response.json().catch(() => ({}));
-            console.log("Server response:", response);
-            console.log("Response data:", data);
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast(
                     "Estado de ticket eliminado exitosamente",
                     "success"
                 );
-            component.isDeleteModalOpenEstadoTicket = false;
+            component.isEstadoTicketDeleteModalOpen = false;
             component.itemToDelete = null;
             await this.fetchEstadosTickets(component);
         } catch (error) {
             console.error("Error deleting estado ticket:", error);
             const errorMessage =
-                error?.error || "Error al eliminar el estado de ticket";
+                error?.message ||
+                error?.error ||
+                "Error al eliminar el estado de ticket";
             window.showToast && window.showToast(errorMessage, "error");
         }
     },
