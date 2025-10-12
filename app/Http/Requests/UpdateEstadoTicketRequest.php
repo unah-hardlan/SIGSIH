@@ -32,7 +32,7 @@ class UpdateEstadoTicketRequest extends FormRequest
                 'max:50',
                 Rule::unique('tbl_estado_ticket', 'codigo')->ignore($this->route('estado_ticket'), 'id_estado_ticket_pk')
             ],
-            'nombre_estado' => [
+            'nombre' => [
                 'sometimes',
                 'required',
                 'string',
@@ -53,9 +53,9 @@ class UpdateEstadoTicketRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre_estado.required' => 'El nombre del estado es obligatorio',
-            'nombre_estado.max' => 'El nombre del estado no puede exceder 50 caracteres',
-            'nombre_estado.unique' => 'Este nombre de estado ya existe',
+            'nombre.required' => 'El nombre del estado es obligatorio',
+            'nombre.max' => 'El nombre del estado no puede exceder 50 caracteres',
+            'nombre.unique' => 'Este nombre de estado ya existe',
             'descripcion.max' => 'La descripción no puede exceder 255 caracteres',
             'es_final.required' => 'El campo es final es obligatorio',
             'orden.required' => 'El campo orden es obligatorio',

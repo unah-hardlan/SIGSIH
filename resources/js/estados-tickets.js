@@ -34,7 +34,7 @@ window.estadosTicketsApiHandlers = {
         const payload = {
             id: String(component.id_estado || "").trim(),
             nombre: String(component.nombre || "").trim(),
-            descripcion: String(component.descripcion_estado || "").trim(),
+            descripcion: String(component.descripcion || "").trim(),
             es_final: Boolean(component.es_final),
             orden: Number(component.orden || 0),
             codigo: String(component.codigo || "").trim(),
@@ -60,6 +60,8 @@ window.estadosTicketsApiHandlers = {
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
+            console.log("Server response:", response);
+            console.log("Response data:", data);
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast(
@@ -67,8 +69,8 @@ window.estadosTicketsApiHandlers = {
                     "success"
                 );
             component.id_estado = "";
-            component.nombre_estado = "";
-            component.descripcion_estado = "";
+            component.nombre = "";
+            component.descripcion = "";
             component.isModalOpenEstadoTicket = false;
             await this.fetchEstadosTickets(component);
         } catch (error) {
@@ -83,12 +85,16 @@ window.estadosTicketsApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async updateEstadoTicket(component) {
+        console.log("updateEstadoTicket called with:", component.itemToEdit);
         if (!component.itemToEdit || !component.itemToEdit.id) return;
 
         const payload = {
-            id: String(component.itemToEdit.id || "").trim(),
+            id: String(component.itemToEdit.id_estado_ticket_pk || "").trim(),
             nombre: String(component.itemToEdit.nombre || "").trim(),
             descripcion: String(component.itemToEdit.descripcion || "").trim(),
+            codigo: String(component.itemToEdit.codigo || "").trim(),
+            es_final: Boolean(component.itemToEdit.es_final),
+            orden: Number(component.itemToEdit.orden || 0),
         };
 
         if (!payload.nombre) {
@@ -114,6 +120,8 @@ window.estadosTicketsApiHandlers = {
                 }
             );
             const data = await response.json().catch(() => ({}));
+            console.log("Server response:", response);
+            console.log("Response data:", data);
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast(
@@ -146,6 +154,8 @@ window.estadosTicketsApiHandlers = {
                 }
             );
             const data = await response.json().catch(() => ({}));
+            console.log("Server response:", response);
+            console.log("Response data:", data);
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast(

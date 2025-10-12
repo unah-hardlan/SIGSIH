@@ -135,7 +135,7 @@ x-init="fetchEstadosTickets()"
                             <button @click.prevent="isEstadoTicketEditModalOpen = true; itemToEdit = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, codigo: estadoTicket.codigo, nombre: estadoTicket.nombre, descripcion: estadoTicket.descripcion, es_final: estadoTicket.es_final, orden: estadoTicket.orden}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button @click.prevent="isEstadoTicketDeleteModalOpen = true; itemToDelete = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, nombre: estadoTicket.nombre" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                            <button @click.prevent="isEstadoTicketDeleteModalOpen = true; itemToDelete = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, nombre: estadoTicket.nombre}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
