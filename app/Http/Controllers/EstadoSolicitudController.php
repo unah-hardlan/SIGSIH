@@ -3,110 +3,98 @@
 namespace App\Http\Controllers;
 
 use App\Models\EstadoSolicitud;
-use Illuminate\Http\Request;
+// ¡Importamos los nuevos FormRequests!
+use App\Http\Requests\StoreEstadoSolicitudRequest;
+use App\Http\Requests\UpdateEstadoSolicitudRequest;
 use App\Http\Resources\EstadoSolicitudResource;
+use Illuminate\Http\Request; // Necesario para el método index
 
 class EstadoSolicitudController extends Controller
 {
-    public function index()
+    /**
+     * Muestra una lista de los recursos.
+     */
+    public function index(Request $request)
     {
         $query = EstadoSolicitud::query();
 
-        // Filtros
-        if ($q = request('q')) {
+        if ($q = $request->input('q')) {
             $query->where(function($sub) use ($q) {
-                $sub->where('nombre_estado', 'like', "%$q%")
-                    ->orWhere('descripcion_estado', 'like', "%$q%");
+                $sub->where('nombre', 'like', "%$q%")
+                    ->orWhere('descripcion', 'like', "%$q%")
+                    ->orWhere('codigo', 'like', "%$q%");
             });
         }
 
-        if ($nombre = request('nombre')) {
-            $query->where('nombre_estado', 'like', "%$nombre%");
-        }
-
-        // Ordenamiento dinámico
         $sortable = [
-            'nombre' => 'nombre_estado',
-            'descripcion' => 'descripcion_estado',
-            'id' => 'id_estado_solicitud_pk',
+            'nombre' => 'nombre',
+            'codigo' => 'codigo',
+            'orden'  => 'orden',
+            'id'     => 'id_estado_solicitud_pk',
         ];
-        $sort = request('sort');
-        $direction = strtolower(request('direction','asc')) === 'desc' ? 'desc' : 'asc';
+
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction','asc')) === 'desc' ? 'desc' : 'asc';
+
         if ($sort && isset($sortable[$sort])) {
             $query->orderBy($sortable[$sort], $direction);
         } else {
-            // orden por defecto
-            $query->orderBy('nombre_estado', 'asc');
+            $query->orderBy('orden', 'asc');
         }
+        
+        $estadosSolicitud = $query->get();
 
-        $perPage = (int) request('per_page', 15);
-        $estadosSolicitud = $query->paginate($perPage);
-
-        return EstadoSolicitudResource::collection($estadosSolicitud)->additional([
-            'meta' => [
-                'page' => $estadosSolicitud->currentPage(),
-                'per_page' => $estadosSolicitud->perPage(),
-                'total' => $estadosSolicitud->total(),
-                'last_page' => $estadosSolicitud->lastPage(),
-            ]
-        ]);
+        return EstadoSolicitudResource::collection($estadosSolicitud);
     }
 
-    public function create() {}
-
-    public function store(Request $request)
+    /**
+     * Almacena un nuevo recurso.
+     */
+    public function store(StoreEstadoSolicitudRequest $request)
     {
-        $request->validate([
-            'nombre_estado' => 'required|string|max:50|unique:tbl_estado_solicitud,nombre_estado',
-            'descripcion_estado' => 'nullable|string|max:255',
-        ]);
-
-        $estadoSolicitud = EstadoSolicitud::create($request->all());
-        return (new EstadoSolicitudResource($estadoSolicitud))->response()->setStatusCode(201);
+        // La validación ya ocurrió automáticamente.
+        // Usamos $request->validated() para obtener solo los datos validados.
+        $estadoSolicitud = EstadoSolicitud::create($request->validated());
+        
+        return (new EstadoSolicitudResource($estadoSolicitud))
+                ->response()
+                ->setStatusCode(201); // 201 Created
     }
 
-    public function show($id)
+    /**
+     * Muestra un recurso específico.
+     */
+    public function show(EstadoSolicitud $estadoSolicitud)
     {
-        $estadoSolicitud = EstadoSolicitud::find($id);
-        if (!$estadoSolicitud) {
-            return response()->json(['error' => 'Estado de solicitud no encontrado'], 404);
-        }
-        return (new EstadoSolicitudResource($estadoSolicitud))->response();
+        return new EstadoSolicitudResource($estadoSolicitud);
     }
 
-    public function edit(string $id) {}
-
-    public function update(Request $request, $id)
+    /**
+     * Actualiza un recurso específico.
+     */
+    public function update(UpdateEstadoSolicitudRequest $request, EstadoSolicitud $estadoSolicitud)
     {
-        $estadoSolicitud = EstadoSolicitud::find($id);
-        if (!$estadoSolicitud) {
-            return response()->json(['error' => 'Estado de solicitud no encontrado'], 404);
-        }
-
-        $request->validate([
-            'nombre_estado' => 'sometimes|required|string|max:50|unique:tbl_estado_solicitud,nombre_estado,' . $id . ',id_estado_solicitud_pk',
-            'descripcion_estado' => 'nullable|string|max:255',
-        ]);
-
-        $estadoSolicitud->update($request->all());
-        return (new EstadoSolicitudResource($estadoSolicitud))->response();
+        // La validación también ocurrió automáticamente.
+        $estadoSolicitud->update($request->validated());
+        
+        return new EstadoSolicitudResource($estadoSolicitud);
     }
 
-    public function destroy($id)
+    /**
+     * Elimina un recurso específico.
+     */
+    public function destroy(EstadoSolicitud $estadoSolicitud)
     {
-        $estadoSolicitud = EstadoSolicitud::find($id);
-        if (!$estadoSolicitud) {
-            return response()->json(['error' => 'Estado de solicitud no encontrado'], 404);
-        }
-
-        // Verificar si tiene solicitudes asociadas antes de eliminar
+        // Esta lógica es excelente. Asegúrate de que el modelo EstadoSolicitud
+        // tenga definida la relación `solicitudes()`.
         if ($estadoSolicitud->solicitudes()->exists()) {
             return response()->json([
-                'error' => 'No se puede eliminar el estado porque tiene solicitudes asociadas'
-            ], 422);
+                'message' => 'No se puede eliminar el estado porque tiene solicitudes asociadas.'
+            ], 422); // 422 Unprocessable Entity es perfecto para esto.
         }
 
         $estadoSolicitud->delete();
-        return response()->json(['message' => 'Estado de solicitud eliminado correctamente'], 200);
+        
+        return response()->json(null, 204); // 204 No Content
     }
 }

@@ -129,7 +129,8 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
 
     Route::apiResource('contactos', ContactoController::class);
-    Route::apiResource('estados-solicitud', EstadoSolicitudController::class);
+    Route::apiResource('estados-solicitud', EstadoSolicitudController::class)
+     ->parameters(['estados-solicitud' => 'estadoSolicitud']);
     Route::apiResource('estados-proyecto', EstadoProyectoController::class);
     Route::apiResource('proyectos', ProyectoController::class);
     Route::apiResource('gastos', GastosController::class);
