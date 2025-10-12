@@ -12,6 +12,7 @@ window.estadosCalendarioApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
+            // El controller retorna data dentro de 'data' key
             component.estadosCalendario = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -34,17 +35,11 @@ window.estadosCalendarioApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitEstadoCalendario(component) {
-        const payload = {
-            codigo: String(component.codigo || "").trim(),
-            nombre: String(component.nombre_estado_calendario || "").trim(),
-            descripcion: String(
-                component.descripcion_estado_calendario || ""
-            ).trim(),
-            es_final: component.es_final || false,
-            orden: component.orden || 0,
-        };
+        const nombreTrim = String(component.nombre || "").trim();
+        const codigoTrim = String(component.codigo || "").trim();
+        const descripcionTrim = String(component.descripcion || "").trim();
 
-        if (!payload.nombre) {
+        if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre del estado de calendario es obligatorio",
@@ -53,7 +48,46 @@ window.estadosCalendarioApiHandlers = {
             return;
         }
 
+        if (!codigoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El código del estado de calendario es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        // Validar duplicados por nombre
+        if (
+            component.estadosCalendario.some(
+                (ec) => ec.nombre.toLowerCase() === nombreTrim.toLowerCase()
+            )
+        ) {
+            window.showToast &&
+                window.showToast("El estado de calendario ya existe", "error");
+            return;
+        }
+
+        // Validar duplicados por código
+        if (
+            component.estadosCalendario.some(
+                (ec) => ec.codigo.toLowerCase() === codigoTrim.toLowerCase()
+            )
+        ) {
+            window.showToast &&
+                window.showToast("El código ya existe", "error");
+            return;
+        }
+
         try {
+            const payload = {
+                codigo: codigoTrim,
+                nombre: nombreTrim,
+                descripcion: descripcionTrim,
+                es_final: component.es_final || false,
+                orden: parseInt(component.orden) || 0,
+            };
+
             const response = await fetch("/api/estados-calendario", {
                 method: "POST",
                 headers: {
@@ -64,17 +98,31 @@ window.estadosCalendarioApiHandlers = {
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                // Mostrar errores de validación si existen
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                    return;
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast(
                     "Estado de calendario creado exitosamente",
                     "success"
                 );
             component.codigo = "";
-            component.nombre_estado_calendario = "";
-            component.descripcion_estado_calendario = "";
+            component.nombre = "";
+            component.descripcion = "";
             component.es_final = false;
-            component.orden = 0;
+            component.orden = "";
             component.isEstadoCalendarioModalOpen = false;
             await this.fetchEstadosCalendario(component);
         } catch (error) {
@@ -98,19 +146,13 @@ window.estadosCalendarioApiHandlers = {
         )
             return;
 
-        const payload = {
-            codigo: String(component.itemToEdit.codigo || "").trim(),
-            nombre: String(
-                component.itemToEdit.nombre_estado_calendario || ""
-            ).trim(),
-            descripcion: String(
-                component.itemToEdit.descripcion_estado_calendario || ""
-            ).trim(),
-            es_final: component.itemToEdit.es_final || false,
-            orden: component.itemToEdit.orden || 0,
-        };
+        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
+        const codigoTrim = String(component.itemToEdit.codigo || "").trim();
+        const descripcionTrim = String(
+            component.itemToEdit.descripcion || ""
+        ).trim();
 
-        if (!payload.nombre) {
+        if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre del estado de calendario es obligatorio",
@@ -119,7 +161,58 @@ window.estadosCalendarioApiHandlers = {
             return;
         }
 
+        if (!codigoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El código del estado de calendario es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        // Validar duplicados por nombre
+        if (
+            component.estadosCalendario.some(
+                (ec) =>
+                    ec.nombre.toLowerCase() === nombreTrim.toLowerCase() &&
+                    ec.id_estado_calendario_pk !==
+                        component.itemToEdit.id_estado_calendario_pk
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otro estado de calendario con ese nombre",
+                    "error"
+                );
+            return;
+        }
+
+        // Validar duplicados por código
+        if (
+            component.estadosCalendario.some(
+                (ec) =>
+                    ec.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
+                    ec.id_estado_calendario_pk !==
+                        component.itemToEdit.id_estado_calendario_pk
+            )
+        ) {
+            window.showToast &&
+                window.showToast(
+                    "Ya existe otro estado de calendario con ese código",
+                    "error"
+                );
+            return;
+        }
+
         try {
+            const payload = {
+                codigo: codigoTrim,
+                nombre: nombreTrim,
+                descripcion: descripcionTrim,
+                es_final: component.itemToEdit.es_final || false,
+                orden: parseInt(component.itemToEdit.orden) || 0,
+            };
+
             const response = await fetch(
                 `/api/estados-calendario/${component.itemToEdit.id_estado_calendario_pk}`,
                 {
@@ -133,7 +226,26 @@ window.estadosCalendarioApiHandlers = {
                 }
             );
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                // Mostrar errores de validación si existen
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                } else {
+                    window.showToast &&
+                        window.showToast(
+                            "Error al actualizar el estado de calendario",
+                            "error"
+                        );
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast(
                     "Estado de calendario actualizado exitosamente",
@@ -180,7 +292,9 @@ window.estadosCalendarioApiHandlers = {
         } catch (error) {
             console.error("Error deleting estado calendario:", error);
             const errorMessage =
-                error?.error || "Error al eliminar el estado de calendario";
+                error?.message ||
+                error?.error ||
+                "Error al eliminar el estado de calendario";
             window.showToast && window.showToast(errorMessage, "error");
         }
     },

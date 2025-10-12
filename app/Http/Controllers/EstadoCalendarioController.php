@@ -3,123 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Models\EstadoCalendario;
-use App\Http\Resources\EstadoCalendarioResource;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreEstadoCalendarioRequest;
 use App\Http\Requests\UpdateEstadoCalendarioRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Http\Resources\EstadoCalendarioResource;
 
 class EstadoCalendarioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $query = EstadoCalendario::query();
-
-        // Filtro por nombre del estado
-        if ($request->has('nombre')) {
-            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        
+        if($q = $request->input('q')){
+            $query->where(function($sub) use ($q){
+                $sub->where('nombre','like',"%$q%")
+                    ->orWhere('codigo','like',"%$q%")
+                    ->orWhere('descripcion','like',"%$q%");
+            });
         }
+        
+        $sortable = [
+            'nombre' => 'nombre',
+            'codigo' => 'codigo',
+            'orden' => 'orden',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction','asc'))==='desc'?'desc':'asc';
+        $query->orderBy($sortable[$sort] ?? 'orden',$direction);
 
-        // Filtro por descripción
-        if ($request->has('descripcion')) {
-            $query->where('descripcion', 'like', '%' . $request->descripcion . '%');
+        if($request->boolean('all')){
+            return EstadoCalendarioResource::collection($query->get());
         }
-
-        $estadosCalendario = $query->orderBy('orden')
-                                  ->paginate($request->get('per_page', 15));
-
-        return response()->json([
-            'success' => true,
-            'data' => EstadoCalendarioResource::collection($estadosCalendario->items()),
-            'pagination' => [
-                'current_page' => $estadosCalendario->currentPage(),
-                'total' => $estadosCalendario->total(),
-                'per_page' => $estadosCalendario->perPage(),
+        $perPage = (int)$request->input('per_page',15);
+        $items = $query->paginate($perPage);
+        return EstadoCalendarioResource::collection($items)->additional([
+            'meta'=>[
+                'page'=>$items->currentPage(),
+                'per_page'=>$items->perPage(),
+                'total'=>$items->total(),
+                'last_page'=>$items->lastPage(),
             ]
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreEstadoCalendarioRequest $request): JsonResponse
+    public function store(StoreEstadoCalendarioRequest $request)
     {
-        $validated = $request->validated();
-        $estadoCalendario = EstadoCalendario::create($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Estado de calendario creado exitosamente',
-            'data' => new EstadoCalendarioResource($estadoCalendario)
-        ], 201);
+        $estadoCalendario = EstadoCalendario::create($request->validated());
+        return (new EstadoCalendarioResource($estadoCalendario))->response()->setStatusCode(201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id): JsonResponse
+    public function show($id)
     {
         $estadoCalendario = EstadoCalendario::find($id);
-
-        if (!$estadoCalendario) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Estado de calendario no encontrado'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => new EstadoCalendarioResource($estadoCalendario)
-        ]);
+        if(!$estadoCalendario) return response()->json(['error'=>'Estado de Calendario no encontrado'],404);
+        return (new EstadoCalendarioResource($estadoCalendario))->response();
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEstadoCalendarioRequest $request, string $id): JsonResponse
+    public function update(UpdateEstadoCalendarioRequest $request, $id)
     {
         $estadoCalendario = EstadoCalendario::find($id);
-
-        if (!$estadoCalendario) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Estado de calendario no encontrado'
-            ], 404);
-        }
-
-        $validated = $request->validated();
-        $estadoCalendario->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Estado de calendario actualizado exitosamente',
-            'data' => new EstadoCalendarioResource($estadoCalendario)
-        ]);
+        if(!$estadoCalendario) return response()->json(['error'=>'Estado de Calendario no encontrado'],404);
+        $estadoCalendario->update($request->validated());
+        return (new EstadoCalendarioResource($estadoCalendario))->response();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id): JsonResponse
+    public function destroy($id)
     {
         $estadoCalendario = EstadoCalendario::find($id);
-
-        if (!$estadoCalendario) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Estado de calendario no encontrado'
-            ], 404);
-        }
-
+        if(!$estadoCalendario) return response()->json(['error'=>'Estado de Calendario no encontrado'],404);
         $estadoCalendario->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Estado de calendario eliminado exitosamente'
-        ]);
+        return response()->json(['message'=>'Estado de Calendario eliminado']);
     }
 }
