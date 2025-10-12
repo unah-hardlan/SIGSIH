@@ -65,6 +65,7 @@ import "./estados-calendario";
 import "./estados-tickets";
 import "./generos";
 import "./estados-solicitud";
+import "./estados-proyecto";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
