@@ -63,6 +63,7 @@ import "./tipo-movimientos";
 import "./servicios-realizados";
 import "./estados-calendario";
 import "./estados-tickets";
+import "./generos";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {

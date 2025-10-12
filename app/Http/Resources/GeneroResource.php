@@ -6,12 +6,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class GeneroResource extends JsonResource
 {
-    /** @return array<string,mixed> */
     public function toArray($request): array
     {
         return [
-            'id' => $this->id_genero_pk,
-            'nombre_genero' => $this->genero,
+            'id_genero_pk' => $this->id_genero_pk,
+            'genero' => $this->genero,
         ];
     }
 }
