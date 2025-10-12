@@ -1,6 +1,3 @@
-@extends('layouts.admin')
-
-@section('content')
 <div x-data="{
     isPaisModalOpen: false,
     isDepartamentoModalOpen: false,
@@ -805,4 +802,3 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDireccionDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta dirección?" />
 </div>
-@endsection
