@@ -19,16 +19,16 @@ class EstadoTicketController extends Controller
         $query = EstadoTicket::query();
 
         // Filtro por nombre del estado
-        if ($request->has('nombre_estado')) {
-            $query->where('nombre_estado', 'like', '%' . $request->nombre_estado . '%');
+        if ($request->has('nombre')) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
 
         // Filtro por descripción
-        if ($request->has('descripcion_estado_ticket')) {
-            $query->where('descripcion_estado_ticket', 'like', '%' . $request->descripcion_estado_ticket . '%');
+        if ($request->has('descripcion')) {
+            $query->where('descripcion', 'like', '%' . $request->descripcion . '%');
         }
 
-        $estadosTicket = $query->orderBy('nombre_estado')
+        $estadosTicket = $query->orderBy('nombre')
                               ->paginate($request->get('per_page', 15));
 
         return response()->json([
@@ -51,7 +51,13 @@ class EstadoTicketController extends Controller
     public function store(StoreEstadoTicketRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $estadoTicket = EstadoTicket::create($validated);
+        $estadoTicket = EstadoTicket::create([
+            'nombre' => $validated['nombre'],
+            'descripcion' => $validated['descripcion'],
+            'codigo' => $validated['codigo'],
+            'es_final' => $validated['es_final'],
+            'orden' => $validated['orden'],
+        ]);
 
         return response()->json([
             'success' => true,
@@ -95,7 +101,13 @@ class EstadoTicketController extends Controller
         }
 
         $validated = $request->validated();
-        $estadoTicket->update($validated);
+        $estadoTicket->update([
+            'nombre' => $validated['nombre'],
+            'descripcion' => $validated['descripcion'],
+            'codigo' => $validated['codigo'],
+            'es_final' => $validated['es_final'],
+            'orden' => $validated['orden'],
+        ]);
 
         return response()->json([
             'success' => true,

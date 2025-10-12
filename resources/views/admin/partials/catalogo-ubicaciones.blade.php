@@ -1,5 +1,3 @@
-<script src="{{ asset('js/ubicaciones.js') }}"></script>
-
 <div x-data="{
     isPaisModalOpen: false,
     isDepartamentoModalOpen: false,

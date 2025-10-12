@@ -19,16 +19,16 @@ class EstadoCalendarioController extends Controller
         $query = EstadoCalendario::query();
 
         // Filtro por nombre del estado
-        if ($request->has('nombre_estado')) {
-            $query->where('nombre_estado', 'like', '%' . $request->nombre_estado . '%');
+        if ($request->has('nombre')) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
 
         // Filtro por descripción
-        if ($request->has('descripcion_estado_calendario')) {
-            $query->where('descripcion_estado_calendario', 'like', '%' . $request->descripcion_estado_calendario . '%');
+        if ($request->has('descripcion')) {
+            $query->where('descripcion', 'like', '%' . $request->descripcion . '%');
         }
 
-        $estadosCalendario = $query->orderBy('nombre_estado')
+        $estadosCalendario = $query->orderBy('orden')
                                   ->paginate($request->get('per_page', 15));
 
         return response()->json([
@@ -36,11 +36,8 @@ class EstadoCalendarioController extends Controller
             'data' => EstadoCalendarioResource::collection($estadosCalendario->items()),
             'pagination' => [
                 'current_page' => $estadosCalendario->currentPage(),
-                'per_page' => $estadosCalendario->perPage(),
                 'total' => $estadosCalendario->total(),
-                'last_page' => $estadosCalendario->lastPage(),
-                'from' => $estadosCalendario->firstItem(),
-                'to' => $estadosCalendario->lastItem()
+                'per_page' => $estadosCalendario->perPage(),
             ]
         ]);
     }

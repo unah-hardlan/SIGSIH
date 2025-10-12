@@ -25,14 +25,23 @@ class UpdateEstadoTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'codigo' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('tbl_estado_ticket', 'codigo')->ignore($this->route('estado_ticket'), 'id_estado_ticket_pk')
+            ],
             'nombre_estado' => [
                 'sometimes',
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('tbl_estado_ticket', 'nombre_estado')->ignore($this->route('estado_ticket'), 'id_estado_ticket_pk')
+                Rule::unique('tbl_estado_ticket', 'nombre')->ignore($this->route('estado_ticket'), 'id_estado_ticket_pk')
             ],
-            'descripcion_estado_ticket' => 'sometimes|nullable|string|max:255'
+            'descripcion' => 'sometimes|nullable|string|max:255',
+            'es_final' => 'sometimes|required|boolean',
+            'orden' => 'sometimes|required|integer|min:0',
         ];
     }
 
@@ -47,7 +56,10 @@ class UpdateEstadoTicketRequest extends FormRequest
             'nombre_estado.required' => 'El nombre del estado es obligatorio',
             'nombre_estado.max' => 'El nombre del estado no puede exceder 50 caracteres',
             'nombre_estado.unique' => 'Este nombre de estado ya existe',
-            'descripcion_estado_ticket.max' => 'La descripción no puede exceder 255 caracteres'
+            'descripcion.max' => 'La descripción no puede exceder 255 caracteres',
+            'es_final.required' => 'El campo es final es obligatorio',
+            'orden.required' => 'El campo orden es obligatorio',
+            'orden.min' => 'El campo orden debe ser un número entero positivo',
         ];
     }
 

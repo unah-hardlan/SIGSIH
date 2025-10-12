@@ -25,14 +25,23 @@ class UpdateEstadoCalendarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_estado' => [
+            'codigo' => [
                 'sometimes',
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('tbl_estado_calendario', 'nombre_estado')->ignore($this->route('estado_calendario'), 'id_estado_calendario_pk')
+                Rule::unique('tbl_estado_calendario', 'codigo')->ignore($this->route('estado_calendario'), 'id_estado_calendario_pk')
             ],
-            'descripcion_estado_calendario' => 'sometimes|nullable|string|max:255'
+            'nombre' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('tbl_estado_calendario', 'nombre')->ignore($this->route('estado_calendario'), 'id_estado_calendario_pk')
+            ],
+            'descripcion' => 'sometimes|nullable|string|max:255',
+            'es_final' => 'sometimes|required|boolean',
+            'orden' => 'sometimes|required|integer|min:0',
         ];
     }
 
