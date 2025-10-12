@@ -21,7 +21,6 @@ class ProyectoResource extends JsonResource
             'fecha_estimada_fin_proyecto' => $this->fecha_estimada_fin_proyecto,
             'fecha_finalizacion_proyecto' => $this->fecha_finalizacion_proyecto,
             'descripcion_proyecto' => $this->descripcion_proyecto,
-            'actividades_proyecto' => $this->actividades_proyecto,
             'id_orden_servicio_fk' => $this->id_orden_servicio_fk,
             'id_estado_proyecto_fk' => $this->id_estado_proyecto_fk,
             

@@ -45,7 +45,6 @@ class ProyectoController extends Controller
             'fecha_estimada_fin_proyecto' => 'nullable|date',
             'fecha_finalizacion_proyecto' => 'nullable|date',
             'descripcion_proyecto' => 'nullable|string|max:500',
-            'actividades_proyecto' => 'nullable|string|max:500',
             'id_orden_servicio_fk' => 'required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_estado_proyecto_fk' => 'required|integer|exists:tbl_estado_proyecto,id_estado_proyecto_pk'
         ]);
@@ -78,7 +77,6 @@ class ProyectoController extends Controller
             'fecha_estimada_fin_proyecto' => 'nullable|date',
             'fecha_finalizacion_proyecto' => 'nullable|date',
             'descripcion_proyecto' => 'nullable|string|max:500',
-            'actividades_proyecto' => 'nullable|string|max:500',
             'id_orden_servicio_fk' => 'sometimes|required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_estado_proyecto_fk' => 'sometimes|required|integer|exists:tbl_estado_proyecto,id_estado_proyecto_pk'
         ]);
