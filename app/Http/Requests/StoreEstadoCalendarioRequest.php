@@ -24,8 +24,11 @@ class StoreEstadoCalendarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_estado' => 'required|string|max:50|unique:tbl_estado_calendario,nombre_estado',
-            'descripcion_estado_calendario' => 'nullable|string|max:255'
+            'codigo' => 'required|string|max:50|unique:tbl_estado_calendario,codigo',
+            'nombre' => 'required|string|max:100|unique:tbl_estado_calendario,nombre',
+            'descripcion' => 'nullable|string|max:255',
+            'es_final' => 'required|boolean',
+            'orden' => 'required|integer|min:0',
         ];
     }
 

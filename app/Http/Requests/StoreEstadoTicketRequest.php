@@ -24,8 +24,11 @@ class StoreEstadoTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_estado' => 'required|string|max:50|unique:tbl_estado_ticket,nombre_estado',
-            'descripcion_estado_ticket' => 'nullable|string|max:255'
+            'codigo' => 'required|string|max:50|unique:tbl_estado_ticket,codigo',
+            'nombre' => 'required|string|max:50|unique:tbl_estado_ticket,nombre',
+            'descripcion' => 'nullable|string|max:255',
+            'es_final' => 'required|boolean',
+            'orden' => 'required|integer|min:0',
         ];
     }
 
@@ -37,10 +40,13 @@ class StoreEstadoTicketRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre_estado.required' => 'El nombre del estado es obligatorio',
-            'nombre_estado.max' => 'El nombre del estado no puede exceder 50 caracteres',
-            'nombre_estado.unique' => 'Este nombre de estado ya existe',
-            'descripcion_estado_ticket.max' => 'La descripción no puede exceder 255 caracteres'
+            'nombre.required' => 'El nombre del estado es obligatorio',
+            'nombre.max' => 'El nombre del estado no puede exceder 50 caracteres',
+            'nombre.unique' => 'Este nombre de estado ya existe',
+            'descripcion.max' => 'La descripción no puede exceder 255 caracteres',
+            'es_final.required' => 'El estado final es obligatorio',
+            'orden.required' => 'El orden es obligatorio',
+            'orden.min' => 'El orden debe ser un número entero positivo',
         ];
     }
 

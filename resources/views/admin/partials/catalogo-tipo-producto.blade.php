@@ -1,5 +1,3 @@
-<script src="{{ asset('js/tipo-productos.js') }}"></script>
-
 <div x-data="{
     isTipoProductoModalOpen: false,
     isTipoProductoEditModalOpen: false,

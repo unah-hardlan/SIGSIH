@@ -1,6 +1,3 @@
-<script src="{{ asset('js/tipo-objetos.js') }}"></script>
-
-
 <div x-data="{
     tab: 'tipos',
     tipos: [],

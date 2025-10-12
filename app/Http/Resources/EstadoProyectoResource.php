@@ -7,17 +7,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class EstadoProyectoResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
             'id_estado_proyecto_pk' => $this->id_estado_proyecto_pk,
-            'nombre_estado' => $this->nombre_estado,
-            'descripcion_estado_proyecto' => $this->descripcion_estado_proyecto,
+            'codigo' => $this->codigo,
+            'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
+            'es_final' => (bool) $this->es_final,
+            'orden' => $this->orden,
         ];
     }
 }

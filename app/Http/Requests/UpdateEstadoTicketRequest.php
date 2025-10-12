@@ -24,15 +24,27 @@ class UpdateEstadoTicketRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Para apiResource 'estados-ticket', Laravel convierte a {estados_ticket}
+        $id = $this->route('estados_ticket');
+        
         return [
-            'nombre_estado' => [
+            'codigo' => [
                 'sometimes',
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('tbl_estado_ticket', 'nombre_estado')->ignore($this->route('estado_ticket'), 'id_estado_ticket_pk')
+                Rule::unique('tbl_estado_ticket', 'codigo')->ignore($id, 'id_estado_ticket_pk')
             ],
-            'descripcion_estado_ticket' => 'sometimes|nullable|string|max:255'
+            'nombre' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('tbl_estado_ticket', 'nombre')->ignore($id, 'id_estado_ticket_pk')
+            ],
+            'descripcion' => 'sometimes|nullable|string|max:255',
+            'es_final' => 'sometimes|required|boolean',
+            'orden' => 'sometimes|required|integer|min:0',
         ];
     }
 
@@ -44,10 +56,18 @@ class UpdateEstadoTicketRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nombre_estado.required' => 'El nombre del estado es obligatorio',
-            'nombre_estado.max' => 'El nombre del estado no puede exceder 50 caracteres',
-            'nombre_estado.unique' => 'Este nombre de estado ya existe',
-            'descripcion_estado_ticket.max' => 'La descripción no puede exceder 255 caracteres'
+            'codigo.required' => 'El código es obligatorio',
+            'codigo.max' => 'El código no puede exceder 50 caracteres',
+            'codigo.unique' => 'Este código ya existe',
+            'nombre.required' => 'El nombre del estado es obligatorio',
+            'nombre.max' => 'El nombre del estado no puede exceder 50 caracteres',
+            'nombre.unique' => 'Este nombre de estado ya existe',
+            'descripcion.max' => 'La descripción no puede exceder 255 caracteres',
+            'es_final.required' => 'Debe especificar si es final',
+            'es_final.boolean' => 'El valor de es_final debe ser verdadero o falso',
+            'orden.required' => 'El orden es obligatorio',
+            'orden.integer' => 'El orden debe ser un número entero',
+            'orden.min' => 'El orden debe ser mayor o igual a 0',
         ];
     }
 

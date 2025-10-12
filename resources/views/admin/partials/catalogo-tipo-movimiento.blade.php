@@ -1,6 +1,3 @@
-<script src="{{ asset('js/tipo-movimientos.js') }}"></script>
-
-
 <div x-data="{
     isTipoMovimientoModalOpen: false,
     isTipoMovimientoEditModalOpen: false,
