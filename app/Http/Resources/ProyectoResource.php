@@ -28,15 +28,26 @@ class ProyectoResource extends JsonResource
             'orden_servicio' => $this->whenLoaded('ordenServicio', function () {
                 return [
                     'id_orden_servicio_pk' => $this->ordenServicio->id_orden_servicio_pk,
+                    'numero_orden_servicio' => $this->ordenServicio->numero_orden_servicio,
+                    'nombre_orden_servicio' => $this->ordenServicio->numero_orden_servicio . 
+                        ($this->ordenServicio->solicitudServicio ? ' - ' . substr($this->ordenServicio->solicitudServicio->descripcion_problema, 0, 50) : ''),
                     'fecha_recepcion' => $this->ordenServicio->fecha_recepcion,
                     'observaciones' => $this->ordenServicio->observaciones,
+                    'solicitud_servicio' => $this->when($this->ordenServicio->relationLoaded('solicitudServicio'), function () {
+                        return $this->ordenServicio->solicitudServicio ? [
+                            'numero_solicitud_acf' => $this->ordenServicio->solicitudServicio->numero_solicitud_acf,
+                            'numero_solicitud_cliente' => $this->ordenServicio->solicitudServicio->numero_solicitud_cliente,
+                            'descripcion_problema' => $this->ordenServicio->solicitudServicio->descripcion_problema,
+                        ] : null;
+                    }),
                 ];
             }),
             'estado_proyecto' => $this->whenLoaded('estadoProyecto', function () {
                 return [
                     'id_estado_proyecto_pk' => $this->estadoProyecto->id_estado_proyecto_pk,
-                    'nombre_estado' => $this->estadoProyecto->nombre_estado,
-                    'descripcion_estado_proyecto' => $this->estadoProyecto->descripcion_estado_proyecto,
+                    'codigo' => $this->estadoProyecto->codigo,
+                    'nombre_estado' => $this->estadoProyecto->nombre,
+                    'descripcion_estado_proyecto' => $this->estadoProyecto->descripcion,
                 ];
             }),
         ];

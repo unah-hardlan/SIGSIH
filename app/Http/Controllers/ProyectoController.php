@@ -14,7 +14,7 @@ class ProyectoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Proyecto::with(['ordenServicio', 'estadoProyecto']);
+        $query = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         // Filtros opcionales
         if ($request->has('id_orden_servicio_fk')) {
@@ -50,7 +50,7 @@ class ProyectoController extends Controller
         ]);
 
         $proyecto = Proyecto::create($validatedData);
-        $proyecto->load(['ordenServicio', 'estadoProyecto']);
+        $proyecto->load(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         return new ProyectoResource($proyecto);
     }
@@ -60,7 +60,7 @@ class ProyectoController extends Controller
      */
     public function show($id)
     {
-        $proyecto = Proyecto::with(['ordenServicio', 'estadoProyecto'])->findOrFail($id);
+        $proyecto = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto'])->findOrFail($id);
         return new ProyectoResource($proyecto);
     }
 
@@ -82,7 +82,7 @@ class ProyectoController extends Controller
         ]);
 
         $proyecto->update($validatedData);
-        $proyecto->load(['ordenServicio', 'estadoProyecto']);
+        $proyecto->load(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         return new ProyectoResource($proyecto);
     }

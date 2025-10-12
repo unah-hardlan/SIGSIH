@@ -125,8 +125,8 @@ x-init="fetchProyectos(); fetchIngresos(); fetchGastos(); fetchCatalogos();"
                                 <td class="py-2 px-4" x-text="proyecto.fecha_estimada_fin_proyecto"></td>
                                 <td class="py-2 px-4" x-text="proyecto.fecha_finalizacion_proyecto"></td>
                                 <td class="py-2 px-4" x-text="proyecto.descripcion_proyecto"></td>
-                                <td class="py-2 px-4" x-text="proyecto.orden_servicio ? proyecto.orden_servicio.codigo : 'N/A'"></td>
-                                <td class="py-2 px-4"><span class="px-2 py-1 rounded text-xs" x-text="proyecto.estado ? proyecto.estado.nombre_estado_proyecto : 'Sin Estado'"></span></td>
+                                <td class="py-2 px-4" x-text="proyecto.orden_servicio ? proyecto.orden_servicio.id_orden_servicio_pk : 'N/A'"></td>
+                                <td class="py-2 px-4"><span class="px-2 py-1 rounded text-xs" x-text="proyecto.estado_proyecto ? proyecto.estado_proyecto.nombre_estado : 'Sin Estado'"></span></td>
                                 <td class="py-2 px-4 flex gap-2">
                                     <a href="#" @click.prevent="isProyectoEditModalOpen = true; proyectoToEdit = JSON.parse(JSON.stringify(proyecto))" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isProyectoDeleteModalOpen = true; proyectoToDelete = { id_proyecto_pk: proyecto.id_proyecto_pk, nombre_proyecto: proyecto.nombre_proyecto }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>

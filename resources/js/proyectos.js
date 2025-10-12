@@ -26,7 +26,7 @@ window.proyectosApiHandlers = {
                       id_orden_servicio_fk: item.id_orden_servicio_fk,
                       id_estado_proyecto_fk: item.id_estado_proyecto_fk,
                       orden_servicio: item.orden_servicio,
-                      estado: item.estado,
+                      estado_proyecto: item.estado_proyecto,
                   }))
                 : Array.isArray(data)
                 ? data.map((item) => ({
@@ -41,7 +41,7 @@ window.proyectosApiHandlers = {
                       id_orden_servicio_fk: item.id_orden_servicio_fk,
                       id_estado_proyecto_fk: item.id_estado_proyecto_fk,
                       orden_servicio: item.orden_servicio,
-                      estado: item.estado,
+                      estado_proyecto: item.estado_proyecto,
                   }))
                 : [];
         } catch (error) {
