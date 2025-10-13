@@ -54,7 +54,7 @@
                         
                         <!-- Zona de drag and drop -->
                         <div id="logo-drop-zone" class="w-full max-w-sm border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-green-500 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all duration-300 ease-in-out">
-                            <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="previewLogo(this)">
+                            <input type="file" id="avatar" name="avatar" data-validate="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="previewLogo(this)">
                             <label for="avatar" class="cursor-pointer">
                                 <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -84,10 +84,12 @@
                             name="nombre_comercial" 
                             type="text" 
                             required 
+                            data-validate="name"
                             class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
                             placeholder="Nombre comercial de la empresa"
                             value="{{ old('nombre_comercial') }}"
                         >
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="nombre_comercial"></p>
                         @error('nombre_comercial')
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
@@ -120,10 +122,12 @@
                             id="rtn" 
                             name="rtn" 
                             type="text" 
+                            data-validate="rtn"
                             class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
                             placeholder="Registro Tributario Nacional"
                             value="{{ old('rtn') }}"
                         >
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="rtn"></p>
                         @error('rtn')
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
@@ -259,7 +263,95 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('empresa-form');
     const submitBtn = document.getElementById('submit-btn');
     
-    form.addEventListener('submit', function() {
+    // Validation setup
+    const validators = {
+        name: value => value.trim().length >= 2 || 'Debe tener al menos 2 caracteres',
+        rtn: value => value.trim() === '' || /^[0-9-]{6,20}$/.test(value.trim()) || 'RTN inválido (solo números y guiones, 6-20 caracteres)',
+        avatar: file => {
+            if (!file) return true;
+            const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
+            if (!allowed.includes(file.type)) return 'Formato no permitido';
+            if (file.size > 2 * 1024 * 1024) return 'La imagen debe ser menor a 2MB';
+            return true;
+        }
+    };
+
+    const touched = {};
+    let triedSubmit = false;
+
+    function showError(input, message) {
+        const el = document.querySelector(`[data-client-error-for="${input.id}"]`);
+        if (el) {
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+        input.classList.add('border-red-500');
+        input.classList.remove('border-gray-300');
+    }
+
+    function clearError(input) {
+        const el = document.querySelector(`[data-client-error-for="${input.id}"]`);
+        if (el) {
+            el.textContent = '';
+            el.classList.add('hidden');
+        }
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+    }
+
+    function validateInput(input) {
+        const rule = input.dataset.validate;
+        if (!rule) return true;
+        let value;
+        if (input.type === 'file') value = input.files[0] || null;
+        else value = input.value || '';
+
+        const res = validators[rule](value);
+        if (res === true) {
+            clearError(input);
+            return true;
+        } else {
+            if (touched[input.id] || triedSubmit) showError(input, res);
+            else clearError(input);
+            return false;
+        }
+    }
+
+    function validateAll() {
+        const inputs = form.querySelectorAll('[data-validate]');
+        let ok = true;
+        inputs.forEach(i => {
+            const v = validateInput(i);
+            if (!v) ok = false;
+        });
+        submitBtn.disabled = !ok;
+        return ok;
+    }
+
+    // attach listeners to data-validate fields
+    form.querySelectorAll('[data-validate]').forEach(input => {
+        touched[input.id] = false;
+        const ev = input.type === 'file' ? 'change' : 'input';
+        input.addEventListener(ev, () => {
+            touched[input.id] = true;
+            validateInput(input);
+            validateAll();
+        });
+        input.addEventListener('blur', () => {
+            touched[input.id] = true;
+            validateInput(input);
+            validateAll();
+        });
+    });
+
+    form.addEventListener('submit', function(e) {
+        triedSubmit = true;
+        if (!validateAll()) {
+            e.preventDefault();
+            const firstInvalid = form.querySelector('[data-validate].border-red-500') || form.querySelector('[data-validate]');
+            if (firstInvalid) firstInvalid.focus();
+            return;
+        }
         submitBtn.disabled = true;
         submitBtn.innerHTML = `
             <span class="flex items-center justify-center">
