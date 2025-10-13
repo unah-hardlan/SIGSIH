@@ -1,6 +1,4 @@
-
-import "./bootstrap"; 
-
+import "./bootstrap";
 
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
@@ -12,7 +10,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         const queue = [];
 
         const AUTH_KEY = "authToken";
-        let tokenPromise = null; 
+        let tokenPromise = null;
 
         function getToken() {
             try {
@@ -31,14 +29,21 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             try {
                 if (window.axios) {
                     if (t)
-                        window.axios.defaults.headers.common["Authorization"] = `Bearer ${t}`;
-                    else delete window.axios.defaults.headers.common["Authorization"];
+                        window.axios.defaults.headers.common[
+                            "Authorization"
+                        ] = `Bearer ${t}`;
+                    else
+                        delete window.axios.defaults.headers.common[
+                            "Authorization"
+                        ];
                 }
             } catch (_) {}
 
             try {
                 document.dispatchEvent(
-                    new CustomEvent("auth:updated", { detail: { token: t || null } })
+                    new CustomEvent("auth:updated", {
+                        detail: { token: t || null },
+                    })
                 );
             } catch (_) {}
         }
@@ -98,7 +103,9 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         function withAuthToApi(input, init) {
             const t = getToken();
             const merged = init ? { ...init } : {};
-            merged.headers = new Headers(init && init.headers ? init.headers : {});
+            merged.headers = new Headers(
+                init && init.headers ? init.headers : {}
+            );
             merged.headers.set("X-Requested-With", "XMLHttpRequest");
             if (!merged.headers.has("Accept"))
                 merged.headers.set("Accept", "application/json");
@@ -111,7 +118,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             const next = queue.shift();
             if (!next) return;
             inFlight++;
-
 
             if (next.run) {
                 const { run, resolve, reject, delay } = next;
@@ -138,9 +144,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             }
         }
 
-    })();
-}
-
+        // 🔹 Se mantiene dentro del IIFE, con acceso a todas las variables
         window.fetch = function limitedFetch(...args) {
             try {
                 const url = (args && args[0] ? args[0].toString() : "") || "";
@@ -151,22 +155,20 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     : isApi
                     ? Math.floor(Math.random() * 80)
                     : 0;
+
                 if (!isApi) return origFetch(...args);
-                // For API calls: ensure token then inject Authorization
+
                 return new Promise((resolve, reject) => {
                     const run = async () => {
-                        // Acquire token lazily (do not force redirect on failure; backend may allow some public endpoints)
                         await fetchSessionToken(false);
                         let [input, init] = withAuthToApi(args[0], args[1]);
                         let res = await origFetch(input, init);
                         if (res.status === 401) {
-                            // Retry once after refreshing token
                             setToken(null);
                             await fetchSessionToken(true);
-                            ;[input, init] = withAuthToApi(args[0], args[1]);
+                            [input, init] = withAuthToApi(args[0], args[1]);
                             res = await origFetch(input, init);
                         }
-                        // If still 401 and response points to login, let caller handle (navigation store may redirect)
                         return res;
                     };
                     queue.push({ run, resolve, reject, delay });
@@ -178,6 +180,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         };
     })();
 }
+
 import "./usuarios";
 import "./parametros";
 import "./perfil";
@@ -383,7 +386,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) { }
+    } catch (_) {}
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -473,13 +476,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) { }
+            } catch (_) {}
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) { }
+            } catch (_) {}
 
             let sanitized = html;
             try {
@@ -487,45 +490,51 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) { }
+            } catch (_) {}
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) { }
+                    } catch (_) {}
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) { }
+                        } catch (_) {}
                     }
                 }
-            } catch (_) { }
+            } catch (_) {}
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
-                if (window.Livewire && typeof window.Livewire.rescan === "function") {
+                if (
+                    window.Livewire &&
+                    typeof window.Livewire.rescan === "function"
+                ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
-                if (window.Livewire && typeof window.Livewire.restart === "function") {
+                if (
+                    window.Livewire &&
+                    typeof window.Livewire.restart === "function"
+                ) {
                     window.Livewire.restart();
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) { }
+            } catch (_) {}
 
             this.restoreSidebarScrollPosition();
 
@@ -541,7 +550,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) { }
+            } catch (_) {}
         },
 
         saveSidebarScrollPosition() {
@@ -573,7 +582,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) { }
+            } catch (_) {}
             this.updateActiveLinks(url);
         },
 
@@ -660,7 +669,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) { }
+                } catch (_) {}
                 this.updateActiveLinks(path);
             }
         },
@@ -964,17 +973,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1000,7 +1009,9 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    try { window.__AUTH && window.__AUTH.ensureToken(false); } catch (_) { }
+    try {
+        window.__AUTH && window.__AUTH.ensureToken(false);
+    } catch (_) {}
     initializeDashboardChartsWithRetry();
 });
 
@@ -1009,12 +1020,10 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) {
-    }
+    } catch (_) {}
 
     return { Accept: "application/json" };
 }
-
 
 (function patchSetContent() {
     const nav = window.Alpine?.store && window.Alpine.store("navigation");
@@ -1047,7 +1056,12 @@ if (typeof window !== "undefined") {
 
             cotizacionesOptions: [],
             estadosOrdenOptions: [],
-            loadingCatalogos: { solicitudes: false, tecnicos: false, cotizaciones: false, estadosOrden: false },
+            loadingCatalogos: {
+                solicitudes: false,
+                tecnicos: false,
+                cotizaciones: false,
+                estadosOrden: false,
+            },
             authError: false,
             authNotified: false,
             loadingOrdenes: false,
@@ -1069,7 +1083,10 @@ if (typeof window !== "undefined") {
             },
             getToken() {
                 try {
-                    return window.__AUTH?.getToken?.() || localStorage.getItem("authToken");
+                    return (
+                        window.__AUTH?.getToken?.() ||
+                        localStorage.getItem("authToken")
+                    );
                 } catch (_) {
                     return null;
                 }
@@ -1078,16 +1095,21 @@ if (typeof window !== "undefined") {
                 try {
                     if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
                     else if (token) localStorage.setItem("authToken", token);
-                } catch (_) { }
+                } catch (_) {}
                 return token;
             },
             getCsrf() {
-                const m = document.head.querySelector('meta[name="csrf-token"]');
+                const m = document.head.querySelector(
+                    'meta[name="csrf-token"]'
+                );
                 return m ? m.content : "";
             },
             apiHeaders() {
                 const t = this.getToken();
-                const h = { "Content-Type": "application/json", Accept: "application/json" };
+                const h = {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                };
                 if (t) h["Authorization"] = "Bearer " + t;
                 return h;
             },
@@ -1099,14 +1121,21 @@ if (typeof window !== "undefined") {
                 }
                 try {
                     // Prefer global ensureToken if available
-                    const t = typeof window.__AUTH?.ensureToken === "function" ? await window.__AUTH.ensureToken(false) : null;
+                    const t =
+                        typeof window.__AUTH?.ensureToken === "function"
+                            ? await window.__AUTH.ensureToken(false)
+                            : null;
                     if (t) {
                         this.authError = false;
                         return true;
                     }
                     const res = await fetch("/session/token", {
                         method: "GET",
-                        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": this.getCsrf() },
+                        headers: {
+                            Accept: "application/json",
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRF-TOKEN": this.getCsrf(),
+                        },
                         credentials: "same-origin",
                     });
                     if (!res.ok) throw new Error("unauthorized");
@@ -1121,7 +1150,10 @@ if (typeof window !== "undefined") {
                 }
                 this.authError = true;
                 if (!this.authNotified) {
-                    this.showToast("Inicia sesión para gestionar órdenes de servicio.", "error");
+                    this.showToast(
+                        "Inicia sesión para gestionar órdenes de servicio.",
+                        "error"
+                    );
                     this.authNotified = true;
                 }
                 return false;
@@ -1129,14 +1161,20 @@ if (typeof window !== "undefined") {
             handleUnauthorized() {
                 this.authError = true;
                 if (!this.authNotified) {
-                    this.showToast("Tu sesión expiró. Vuelve a iniciar sesión para continuar.", "error");
+                    this.showToast(
+                        "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
+                        "error"
+                    );
                     this.authNotified = true;
                 }
             },
             showToast(message, type = "ok") {
                 const toast = document.createElement("div");
                 toast.className =
-                    "fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm " + (type === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white");
+                    "fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm " +
+                    (type === "error"
+                        ? "bg-red-600 text-white"
+                        : "bg-green-600 text-white");
                 toast.textContent = message;
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3500);
@@ -1164,7 +1202,9 @@ if (typeof window !== "undefined") {
                     return date.toISOString().slice(0, 10);
                 }
                 const cleaned = value.toString();
-                return cleaned.includes("T") ? cleaned.split("T")[0] : cleaned.split(" ")[0];
+                return cleaned.includes("T")
+                    ? cleaned.split("T")[0]
+                    : cleaned.split(" ")[0];
             },
             mapOrden(orden) {
                 const solicitud = orden.solicitud_servicio || {};
@@ -1174,20 +1214,31 @@ if (typeof window !== "undefined") {
                 const tecnico = orden.tecnico || {};
                 const calificacion = {}; // calificación eliminada
                 const estado = orden.estado || {};
-                const cotizacion = orden.cotizacion || orden.cotizacion_generada || {};
+                const cotizacion =
+                    orden.cotizacion || orden.cotizacion_generada || {};
                 const fechaRecepcion = this.formatDate(orden.fecha_recepcion);
                 const fechaInicio = this.formatDate(orden.fecha_inicio);
-                const fechaFinalizacion = this.formatDate(orden.fecha_finalizacion);
+                const fechaFinalizacion = this.formatDate(
+                    orden.fecha_finalizacion
+                );
                 const calificacionValor = calificacion.calificacion ?? null;
                 // Estado: derive name even if relation missing, using FK + options
-                const estadoIdFromRel = estado.id_estado_orden_servicio_pk ?? null;
-                const estadoIdFromTop = orden.id_estado_orden_servicio_fk ?? null;
+                const estadoIdFromRel =
+                    estado.id_estado_orden_servicio_pk ?? null;
+                const estadoIdFromTop =
+                    orden.id_estado_orden_servicio_fk ?? null;
                 const estadoId = estadoIdFromRel ?? estadoIdFromTop;
-                let estadoNombre = (estado.nombre_estado || estado.nombre || estado.codigo || "");
+                let estadoNombre =
+                    estado.nombre_estado ||
+                    estado.nombre ||
+                    estado.codigo ||
+                    "";
                 if (!estadoNombre && estadoId) {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
-                            ? this.estadosOrdenOptions.find((o) => String(o.value) === String(estadoId))
+                            ? this.estadosOrdenOptions.find(
+                                  (o) => String(o.value) === String(estadoId)
+                              )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1198,14 +1249,24 @@ if (typeof window !== "undefined") {
                     id: orden.id_orden_servicio_pk,
                     numero: orden.numero_orden_servicio || "",
                     id_solicitud: orden.id_solicitud_servicio_fk,
-                    numero_solicitud: solicitud.numero_solicitud_acf || solicitud.numero_solicitud_cliente || "",
-                    numero_solicitud_acf: solicitud.numero_solicitud_acf || null,
-                    numero_solicitud_cliente: solicitud.numero_solicitud_cliente || null,
-                    cliente_nombre: empresa.nombre_comercial || empresa.razon_social || "",
+                    numero_solicitud:
+                        solicitud.numero_solicitud_acf ||
+                        solicitud.numero_solicitud_cliente ||
+                        "",
+                    numero_solicitud_acf:
+                        solicitud.numero_solicitud_acf || null,
+                    numero_solicitud_cliente:
+                        solicitud.numero_solicitud_cliente || null,
+                    cliente_nombre:
+                        empresa.nombre_comercial || empresa.razon_social || "",
                     contacto_valor: contacto.valor_contacto || "",
                     contacto_tipo: contacto.tipo_contacto || "",
                     id_tecnico: orden.id_tecnico_fk,
-                    tecnico_nombre: tecnico.primer_nombre ? [tecnico.primer_nombre, tecnico.primer_apellido].filter(Boolean).join(" ") : "",
+                    tecnico_nombre: tecnico.primer_nombre
+                        ? [tecnico.primer_nombre, tecnico.primer_apellido]
+                              .filter(Boolean)
+                              .join(" ")
+                        : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
                     fecha_inicio: fechaInicio,
@@ -1227,26 +1288,38 @@ if (typeof window !== "undefined") {
                 this.ordenes.forEach((orden) => {
                     if (!orden.id_tecnico) return;
                     const valor = String(orden.id_tecnico);
-                    const label = orden.tecnico_nombre ? `${orden.tecnico_nombre} (ID ${orden.id_tecnico})` : `ID ${orden.id_tecnico}`;
+                    const label = orden.tecnico_nombre
+                        ? `${orden.tecnico_nombre} (ID ${orden.id_tecnico})`
+                        : `ID ${orden.id_tecnico}`;
                     mapa.set(valor, label);
                 });
-                this.tecnicosDisponibles = Array.from(mapa.entries()).map(([value, label]) => ({ value, label }));
+                this.tecnicosDisponibles = Array.from(mapa.entries()).map(
+                    ([value, label]) => ({ value, label })
+                );
             },
             ensureOption(listName, value, label) {
-                if (value === null || value === undefined || value === "") return;
+                if (value === null || value === undefined || value === "")
+                    return;
                 if (!Array.isArray(this[listName])) {
                     this[listName] = [];
                 }
                 const normalizedValue = String(value);
-                const exists = this[listName].some((opt) => String(opt.value) === normalizedValue);
+                const exists = this[listName].some(
+                    (opt) => String(opt.value) === normalizedValue
+                );
                 if (!exists) {
-                    this[listName].push({ value: normalizedValue, label: label || `ID ${normalizedValue}` });
+                    this[listName].push({
+                        value: normalizedValue,
+                        label: label || `ID ${normalizedValue}`,
+                    });
                     this.sortOptions(listName);
                 }
             },
             sortOptions(listName) {
                 if (!Array.isArray(this[listName])) return;
-                this[listName].sort((a, b) => a.label.localeCompare(b.label, "es"));
+                this[listName].sort((a, b) =>
+                    a.label.localeCompare(b.label, "es")
+                );
             },
             ensureOrdenOptions(orden) {
                 if (!orden) return;
@@ -1258,22 +1331,38 @@ if (typeof window !== "undefined") {
                 this.ensureOption(
                     "tecnicosOptions",
                     orden.id_tecnico,
-                    orden.tecnico_nombre ? `${orden.tecnico_nombre}` : String(orden.id_tecnico)
+                    orden.tecnico_nombre
+                        ? `${orden.tecnico_nombre}`
+                        : String(orden.id_tecnico)
                 );
                 if (orden.estado_id) {
-                    const label = orden.estado ? `${orden.estado}` : `ID ${orden.estado_id}`;
-                    this.ensureOption("estadosOrdenOptions", orden.estado_id, label);
+                    const label = orden.estado
+                        ? `${orden.estado}`
+                        : `ID ${orden.estado_id}`;
+                    this.ensureOption(
+                        "estadosOrdenOptions",
+                        orden.estado_id,
+                        label
+                    );
                 }
 
                 if (orden.id_cotizacion) {
-                    this.ensureOption("cotizacionesOptions", orden.id_cotizacion, String(orden.id_cotizacion));
+                    this.ensureOption(
+                        "cotizacionesOptions",
+                        orden.id_cotizacion,
+                        String(orden.id_cotizacion)
+                    );
                 }
             },
             async fetchCatalogos() {
                 if (!(await this.requireAuth())) {
                     return;
                 }
-                await Promise.all([this.fetchSolicitudes(), this.fetchTecnicos(), this.fetchCotizaciones()]);
+                await Promise.all([
+                    this.fetchSolicitudes(),
+                    this.fetchTecnicos(),
+                    this.fetchCotizaciones(),
+                ]);
             },
             async fetchSolicitudes() {
                 if (this.authError) return;
@@ -1281,20 +1370,32 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
-                    const response = await fetch("/api/solicitudes?" + params.toString(), { headers: this.apiHeaders() });
+                    const response = await fetch(
+                        "/api/solicitudes?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok) throw new Error("Error al cargar solicitudes");
+                    if (!response.ok)
+                        throw new Error("Error al cargar solicitudes");
                     const json = await response.json();
-                    const opciones = (json.data || []).map((item) => ({ value: String(item.id_solicitud_pk), label: String(item.id_solicitud_pk) }));
+                    const opciones = (json.data || []).map((item) => ({
+                        value: String(item.id_solicitud_pk),
+                        label: String(item.id_solicitud_pk),
+                    }));
                     this.solicitudesOptions = opciones;
                     this.sortOptions("solicitudesOptions");
-                    this.ordenes.forEach((orden) => this.ensureOrdenOptions(orden));
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
                 } catch (error) {
                     console.error(error);
-                    this.showToast("No se pudieron cargar las solicitudes", "error");
+                    this.showToast(
+                        "No se pudieron cargar las solicitudes",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.solicitudes = false;
                 }
@@ -1306,23 +1407,43 @@ if (typeof window !== "undefined") {
                     const params = new URLSearchParams();
                     params.set("all", "1");
                     params.set("sort", "nombre");
-                    const response = await fetch("/api/personas?" + params.toString(), { headers: this.apiHeaders() });
+                    const response = await fetch(
+                        "/api/personas?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok) throw new Error("Error al cargar personas");
+                    if (!response.ok)
+                        throw new Error("Error al cargar personas");
                     const json = await response.json();
                     const opciones = (json.data || []).map((item) => {
-                        const nombres = [item.primer_nombre, item.segundo_nombre, item.primer_apellido, item.segundo_apellido].filter(Boolean).join(" ").trim();
-                        return { value: String(item.id), label: (nombres || "Persona sin nombre") };
+                        const nombres = [
+                            item.primer_nombre,
+                            item.segundo_nombre,
+                            item.primer_apellido,
+                            item.segundo_apellido,
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .trim();
+                        return {
+                            value: String(item.id),
+                            label: nombres || "Persona sin nombre",
+                        };
                     });
                     this.tecnicosOptions = opciones;
                     this.sortOptions("tecnicosOptions");
-                    this.ordenes.forEach((orden) => this.ensureOrdenOptions(orden));
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
                 } catch (error) {
                     console.error(error);
-                    this.showToast("No se pudieron cargar las personas", "error");
+                    this.showToast(
+                        "No se pudieron cargar las personas",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.tecnicos = false;
                 }
@@ -1336,20 +1457,32 @@ if (typeof window !== "undefined") {
                     params.set("per_page", "100");
                     params.set("sort", "fecha");
                     params.set("direction", "desc");
-                    const response = await fetch("/api/cotizaciones?" + params.toString(), { headers: this.apiHeaders() });
+                    const response = await fetch(
+                        "/api/cotizaciones?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok) throw new Error("Error al cargar cotizaciones");
+                    if (!response.ok)
+                        throw new Error("Error al cargar cotizaciones");
                     const json = await response.json();
-                    const opciones = (json.data || []).map((item) => ({ value: String(item.id_cotizacion_pk), label: String(item.id_cotizacion_pk) }));
+                    const opciones = (json.data || []).map((item) => ({
+                        value: String(item.id_cotizacion_pk),
+                        label: String(item.id_cotizacion_pk),
+                    }));
                     this.cotizacionesOptions = opciones;
                     this.sortOptions("cotizacionesOptions");
-                    this.ordenes.forEach((orden) => this.ensureOrdenOptions(orden));
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
                 } catch (error) {
                     console.error(error);
-                    this.showToast("No se pudieron cargar las cotizaciones", "error");
+                    this.showToast(
+                        "No se pudieron cargar las cotizaciones",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.cotizaciones = false;
                 }
@@ -1360,19 +1493,30 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
-                    const response = await fetch("/api/ordenes-servicio?" + params.toString(), { headers: this.apiHeaders() });
+                    const response = await fetch(
+                        "/api/ordenes-servicio?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok) throw new Error("Error al cargar órdenes");
+                    if (!response.ok)
+                        throw new Error("Error al cargar órdenes");
                     const data = await response.json();
-                    this.ordenes = (data.data || []).map((orden) => this.mapOrden(orden));
-                    this.ordenes.forEach((orden) => this.ensureOrdenOptions(orden));
+                    this.ordenes = (data.data || []).map((orden) =>
+                        this.mapOrden(orden)
+                    );
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
                     this.actualizarTecnicos();
                 } catch (error) {
                     console.error(error);
-                    this.showToast("No se pudieron cargar las órdenes de servicio", "error");
+                    this.showToast(
+                        "No se pudieron cargar las órdenes de servicio",
+                        "error"
+                    );
                 } finally {
                     this.loadingOrdenes = false;
                 }
@@ -1388,9 +1532,16 @@ if (typeof window !== "undefined") {
                 (async () => {
                     try {
                         if (!(await this.requireAuth())) return;
-                        const res = await fetch("/api/ordenes-servicio/" + orden.id, { headers: this.apiHeaders() });
-                        if (res.status === 401) { this.handleUnauthorized(); return; }
-                        if (!res.ok) throw new Error("Error al cargar la orden");
+                        const res = await fetch(
+                            "/api/ordenes-servicio/" + orden.id,
+                            { headers: this.apiHeaders() }
+                        );
+                        if (res.status === 401) {
+                            this.handleUnauthorized();
+                            return;
+                        }
+                        if (!res.ok)
+                            throw new Error("Error al cargar la orden");
                         const json = await res.json();
                         const full = json.data || json; // Resource envuelve en data
                         const mapped = this.mapOrden(full);
@@ -1399,13 +1550,17 @@ if (typeof window !== "undefined") {
                             id: mapped.id,
                             id_solicitud_servicio_fk: mapped.id_solicitud ?? "",
                             id_tecnico_fk: mapped.id_tecnico ?? "",
-                            id_estado_orden_servicio_fk: mapped.estado_id ? String(mapped.estado_id) : "",
+                            id_estado_orden_servicio_fk: mapped.estado_id
+                                ? String(mapped.estado_id)
+                                : "",
                             fecha_recepcion: mapped.fecha_recepcion || "",
                             fecha_inicio: mapped.fecha_inicio || "",
                             fecha_finalizacion: mapped.fecha_finalizacion || "",
                             observaciones: mapped.observaciones || "",
-                            diagnostico_tecnico: mapped.diagnostico_tecnico || "",
-                            diagnostico_cliente: mapped.diagnostico_cliente || "",
+                            diagnostico_tecnico:
+                                mapped.diagnostico_tecnico || "",
+                            diagnostico_cliente:
+                                mapped.diagnostico_cliente || "",
                             id_cotizacion_fk: mapped.id_cotizacion ?? "",
                         };
                     } catch (e) {
@@ -1415,13 +1570,17 @@ if (typeof window !== "undefined") {
                             id: orden.id,
                             id_solicitud_servicio_fk: orden.id_solicitud ?? "",
                             id_tecnico_fk: orden.id_tecnico ?? "",
-                            id_estado_orden_servicio_fk: orden.estado_id ? String(orden.estado_id) : "",
+                            id_estado_orden_servicio_fk: orden.estado_id
+                                ? String(orden.estado_id)
+                                : "",
                             fecha_recepcion: orden.fecha_recepcion || "",
                             fecha_inicio: orden.fecha_inicio || "",
                             fecha_finalizacion: orden.fecha_finalizacion || "",
                             observaciones: orden.observaciones || "",
-                            diagnostico_tecnico: orden.diagnostico_tecnico || "",
-                            diagnostico_cliente: orden.diagnostico_cliente || "",
+                            diagnostico_tecnico:
+                                orden.diagnostico_tecnico || "",
+                            diagnostico_cliente:
+                                orden.diagnostico_cliente || "",
                             id_cotizacion_fk: orden.id_cotizacion ?? "",
                         };
                     } finally {
@@ -1440,35 +1599,59 @@ if (typeof window !== "undefined") {
 
             buildPayload() {
                 return {
-                    id_solicitud_servicio_fk: this.formOrden.id_solicitud_servicio_fk ? Number(this.formOrden.id_solicitud_servicio_fk) : null,
-                    id_tecnico_fk: this.formOrden.id_tecnico_fk ? Number(this.formOrden.id_tecnico_fk) : null,
-                    id_estado_orden_servicio_fk: this.formOrden.id_estado_orden_servicio_fk ? Number(this.formOrden.id_estado_orden_servicio_fk) : null,
+                    id_solicitud_servicio_fk: this.formOrden
+                        .id_solicitud_servicio_fk
+                        ? Number(this.formOrden.id_solicitud_servicio_fk)
+                        : null,
+                    id_tecnico_fk: this.formOrden.id_tecnico_fk
+                        ? Number(this.formOrden.id_tecnico_fk)
+                        : null,
+                    id_estado_orden_servicio_fk: this.formOrden
+                        .id_estado_orden_servicio_fk
+                        ? Number(this.formOrden.id_estado_orden_servicio_fk)
+                        : null,
                     fecha_recepcion: this.formOrden.fecha_recepcion || null,
                     fecha_inicio: this.formOrden.fecha_inicio || null,
-                    fecha_finalizacion: this.formOrden.fecha_finalizacion || null,
+                    fecha_finalizacion:
+                        this.formOrden.fecha_finalizacion || null,
                     observaciones: this.formOrden.observaciones || null,
-                    diagnostico_tecnico: this.formOrden.diagnostico_tecnico || null,
-                    diagnostico_cliente: this.formOrden.diagnostico_cliente || null,
-                    id_cotizacion_fk: this.formOrden.id_cotizacion_fk ? Number(this.formOrden.id_cotizacion_fk) : null,
+                    diagnostico_tecnico:
+                        this.formOrden.diagnostico_tecnico || null,
+                    diagnostico_cliente:
+                        this.formOrden.diagnostico_cliente || null,
+                    id_cotizacion_fk: this.formOrden.id_cotizacion_fk
+                        ? Number(this.formOrden.id_cotizacion_fk)
+                        : null,
                 };
             },
             async fetchEstadosOrden() {
                 if (this.authError) return;
                 this.loadingCatalogos.estadosOrden = true;
                 try {
-                    const res = await fetch("/api/estados-orden-servicio", { headers: this.apiHeaders() });
-                    if (res.status === 401) { this.handleUnauthorized(); return; }
-                    if (!res.ok) throw new Error("Error al cargar estados de orden");
+                    const res = await fetch("/api/estados-orden-servicio", {
+                        headers: this.apiHeaders(),
+                    });
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok)
+                        throw new Error("Error al cargar estados de orden");
                     const json = await res.json();
                     const opciones = (json.data || []).map((e) => {
-                        const text = [e.nombre, e.codigo ? `(${e.codigo})` : ""].filter(Boolean).join(" ");
+                        const text = [e.nombre, e.codigo ? `(${e.codigo})` : ""]
+                            .filter(Boolean)
+                            .join(" ");
                         return { value: String(e.id), label: text };
                     });
                     this.estadosOrdenOptions = opciones;
                     this.sortOptions("estadosOrdenOptions");
                 } catch (err) {
                     console.error(err);
-                    this.showToast("No se pudieron cargar los estados de orden", "error");
+                    this.showToast(
+                        "No se pudieron cargar los estados de orden",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.estadosOrden = false;
                 }
@@ -1480,7 +1663,11 @@ if (typeof window !== "undefined") {
                 this.errors = {};
                 try {
                     const payload = this.buildPayload();
-                    const response = await fetch("/api/ordenes-servicio", { method: "POST", headers: this.apiHeaders(), body: JSON.stringify(payload) });
+                    const response = await fetch("/api/ordenes-servicio", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
@@ -1490,7 +1677,8 @@ if (typeof window !== "undefined") {
                         this.errors = errorData.errors || {};
                         throw new Error("Validación");
                     }
-                    if (!response.ok) throw new Error("Error al crear la orden");
+                    if (!response.ok)
+                        throw new Error("Error al crear la orden");
                     const data = await response.json();
                     if (data.data) {
                         const mapped = this.mapOrden(data.data);
@@ -1503,7 +1691,8 @@ if (typeof window !== "undefined") {
                     this.resetForm();
                 } catch (error) {
                     console.error(error);
-                    if (error.message !== "Validación") this.showToast("No se pudo crear la orden", "error");
+                    if (error.message !== "Validación")
+                        this.showToast("No se pudo crear la orden", "error");
                 } finally {
                     this.saving = false;
                 }
@@ -1515,7 +1704,14 @@ if (typeof window !== "undefined") {
                 this.errors = {};
                 try {
                     const payload = this.buildPayload();
-                    const response = await fetch("/api/ordenes-servicio/" + this.formOrden.id, { method: "PUT", headers: this.apiHeaders(), body: JSON.stringify(payload) });
+                    const response = await fetch(
+                        "/api/ordenes-servicio/" + this.formOrden.id,
+                        {
+                            method: "PUT",
+                            headers: this.apiHeaders(),
+                            body: JSON.stringify(payload),
+                        }
+                    );
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
@@ -1525,12 +1721,15 @@ if (typeof window !== "undefined") {
                         this.errors = errorData.errors || {};
                         throw new Error("Validación");
                     }
-                    if (!response.ok) throw new Error("Error al actualizar la orden");
+                    if (!response.ok)
+                        throw new Error("Error al actualizar la orden");
                     const data = await response.json();
                     if (data.data) {
                         const mapped = this.mapOrden(data.data);
                         this.ensureOrdenOptions(mapped);
-                        const index = this.ordenes.findIndex((orden) => orden.id === this.formOrden.id);
+                        const index = this.ordenes.findIndex(
+                            (orden) => orden.id === this.formOrden.id
+                        );
                         if (index !== -1) {
                             this.ordenes.splice(index, 1, mapped);
                         }
@@ -1542,7 +1741,11 @@ if (typeof window !== "undefined") {
                     this.resetForm();
                 } catch (error) {
                     console.error(error);
-                    if (error.message !== "Validación") this.showToast("No se pudo actualizar la orden", "error");
+                    if (error.message !== "Validación")
+                        this.showToast(
+                            "No se pudo actualizar la orden",
+                            "error"
+                        );
                 } finally {
                     this.saving = false;
                 }
@@ -1552,13 +1755,19 @@ if (typeof window !== "undefined") {
                 if (!this.ordenToDelete || this.deleting) return;
                 this.deleting = true;
                 try {
-                    const response = await fetch("/api/ordenes-servicio/" + this.ordenToDelete.id, { method: "DELETE", headers: this.apiHeaders() });
+                    const response = await fetch(
+                        "/api/ordenes-servicio/" + this.ordenToDelete.id,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok) throw new Error("Error al eliminar la orden");
-                    this.ordenes = this.ordenes.filter((orden) => orden.id !== this.ordenToDelete.id);
+                    if (!response.ok)
+                        throw new Error("Error al eliminar la orden");
+                    this.ordenes = this.ordenes.filter(
+                        (orden) => orden.id !== this.ordenToDelete.id
+                    );
                     this.actualizarTecnicos();
                     this.showToast("Orden de servicio eliminada");
                 } catch (error) {
@@ -1579,7 +1788,10 @@ if (typeof window !== "undefined") {
                 return this.ordenes
                     .filter((orden) => {
                         if (!this.tecnicoOrden) return true;
-                        return String(orden.id_tecnico) === String(this.tecnicoOrden);
+                        return (
+                            String(orden.id_tecnico) ===
+                            String(this.tecnicoOrden)
+                        );
                     })
                     .filter((orden) => {
                         if (!term) return true;
@@ -1596,18 +1808,35 @@ if (typeof window !== "undefined") {
                             orden.diagnostico_tecnico,
                         ]
                             .filter(Boolean)
-                            .some((field) => field.toString().toLowerCase().includes(term));
+                            .some((field) =>
+                                field.toString().toLowerCase().includes(term)
+                            );
                     })
                     .sort((a, b) => {
                         switch (this.ordenarPor) {
                             case "id":
                                 return Number(a.id) - Number(b.id);
                             case "fecha_recepcion":
-                                return new Date(a.fecha_recepcion || "1970-01-01") - new Date(b.fecha_recepcion || "1970-01-01");
+                                return (
+                                    new Date(
+                                        a.fecha_recepcion || "1970-01-01"
+                                    ) -
+                                    new Date(b.fecha_recepcion || "1970-01-01")
+                                );
                             case "fecha_inicio":
-                                return new Date(a.fecha_inicio || "1970-01-01") - new Date(b.fecha_inicio || "1970-01-01");
+                                return (
+                                    new Date(a.fecha_inicio || "1970-01-01") -
+                                    new Date(b.fecha_inicio || "1970-01-01")
+                                );
                             case "fecha_finalizacion":
-                                return new Date(a.fecha_finalizacion || "1970-01-01") - new Date(b.fecha_finalizacion || "1970-01-01");
+                                return (
+                                    new Date(
+                                        a.fecha_finalizacion || "1970-01-01"
+                                    ) -
+                                    new Date(
+                                        b.fecha_finalizacion || "1970-01-01"
+                                    )
+                                );
                             default:
                                 return 0;
                         }
@@ -1618,7 +1847,11 @@ if (typeof window !== "undefined") {
             },
             async init() {
                 if (!(await this.requireAuth())) return;
-                await Promise.all([this.fetchCatalogos(), this.fetchEstadosOrden(), this.fetchOrdenes()]);
+                await Promise.all([
+                    this.fetchCatalogos(),
+                    this.fetchEstadosOrden(),
+                    this.fetchOrdenes(),
+                ]);
             },
         };
     };
@@ -1681,13 +1914,20 @@ if (typeof window !== "undefined") {
             saving: false,
             deleting: false,
             loadingSolicitudes: false,
-            loadingCatalogos: { clientes: false, estados: false, contactos: false },
+            loadingCatalogos: {
+                clientes: false,
+                estados: false,
+                contactos: false,
+            },
             loadingContactos: false,
 
             // Auth helpers (same pattern as órdenes)
             getToken() {
                 try {
-                    return window.__AUTH?.getToken?.() || localStorage.getItem("authToken");
+                    return (
+                        window.__AUTH?.getToken?.() ||
+                        localStorage.getItem("authToken")
+                    );
                 } catch (_) {
                     return null;
                 }
@@ -1696,16 +1936,21 @@ if (typeof window !== "undefined") {
                 try {
                     if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
                     else if (token) localStorage.setItem("authToken", token);
-                } catch (_) { }
+                } catch (_) {}
                 return token;
             },
             getCsrf() {
-                const m = document.head.querySelector('meta[name="csrf-token"]');
+                const m = document.head.querySelector(
+                    'meta[name="csrf-token"]'
+                );
                 return m ? m.content : "";
             },
             apiHeaders() {
                 const t = this.getToken();
-                const h = { "Content-Type": "application/json", Accept: "application/json" };
+                const h = {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                };
                 if (t) h["Authorization"] = "Bearer " + t;
                 return h;
             },
@@ -1713,11 +1958,18 @@ if (typeof window !== "undefined") {
                 const existing = this.getToken();
                 if (existing) return true;
                 try {
-                    const t = typeof window.__AUTH?.ensureToken === "function" ? await window.__AUTH.ensureToken(false) : null;
+                    const t =
+                        typeof window.__AUTH?.ensureToken === "function"
+                            ? await window.__AUTH.ensureToken(false)
+                            : null;
                     if (t) return true;
                     const res = await fetch("/session/token", {
                         method: "GET",
-                        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": this.getCsrf() },
+                        headers: {
+                            Accept: "application/json",
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRF-TOKEN": this.getCsrf(),
+                        },
                         credentials: "same-origin",
                     });
                     if (!res.ok) return false;
@@ -1726,7 +1978,7 @@ if (typeof window !== "undefined") {
                         this.setToken(data.token || data.access_token);
                         return true;
                     }
-                } catch (_) { }
+                } catch (_) {}
                 return false;
             },
 
@@ -1734,7 +1986,11 @@ if (typeof window !== "undefined") {
                 const el = document.createElement("div");
                 el.className =
                     "fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm " +
-                    (type === "error" ? "bg-red-600 text-white" : type === "warn" ? "bg-yellow-600 text-white" : "bg-green-600 text-white");
+                    (type === "error"
+                        ? "bg-red-600 text-white"
+                        : type === "warn"
+                        ? "bg-yellow-600 text-white"
+                        : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -1751,7 +2007,12 @@ if (typeof window !== "undefined") {
                 this.errors = {};
             },
             resetContactoForm() {
-                this.formContacto = { id: null, tipo_contacto: "", valor_contacto: "", id_cliente_fk: "" };
+                this.formContacto = {
+                    id: null,
+                    tipo_contacto: "",
+                    valor_contacto: "",
+                    id_cliente_fk: "",
+                };
                 this.errors = {};
             },
 
@@ -1764,7 +2025,8 @@ if (typeof window !== "undefined") {
                 return {
                     id: item.id_solicitud_pk,
                     id_cliente_fk: item.id_cliente_fk,
-                    cliente_nombre: empresa.nombre_comercial || empresa.razon_social || "",
+                    cliente_nombre:
+                        empresa.nombre_comercial || empresa.razon_social || "",
                     numero_solicitud_acf: item.numero_solicitud_acf,
                     numero_solicitud_cliente: item.numero_solicitud_cliente,
                     descripcion_problema: item.descripcion_problema,
@@ -1781,19 +2043,30 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
-                    const res = await fetch("/api/empresas-cliente?" + params.toString(), { headers: this.apiHeaders() });
+                    const res = await fetch(
+                        "/api/empresas-cliente?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (!res.ok) throw new Error("Error clientes");
                     const json = await res.json();
                     const items = json.data || json?.data?.data || json; // resource wrapper or plain
                     const options = (items.data || items).map((it) => ({
                         value: String(it.id_cliente_fk ?? it.id),
-                        label: it.nombre_comercial || it.razon_social || `Cliente ${it.id_cliente_fk ?? it.id}`,
+                        label:
+                            it.nombre_comercial ||
+                            it.razon_social ||
+                            `Cliente ${it.id_cliente_fk ?? it.id}`,
                     }));
                     this.clientesOptions = options;
-                    this.clientesOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
+                    this.clientesOptions.sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                    );
                 } catch (e) {
                     console.error(e);
-                    this.showToast("No se pudieron cargar los clientes", "error");
+                    this.showToast(
+                        "No se pudieron cargar los clientes",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.clientes = false;
                 }
@@ -1803,15 +2076,26 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
-                    const res = await fetch("/api/estados-solicitud?" + params.toString(), { headers: this.apiHeaders() });
+                    const res = await fetch(
+                        "/api/estados-solicitud?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (!res.ok) throw new Error("Error estados");
                     const json = await res.json();
-                    const options = (json.data || []).map((it) => ({ value: String(it.id), label: it.nombre_estado || `Estado ${it.id}` }));
+                    const options = (json.data || []).map((it) => ({
+                        value: String(it.id),
+                        label: it.nombre_estado || `Estado ${it.id}`,
+                    }));
                     this.estadosOptions = options;
-                    this.estadosOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
+                    this.estadosOptions.sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                    );
                 } catch (e) {
                     console.error(e);
-                    this.showToast("No se pudieron cargar los estados", "error");
+                    this.showToast(
+                        "No se pudieron cargar los estados",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.estados = false;
                 }
@@ -1821,26 +2105,38 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
-                    const res = await fetch("/api/contactos?" + params.toString(), { headers: this.apiHeaders() });
+                    const res = await fetch(
+                        "/api/contactos?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     const items = json.data || [];
                     this.contactosOptions = items.map((it) => ({
                         value: String(it.id_contacto_pk || it.id),
-                        label: `${it.valor_contacto || it.tipo_contacto || 'Contacto'} (ID ${it.id_contacto_pk || it.id})`,
+                        label: `${
+                            it.valor_contacto || it.tipo_contacto || "Contacto"
+                        } (ID ${it.id_contacto_pk || it.id})`,
                         id_cliente_fk: String(it.id_cliente_fk || ""),
                     }));
                 } catch (e) {
                     console.error(e);
-                    this.showToast("No se pudieron cargar los contactos", "error");
+                    this.showToast(
+                        "No se pudieron cargar los contactos",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.contactos = false;
                 }
             },
             filteredContactosForSelectedCliente() {
-                const idCliente = String(this.formSolicitud.id_cliente_fk || "");
+                const idCliente = String(
+                    this.formSolicitud.id_cliente_fk || ""
+                );
                 if (!idCliente) return this.contactosOptions;
-                return this.contactosOptions.filter((c) => String(c.id_cliente_fk || "") === idCliente);
+                return this.contactosOptions.filter(
+                    (c) => String(c.id_cliente_fk || "") === idCliente
+                );
             },
 
             // CRUD Solicitudes
@@ -1850,23 +2146,39 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
-                    const res = await fetch("/api/solicitudes?" + params.toString(), { headers: this.apiHeaders() });
+                    const res = await fetch(
+                        "/api/solicitudes?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (!res.ok) throw new Error("Error solicitudes");
                     const json = await res.json();
-                    this.solicitudes = (json.data || []).map((it) => this.mapSolicitud(it));
+                    this.solicitudes = (json.data || []).map((it) =>
+                        this.mapSolicitud(it)
+                    );
                 } catch (e) {
                     console.error(e);
-                    this.showToast("No se pudieron cargar las solicitudes", "error");
+                    this.showToast(
+                        "No se pudieron cargar las solicitudes",
+                        "error"
+                    );
                 } finally {
                     this.loadingSolicitudes = false;
                 }
             },
             buildSolicitudPayload() {
                 return {
-                    id_cliente_fk: this.formSolicitud.id_cliente_fk ? Number(this.formSolicitud.id_cliente_fk) : null,
-                    descripcion_problema: this.formSolicitud.descripcion_problema || null,
-                    id_estado_solicitud_fk: this.formSolicitud.id_estado_solicitud_fk ? Number(this.formSolicitud.id_estado_solicitud_fk) : null,
-                    id_contacto_fk: this.formSolicitud.id_contacto_fk ? Number(this.formSolicitud.id_contacto_fk) : null,
+                    id_cliente_fk: this.formSolicitud.id_cliente_fk
+                        ? Number(this.formSolicitud.id_cliente_fk)
+                        : null,
+                    descripcion_problema:
+                        this.formSolicitud.descripcion_problema || null,
+                    id_estado_solicitud_fk: this.formSolicitud
+                        .id_estado_solicitud_fk
+                        ? Number(this.formSolicitud.id_estado_solicitud_fk)
+                        : null,
+                    id_contacto_fk: this.formSolicitud.id_contacto_fk
+                        ? Number(this.formSolicitud.id_contacto_fk)
+                        : null,
                 };
             },
             openCreateSolicitud() {
@@ -1895,7 +2207,11 @@ if (typeof window !== "undefined") {
                 this.errors = {};
                 try {
                     const payload = this.buildSolicitudPayload();
-                    const res = await fetch("/api/solicitudes", { method: "POST", headers: this.apiHeaders(), body: JSON.stringify(payload) });
+                    const res = await fetch("/api/solicitudes", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
                     if (res.status === 422) {
                         const err = await res.json();
                         this.errors = err.errors || {};
@@ -1903,34 +2219,54 @@ if (typeof window !== "undefined") {
                     }
                     if (!res.ok) throw new Error("Error al crear la solicitud");
                     const json = await res.json();
-                    if (json.data) this.solicitudes.unshift(this.mapSolicitud(json.data));
+                    if (json.data)
+                        this.solicitudes.unshift(this.mapSolicitud(json.data));
                     this.showToast("Solicitud creada correctamente");
                     this.isModalOpen = false;
                     this.resetSolicitudForm();
                 } catch (e) {
                     console.error(e);
-                    if (e.message !== "Validación") this.showToast("No se pudo crear la solicitud", "error");
+                    if (e.message !== "Validación")
+                        this.showToast(
+                            "No se pudo crear la solicitud",
+                            "error"
+                        );
                 } finally {
                     this.saving = false;
                 }
             },
             async updateSolicitud() {
-                if (!(await this.requireAuth()) || !this.formSolicitud.id || this.saving) return;
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.formSolicitud.id ||
+                    this.saving
+                )
+                    return;
                 this.saving = true;
                 this.errors = {};
                 try {
                     const payload = this.buildSolicitudPayload();
-                    const res = await fetch(`/api/solicitudes/${this.formSolicitud.id}`, { method: "PUT", headers: this.apiHeaders(), body: JSON.stringify(payload) });
+                    const res = await fetch(
+                        `/api/solicitudes/${this.formSolicitud.id}`,
+                        {
+                            method: "PUT",
+                            headers: this.apiHeaders(),
+                            body: JSON.stringify(payload),
+                        }
+                    );
                     if (res.status === 422) {
                         const err = await res.json();
                         this.errors = err.errors || {};
                         throw new Error("Validación");
                     }
-                    if (!res.ok) throw new Error("Error al actualizar la solicitud");
+                    if (!res.ok)
+                        throw new Error("Error al actualizar la solicitud");
                     const json = await res.json();
                     if (json.data) {
                         const mapped = this.mapSolicitud(json.data);
-                        const idx = this.solicitudes.findIndex((s) => s.id === this.formSolicitud.id);
+                        const idx = this.solicitudes.findIndex(
+                            (s) => s.id === this.formSolicitud.id
+                        );
                         if (idx !== -1) this.solicitudes.splice(idx, 1, mapped);
                     }
                     this.showToast("Solicitud actualizada");
@@ -1939,18 +2275,33 @@ if (typeof window !== "undefined") {
                     this.resetSolicitudForm();
                 } catch (e) {
                     console.error(e);
-                    if (e.message !== "Validación") this.showToast("No se pudo actualizar la solicitud", "error");
+                    if (e.message !== "Validación")
+                        this.showToast(
+                            "No se pudo actualizar la solicitud",
+                            "error"
+                        );
                 } finally {
                     this.saving = false;
                 }
             },
             async performDeleteSolicitud() {
-                if (!(await this.requireAuth()) || !this.solicitudToDelete || this.deleting) return;
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.solicitudToDelete ||
+                    this.deleting
+                )
+                    return;
                 this.deleting = true;
                 try {
-                    const res = await fetch(`/api/solicitudes/${this.solicitudToDelete.id}`, { method: "DELETE", headers: this.apiHeaders() });
-                    if (!res.ok) throw new Error("Error al eliminar la solicitud");
-                    this.solicitudes = this.solicitudes.filter((s) => s.id !== this.solicitudToDelete.id);
+                    const res = await fetch(
+                        `/api/solicitudes/${this.solicitudToDelete.id}`,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
+                    if (!res.ok)
+                        throw new Error("Error al eliminar la solicitud");
+                    this.solicitudes = this.solicitudes.filter(
+                        (s) => s.id !== this.solicitudToDelete.id
+                    );
                     this.showToast("Solicitud eliminada");
                 } catch (e) {
                     console.error(e);
@@ -1973,7 +2324,10 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
-                    const res = await fetch("/api/contactos?" + params.toString(), { headers: this.apiHeaders() });
+                    const res = await fetch(
+                        "/api/contactos?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     this.contactos = (json.data || []).map((it) => ({
@@ -1984,7 +2338,10 @@ if (typeof window !== "undefined") {
                     }));
                 } catch (e) {
                     console.error(e);
-                    this.showToast("No se pudieron cargar los contactos", "error");
+                    this.showToast(
+                        "No se pudieron cargar los contactos",
+                        "error"
+                    );
                 } finally {
                     this.loadingContactos = false;
                 }
@@ -2015,10 +2372,17 @@ if (typeof window !== "undefined") {
                 try {
                     const payload = {
                         tipo_contacto: this.formContacto.tipo_contacto || null,
-                        valor_contacto: this.formContacto.valor_contacto || null,
-                        id_cliente_fk: this.formContacto.id_cliente_fk ? Number(this.formContacto.id_cliente_fk) : null,
+                        valor_contacto:
+                            this.formContacto.valor_contacto || null,
+                        id_cliente_fk: this.formContacto.id_cliente_fk
+                            ? Number(this.formContacto.id_cliente_fk)
+                            : null,
                     };
-                    const res = await fetch("/api/contactos", { method: "POST", headers: this.apiHeaders(), body: JSON.stringify(payload) });
+                    const res = await fetch("/api/contactos", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
                     if (res.status === 422) {
                         const err = await res.json();
                         this.errors = err.errors || {};
@@ -2026,39 +2390,57 @@ if (typeof window !== "undefined") {
                     }
                     if (!res.ok) throw new Error("Error al crear contacto");
                     const json = await res.json();
-                    if (json.data) this.contactos.unshift({
-                        id: json.data.id_contacto_pk || json.data.id,
-                        tipo_contacto: json.data.tipo_contacto,
-                        valor_contacto: json.data.valor_contacto,
-                        id_cliente_fk: json.data.id_cliente_fk,
-                    });
+                    if (json.data)
+                        this.contactos.unshift({
+                            id: json.data.id_contacto_pk || json.data.id,
+                            tipo_contacto: json.data.tipo_contacto,
+                            valor_contacto: json.data.valor_contacto,
+                            id_cliente_fk: json.data.id_cliente_fk,
+                        });
                     this.showToast("Contacto creado");
                     this.isContactoModalOpen = false;
                     this.resetContactoForm();
                 } catch (e) {
                     console.error(e);
-                    if (e.message !== "Validación") this.showToast("No se pudo crear el contacto", "error");
+                    if (e.message !== "Validación")
+                        this.showToast("No se pudo crear el contacto", "error");
                 } finally {
                     this.saving = false;
                 }
             },
             async updateContacto() {
-                if (!(await this.requireAuth()) || !this.formContacto.id || this.saving) return;
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.formContacto.id ||
+                    this.saving
+                )
+                    return;
                 this.saving = true;
                 this.errors = {};
                 try {
                     const payload = {
                         tipo_contacto: this.formContacto.tipo_contacto || null,
-                        valor_contacto: this.formContacto.valor_contacto || null,
-                        id_cliente_fk: this.formContacto.id_cliente_fk ? Number(this.formContacto.id_cliente_fk) : null,
+                        valor_contacto:
+                            this.formContacto.valor_contacto || null,
+                        id_cliente_fk: this.formContacto.id_cliente_fk
+                            ? Number(this.formContacto.id_cliente_fk)
+                            : null,
                     };
-                    const res = await fetch(`/api/contactos/${this.formContacto.id}`, { method: "PUT", headers: this.apiHeaders(), body: JSON.stringify(payload) });
+                    const res = await fetch(
+                        `/api/contactos/${this.formContacto.id}`,
+                        {
+                            method: "PUT",
+                            headers: this.apiHeaders(),
+                            body: JSON.stringify(payload),
+                        }
+                    );
                     if (res.status === 422) {
                         const err = await res.json();
                         this.errors = err.errors || {};
                         throw new Error("Validación");
                     }
-                    if (!res.ok) throw new Error("Error al actualizar contacto");
+                    if (!res.ok)
+                        throw new Error("Error al actualizar contacto");
                     const json = await res.json();
                     if (json.data) {
                         const updated = {
@@ -2067,7 +2449,9 @@ if (typeof window !== "undefined") {
                             valor_contacto: json.data.valor_contacto,
                             id_cliente_fk: json.data.id_cliente_fk,
                         };
-                        const idx = this.contactos.findIndex((c) => c.id === this.formContacto.id);
+                        const idx = this.contactos.findIndex(
+                            (c) => c.id === this.formContacto.id
+                        );
                         if (idx !== -1) this.contactos.splice(idx, 1, updated);
                     }
                     this.showToast("Contacto actualizado");
@@ -2076,18 +2460,32 @@ if (typeof window !== "undefined") {
                     this.resetContactoForm();
                 } catch (e) {
                     console.error(e);
-                    if (e.message !== "Validación") this.showToast("No se pudo actualizar el contacto", "error");
+                    if (e.message !== "Validación")
+                        this.showToast(
+                            "No se pudo actualizar el contacto",
+                            "error"
+                        );
                 } finally {
                     this.saving = false;
                 }
             },
             async performDeleteContacto() {
-                if (!(await this.requireAuth()) || !this.contactoToDelete || this.deleting) return;
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.contactoToDelete ||
+                    this.deleting
+                )
+                    return;
                 this.deleting = true;
                 try {
-                    const res = await fetch(`/api/contactos/${this.contactoToDelete.id}`, { method: "DELETE", headers: this.apiHeaders() });
+                    const res = await fetch(
+                        `/api/contactos/${this.contactoToDelete.id}`,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
                     if (!res.ok) throw new Error("Error al eliminar contacto");
-                    this.contactos = this.contactos.filter((c) => c.id !== this.contactoToDelete.id);
+                    this.contactos = this.contactos.filter(
+                        (c) => c.id !== this.contactoToDelete.id
+                    );
                     this.showToast("Contacto eliminado");
                 } catch (e) {
                     console.error(e);
@@ -2106,12 +2504,18 @@ if (typeof window !== "undefined") {
             // Derived collections and filters
             filteredSolicitudes() {
                 const term = this.searchSolicitud.trim().toLowerCase();
-                const estadoSel = this.estadoSolicitud ? String(this.estadoSolicitud).toLowerCase() : "";
+                const estadoSel = this.estadoSolicitud
+                    ? String(this.estadoSolicitud).toLowerCase()
+                    : "";
                 return this.solicitudes
                     .filter((s) => {
                         if (!estadoSel) return true;
-                        const byId = String(s.id_estado_solicitud_fk || "").toLowerCase() === estadoSel;
-                        const byName = (s.estado_nombre || "").toLowerCase() === estadoSel;
+                        const byId =
+                            String(
+                                s.id_estado_solicitud_fk || ""
+                            ).toLowerCase() === estadoSel;
+                        const byName =
+                            (s.estado_nombre || "").toLowerCase() === estadoSel;
                         return byId || byName;
                     })
                     .filter((s) => {
@@ -2125,7 +2529,9 @@ if (typeof window !== "undefined") {
                             s.estado_nombre,
                         ]
                             .filter(Boolean)
-                            .some((f) => f.toString().toLowerCase().includes(term));
+                            .some((f) =>
+                                f.toString().toLowerCase().includes(term)
+                            );
                     })
                     .sort((a, b) => {
                         switch (this.ordenarPor) {
@@ -2133,7 +2539,10 @@ if (typeof window !== "undefined") {
                                 return Number(a.id) - Number(b.id);
                             case "estado":
                             case "estado_solicitud":
-                                return (a.estado_nombre || "").localeCompare(b.estado_nombre || "", "es");
+                                return (a.estado_nombre || "").localeCompare(
+                                    b.estado_nombre || "",
+                                    "es"
+                                );
                             case "fecha_creacion":
                                 // Campo no disponible: mantener orden estable
                                 return 0;
