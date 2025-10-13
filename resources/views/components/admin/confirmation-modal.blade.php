@@ -7,17 +7,18 @@
 ])
 
 <div x-show="{{ $modalName }}" 
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     x-transition:leave="transition ease-in duration-200"
-     x-transition:leave-start="opacity-100"
-     x-transition:leave-end="opacity-0"
-    class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4" {{-- AÑADIDO: p-4 para margen exterior --}}
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 flex items-center justify-center z-50 p-4 bg-transparent"
+    style="background-color: rgba(0,0,0,0.25); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
     @click="{{ $modalName }} = false"
     @keydown.window.escape="{{ $modalName }} = false"
     x-cloak>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-11/12 sm:w-full max-w-sm mx-auto border border-gray-200 dark:border-gray-700" @click.stop> {{-- MODIFICADO: w-11/12, sm:w-full, max-w-sm, mx-auto --}}
+    <div class="bg-white dark:bg-gray-800 p-6 w-11/12 sm:w-full max-w-sm mx-auto" @click.stop> 
         <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3">
             <h3 class="text-xl font-bold text-gray-700 dark:text-gray-200">{{ $title }}</h3>
             <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"><i class="fas fa-times"></i></button>
