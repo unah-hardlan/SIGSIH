@@ -1,5 +1,5 @@
 
-import "./bootstrap"; 
+import "./bootstrap";
 
 
 if (!window.__FETCH_LIMITER_INSTALLED__) {
@@ -12,7 +12,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         const queue = [];
 
         const AUTH_KEY = "authToken";
-        let tokenPromise = null; 
+        let tokenPromise = null;
 
         function getToken() {
             try {
@@ -26,7 +26,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             try {
                 if (t) localStorage.setItem(AUTH_KEY, t);
                 else localStorage.removeItem(AUTH_KEY);
-            } catch (_) {}
+            } catch (_) { }
 
             try {
                 if (window.axios) {
@@ -34,13 +34,13 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         window.axios.defaults.headers.common["Authorization"] = `Bearer ${t}`;
                     else delete window.axios.defaults.headers.common["Authorization"];
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             try {
                 document.dispatchEvent(
                     new CustomEvent("auth:updated", { detail: { token: t || null } })
                 );
-            } catch (_) {}
+            } catch (_) { }
         }
 
         async function fetchSessionToken(force = false) {
@@ -93,7 +93,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return h;
                 },
             };
-        } catch (_) {}
+        } catch (_) { }
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -141,42 +141,42 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
     })();
 }
 
-        window.fetch = function limitedFetch(...args) {
-            try {
-                const url = (args && args[0] ? args[0].toString() : "") || "";
-                const isApi = url.includes("/api/");
-                const isDashboard = url.includes("/api/dashboard/");
-                const delay = isDashboard
-                    ? Math.floor(Math.random() * 180) + 60
-                    : isApi
-                    ? Math.floor(Math.random() * 80)
-                    : 0;
-                if (!isApi) return origFetch(...args);
-                // For API calls: ensure token then inject Authorization
-                return new Promise((resolve, reject) => {
-                    const run = async () => {
-                        // Acquire token lazily (do not force redirect on failure; backend may allow some public endpoints)
-                        await fetchSessionToken(false);
-                        let [input, init] = withAuthToApi(args[0], args[1]);
-                        let res = await origFetch(input, init);
-                        if (res.status === 401) {
-                            // Retry once after refreshing token
-                            setToken(null);
-                            await fetchSessionToken(true);
-                            ;[input, init] = withAuthToApi(args[0], args[1]);
-                            res = await origFetch(input, init);
-                        }
-                        // If still 401 and response points to login, let caller handle (navigation store may redirect)
-                        return res;
-                    };
-                    queue.push({ run, resolve, reject, delay });
-                    runNext();
-                });
-            } catch (_) {
-                return origFetch(...args);
-            }
-        };
-    })();
+window.fetch = function limitedFetch(...args) {
+    try {
+        const url = (args && args[0] ? args[0].toString() : "") || "";
+        const isApi = url.includes("/api/");
+        const isDashboard = url.includes("/api/dashboard/");
+        const delay = isDashboard
+            ? Math.floor(Math.random() * 180) + 60
+            : isApi
+                ? Math.floor(Math.random() * 80)
+                : 0;
+        if (!isApi) return origFetch(...args);
+        // For API calls: ensure token then inject Authorization
+        return new Promise((resolve, reject) => {
+            const run = async () => {
+                // Acquire token lazily (do not force redirect on failure; backend may allow some public endpoints)
+                await fetchSessionToken(false);
+                let [input, init] = withAuthToApi(args[0], args[1]);
+                let res = await origFetch(input, init);
+                if (res.status === 401) {
+                    // Retry once after refreshing token
+                    setToken(null);
+                    await fetchSessionToken(true);
+                    ;[input, init] = withAuthToApi(args[0], args[1]);
+                    res = await origFetch(input, init);
+                }
+                // If still 401 and response points to login, let caller handle (navigation store may redirect)
+                return res;
+            };
+            queue.push({ run, resolve, reject, delay });
+            runNext();
+        });
+    } catch (_) {
+        return origFetch(...args);
+    }
+};
+    }) ();
 }
 import "./usuarios";
 import "./parametros";
@@ -191,19 +191,6 @@ import "./toast";
 import "./ubicaciones";
 import "./tipo-visitas";
 import "./tipo-productos";
-import "./tipo-objetos";
-import "./tipo-movimientos";
-import "./servicios-realizados";
-import "./proyectos";
-import "./estados-calendario";
-import "./estados-tickets";
-import "./generos";
-import "./estados-solicitud";
-import "./estados-proyecto";
-import "./categorias";
-import "./acciones-realizadas";
-import "./productos";
-import "./kardex";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
