@@ -38,20 +38,8 @@ class StoreContactoRequest extends FormRequest
                         $fail('Tipo de contacto no soportado.');
                 }
             }],
-            'id_persona_fk' => ['nullable', 'integer', 'exists:tbl_persona,id_persona_pk'],
-            'id_empresa_cliente_fk' => ['nullable', 'integer', 'exists:tbl_empresa_cliente,id_empresa_cliente_pk'],
+            'id_cliente_fk' => ['required', 'integer', 'exists:tbl_cliente,id_cliente_pk'],
         ];
-    }
-
-    public function withValidator($validator)
-    {
-        $validator->after(function ($v) {
-            $persona = $this->input('id_persona_fk');
-            $empresa = $this->input('id_empresa_cliente_fk');
-            if (empty($persona) && empty($empresa)) {
-                $v->errors()->add('id_persona_fk', 'Debe asociar el contacto a una persona o a una empresa.');
-            }
-        });
     }
 }
  

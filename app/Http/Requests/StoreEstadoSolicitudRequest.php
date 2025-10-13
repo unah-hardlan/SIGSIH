@@ -13,8 +13,7 @@ class StoreEstadoSolicitudRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Aquí puedes poner lógica de autorización si es necesario.
-        // Por ahora, `true` permite que cualquier usuario autenticado lo use.
+        
         return true;
     }
 

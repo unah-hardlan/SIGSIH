@@ -3,17 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\EstadoSolicitud;
-// ¡Importamos los nuevos FormRequests!
 use App\Http\Requests\StoreEstadoSolicitudRequest;
 use App\Http\Requests\UpdateEstadoSolicitudRequest;
 use App\Http\Resources\EstadoSolicitudResource;
-use Illuminate\Http\Request; // Necesario para el método index
+use Illuminate\Http\Request; 
 
 class EstadoSolicitudController extends Controller
 {
-    /**
-     * Muestra una lista de los recursos.
-     */
+   
     public function index(Request $request)
     {
         $query = EstadoSolicitud::query();
@@ -47,13 +44,10 @@ class EstadoSolicitudController extends Controller
         return EstadoSolicitudResource::collection($estadosSolicitud);
     }
 
-    /**
-     * Almacena un nuevo recurso.
-     */
+    
     public function store(StoreEstadoSolicitudRequest $request)
     {
-        // La validación ya ocurrió automáticamente.
-        // Usamos $request->validated() para obtener solo los datos validados.
+    
         $estadoSolicitud = EstadoSolicitud::create($request->validated());
         
         return (new EstadoSolicitudResource($estadoSolicitud))
@@ -69,32 +63,25 @@ class EstadoSolicitudController extends Controller
         return new EstadoSolicitudResource($estadoSolicitud);
     }
 
-    /**
-     * Actualiza un recurso específico.
-     */
+  
     public function update(UpdateEstadoSolicitudRequest $request, EstadoSolicitud $estadoSolicitud)
     {
-        // La validación también ocurrió automáticamente.
         $estadoSolicitud->update($request->validated());
         
         return new EstadoSolicitudResource($estadoSolicitud);
     }
 
-    /**
-     * Elimina un recurso específico.
-     */
+  
     public function destroy(EstadoSolicitud $estadoSolicitud)
     {
-        // Esta lógica es excelente. Asegúrate de que el modelo EstadoSolicitud
-        // tenga definida la relación `solicitudes()`.
         if ($estadoSolicitud->solicitudes()->exists()) {
             return response()->json([
                 'message' => 'No se puede eliminar el estado porque tiene solicitudes asociadas.'
-            ], 422); // 422 Unprocessable Entity es perfecto para esto.
+            ], 422); 
         }
 
         $estadoSolicitud->delete();
         
-        return response()->json(null, 204); // 204 No Content
+        return response()->json(null, 204);
     }
 }

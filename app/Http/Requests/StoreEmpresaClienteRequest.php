@@ -14,10 +14,14 @@ class StoreEmpresaClienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fecha_registro' => 'required|date',
-            'id_nombre_empresa_fk' => 'required|exists:tbl_nombre_empresa,id_nombre_empresa_pk',
-            'id_direccion_fk' => 'required|exists:tbl_direccion,id_direccion_pk',
-            'id_oficina_fk' => 'required|exists:tbl_oficina_empresa,id_oficina_empresa_pk'
+            'nombre_comercial' => 'required|string|max:150',
+            'razon_social' => 'nullable|string|max:150',
+            'rtn' => 'nullable|string|max:30',
+            'descripcion_empresa' => 'nullable|string|max:255',
+            'horario_atencion' => 'nullable|string|max:50',
+            'avatar' => 'nullable|string|max:255',
+            'fecha_registro' => 'nullable|date',
+            'estado_cliente' => 'nullable|in:activo,inactivo',
         ];
     }
 }

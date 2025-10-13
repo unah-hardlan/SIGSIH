@@ -20,7 +20,7 @@ class UpdateCotizacionRequest extends FormRequest
             'total_impuesto' => 'sometimes|numeric|min:0',
             'otros_cargos' => 'sometimes|numeric|min:0',
             'anticipo_requerido' => 'sometimes|numeric|min:0',
-            'id_cliente_fk' => 'sometimes|integer|exists:tbl_persona,id_persona_pk',
+            'id_cliente_fk' => 'sometimes|integer|exists:tbl_cliente,id_cliente_pk',
         ];
     }
 }
