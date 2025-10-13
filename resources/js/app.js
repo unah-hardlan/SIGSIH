@@ -292,6 +292,9 @@ import {
     faCalendarDay,
     faFolder,
     faClipboardQuestion,
+    faMapSigns,
+    faCheckCircle,
+    faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -374,7 +377,10 @@ library.add(
     faInfoCircle,
     faCalendarDay,
     faFolder,
-    faClipboardQuestion
+    faClipboardQuestion,
+    faMapSigns,
+    faCheckCircle,
+    faTimesCircle
 );
 dom.watch();
 
