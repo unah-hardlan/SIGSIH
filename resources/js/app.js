@@ -1,4 +1,6 @@
+
 import "./bootstrap";
+
 
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
@@ -24,7 +26,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             try {
                 if (t) localStorage.setItem(AUTH_KEY, t);
                 else localStorage.removeItem(AUTH_KEY);
-            } catch (_) {}
+            } catch (_) { }
 
             try {
                 if (window.axios) {
@@ -37,7 +39,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                             "Authorization"
                         ];
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             try {
                 document.dispatchEvent(
@@ -45,7 +47,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         detail: { token: t || null },
                     })
                 );
-            } catch (_) {}
+            } catch (_) { }
         }
 
         async function fetchSessionToken(force = false) {
@@ -98,7 +100,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return h;
                 },
             };
-        } catch (_) {}
+        } catch (_) { }
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -144,41 +146,45 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             }
         }
 
-        // 🔹 Se mantiene dentro del IIFE, con acceso a todas las variables
-        window.fetch = function limitedFetch(...args) {
-            try {
-                const url = (args && args[0] ? args[0].toString() : "") || "";
-                const isApi = url.includes("/api/");
-                const isDashboard = url.includes("/api/dashboard/");
-                const delay = isDashboard
-                    ? Math.floor(Math.random() * 180) + 60
-                    : isApi
-                    ? Math.floor(Math.random() * 80)
-                    : 0;
-
-                if (!isApi) return origFetch(...args);
-
-                return new Promise((resolve, reject) => {
-                    const run = async () => {
-                        await fetchSessionToken(false);
-                        let [input, init] = withAuthToApi(args[0], args[1]);
-                        let res = await origFetch(input, init);
-                        if (res.status === 401) {
-                            setToken(null);
-                            await fetchSessionToken(true);
-                            [input, init] = withAuthToApi(args[0], args[1]);
-                            res = await origFetch(input, init);
-                        }
-                        return res;
-                    };
-                    queue.push({ run, resolve, reject, delay });
-                    runNext();
-                });
-            } catch (_) {
-                return origFetch(...args);
-            }
-        };
     })();
+}
+
+window.fetch = function limitedFetch(...args) {
+    try {
+        const url = (args && args[0] ? args[0].toString() : "") || "";
+        const isApi = url.includes("/api/");
+        const isDashboard = url.includes("/api/dashboard/");
+        const delay = isDashboard
+            ? Math.floor(Math.random() * 180) + 60
+            : isApi
+                ? Math.floor(Math.random() * 80)
+                : 0;
+        if (!isApi) return origFetch(...args);
+        // For API calls: ensure token then inject Authorization
+        return new Promise((resolve, reject) => {
+            const run = async () => {
+                // Acquire token lazily (do not force redirect on failure; backend may allow some public endpoints)
+                await fetchSessionToken(false);
+                let [input, init] = withAuthToApi(args[0], args[1]);
+                let res = await origFetch(input, init);
+                if (res.status === 401) {
+                    // Retry once after refreshing token
+                    setToken(null);
+                    await fetchSessionToken(true);
+                    ;[input, init] = withAuthToApi(args[0], args[1]);
+                    res = await origFetch(input, init);
+                }
+                // If still 401 and response points to login, let caller handle (navigation store may redirect)
+                return res;
+            };
+            queue.push({ run, resolve, reject, delay });
+            runNext();
+        });
+    } catch (_) {
+        return origFetch(...args);
+    }
+};
+    }) ();
 }
 
 import "./usuarios";
@@ -194,19 +200,6 @@ import "./toast";
 import "./ubicaciones";
 import "./tipo-visitas";
 import "./tipo-productos";
-import "./tipo-objetos";
-import "./tipo-movimientos";
-import "./servicios-realizados";
-import "./proyectos";
-import "./estados-calendario";
-import "./estados-tickets";
-import "./generos";
-import "./estados-solicitud";
-import "./estados-proyecto";
-import "./categorias";
-import "./acciones-realizadas";
-import "./productos";
-import "./kardex";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -386,7 +379,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) {}
+    } catch (_) { }
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -476,13 +469,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) {}
+            } catch (_) { }
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) {}
+            } catch (_) { }
 
             let sanitized = html;
             try {
@@ -490,30 +483,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) {}
+            } catch (_) { }
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) {}
+                    } catch (_) { }
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) {}
+                        } catch (_) { }
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -523,7 +516,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 if (
                     window.Livewire &&
@@ -531,10 +524,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) {}
+            } catch (_) { }
 
             this.restoreSidebarScrollPosition();
 
@@ -550,7 +543,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) {}
+            } catch (_) { }
         },
 
         saveSidebarScrollPosition() {
@@ -582,7 +575,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) {}
+            } catch (_) { }
             this.updateActiveLinks(url);
         },
 
@@ -669,7 +662,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) {}
+                } catch (_) { }
                 this.updateActiveLinks(path);
             }
         },
@@ -973,17 +966,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1011,7 +1004,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) {}
+    } catch (_) { }
     initializeDashboardChartsWithRetry();
 });
 
@@ -1020,7 +1013,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) {}
+    } catch (_) { }
 
     return { Accept: "application/json" };
 }
@@ -1095,7 +1088,7 @@ if (typeof window !== "undefined") {
                 try {
                     if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
                     else if (token) localStorage.setItem("authToken", token);
-                } catch (_) {}
+                } catch (_) { }
                 return token;
             },
             getCsrf() {
@@ -1237,8 +1230,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                  (o) => String(o.value) === String(estadoId)
-                              )
+                                (o) => String(o.value) === String(estadoId)
+                            )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1264,8 +1257,8 @@ if (typeof window !== "undefined") {
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                              .filter(Boolean)
-                              .join(" ")
+                            .filter(Boolean)
+                            .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -1936,7 +1929,7 @@ if (typeof window !== "undefined") {
                 try {
                     if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
                     else if (token) localStorage.setItem("authToken", token);
-                } catch (_) {}
+                } catch (_) { }
                 return token;
             },
             getCsrf() {
@@ -1978,7 +1971,7 @@ if (typeof window !== "undefined") {
                         this.setToken(data.token || data.access_token);
                         return true;
                     }
-                } catch (_) {}
+                } catch (_) { }
                 return false;
             },
 
@@ -1989,8 +1982,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                        ? "bg-yellow-600 text-white"
-                        : "bg-green-600 text-white");
+                            ? "bg-yellow-600 text-white"
+                            : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -2114,9 +2107,8 @@ if (typeof window !== "undefined") {
                     const items = json.data || [];
                     this.contactosOptions = items.map((it) => ({
                         value: String(it.id_contacto_pk || it.id),
-                        label: `${
-                            it.valor_contacto || it.tipo_contacto || "Contacto"
-                        } (ID ${it.id_contacto_pk || it.id})`,
+                        label: `${it.valor_contacto || it.tipo_contacto || "Contacto"
+                            } (ID ${it.id_contacto_pk || it.id})`,
                         id_cliente_fk: String(it.id_cliente_fk || ""),
                     }));
                 } catch (e) {

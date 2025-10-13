@@ -647,6 +647,15 @@
                         </x-admin.sidebar-link>
                     </li>
                     @endif
+                    @if($perm->can($u, ['Origen Kardex','Origenes','Origen'], 'consultar'))
+                    <li>
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-origen-kardex"
+                            class="py-1 px-3">
+                            <i class="fas fa-map-signs text-sm w-4 text-center"></i>
+                            Origen Kardex
+                        </x-admin.sidebar-link>
+                    </li>
+                    @endif
                     @if($perm->can($u, ['Ubicaciones'], 'consultar'))
                     <li>
                         <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-ubicaciones"
