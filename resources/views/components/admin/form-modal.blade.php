@@ -13,7 +13,8 @@
     x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
-    class="fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
+  class="fixed inset-0 flex items-center justify-center z-50 p-4 bg-transparent"
+  style="background-color: rgba(0,0,0,0.25); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
   @click="{{ $modalName }} = false"
   @keydown.window.escape="{{ $modalName }} = false"
   x-cloak>

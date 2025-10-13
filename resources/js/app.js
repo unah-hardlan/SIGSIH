@@ -61,6 +61,7 @@ import "./tipo-productos";
 import "./tipo-objetos";
 import "./tipo-movimientos";
 import "./servicios-realizados";
+import "./proyectos";
 import "./estados-calendario";
 import "./estados-tickets";
 import "./generos";

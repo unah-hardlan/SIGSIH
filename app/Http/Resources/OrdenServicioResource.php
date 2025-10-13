@@ -26,6 +26,11 @@ class OrdenServicioResource extends JsonResource
             'diagnostico_cliente' => $this->diagnostico_cliente,
             'id_calificacion_servicio_fk' => $this->id_calificacion_servicio_fk,
             'id_cotizacion_fk' => $this->id_cotizacion_fk,
+            // Human-friendly identifiers for frontend selects
+            'numero_orden_servicio' => $this->numero_orden_servicio ?? null,
+            // Provide a short code and a display name used by the frontend
+            'codigo_orden' => $this->numero_orden_servicio ?? null,
+            'nombre_orden' => ($this->numero_orden_servicio ?? '') . ($this->solicitudServicio ? ' - ' . substr($this->solicitudServicio->descripcion_problema, 0, 50) : ''),
             
             // Relaciones
             'solicitud_servicio' => $this->whenLoaded('solicitudServicio', function () {
