@@ -1,4 +1,11 @@
 window.proyectosApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     async fetchProyectos(component) {
         component.loadingProyectos = true;
         try {
@@ -176,6 +183,13 @@ window.proyectosApiHandlers = {
 };
 
 window.ingresosApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     async fetchIngresos(component) {
         component.loadingIngresos = true;
         try {
@@ -366,6 +380,13 @@ window.ingresosApiHandlers = {
 };
 
 window.gastosApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     async fetchGastos(component) {
         component.loadingGastos = true;
         try {
@@ -542,6 +563,13 @@ window.gastosApiHandlers = {
 };
 
 window.catalogosApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     async fetchEstadosProyecto(component) {
         try {
             const response = await fetch("/api/estados-proyecto", {

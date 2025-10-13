@@ -1,4 +1,14 @@
+import { getToken } from "./auth.js";
+
 window.accionesRealizadasApiHandlers = {
+    getToken,
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     async fetchAccionesRealizadas(component) {
         component.loadingAccionesRealizadas = true;
         try {

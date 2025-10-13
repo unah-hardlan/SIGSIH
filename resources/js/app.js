@@ -69,6 +69,7 @@ import "./estados-solicitud";
 import "./estados-proyecto";
 import "./categorias";
 import "./acciones-realizadas";
+import "./productos";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {

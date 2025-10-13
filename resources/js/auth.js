@@ -234,12 +234,14 @@ function createAuthPage() {
         handleNombreUsuarioInput() {
             this.clearFieldError("nombre_usuario");
             const issues = this.nombreUsuarioIssues(this.nombre_usuario);
-            if (issues.length > 0) this.setFieldError("nombre_usuario", issues[0]);
+            if (issues.length > 0)
+                this.setFieldError("nombre_usuario", issues[0]);
         },
         handleEmailInput() {
             this.clearFieldError("correo_electronico"); // Use backend field name
             const issues = this.emailIssues(this.email);
-            if (issues.length > 0) this.setFieldError("correo_electronico", issues[0]);
+            if (issues.length > 0)
+                this.setFieldError("correo_electronico", issues[0]);
         },
         handlePasswordInput() {
             this.clearFieldError("contrasena"); // Use backend field name
@@ -249,9 +251,9 @@ function createAuthPage() {
         handleConfirmPasswordInput() {
             this.clearFieldError("password_confirmation"); // Use backend field name
             const issues = this.confirmPasswordIssues();
-            if (issues.length > 0) this.setFieldError("password_confirmation", issues[0]);
+            if (issues.length > 0)
+                this.setFieldError("password_confirmation", issues[0]);
         },
-
 
         // --- Main Submission Logic ---
         async handleSubmit() {
@@ -297,8 +299,8 @@ function createAuthPage() {
                     } catch (_) {}
                     window.location.assign("/admin/dashboard");
                     return;
-
-                } else { // Registration
+                } else {
+                    // Registration
                     await axios.post("/api/register", {
                         usuario: this.username,
                         nombre_usuario: this.nombre_usuario,
@@ -425,7 +427,6 @@ function createAuthPage() {
             this.resendTimerId = null;
         },
 
-
         // --- 2FA Modal Logic (from Development version) ---
         async submit2FA() {
             if (this.verifying2FA || !this.totpCode) return;
@@ -467,7 +468,9 @@ function createAuthPage() {
             alert("Redirigiendo a Google Sign-In… (Funcionalidad pendiente)");
         },
         handleRecover() {
-            alert("Redirigiendo a recuperar contraseña… (Funcionalidad pendiente)");
+            alert(
+                "Redirigiendo a recuperar contraseña… (Funcionalidad pendiente)"
+            );
             // Typically navigates to a password reset page
             // window.location.assign("/forgot-password");
         },
@@ -481,10 +484,13 @@ window.authPage = createAuthPage;
 function registerAuth() {
     try {
         if (!window.Alpine) {
-            console.warn("Alpine.js not loaded yet, trying again on alpine:init.");
+            console.warn(
+                "Alpine.js not loaded yet, trying again on alpine:init."
+            );
             return;
         }
-        if (!window.Alpine.data("authPage")) { // Only register if not already registered
+        if (!window.Alpine.data("authPage")) {
+            // Only register if not already registered
             window.Alpine.data("authPage", createAuthPage);
             console.log("Alpine.js data 'authPage' registered.");
         } else {
@@ -501,3 +507,9 @@ if (window.Alpine) {
 }
 // Register on Alpine's init event for when it loads later
 document.addEventListener("alpine:init", registerAuth);
+
+// Exported utility function for getting authentication token
+// Note: With HttpOnly cookies, token is not accessible from JS
+export function getToken() {
+    return ""; // Token handled server-side via HttpOnly cookie
+}

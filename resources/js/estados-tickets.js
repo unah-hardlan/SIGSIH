@@ -1,4 +1,11 @@
 window.estadosTicketsApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     /**
      * Fetches the list of estados tickets from the API.
      * @param {object} component - The Alpine.js component's `this` context.
