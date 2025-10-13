@@ -17,19 +17,13 @@ class Contacto extends Model
     protected $fillable = [
         'tipo_contacto',
         'valor_contacto',
-        'id_persona_fk',
-        'id_empresa_cliente_fk',
+        'id_cliente_fk',
     ];
 
     // Relaciones
-    public function persona()
+    public function cliente()
     {
-        return $this->belongsTo(Persona::class, 'id_persona_fk', 'id_persona_pk');
-    }
-
-    public function empresa()
-    {
-        return $this->belongsTo(EmpresaCliente::class, 'id_empresa_cliente_fk', 'id_empresa_cliente_pk');
+        return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
     // Simple format validation helper (call from services/requests)

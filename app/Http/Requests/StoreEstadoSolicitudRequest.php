@@ -14,8 +14,11 @@ class StoreEstadoSolicitudRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_estado_solicitud' => 'required|string|max:100|unique:tbl_estado_solicitud,nombre_estado_solicitud',
-            'descripcion_estado_solicitud' => 'nullable|string|max:255'
+            'nombre' => 'required|string|max:100|unique:tbl_estado_solicitud,nombre',
+            'descripcion' => 'nullable|string|max:255',
+            'codigo' => 'nullable|string|max:50',
+            'es_final' => 'nullable|boolean',
+            'orden' => 'nullable|integer|min:0'
         ];
     }
 }

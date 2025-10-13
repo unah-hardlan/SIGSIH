@@ -16,8 +16,12 @@ class EstadoSolicitudResource extends JsonResource
     {
         return [
             'id' => $this->id_estado_solicitud_pk,
-            'nombre_estado' => $this->nombre_estado,
-            'descripcion_estado' => $this->descripcion_estado,
+            // Map actual DB columns to stable API keys used on frontend
+            'nombre_estado' => $this->nombre,
+            'descripcion_estado' => $this->descripcion,
+            'codigo' => $this->codigo,
+            'es_final' => (bool) $this->es_final,
+            'orden' => $this->orden,
             'total_solicitudes' => $this->whenLoaded('solicitudes', function () {
                 return $this->solicitudes->count();
             }),

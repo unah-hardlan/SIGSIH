@@ -51,7 +51,7 @@ class Cotizacion extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(Persona::class,'id_cliente_fk','id_persona_pk');
+        return $this->belongsTo(Cliente::class,'id_cliente_fk','id_cliente_pk');
     }
 
     public function ordenServicio()

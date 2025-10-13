@@ -12,6 +12,7 @@ class EmpresaCliente extends Model
     protected $table = 'tbl_cliente_empresa';
     protected $primaryKey = 'id_cliente_fk';
     public $timestamps = false;
+    public $incrementing = false;
 
     protected $fillable = [
         'id_cliente_fk',
@@ -19,8 +20,7 @@ class EmpresaCliente extends Model
         'razon_social',
         'rtn',
         'descripcion_empresa',
-        'horario_atencion',
-        'avatar'
+        'horario_atencion'
     ];
 
     /**
@@ -31,14 +31,8 @@ class EmpresaCliente extends Model
         return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
-    // Relación con Oficina Empresa
-    public function oficina()
-    {
-        return $this->belongsTo(OficinaEmpresa::class, 'id_oficina_fk', 'id_oficina_empresa_pk');
-    }
-
     public function contactos()
     {
-        return $this->hasMany(Contacto::class, 'id_empresa_cliente_fk', 'id_empresa_cliente_pk');
+        return $this->hasMany(Contacto::class, 'id_cliente_fk', 'id_cliente_fk');
     }
 }

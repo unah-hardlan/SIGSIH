@@ -11,14 +11,11 @@ class Cliente extends Model
 
     protected $table = 'tbl_cliente';
     protected $primaryKey = 'id_cliente_pk';
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'int';
     public $timestamps = false;
 
     protected $fillable = [
-        'id_cliente_pk',
-        'id_persona_fk',
-        'id_empresa_cliente_fk',
         'tipo_cliente',
         'fecha_registro',
         'estado_cliente'
@@ -37,11 +34,25 @@ class Cliente extends Model
     }
 
     /**
-     * Relación con Persona (muchos a uno)
+     * Relación con Persona a través de la tabla pivote tbl_cliente_persona.
+     * Para clientes persona se espera un único registro asociado.
+     */
+    public function personas()
+    {
+        return $this->belongsToMany(
+            Persona::class,
+            'tbl_cliente_persona',
+            'id_cliente_fk',
+            'id_persona_fk'
+        );
+    }
+
+    /**
+     * Alias para mantener compatibilidad con código existente que invoca ->persona.
      */
     public function persona()
     {
-        return $this->belongsTo(Persona::class, 'id_persona_fk', 'id_persona_pk');
+        return $this->personas()->limit(1);
     }
 
     /**
@@ -57,7 +68,7 @@ class Cliente extends Model
      */
     public function scopeEmpresa($query)
     {
-        return $query->whereNotNull('id_empresa_cliente_fk');
+        return $query->where('tipo_cliente', 'empresa');
     }
 
     /**
@@ -65,6 +76,6 @@ class Cliente extends Model
      */
     public function scopePersona($query)
     {
-        return $query->whereNotNull('id_persona_fk');
+        return $query->where('tipo_cliente', 'persona');
     }
 }

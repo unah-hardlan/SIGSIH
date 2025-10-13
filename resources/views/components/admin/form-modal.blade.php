@@ -6,7 +6,7 @@
     'formId' => ''
 ])
 
-<div x-show="{{ $modalName }}" 
+<div x-show="{{ $modalName }}" wire:ignore.self
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
@@ -18,12 +18,12 @@
   @keydown.window.escape="{{ $modalName }} = false"
   x-cloak>
     
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-11/12 sm:w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
     <div class="flex justify-between items-center pb-1 px-6 pt-6">
       <h3 class="text-2xl font-bold text-gray-700 dark:text-white">{{ $title }}</h3>
       <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"><i class="fas fa-times"></i></button>
     </div>
-    <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-4 overflow-y-auto px-6 py-4 custom-scrollbar" style="max-height: calc(90vh - 80px);"> 
+  <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-4 overflow-y-auto px-6 py-4 custom-scrollbar" style="max-height: calc(85vh - 80px);"> 
       {{ $slot }}
       <div class="flex flex-col sm:flex-row justify-end pt-6 gap-3">
         <button type="button" @click="{{ $modalName }} = false"

@@ -28,7 +28,7 @@ class Solicitud extends Model
      */
     public function cliente()
     {
-        return $this->belongsTo(Usuario::class, 'id_cliente_fk', 'id_usuario_pk');
+        return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
     /**

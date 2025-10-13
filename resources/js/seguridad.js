@@ -173,7 +173,7 @@
     };
   }
 
-  const authHeaders = () => ({ 'Content-Type': 'application/json' });
+  const authHeaders = () => ({ 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' });
 
   async function apiGet(url, opts = {}) {
     const res = await fetch(url, { headers: authHeaders(), credentials: 'same-origin', signal: opts.signal });
@@ -660,6 +660,11 @@
         store.roles = [];
         store.objetos = [];
         store.tipos = [];
+        return;
+      }
+      // Evitar inicializar este store cuando no estamos en la vista de configuración de acceso
+      if (!shouldInit()) {
+        store.blocked = true;
         return;
       }
       if (shouldInit() && !store._initialized) {

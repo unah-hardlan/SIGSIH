@@ -1,7 +1,11 @@
 // Alpine store for CRUD de Roles
 const API = { roles: '/api/roles' };
 
-const authHeaders = () => ({ 'Content-Type': 'application/json' });
+const authHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'X-Requested-With': 'XMLHttpRequest',
+});
 
 const hasConfiguracionAcceso = () => {
   try {
@@ -52,12 +56,20 @@ function createRolesStore() {
     form: { rol: '', descripcion_rol: '' },
     current: null,
 
+    currentView() {
+      try { return document.querySelector('main')?.dataset?.currentView || ''; } catch (_) { return ''; }
+    },
     async init() {
       if (!hasConfiguracionAcceso()) {
         this.blocked = true;
         this.items = [];
         this.meta = { page: 1, per_page: 10, total: 0, last_page: 1 };
         this.error = 'No tienes permisos para ver los roles del sistema.';
+        return;
+      }
+      // Solo inicializar cuando estamos en la vista de Configuración de Accesos
+      if (this.currentView() !== 'configuracion-acceso') {
+        this.blocked = true;
         return;
       }
       this.blocked = false;

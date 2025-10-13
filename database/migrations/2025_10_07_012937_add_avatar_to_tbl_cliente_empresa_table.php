@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tbl_cliente_empresa', function (Blueprint $table) {
-            $table->string('avatar', 255)->nullable()->after('horario_atencion');
-        });
+        // Add column only if it doesn't already exist (avoids duplicate-column error when multiple migrations add it)
+        if (!Schema::hasColumn('tbl_cliente_empresa', 'avatar')) {
+            Schema::table('tbl_cliente_empresa', function (Blueprint $table) {
+                $table->string('avatar', 255)->nullable()->after('horario_atencion');
+            });
+        }
     }
 
     /**
@@ -21,8 +24,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tbl_cliente_empresa', function (Blueprint $table) {
-            $table->dropColumn('avatar');
-        });
+        // Drop column only if it exists
+        if (Schema::hasColumn('tbl_cliente_empresa', 'avatar')) {
+            Schema::table('tbl_cliente_empresa', function (Blueprint $table) {
+                $table->dropColumn('avatar');
+            });
+        }
     }
 };

@@ -1,7 +1,16 @@
 {
+  "_index-DQih43yl.js": {
+    "file": "assets/index-DQih43yl.js",
+    "name": "index"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-BYqbnEGK.css",
+    "file": "assets/app-CZ7AEdOw.css",
     "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/auth.css": {
+    "file": "assets/auth-Daqxd93e.css",
+    "src": "resources/css/auth.css",
     "isEntry": true
   },
   "resources/css/global.css": {
@@ -15,10 +24,13 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-POL3Rd3B.js",
+    "file": "assets/app-DilQi8y9.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_index-DQih43yl.js"
+    ]
   },
   "resources/js/auth-guard.js": {
     "file": "assets/auth-guard-l0sNRNKZ.js",
@@ -27,9 +39,30 @@
     "isEntry": true
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-IjqwCdgE.js",
+    "file": "assets/auth-CPlk-FyB.js",
     "name": "auth",
     "src": "resources/js/auth.js",
+    "isEntry": true
+  },
+  "resources/js/cliente.js": {
+    "file": "assets/cliente-DJlLtLMd.js",
+    "name": "cliente",
+    "src": "resources/js/cliente.js",
+    "isEntry": true,
+    "imports": [
+      "_index-DQih43yl.js"
+    ]
+  },
+  "resources/js/cliente/perfil.js": {
+    "file": "assets/perfil-Dy571C-Q.js",
+    "name": "perfil",
+    "src": "resources/js/cliente/perfil.js",
+    "isEntry": true
+  },
+  "resources/js/login-guard.js": {
+    "file": "assets/login-guard-DbWA1aMp.js",
+    "name": "login-guard",
+    "src": "resources/js/login-guard.js",
     "isEntry": true
   },
   "resources/js/session.js": {
@@ -42,6 +75,12 @@
     "file": "assets/sidebar-BXqXU_a-.js",
     "name": "sidebar",
     "src": "resources/js/sidebar.js",
+    "isEntry": true
+  },
+  "resources/js/spa-cliente.js": {
+    "file": "assets/spa-cliente-BJqpOB4b.js",
+    "name": "spa-cliente",
+    "src": "resources/js/spa-cliente.js",
     "isEntry": true
   },
   "resources/js/tabla-responsive.js": {

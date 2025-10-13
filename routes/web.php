@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ViewLoaderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SessionTokenController;
 use App\Http\Controllers\ProfileController;
 use App\Services\PermissionService;
 use App\Support\AdminModuleRegistry;
@@ -36,6 +37,11 @@ Route::get('/verify-email', function (\Illuminate\Http\Request $request) {
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware(['auth.jwt.web','jwt.refresh'])
     ->name('logout');
+
+// Intercambia la sesión web autenticada por un JWT para el SPA
+Route::get('/session/token', [SessionTokenController::class, 'issue'])
+    ->middleware(['auth.jwt.web','jwt.refresh'])
+    ->name('session.token');
 
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
 Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');

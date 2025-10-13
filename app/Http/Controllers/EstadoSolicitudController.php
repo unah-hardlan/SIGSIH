@@ -15,19 +15,19 @@ class EstadoSolicitudController extends Controller
         // Filtros
         if ($q = request('q')) {
             $query->where(function($sub) use ($q) {
-                $sub->where('nombre_estado', 'like', "%$q%")
-                    ->orWhere('descripcion_estado', 'like', "%$q%");
+                $sub->where('nombre', 'like', "%$q%")
+                    ->orWhere('descripcion', 'like', "%$q%");
             });
         }
 
         if ($nombre = request('nombre')) {
-            $query->where('nombre_estado', 'like', "%$nombre%");
+            $query->where('nombre', 'like', "%$nombre%");
         }
 
         // Ordenamiento dinámico
         $sortable = [
-            'nombre' => 'nombre_estado',
-            'descripcion' => 'descripcion_estado',
+            'nombre' => 'nombre',
+            'descripcion' => 'descripcion',
             'id' => 'id_estado_solicitud_pk',
         ];
         $sort = request('sort');
@@ -36,7 +36,7 @@ class EstadoSolicitudController extends Controller
             $query->orderBy($sortable[$sort], $direction);
         } else {
             // orden por defecto
-            $query->orderBy('nombre_estado', 'asc');
+            $query->orderBy('nombre', 'asc');
         }
 
         $perPage = (int) request('per_page', 15);
@@ -54,14 +54,10 @@ class EstadoSolicitudController extends Controller
 
     public function create() {}
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreEstadoSolicitudRequest $request)
     {
-        $request->validate([
-            'nombre_estado' => 'required|string|max:50|unique:tbl_estado_solicitud,nombre_estado',
-            'descripcion_estado' => 'nullable|string|max:255',
-        ]);
-
-        $estadoSolicitud = EstadoSolicitud::create($request->all());
+        $data = $request->validated();
+        $estadoSolicitud = EstadoSolicitud::create($data);
         return (new EstadoSolicitudResource($estadoSolicitud))->response()->setStatusCode(201);
     }
 
@@ -76,19 +72,14 @@ class EstadoSolicitudController extends Controller
 
     public function edit(string $id) {}
 
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateEstadoSolicitudRequest $request, $id)
     {
         $estadoSolicitud = EstadoSolicitud::find($id);
         if (!$estadoSolicitud) {
             return response()->json(['error' => 'Estado de solicitud no encontrado'], 404);
         }
 
-        $request->validate([
-            'nombre_estado' => 'sometimes|required|string|max:50|unique:tbl_estado_solicitud,nombre_estado,' . $id . ',id_estado_solicitud_pk',
-            'descripcion_estado' => 'nullable|string|max:255',
-        ]);
-
-        $estadoSolicitud->update($request->all());
+        $estadoSolicitud->update($request->validated());
         return (new EstadoSolicitudResource($estadoSolicitud))->response();
     }
 
