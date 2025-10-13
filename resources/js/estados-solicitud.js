@@ -1,4 +1,11 @@
 window.estadosSolicitudApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     /**
      * Fetches the list of estados de solicitud from the API.
      */
