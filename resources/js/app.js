@@ -200,6 +200,7 @@ import "./toast";
 import "./ubicaciones";
 import "./tipo-visitas";
 import "./tipo-productos";
+import "./origen-kardex";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
