@@ -23,11 +23,16 @@ class Categoria extends Model
 
     /**
      * Relaciones con Ingresos y Gastos.
-     * Descomentar y ajustar si los modelos Ingreso y Gasto existen.
      */
-    // public function ingresos(): HasMany
-    // {
-    //     // La convención de Laravel es usar nombres de modelos en singular (Ingreso::class)
+    public function ingresos(): HasMany
+    {
+        return $this->hasMany(Ingresos::class, 'id_categoria_fk', 'id_categoria_pk');
+    }
+
+    public function gastos(): HasMany
+    {
+        return $this->hasMany(Gastos::class, 'id_categoria_fk', 'id_categoria_pk');
+    }
     //     return $this->hasMany(Ingreso::class, 'id_categoria_fk', 'id_categoria_pk');
     // }
 

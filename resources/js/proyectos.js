@@ -1,8 +1,4 @@
 window.proyectosApiHandlers = {
-    /**
-     * Fetches the list of proyectos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchProyectos(component) {
         component.loadingProyectos = true;
         try {
@@ -12,38 +8,7 @@ window.proyectosApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
-            component.proyectos = Array.isArray(data?.data)
-                ? data.data.map((item) => ({
-                      id_proyecto_pk: item.id_proyecto_pk,
-                      nombre_proyecto: item.nombre_proyecto,
-                      fecha_inicio_proyecto: item.fecha_inicio_proyecto,
-                      fecha_estimada_fin_proyecto:
-                          item.fecha_estimada_fin_proyecto,
-                      fecha_finalizacion_proyecto:
-                          item.fecha_finalizacion_proyecto,
-                      descripcion_proyecto: item.descripcion_proyecto,
-                      id_orden_servicio_fk: item.id_orden_servicio_fk,
-                      id_estado_proyecto_fk: item.id_estado_proyecto_fk,
-                      orden_servicio: item.orden_servicio,
-                      estado_proyecto: item.estado_proyecto,
-                  }))
-                : Array.isArray(data)
-                ? data.map((item) => ({
-                      id_proyecto_pk: item.id_proyecto_pk,
-                      nombre_proyecto: item.nombre_proyecto,
-                      fecha_inicio_proyecto: item.fecha_inicio_proyecto,
-                      fecha_estimada_fin_proyecto:
-                          item.fecha_estimada_fin_proyecto,
-                      fecha_finalizacion_proyecto:
-                          item.fecha_finalizacion_proyecto,
-                      descripcion_proyecto: item.descripcion_proyecto,
-                      id_orden_servicio_fk: item.id_orden_servicio_fk,
-                      id_estado_proyecto_fk: item.id_estado_proyecto_fk,
-                      orden_servicio: item.orden_servicio,
-                      estado_proyecto: item.estado_proyecto,
-                  }))
-                : [];
+            component.proyectos = Array.isArray(data?.data) ? data.data : [];
         } catch (error) {
             console.error("Error fetching proyectos:", error);
             window.showToast &&
@@ -53,17 +18,8 @@ window.proyectosApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new proyecto to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async submitProyecto(component) {
-        const nombreTrim = String(
-            component.newProyecto.nombre_proyecto || ""
-        ).trim();
-        const descripcionTrim = String(
-            component.newProyecto.descripcion_proyecto || ""
-        ).trim();
+        const nombreTrim = String(component.nombre_proyecto || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -75,17 +31,16 @@ window.proyectosApiHandlers = {
         try {
             const payload = {
                 nombre_proyecto: nombreTrim,
-                fecha_inicio_proyecto:
-                    component.newProyecto.fecha_inicio_proyecto,
+                fecha_inicio_proyecto: component.fecha_inicio_proyecto,
                 fecha_estimada_fin_proyecto:
-                    component.newProyecto.fecha_estimada_fin_proyecto,
+                    component.fecha_estimada_fin_proyecto,
                 fecha_finalizacion_proyecto:
-                    component.newProyecto.fecha_finalizacion_proyecto,
-                descripcion_proyecto: descripcionTrim,
-                id_orden_servicio_fk:
-                    component.newProyecto.id_orden_servicio_fk,
-                id_estado_proyecto_fk:
-                    component.newProyecto.id_estado_proyecto_fk,
+                    component.fecha_finalizacion_proyecto || null,
+                descripcion_proyecto: String(
+                    component.descripcion_proyecto || ""
+                ).trim(),
+                id_orden_servicio_fk: component.id_orden_servicio_fk || null,
+                id_estado_proyecto_fk: component.id_estado_proyecto_fk || null,
             };
             const response = await fetch("/api/proyectos", {
                 method: "POST",
@@ -100,15 +55,13 @@ window.proyectosApiHandlers = {
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast("Proyecto creado exitosamente", "success");
-            component.newProyecto = {
-                nombre_proyecto: "",
-                fecha_inicio_proyecto: "",
-                fecha_estimada_fin_proyecto: "",
-                fecha_finalizacion_proyecto: null,
-                descripcion_proyecto: "",
-                id_orden_servicio_fk: null,
-                id_estado_proyecto_fk: null,
-            };
+            component.nombre_proyecto = "";
+            component.fecha_inicio_proyecto = "";
+            component.fecha_estimada_fin_proyecto = "";
+            component.fecha_finalizacion_proyecto = "";
+            component.descripcion_proyecto = "";
+            component.id_orden_servicio_fk = "";
+            component.id_estado_proyecto_fk = "";
             component.isProyectoModalOpen = false;
             await this.fetchProyectos(component);
         } catch (error) {
@@ -118,18 +71,11 @@ window.proyectosApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing proyecto via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async updateProyecto(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_proyecto_pk)
             return;
         const nombreTrim = String(
             component.itemToEdit.nombre_proyecto || ""
-        ).trim();
-        const descripcionTrim = String(
-            component.itemToEdit.descripcion_proyecto || ""
         ).trim();
         if (!nombreTrim) {
             window.showToast &&
@@ -147,11 +93,14 @@ window.proyectosApiHandlers = {
                 fecha_estimada_fin_proyecto:
                     component.itemToEdit.fecha_estimada_fin_proyecto,
                 fecha_finalizacion_proyecto:
-                    component.itemToEdit.fecha_finalizacion_proyecto,
-                descripcion_proyecto: descripcionTrim,
-                id_orden_servicio_fk: component.itemToEdit.id_orden_servicio_fk,
+                    component.itemToEdit.fecha_finalizacion_proyecto || null,
+                descripcion_proyecto: String(
+                    component.itemToEdit.descripcion_proyecto || ""
+                ).trim(),
+                id_orden_servicio_fk:
+                    component.itemToEdit.id_orden_servicio_fk || null,
                 id_estado_proyecto_fk:
-                    component.itemToEdit.id_estado_proyecto_fk,
+                    component.itemToEdit.id_estado_proyecto_fk || null,
             };
             const response = await fetch(
                 `/api/proyectos/${component.itemToEdit.id_proyecto_pk}`,
@@ -167,7 +116,6 @@ window.proyectosApiHandlers = {
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -199,10 +147,6 @@ window.proyectosApiHandlers = {
         }
     },
 
-    /**
-     * Deletes a proyecto via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async deleteProyecto(component) {
         if (!component.itemToDelete || !component.itemToDelete.id_proyecto_pk)
             return;
@@ -232,10 +176,6 @@ window.proyectosApiHandlers = {
 };
 
 window.ingresosApiHandlers = {
-    /**
-     * Fetches the list of ingresos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchIngresos(component) {
         component.loadingIngresos = true;
         try {
@@ -245,32 +185,7 @@ window.ingresosApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
-            component.ingresos = Array.isArray(data?.data)
-                ? data.data.map((item) => ({
-                      id_ingreso_pk: item.id_ingreso_pk,
-                      nombre: item.nombre,
-                      fecha: item.fecha,
-                      monto: item.monto,
-                      descripcion: item.descripcion,
-                      id_proyecto_fk: item.id_proyecto_fk,
-                      id_categoria_fk: item.id_categoria_fk,
-                      proyecto: item.proyecto,
-                      categoria: item.categoria,
-                  }))
-                : Array.isArray(data)
-                ? data.map((item) => ({
-                      id_ingreso_pk: item.id_ingreso_pk,
-                      nombre: item.nombre,
-                      fecha: item.fecha,
-                      monto: item.monto,
-                      descripcion: item.descripcion,
-                      id_proyecto_fk: item.id_proyecto_fk,
-                      id_categoria_fk: item.id_categoria_fk,
-                      proyecto: item.proyecto,
-                      categoria: item.categoria,
-                  }))
-                : [];
+            component.ingresos = Array.isArray(data?.data) ? data.data : [];
         } catch (error) {
             console.error("Error fetching ingresos:", error);
             window.showToast &&
@@ -280,15 +195,8 @@ window.ingresosApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new ingreso to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async submitIngreso(component) {
-        const nombreTrim = String(component.newIngreso.nombre || "").trim();
-        const descripcionTrim = String(
-            component.newIngreso.descripcion || ""
-        ).trim();
+        const nombreTrim = String(component.nombre_ingreso || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -297,14 +205,26 @@ window.ingresosApiHandlers = {
                 );
             return;
         }
+        if (!component.id_proyecto_fk_ingreso) {
+            window.showToast &&
+                window.showToast("El proyecto es obligatorio", "error");
+            return;
+        }
+        if (!component.id_categoria_fk_ingreso) {
+            window.showToast &&
+                window.showToast("La categoría es obligatoria", "error");
+            return;
+        }
         try {
             const payload = {
-                nombre: nombreTrim,
-                fecha: component.newIngreso.fecha,
-                monto: component.newIngreso.monto,
-                descripcion: descripcionTrim,
-                id_proyecto_fk: component.newIngreso.id_proyecto_fk,
-                id_categoria_fk: component.newIngreso.id_categoria_fk,
+                nombre_ingreso: nombreTrim,
+                fecha_ingreso: component.fecha_ingreso,
+                monto_ingreso: parseFloat(component.monto_ingreso) || 0,
+                descripcion_ingreso: String(
+                    component.descripcion_ingreso || ""
+                ).trim(),
+                id_proyecto_fk: component.id_proyecto_fk_ingreso,
+                id_categoria_fk: component.id_categoria_fk_ingreso,
             };
             const response = await fetch("/api/ingresos", {
                 method: "POST",
@@ -316,17 +236,28 @@ window.ingresosApiHandlers = {
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                    return;
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast("Ingreso creado exitosamente", "success");
-            component.newIngreso = {
-                id_proyecto_fk: null,
-                nombre: "",
-                fecha: "",
-                monto: "",
-                id_categoria_fk: null,
-                descripcion: "",
-            };
+            component.nombre_ingreso = "";
+            component.fecha_ingreso = "";
+            component.monto_ingreso = "";
+            component.descripcion_ingreso = "";
+            component.id_proyecto_fk_ingreso = "";
+            component.id_categoria_fk_ingreso = "";
             component.isIngresoModalOpen = false;
             await this.fetchIngresos(component);
         } catch (error) {
@@ -336,16 +267,11 @@ window.ingresosApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing ingreso via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async updateIngreso(component) {
-        if (!component.itemToEdit || !component.itemToEdit.id_ingreso_pk)
+        if (!component.ingresoToEdit || !component.ingresoToEdit.id_ingresos_pk)
             return;
-        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
-        const descripcionTrim = String(
-            component.itemToEdit.descripcion || ""
+        const nombreTrim = String(
+            component.ingresoToEdit.nombre_ingreso || ""
         ).trim();
         if (!nombreTrim) {
             window.showToast &&
@@ -357,15 +283,18 @@ window.ingresosApiHandlers = {
         }
         try {
             const payload = {
-                nombre: nombreTrim,
-                fecha: component.itemToEdit.fecha,
-                monto: component.itemToEdit.monto,
-                descripcion: descripcionTrim,
-                id_proyecto_fk: component.itemToEdit.id_proyecto_fk,
-                id_categoria_fk: component.itemToEdit.id_categoria_fk,
+                nombre_ingreso: nombreTrim,
+                fecha_ingreso: component.ingresoToEdit.fecha_ingreso,
+                monto_ingreso:
+                    parseFloat(component.ingresoToEdit.monto_ingreso) || 0,
+                descripcion_ingreso: String(
+                    component.ingresoToEdit.descripcion_ingreso || ""
+                ).trim(),
+                id_proyecto_fk: component.ingresoToEdit.id_proyecto_fk,
+                id_categoria_fk: component.ingresoToEdit.id_categoria_fk,
             };
             const response = await fetch(
-                `/api/ingresos/${component.itemToEdit.id_ingreso_pk}`,
+                `/api/ingresos/${component.ingresoToEdit.id_ingresos_pk}`,
                 {
                     method: "PUT",
                     headers: {
@@ -378,7 +307,6 @@ window.ingresosApiHandlers = {
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -400,23 +328,22 @@ window.ingresosApiHandlers = {
             window.showToast &&
                 window.showToast("Ingreso actualizado exitosamente", "success");
             component.isIngresoEditModalOpen = false;
-            component.itemToEdit = null;
+            component.ingresoToEdit = null;
             await this.fetchIngresos(component);
         } catch (error) {
             console.error("Error updating ingreso:", error);
         }
     },
 
-    /**
-     * Deletes a ingreso via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async deleteIngreso(component) {
-        if (!component.itemToDelete || !component.itemToDelete.id_ingreso_pk)
+        if (
+            !component.ingresoToDelete ||
+            !component.ingresoToDelete.id_ingresos_pk
+        )
             return;
         try {
             const response = await fetch(
-                `/api/ingresos/${component.itemToDelete.id_ingreso_pk}`,
+                `/api/ingresos/${component.ingresoToDelete.id_ingresos_pk}`,
                 {
                     method: "DELETE",
                     headers: { Accept: "application/json" },
@@ -428,7 +355,7 @@ window.ingresosApiHandlers = {
             window.showToast &&
                 window.showToast("Ingreso eliminado exitosamente", "success");
             component.isIngresoDeleteModalOpen = false;
-            component.itemToDelete = null;
+            component.ingresoToDelete = null;
             await this.fetchIngresos(component);
         } catch (error) {
             console.error("Error deleting ingreso:", error);
@@ -439,10 +366,6 @@ window.ingresosApiHandlers = {
 };
 
 window.gastosApiHandlers = {
-    /**
-     * Fetches the list of gastos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchGastos(component) {
         component.loadingGastos = true;
         try {
@@ -452,32 +375,7 @@ window.gastosApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
-            component.gastos = Array.isArray(data?.data)
-                ? data.data.map((item) => ({
-                      id_gasto_pk: item.id_gasto_pk,
-                      nombre: item.nombre,
-                      fecha: item.fecha,
-                      monto: item.monto,
-                      descripcion: item.descripcion,
-                      id_proyecto_fk: item.id_proyecto_fk,
-                      id_categoria_fk: item.id_categoria_fk,
-                      proyecto: item.proyecto,
-                      categoria: item.categoria,
-                  }))
-                : Array.isArray(data)
-                ? data.map((item) => ({
-                      id_gasto_pk: item.id_gasto_pk,
-                      nombre: item.nombre,
-                      fecha: item.fecha,
-                      monto: item.monto,
-                      descripcion: item.descripcion,
-                      id_proyecto_fk: item.id_proyecto_fk,
-                      id_categoria_fk: item.id_categoria_fk,
-                      proyecto: item.proyecto,
-                      categoria: item.categoria,
-                  }))
-                : [];
+            component.gastos = Array.isArray(data?.data) ? data.data : [];
         } catch (error) {
             console.error("Error fetching gastos:", error);
             window.showToast &&
@@ -487,28 +385,31 @@ window.gastosApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new gasto to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async submitGasto(component) {
-        const nombreTrim = String(component.newGasto.nombre || "").trim();
-        const descripcionTrim = String(
-            component.newGasto.descripcion || ""
-        ).trim();
+        const nombreTrim = String(component.nombre_gasto || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast("El nombre del gasto es obligatorio", "error");
             return;
         }
+        if (!component.id_proyecto_fk_gasto) {
+            window.showToast &&
+                window.showToast("El proyecto es obligatorio", "error");
+            return;
+        }
+        if (!component.id_categoria_fk_gasto) {
+            window.showToast &&
+                window.showToast("La categoría es obligatoria", "error");
+            return;
+        }
         try {
             const payload = {
                 nombre: nombreTrim,
-                fecha: component.newGasto.fecha,
-                monto: component.newGasto.monto,
-                descripcion: descripcionTrim,
-                id_proyecto_fk: component.newGasto.id_proyecto_fk,
-                id_categoria_fk: component.newGasto.id_categoria_fk,
+                fecha: component.fecha_gasto,
+                monto: parseFloat(component.monto_gasto) || 0,
+                descripcion: String(component.descripcion_gasto || "").trim(),
+                id_proyecto_fk: component.id_proyecto_fk_gasto,
+                id_categoria_fk: component.id_categoria_fk_gasto,
             };
             const response = await fetch("/api/gastos", {
                 method: "POST",
@@ -520,17 +421,28 @@ window.gastosApiHandlers = {
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                    return;
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast("Gasto creado exitosamente", "success");
-            component.newGasto = {
-                id_proyecto_fk: null,
-                nombre: "",
-                fecha: "",
-                monto: "",
-                id_categoria_fk: null,
-                descripcion: "",
-            };
+            component.nombre_gasto = "";
+            component.fecha_gasto = "";
+            component.monto_gasto = "";
+            component.descripcion_gasto = "";
+            component.id_proyecto_fk_gasto = "";
+            component.id_categoria_fk_gasto = "";
             component.isGastoModalOpen = false;
             await this.fetchGastos(component);
         } catch (error) {
@@ -540,16 +452,10 @@ window.gastosApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing gasto via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async updateGasto(component) {
-        if (!component.itemToEdit || !component.itemToEdit.id_gasto_pk) return;
-        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
-        const descripcionTrim = String(
-            component.itemToEdit.descripcion || ""
-        ).trim();
+        if (!component.gastoToEdit || !component.gastoToEdit.id_gasto_pk)
+            return;
+        const nombreTrim = String(component.gastoToEdit.nombre || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast("El nombre del gasto es obligatorio", "error");
@@ -558,14 +464,16 @@ window.gastosApiHandlers = {
         try {
             const payload = {
                 nombre: nombreTrim,
-                fecha: component.itemToEdit.fecha,
-                monto: component.itemToEdit.monto,
-                descripcion: descripcionTrim,
-                id_proyecto_fk: component.itemToEdit.id_proyecto_fk,
-                id_categoria_fk: component.itemToEdit.id_categoria_fk,
+                fecha: component.gastoToEdit.fecha,
+                monto: parseFloat(component.gastoToEdit.monto) || 0,
+                descripcion: String(
+                    component.gastoToEdit.descripcion || ""
+                ).trim(),
+                id_proyecto_fk: component.gastoToEdit.id_proyecto_fk,
+                id_categoria_fk: component.gastoToEdit.id_categoria_fk,
             };
             const response = await fetch(
-                `/api/gastos/${component.itemToEdit.id_gasto_pk}`,
+                `/api/gastos/${component.gastoToEdit.id_gasto_pk}`,
                 {
                     method: "PUT",
                     headers: {
@@ -578,7 +486,6 @@ window.gastosApiHandlers = {
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -600,23 +507,19 @@ window.gastosApiHandlers = {
             window.showToast &&
                 window.showToast("Gasto actualizado exitosamente", "success");
             component.isGastoEditModalOpen = false;
-            component.itemToEdit = null;
+            component.gastoToEdit = null;
             await this.fetchGastos(component);
         } catch (error) {
             console.error("Error updating gasto:", error);
         }
     },
 
-    /**
-     * Deletes a gasto via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async deleteGasto(component) {
-        if (!component.itemToDelete || !component.itemToDelete.id_gasto_pk)
+        if (!component.gastoToDelete || !component.gastoToDelete.id_gasto_pk)
             return;
         try {
             const response = await fetch(
-                `/api/gastos/${component.itemToDelete.id_gasto_pk}`,
+                `/api/gastos/${component.gastoToDelete.id_gasto_pk}`,
                 {
                     method: "DELETE",
                     headers: { Accept: "application/json" },
@@ -628,7 +531,7 @@ window.gastosApiHandlers = {
             window.showToast &&
                 window.showToast("Gasto eliminado exitosamente", "success");
             component.isGastoDeleteModalOpen = false;
-            component.itemToDelete = null;
+            component.gastoToDelete = null;
             await this.fetchGastos(component);
         } catch (error) {
             console.error("Error deleting gasto:", error);
@@ -639,10 +542,6 @@ window.gastosApiHandlers = {
 };
 
 window.catalogosApiHandlers = {
-    /**
-     * Fetches estados de proyecto from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchEstadosProyecto(component) {
         try {
             const response = await fetch("/api/estados-proyecto", {
@@ -653,18 +552,12 @@ window.catalogosApiHandlers = {
             if (!response.ok) throw data;
             component.catalogoEstadosProyecto = Array.isArray(data?.data)
                 ? data.data
-                : Array.isArray(data)
-                ? data
                 : [];
         } catch (error) {
             console.error("Error fetching estados proyecto:", error);
         }
     },
 
-    /**
-     * Fetches ordenes de servicio from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchOrdenesServicio(component) {
         try {
             const response = await fetch("/api/ordenes-servicio", {
@@ -675,18 +568,12 @@ window.catalogosApiHandlers = {
             if (!response.ok) throw data;
             component.catalogoOrdenesServicio = Array.isArray(data?.data)
                 ? data.data
-                : Array.isArray(data)
-                ? data
                 : [];
         } catch (error) {
             console.error("Error fetching ordenes servicio:", error);
         }
     },
 
-    /**
-     * Fetches proyectos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchProyectos(component) {
         try {
             const response = await fetch("/api/proyectos", {
@@ -697,55 +584,25 @@ window.catalogosApiHandlers = {
             if (!response.ok) throw data;
             component.catalogoProyectos = Array.isArray(data?.data)
                 ? data.data
-                : Array.isArray(data)
-                ? data
                 : [];
         } catch (error) {
             console.error("Error fetching proyectos:", error);
         }
     },
 
-    /**
-     * Fetches categorias de ingreso from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
-    async fetchCategoriasIngreso(component) {
+    async fetchCategorias(component) {
         try {
-            const response = await fetch("/api/categorias-ingreso", {
+            const response = await fetch("/api/categorias", {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            component.catalogoCategoriasIngreso = Array.isArray(data?.data)
+            component.catalogoCategorias = Array.isArray(data?.data)
                 ? data.data
-                : Array.isArray(data)
-                ? data
                 : [];
         } catch (error) {
-            console.error("Error fetching categorias ingreso:", error);
-        }
-    },
-
-    /**
-     * Fetches categorias de gasto from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
-    async fetchCategoriasGasto(component) {
-        try {
-            const response = await fetch("/api/categorias-gasto", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
-            component.catalogoCategoriasGasto = Array.isArray(data?.data)
-                ? data.data
-                : Array.isArray(data)
-                ? data
-                : [];
-        } catch (error) {
-            console.error("Error fetching categorias gasto:", error);
+            console.error("Error fetching categorias:", error);
         }
     },
 };

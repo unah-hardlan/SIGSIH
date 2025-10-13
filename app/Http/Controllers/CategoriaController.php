@@ -35,7 +35,10 @@ class CategoriaController extends Controller
         
         $categorias = $query->get();
 
-        return CategoriaResource::collection($categorias);
+        return response()->json([
+            'success' => true,
+            'data' => CategoriaResource::collection($categorias)
+        ]);
     }
 
     public function store(StoreCategoriaRequest $request)

@@ -46,6 +46,8 @@ class ProyectoResource extends JsonResource
                 return [
                     'id_estado_proyecto_pk' => $this->estadoProyecto->id_estado_proyecto_pk,
                     'codigo' => $this->estadoProyecto->codigo,
+                    // Keep both keys: 'nombre' for templates that expect it, and 'nombre_estado' for backward compatibility
+                    'nombre' => $this->estadoProyecto->nombre,
                     'nombre_estado' => $this->estadoProyecto->nombre,
                     'descripcion_estado_proyecto' => $this->estadoProyecto->descripcion,
                 ];
