@@ -11,20 +11,15 @@ class UpdateAccionRealizadaRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('acciones_realizada')
-            ?? $this->route('acciones-realizadas')
-            ?? $this->route('id')
-            ?? $this->id_accion_realizada_pk
-            ?? null;
-        if(!$id){
-            $segments = $this->segments();
-            $last = end($segments);
-            if(is_numeric($last)) { $id = (int) $last; }
-        }
+        $accionId = $this->route('acciones_realizada')->id_accion_realizada_pk;
+
         return [
             'nombre_accion' => [
-                'sometimes','string','max:50',
-                Rule::unique('tbl_accion_realizada','nombre_accion')->ignore($id,'id_accion_realizada_pk')
+                'sometimes',
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('tbl_accion_realizada', 'nombre_accion')->ignore($accionId, 'id_accion_realizada_pk')
             ],
             'descripcion_accion' => 'sometimes|nullable|string|max:255',
         ];

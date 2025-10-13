@@ -7,7 +7,7 @@ function dashAuthHeaders() {
 }
 
 async function dashTryFetch(url, headers) {
-    const r = await fetch(url, { headers, credentials: 'same-origin' });
+    const r = await fetch(url, { headers, credentials: "same-origin" });
     if (!r.ok) return { ok: false, status: r.status };
     try {
         return { ok: true, data: await r.json() };
@@ -23,7 +23,7 @@ document.addEventListener("alpine:init", () => {
     let persisted = {};
     try {
         persisted = JSON.parse(localStorage.getItem("dashboard.cache") || "{}");
-    } catch (_) { }
+    } catch (_) {}
 
     const now = () => Date.now();
     const isStale = (ts) => !ts || now() - ts > (persisted.ttlMs || TTL_MS);
@@ -54,17 +54,26 @@ document.addEventListener("alpine:init", () => {
                         lastFetched: this.lastFetched,
                     })
                 );
-            } catch (_) { }
+            } catch (_) {}
         },
 
         // KPIs
         async getIndicators({ force = false } = {}) {
-            if (!force && this.indicators && !isStale(this.lastFetched.indicators)) {
+            if (
+                !force &&
+                this.indicators &&
+                !isStale(this.lastFetched.indicators)
+            ) {
                 return this.indicators;
             }
-            let res = await dashTryFetch("/api/dashboard/indicadores", dashAuthHeaders());
+            let res = await dashTryFetch(
+                "/api/dashboard/indicadores",
+                dashAuthHeaders()
+            );
             if (!res.ok) {
-                res = await dashTryFetch("/api-web/dashboard/indicadores", { Accept: "application/json" });
+                res = await dashTryFetch("/api-web/dashboard/indicadores", {
+                    Accept: "application/json",
+                });
             }
             if (res.ok && res.data) {
                 this.indicators = res.data;
@@ -77,9 +86,18 @@ document.addEventListener("alpine:init", () => {
         // Charts
         async getChart(name, { force = false } = {}) {
             const keyToUrl = {
-                ordenes: ["/api/dashboard/ordenes-estado", "/api-web/dashboard/ordenes-estado"],
-                cotizaciones: ["/api/dashboard/cotizaciones-mes", "/api-web/dashboard/cotizaciones-mes"],
-                proyectos: ["/api/dashboard/proyectos-estado", "/api-web/dashboard/proyectos-estado"],
+                ordenes: [
+                    "/api/dashboard/ordenes-estado",
+                    "/api-web/dashboard/ordenes-estado",
+                ],
+                cotizaciones: [
+                    "/api/dashboard/cotizaciones-mes",
+                    "/api-web/dashboard/cotizaciones-mes",
+                ],
+                proyectos: [
+                    "/api/dashboard/proyectos-estado",
+                    "/api-web/dashboard/proyectos-estado",
+                ],
             };
             const current = this.charts[name];
             const lastTs = this.lastFetched[name] || 0;
@@ -89,7 +107,10 @@ document.addEventListener("alpine:init", () => {
             const urls = keyToUrl[name];
             if (!urls) return current;
             let res = await dashTryFetch(urls[0], dashAuthHeaders());
-            if (!res.ok) res = await dashTryFetch(urls[1], { Accept: "application/json" });
+            if (!res.ok)
+                res = await dashTryFetch(urls[1], {
+                    Accept: "application/json",
+                });
             if (res.ok && res.data) {
                 this.charts[name] = res.data;
                 this.lastFetched[name] = now();
@@ -123,7 +144,9 @@ document.addEventListener("alpine:init", () => {
             },
 
             async revalidate() {
-                const data = await this.$store.dashboard.getIndicators({ force: true });
+                const data = await this.$store.dashboard.getIndicators({
+                    force: true,
+                });
                 if (data) this.assign(data);
             },
 
@@ -149,7 +172,9 @@ document.addEventListener("alpine:init", () => {
             },
 
             totalTickets() {
-                return (this.ticketsAbiertos || 0) + (this.ticketsCerrados || 0);
+                return (
+                    (this.ticketsAbiertos || 0) + (this.ticketsCerrados || 0)
+                );
             },
 
             percentTickets(kind) {

@@ -11,8 +11,8 @@ class AccionRealizadaResource extends JsonResource
     {
         return [
             'id_accion_realizada_pk' => $this->id_accion_realizada_pk,
-            'nombre_accion' => $this->nombre_accion,
-            'descripcion_accion' => $this->descripcion_accion,
+            'nombre' => $this->nombre_accion,
+            'descripcion' => $this->descripcion_accion,
         ];
     }
 }

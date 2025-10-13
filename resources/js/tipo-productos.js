@@ -1,4 +1,11 @@
 window.tipoProductosApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     /**
      * Fetches the list of tipo productos from the API.
      * @param {object} component - The Alpine.js component's `this` context.
@@ -142,7 +149,26 @@ window.tipoProductosApiHandlers = {
                 }
             );
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                // Mostrar errores de validación si existen
+                if (data && data.errors) {
+                    Object.values(data.errors).forEach((errArr) => {
+                        if (Array.isArray(errArr)) {
+                            errArr.forEach((msg) => {
+                                window.showToast &&
+                                    window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                } else {
+                    window.showToast &&
+                        window.showToast(
+                            "Error al actualizar el tipo de producto",
+                            "error"
+                        );
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast(
                     "Tipo de producto actualizado exitosamente",
@@ -153,11 +179,6 @@ window.tipoProductosApiHandlers = {
             await this.fetchTipoProductos(component);
         } catch (error) {
             console.error("Error updating tipo producto:", error);
-            window.showToast &&
-                window.showToast(
-                    "Error al actualizar el tipo de producto",
-                    "error"
-                );
         }
     },
 

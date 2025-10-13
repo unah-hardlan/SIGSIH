@@ -6,30 +6,31 @@
     'formId' => ''
 ])
 
-<div x-show="{{ $modalName }}" wire:ignore.self
+<div x-show="{{ $modalName }}" 
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100"
     x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
-    class="fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50 p-4"
+  class="fixed inset-0 flex items-center justify-center z-50 p-4 bg-transparent"
+  style="background-color: rgba(0,0,0,0.25); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
   @click="{{ $modalName }} = false"
   @keydown.window.escape="{{ $modalName }} = false"
   x-cloak>
     
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-11/12 sm:w-full max-h-[90vh] overflow-hidden {{ $maxWidth }}" @click.stop>
-    <div class="flex justify-between items-center pb-1 px-6 pt-6">
-      <h3 class="text-2xl font-bold text-gray-700 dark:text-white">{{ $title }}</h3>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[92vw] sm:max-w-xl mx-auto max-h-[85vh] overflow-hidden {{ $maxWidth }}" @click.stop>
+    <div class="flex justify-between items-center pb-1 px-4 sm:px-6 pt-4 sm:pt-6">
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-700 dark:text-white">{{ $title }}</h3>
       <button @click="{{ $modalName }} = false" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"><i class="fas fa-times"></i></button>
     </div>
-  <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-4 overflow-y-auto px-6 py-4 custom-scrollbar" style="max-height: calc(85vh - 80px);"> 
+    <form @submit.prevent="$dispatch('modal-submit', { formId: '{{ $formId }}' })" id="{{ $formId }}" class="mt-2 mb-4 space-y-4 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4 custom-scrollbar modal-form" style="max-height: calc(85vh - 80px);"> 
       {{ $slot }}
-      <div class="flex flex-col sm:flex-row justify-end pt-6 gap-3">
+      <div class="flex flex-col sm:flex-row justify-end pt-4 gap-3">
         <button type="button" @click="{{ $modalName }} = false"
-          class="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white px-5 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-500 min-w-[120px] w-full sm:w-auto text-base font-semibold transition-colors duration-200 ease-in-out">Cancelar</button>
+          class="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 min-w-[120px] w-full sm:w-auto text-sm sm:text-base font-medium transition-colors duration-150 ease-in-out">Cancelar</button>
         <button type="submit"
-          class="bg-blue-500 dark:bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-600 dark:hover:bg-blue-700 min-w-[120px] w-full sm:w-auto text-base font-semibold transition-colors duration-200 ease-in-out">{{ $submitLabel }}</button>
+          class="bg-blue-600 dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 min-w-[120px] w-full sm:w-auto text-sm sm:text-base font-semibold transition-colors duration-150 ease-in-out">{{ $submitLabel }}</button>
       </div>
     </form>
   </div>
@@ -60,21 +61,33 @@
   background: #9ca3af;
 }
 
+/* Mobile tweaks: reduce sizes and spacing on small screens */
+@media (max-width: 640px) {
+  .modal-form { padding-left: 1rem; padding-right: 1rem; }
+  .modal-form form input,
+  .modal-form form select,
+  .modal-form form textarea { font-size: 0.95rem !important; padding: 0.4rem 0 !important; }
+  .modal-form form label { font-size: 0.9rem !important; }
+  .modal-form .text-xl { font-size: 1.05rem !important; }
+  .modal-form button { font-size: 0.95rem !important; padding: 0.5rem 0.75rem !important; }
+  /* Reduce overall modal vertical footprint */
+  .max-h-\[85vh\] { max-height: 80vh !important; }
+}
+
 form input,
 form select,
 form textarea {
-  border-color: #A1A1A1 !important;
+  border-color: black !important;
   border-width: 1px;
   font-size: 1rem !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 1rem !important;
   border-radius: 0.5rem !important;
 }
 
 form input:focus,
 form select:focus,
 form textarea:focus {
-  outline: none;
-  border-color: black !important;
+  outline: none !important;
 }
 
 form label {
@@ -91,7 +104,7 @@ form label {
   background-color: #1f2937 !important;
   color: white !important;
   font-size: 1rem !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.5rem 1rem !important;
   border-radius: 0.5rem !important;
 }
 

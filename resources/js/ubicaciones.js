@@ -1,4 +1,11 @@
 window.paisesApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     /**
      * Fetches the list of countries from the API.
      * @param {object} component - The Alpine.js component's `this` context.
@@ -206,7 +213,7 @@ window.paisesApiHandlers = {
             component.departamentos.some(
                 (d) =>
                     d.nombre_departamento.toLowerCase() ===
-                        nombreTrim.toLowerCase() && d.id_pais_fk == paisId
+                        nombreTrim.toLowerCase() && d.id_pais_pk == paisId
             )
         ) {
             window.showToast &&
@@ -219,7 +226,7 @@ window.paisesApiHandlers = {
         try {
             const payload = {
                 nombre_departamento: nombreTrim,
-                id_pais_fk: paisId,
+                id_pais_pk: paisId,
             };
             const response = await fetch("/api/departamentos", {
                 method: "POST",
@@ -271,7 +278,7 @@ window.paisesApiHandlers = {
                 (d) =>
                     d.nombre_departamento.toLowerCase() ===
                         nombreTrim.toLowerCase() &&
-                    d.id_pais_fk == paisId &&
+                    d.id_pais_pk == paisId &&
                     d.id_departamento_pk !== component.itemToEdit.id
             )
         ) {
@@ -285,7 +292,7 @@ window.paisesApiHandlers = {
         try {
             const payload = {
                 nombre_departamento: nombreTrim,
-                id_pais_fk: paisId,
+                id_pais_pk: paisId,
             };
             const response = await fetch(
                 `/api/departamentos/${component.itemToEdit.id}`,
@@ -346,8 +353,9 @@ window.paisesApiHandlers = {
             await this.fetchDepartamentos(component);
         } catch (error) {
             console.error("Error deleting departamento:", error);
-            window.showToast &&
-                window.showToast("Error al eliminar el departamento", "error");
+            const errorMessage =
+                error.message || "Error al eliminar el departamento";
+            window.showToast && window.showToast(errorMessage, "error");
         }
     },
 
@@ -534,8 +542,8 @@ window.paisesApiHandlers = {
             await this.fetchCiudades(component);
         } catch (error) {
             console.error("Error deleting ciudad:", error);
-            window.showToast &&
-                window.showToast("Error al eliminar la ciudad", "error");
+            const errorMessage = error.message || "Error al eliminar la ciudad";
+            window.showToast && window.showToast(errorMessage, "error");
         }
     },
 
@@ -567,15 +575,42 @@ window.paisesApiHandlers = {
     },
 
     /**
+     * Fetches the list of agencies from the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async fetchAgencias(component) {
+        component.loadingAgencias = true;
+        try {
+            const response = await fetch("/api/agencias", {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            component.agencias = Array.isArray(data?.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+        } catch (error) {
+            console.error("Error fetching agencias:", error);
+            window.showToast &&
+                window.showToast("Error al cargar agencias", "error");
+        } finally {
+            component.loadingAgencias = false;
+        }
+    },
+
+    /**
      * Submits a new address to the API.
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitDireccion(component) {
-        const direccionTrim = String(component.direccion || "").trim();
+        const calleTrim = String(component.direccion || "").trim();
         const ciudadId = component.ciudad_direccion;
-        if (!direccionTrim) {
+        if (!calleTrim) {
             window.showToast &&
-                window.showToast("La dirección es obligatoria", "error");
+                window.showToast("La calle es obligatoria", "error");
             return;
         }
         if (!ciudadId) {
@@ -583,10 +618,13 @@ window.paisesApiHandlers = {
                 window.showToast("Debe seleccionar una ciudad", "error");
             return;
         }
-        if (
+        // TODO: Add duplicate validation if needed
+        /* if (
             component.direcciones.some(
                 (d) =>
-                    d.direccion.toLowerCase() === direccionTrim.toLowerCase() &&
+                    d.calle.toLowerCase() === calleTrim.toLowerCase() &&
+                    d.numero === component.numero &&
+                    d.colonia.toLowerCase() === component.colonia.toLowerCase() &&
                     d.id_ciudad_fk == ciudadId
             )
         ) {
@@ -596,11 +634,16 @@ window.paisesApiHandlers = {
                     "error"
                 );
             return;
-        }
+        } */
         try {
             const payload = {
-                direccion: direccionTrim,
+                calle: component.direccion.trim(),
+                numero: component.numero.trim(),
+                colonia: component.colonia.trim(),
+                codigo_postal: component.codigo_postal.trim(),
+                referencia: component.referencia.trim(),
                 id_ciudad_fk: ciudadId,
+                agencia_id: component.agencia_direccion || null,
             };
             const response = await fetch("/api/direcciones", {
                 method: "POST",
@@ -616,7 +659,12 @@ window.paisesApiHandlers = {
             window.showToast &&
                 window.showToast("Dirección creada exitosamente", "success");
             component.direccion = "";
+            component.numero = "";
+            component.colonia = "";
+            component.codigo_postal = "";
+            component.referencia = "";
             component.ciudad_direccion = "";
+            component.agencia_direccion = "";
             component.isDireccionModalOpen = false;
             await this.fetchDirecciones(component);
         } catch (error) {
@@ -632,11 +680,11 @@ window.paisesApiHandlers = {
      */
     async updateDireccion(component) {
         if (!component.itemToEdit || !component.itemToEdit.id) return;
-        const direccionTrim = String(component.itemToEdit.nombre || "").trim();
+        const calleTrim = String(component.itemToEdit.calle || "").trim();
         const ciudadId = component.itemToEdit.ciudad;
-        if (!direccionTrim) {
+        if (!calleTrim) {
             window.showToast &&
-                window.showToast("La dirección es obligatoria", "error");
+                window.showToast("La calle es obligatoria", "error");
             return;
         }
         if (!ciudadId) {
@@ -644,25 +692,33 @@ window.paisesApiHandlers = {
                 window.showToast("Debe seleccionar una ciudad", "error");
             return;
         }
-        if (
+        // TODO: Add duplicate validation if needed
+        /* if (
             component.direcciones.some(
                 (d) =>
-                    d.direccion.toLowerCase() === direccionTrim.toLowerCase() &&
+                    d.calle.toLowerCase() === calleTrim.toLowerCase() &&
+                    d.numero === component.itemToEdit.numero &&
+                    d.colonia.toLowerCase() === component.itemToEdit.colonia.toLowerCase() &&
                     d.id_ciudad_fk == ciudadId &&
                     d.id_direccion_pk !== component.itemToEdit.id
             )
         ) {
             window.showToast &&
                 window.showToast(
-                    "Ya existe otra dirección con ese nombre en esa ciudad",
+                    "Ya existe otra dirección con esos datos en esa ciudad",
                     "error"
                 );
             return;
-        }
+        } */
         try {
             const payload = {
-                direccion: direccionTrim,
+                calle: component.itemToEdit.calle.trim(),
+                numero: component.itemToEdit.numero.trim(),
+                colonia: component.itemToEdit.colonia.trim(),
+                codigo_postal: component.itemToEdit.codigo_postal.trim(),
+                referencia: component.itemToEdit.referencia.trim(),
                 id_ciudad_fk: ciudadId,
+                agencia_id: component.itemToEdit.agencia_id || null,
             };
             const response = await fetch(
                 `/api/direcciones/${component.itemToEdit.id}`,

@@ -1,156 +1,178 @@
 <div x-data="{
-    acciones: [
-        { id_accion: 'AC-001', nombre: 'Revisión', descripcion: 'Revisión de equipos de red' },
-        { id_accion: 'AC-002', nombre: 'Mantenimiento', descripcion: 'Mantenimiento general de servidores' }
-    ],
-    isAccionModalOpen: false,
-    isEditAccionModalOpen: false,
-    isDeleteAccionModalOpen: false,
-    accionToEdit: { id_accion: '', nombre: '', descripcion: '' },
-    accionToDelete: { id_accion: '', nombre: '', descripcion: '' },
-    nuevaAccion: { nombre: '', descripcion: '' },
-    filtroAccion: '',
-    filtroTipo: ''
-}">
-    <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6 w-full">
-        <!-- HEADER Y FILTROS -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full pb-4 mb-4 border-b">
-            <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Acciones Realizadas</h2>
-            <div class="flex-1 md:ml-6">
-                @include('partials.filtros-generales', [
-                    'searchModel' => 'searchAccion',
-                    'ordenarOptions' => [
-                        'nombre' => 'Nombre',
-                        'descripcion' => 'Descripción'
-                    ]
-                ])
-            </div>
-            <button @click="isAccionModalOpen = true; nuevaAccion = {nombre:'', descripcion:''}"
+    isAccionRealizadaModalOpen: false,
+    isAccionRealizadaEditModalOpen: false,
+    isAccionRealizadaDeleteModalOpen: false,
+    itemToEdit: null,
+    itemToDelete: null,
+    accionesRealizadas: [],
+    loadingAccionesRealizadas: false,
+    nombre: '',
+    descripcion: '',
+    filtroAccionRealizada: '',
+    ordenarPor: '',
+    async fetchAccionesRealizadas() {
+        await window.accionesRealizadasApiHandlers.fetchAccionesRealizadas(this);
+    },
+    async submitAccionRealizada() {
+        await window.accionesRealizadasApiHandlers.submitAccionRealizada(this);
+    },
+    async updateAccionRealizada() {
+        await window.accionesRealizadasApiHandlers.updateAccionRealizada(this);
+    },
+    async deleteAccionRealizada() {
+        await window.accionesRealizadasApiHandlers.deleteAccionRealizada(this);
+    },
+    handleModalSubmit(event) {
+        if(event.detail.formId === 'formAccionRealizada') this.submitAccionRealizada();
+        if(event.detail.formId === 'formEditAccionRealizada') this.updateAccionRealizada();
+    },
+    handleDelete() {
+        if (this.isAccionRealizadaDeleteModalOpen) {
+            this.deleteAccionRealizada();
+        }
+    }
+}"
+x-init="fetchAccionesRealizadas()"
+@keydown.escape.window="
+    isAccionRealizadaModalOpen = false;
+    isAccionRealizadaEditModalOpen = false;
+    isAccionRealizadaDeleteModalOpen = false;
+"
+@modal-submit.window="handleModalSubmit($event)"
+@confirm-delete.window="handleDelete()">
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Acciones Realizadas</h1>
+    </div>
+
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
+            @include('partials.filtros-generales', [
+                'searchModel' => 'filtroAccionRealizada',
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'id_accion_realizada_pk' => 'ID' // Corregido
+                ]
+            ])
+        </x-slot>
+
+        <x-slot name="actions">
+            <button
+                @click="isAccionRealizadaModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
-                <i class="fas fa-plus mr-2"></i>Nueva acción
+                Nueva Acción
             </button>
-        </div>
-        <!-- TABLA -->
-        <div class="overflow-x-auto">
+        </x-slot>
+
+        <x-slot name="table">
             <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                    <tr class="border-0">
-                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID Acción</th>
-                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Descripción</th>
-                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
+                    <tr>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="accion in acciones
-                        .filter(a =>
-                            (!filtroAccion || a.descripcion.toLowerCase().includes(filtroAccion.toLowerCase()))
-                            && (!filtroTipo || a.nombre === filtroTipo)
-                        )" :key="accion.id_accion">
-                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0 bg-white dark:bg-gray-900">
-                            <td class="py-2 px-4 nunito-regular first:rounded-bl-lg border-t-0" x-text="accion.id_accion"></td>
-                            <td class="py-2 px-4 nunito-regular border-t-0" x-text="accion.nombre"></td>
-                            <td class="py-2 px-4 nunito-regular border-t-0" x-text="accion.descripcion"></td>
-                            <td class="py-2 px-4 flex gap-2 nunito-regular last:rounded-br-lg border-t-0">
-                                <a href="#"
-                                    @click.prevent="isEditAccionModalOpen = true; accionToEdit = Object.assign({}, accion)"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#"
-                                    @click.prevent="isDeleteAccionModalOpen = true; accionToDelete = Object.assign({}, accion)"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                    <template x-if="loadingAccionesRealizadas">
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando acciones...
                             </td>
                         </tr>
                     </template>
+                    <template x-if="!loadingAccionesRealizadas && accionesRealizadas.length === 0">
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-gray-500 nunito-regular">
+                                No hay acciones registradas
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingAccionesRealizadas && accionesRealizadas.length > 0">
+                        <template x-for="(accion, index) in accionesRealizadas" :key="accion.id_accion_realizada_pk">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === accionesRealizadas.length - 1 }">
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="accion.nombre"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="accion.descripcion"></td>
+                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === accionesRealizadas.length - 1 }">
+                                    <a href="#" @click.prevent="isAccionRealizadaEditModalOpen = true; itemToEdit = { ...accion }" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="isAccionRealizadaDeleteModalOpen = true; itemToDelete = { id_accion_realizada_pk: accion.id_accion_realizada_pk, nombre: accion.nombre }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
                 </tbody>
             </table>
-        </div>
+        </x-slot>
+
+        <x-slot name="cards">
+            <template x-if="loadingAccionesRealizadas">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center text-gray-500 nunito-regular">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando acciones...
+                </div>
+            </template>
+            <template x-if="!loadingAccionesRealizadas && accionesRealizadas.length === 0">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center text-gray-500 nunito-regular">
+                    No hay acciones registradas
+                </div>
+            </template>
+            <template x-if="!loadingAccionesRealizadas && accionesRealizadas.length > 0">
+                <template x-for="accion in accionesRealizadas" :key="accion.id_accion_realizada_pk">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="accion.nombre"></h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="accion.descripcion"></p>
+                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <button @click.prevent="isAccionRealizadaEditModalOpen = true; itemToEdit = { ...accion }" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button @click.prevent="isAccionRealizadaDeleteModalOpen = true; itemToDelete = { id_accion_realizada_pk: accion.id_accion_realizada_pk, nombre: accion.nombre }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </x-slot>
+    </x-responsive-table>
+
+    <!-- Modales -->
+    <div>
+        <!-- Modal Nueva Acción -->
+        <x-admin.form-modal class="nunito-bold" modalName="isAccionRealizadaModalOpen" title="Nueva Acción Realizada"
+            submitLabel="Guardar Acción" formId="formAccionRealizada" maxWidth="max-w-md">
+            <div class="space-y-4">
+                <div>
+                    <label for="nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                    <input type="text" id="nombre" x-model="nombre" required
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                    <textarea id="descripcion" x-model="descripcion" rows="3"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                </div>
+            </div>
+        </x-admin.form-modal>
+
+        <!-- Modal Editar Acción -->
+        <x-admin.edit-modal class="nunito-bold" modalName="isAccionRealizadaEditModalOpen" title="Editar Acción Realizada" 
+            itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditAccionRealizada">
+            <div class="space-y-4">
+                <div>
+                    <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="3"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                </div>
+            </div>
+        </x-admin.edit-modal>
+
+        <!-- Modal Confirmar Eliminación -->
+        <x-admin.confirmation-modal class="nunito-regular" modalName="isAccionRealizadaDeleteModalOpen" itemToDelete="itemToDelete"
+            message="¿Estás seguro de que quieres eliminar esta acción?" />
     </div>
-
-    <!-- MODAL AGREGAR ACCIÓN -->
-    <div x-show="isAccionModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-    <div class="bg-white p-6 rounded-lg shadow max-w-xs xl:max-w-2xl 2xl:max-w-3xl min-h-[300px] xl:min-h-[600px] w-full relative">
-            <h2 class="text-xl font-bold mb-4 nunito-bold">Agregar Acción Realizada</h2>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-                <input type="text" x-model="nuevaAccion.nombre" class="w-full border rounded px-3 py-2 nunito-regular"
-                    placeholder="Ej: Revisión">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea x-model="nuevaAccion.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"
-                    placeholder="Describe la acción..."></textarea>
-            </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button @click="isAccionModalOpen = false; nuevaAccion = {nombre:'', descripcion:''}"
-                    class="px-4 py-2 bg-gray-200 rounded nunito-regular">Cancelar</button>
-                <button @click="
-                    if(nuevaAccion.nombre && nuevaAccion.descripcion){
-                        acciones.push({
-                            id_accion: 'AC-' + String(acciones.length+1).padStart(3,'0'),
-                            nombre: nuevaAccion.nombre,
-                            descripcion: nuevaAccion.descripcion
-                        });
-                        isAccionModalOpen = false;
-                        nuevaAccion = {nombre:'', descripcion:''};
-                    }
-                " class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 nunito-regular">Guardar Acción</button>
-            </div>
-            <button @click="isAccionModalOpen = false"
-                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
-        </div>
-    </div>
-
-    <!-- MODAL EDITAR ACCIÓN -->
-    <div x-show="isEditAccionModalOpen"
-        class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-    <div class="bg-white p-6 rounded-lg shadow max-w-xs xl:max-w-2xl 2xl:max-w-3xl min-h-[300px] xl:min-h-[600px] w-full relative">
-            <h2 class="text-xl font-bold mb-4 nunito-bold">Editar Acción Realizada</h2>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-                <input type="text" x-model="accionToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea x-model="accionToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
-            </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button @click="isEditAccionModalOpen = false" class="px-4 py-2 bg-gray-200 rounded nunito-regular">Cancelar</button>
-                <button @click="
-                    let i = acciones.findIndex(a => a.id_accion === accionToEdit.id_accion);
-                    if(i !== -1){
-                        acciones[i].nombre = accionToEdit.nombre;
-                        acciones[i].descripcion = accionToEdit.descripcion;
-                    }
-                    isEditAccionModalOpen = false;
-                " class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 nunito-regular">Guardar Cambios</button>
-            </div>
-            <button @click="isEditAccionModalOpen = false"
-                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
-        </div>
-
-
-    </div>
-    <!-- MODAL ELIMINAR ACCIÓN REALIZADA -->
-    <x-admin.confirmation-modal class="nunito-bold"
-        modalName="isDeleteAccionModalOpen"
-        title="Eliminar Acción Realizada"
-        :itemToDelete="'accionToDelete'"
-        itemNameProperty="nombre"
-        message="¿Estás seguro de que deseas eliminar la acción realizada"
-    />
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('accionesRealizadas', () => ({
-                ...Alpine.rawData,
-                deleteAccion() {
-                    if (this.accionToDelete) {
-                        this.acciones = this.acciones.filter(a => a.id_accion !== this.accionToDelete.id_accion);
-                        this.isDeleteAccionModalOpen = false;
-                        this.accionToDelete = { id_accion: '', nombre: '', descripcion: '' };
-                    }
-                }
-            }));
-        });
-    </script>
-
 </div>

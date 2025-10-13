@@ -102,7 +102,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
-    Route::apiResource('tipos-objeto', TipoObjetoController::class)->only(['index']);
+    Route::apiResource('tipos-objeto', TipoObjetoController::class);
 
     // MODULO DE PERSONAS (sin tipos-persona ni perfiles)
     // CRUD de géneros solo para admin (cliente usa únicamente GET /api/catalogos/generos)
@@ -130,8 +130,10 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
 
     Route::apiResource('contactos', ContactoController::class);
-    Route::apiResource('estados-solicitud', EstadoSolicitudController::class);
-    Route::apiResource('estados-proyecto', EstadoProyectoController::class);
+    Route::apiResource('estados-solicitud', EstadoSolicitudController::class)
+     ->parameters(['estados-solicitud' => 'estadoSolicitud']);
+   Route::apiResource('estados-proyecto', EstadoProyectoController::class)
+     ->parameters(['estados-proyecto' => 'estadoProyecto']);
     Route::apiResource('proyectos', ProyectoController::class);
     Route::apiResource('gastos', GastosController::class);
     Route::apiResource('ingresos', IngresosController::class);
@@ -179,6 +181,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);
     Route::get('dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes']);
     Route::get('dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado']);
+    Route::get('dashboard/actividades-recientes', [DashboardController::class, 'actividadesRecientes']);
     // KPIs específicos de proyectos (opcional, por si el front los llama por separado)
     // Mantener sólo si el front los requiere; de lo contrario se usan los de 'indicadores'
 });

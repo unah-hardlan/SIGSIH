@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Categoria extends Model
 {
@@ -14,16 +15,29 @@ class Categoria extends Model
     protected $table = 'tbl_categorias';
     protected $primaryKey = 'id_categoria_pk';
 
+    // Corregido para incluir las columnas correctas
     protected $fillable = [
-        'tipo_categoria',
-        'nombre_categoria'
+        'nombre_categoria',
+        'descripcion_categoria' 
     ];
 
     /**
-     * Relación con movimientos financieros (ingresos/gastos)
+     * Relaciones con Ingresos y Gastos.
      */
-    public function movimientos()
+    public function ingresos(): HasMany
     {
-        return $this->hasMany(MovimientoFinanciero::class, 'id_categoria_fk', 'id_categoria_pk');
+        return $this->hasMany(Ingresos::class, 'id_categoria_fk', 'id_categoria_pk');
     }
+
+    public function gastos(): HasMany
+    {
+        return $this->hasMany(Gastos::class, 'id_categoria_fk', 'id_categoria_pk');
+    }
+    //     return $this->hasMany(Ingreso::class, 'id_categoria_fk', 'id_categoria_pk');
+    // }
+
+    // public function gastos(): HasMany
+    // {
+    //     return $this->hasMany(Gasto::class, 'id_categoria_fk', 'id_categoria_pk');
+    // }
 }

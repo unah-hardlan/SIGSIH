@@ -13,36 +13,31 @@ class ProductoController extends Controller
     public function index(Request $request)
     {
         $query = Producto::query()->with('tipoProducto');
-        if($q = $request->input('q')){
-            $query->where(function($sub) use ($q){
-                $sub->where('nombre_producto','like',"%$q%")
-                    ->orWhere('descripcion_producto','like',"%$q%");
+
+        if ($q = $request->input('q')) {
+            $query->where(function($sub) use ($q) {
+                $sub->where('sku', 'like', "%$q%")
+                    ->orWhere('nombre_producto', 'like', "%$q%")
+                    ->orWhere('descripcion_producto', 'like', "%$q%");
             });
         }
-        if($tipo = $request->input('id_tipo_producto_fk')) $query->where('id_tipo_producto_fk',$tipo);
-        $sortable = [
-            'nombre' => 'nombre_producto',
-            'precio_unitario' => 'precio_unitario',
-            'precio_venta' => 'precio_venta',
-            'stock' => 'stock_minimo',
-            'fecha' => 'fecha_registro',
-        ];
-        $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
-        $query->orderBy($sortable[$sort] ?? 'id_producto_pk', $direction);
-        if($request->boolean('all')){
-            return ProductoResource::collection($query->get());
+        if ($tipo = $request->input('id_tipo_producto_fk')) {
+            $query->where('id_tipo_producto_fk', $tipo);
         }
-        $perPage = (int)$request->input('per_page',10);
-        $items = $query->paginate($perPage);
-        return ProductoResource::collection($items)->additional([
-            'meta'=>[
-                'page'=>$items->currentPage(),
-                'per_page'=>$items->perPage(),
-                'total'=>$items->total(),
-                'last_page'=>$items->lastPage(),
-            ]
-        ]);
+
+        $sortable = [
+            'nombre_producto' => 'nombre_producto',
+            'precio_venta' => 'precio_venta',
+            'id_producto_pk' => 'id_producto_pk',
+        ];
+
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction','asc')) === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortable[$sort] ?? 'nombre_producto', $direction);
+
+        $productos = $query->get();
+
+        return ProductoResource::collection($productos);
     }
 
     public function store(StoreProductoRequest $request)
@@ -52,27 +47,22 @@ class ProductoController extends Controller
         return (new ProductoResource($producto))->response()->setStatusCode(201);
     }
 
-    public function show($id)
+    public function show(Producto $producto) 
     {
-        $producto = Producto::with('tipoProducto')->find($id);
-        if(!$producto) return response()->json(['error'=>'Producto no encontrado'],404);
-        return (new ProductoResource($producto))->response();
+        $producto->load('tipoProducto');
+        return new ProductoResource($producto);
     }
 
-    public function update(UpdateProductoRequest $request, $id)
+    public function update(UpdateProductoRequest $request, Producto $producto) 
     {
-        $producto = Producto::find($id);
-        if(!$producto) return response()->json(['error'=>'Producto no encontrado'],404);
         $producto->update($request->validated());
         $producto->load('tipoProducto');
-        return (new ProductoResource($producto))->response();
+        return new ProductoResource($producto);
     }
 
-    public function destroy($id)
+    public function destroy(Producto $producto) 
     {
-        $producto = Producto::find($id);
-        if(!$producto) return response()->json(['error'=>'Producto no encontrado'],404);
         $producto->delete();
-        return response()->json(['message'=>'Producto eliminado']);
+        return response()->json(null, 204);
     }
 }

@@ -15,13 +15,14 @@ class EstadoSolicitudResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id_estado_solicitud_pk,
-            // Map actual DB columns to stable API keys used on frontend
-            'nombre_estado' => $this->nombre,
-            'descripcion_estado' => $this->descripcion,
+            'id_estado_solicitud_pk' => $this->id_estado_solicitud_pk,
+            
+            'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
             'codigo' => $this->codigo,
-            'es_final' => (bool) $this->es_final,
             'orden' => $this->orden,
+            'es_final' => (bool) $this->es_final, 
+
             'total_solicitudes' => $this->whenLoaded('solicitudes', function () {
                 return $this->solicitudes->count();
             }),

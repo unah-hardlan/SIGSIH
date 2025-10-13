@@ -3,23 +3,31 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateEstadoSolicitudRequest extends FormRequest
 {
-    public function authorize(): bool 
-    { 
-        return true; 
+    public function authorize(): bool
+    {
+        return true;
     }
 
     public function rules(): array
     {
-        $id = $this->route('estados_solicitud') ?? $this->route('id');
+        $estadoSolicitudId = $this->route('estadoSolicitud')->id_estado_solicitud_pk;
+
         return [
-            'nombre' => 'sometimes|required|string|max:100|unique:tbl_estado_solicitud,nombre,' . $id . ',id_estado_solicitud_pk',
+            'nombre' => [
+                'sometimes', 'required', 'string', 'max:100',
+                Rule::unique('tbl_estado_solicitud', 'nombre')->ignore($estadoSolicitudId, 'id_estado_solicitud_pk')
+            ],
+            'codigo' => [
+                'sometimes', 'required', 'string', 'max:50',
+                Rule::unique('tbl_estado_solicitud', 'codigo')->ignore($estadoSolicitudId, 'id_estado_solicitud_pk')
+            ],
             'descripcion' => 'sometimes|nullable|string|max:255',
-            'codigo' => 'sometimes|nullable|string|max:50',
-            'es_final' => 'sometimes|nullable|boolean',
-            'orden' => 'sometimes|nullable|integer|min:0'
+            'es_final' => 'sometimes|required|boolean',
+            'orden' => 'sometimes|required|integer',
         ];
     }
 }

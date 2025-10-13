@@ -174,9 +174,12 @@ class DashboardController extends Controller
             ->count();
         $cerradas = OrdenServicio::whereNotNull('fecha_finalizacion')->count();
 
+        $labels = ['Abiertas', 'En Proceso', 'Cerradas'];
+        $data = [$abiertas, $enProceso, $cerradas];
+
         return response()->json([
-            'labels' => ['Abiertas', 'En Proceso', 'Cerradas'],
-            'data' => [$abiertas, $enProceso, $cerradas],
+            'labels' => $labels,
+            'data' => $data,
         ]);
     }
 

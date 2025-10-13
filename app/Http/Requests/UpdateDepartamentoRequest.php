@@ -15,7 +15,7 @@ class UpdateDepartamentoRequest extends FormRequest
     {
         return [
             'nombre_departamento' => 'sometimes|required|string|max:100',
-            'id_pais_fk' => 'sometimes|required|exists:tbl_pais,id_pais_pk'
+            'id_pais_pk' => 'sometimes|required|exists:tbl_pais,id_pais_pk'
         ];
     }
 }

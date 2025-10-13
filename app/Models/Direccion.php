@@ -19,13 +19,20 @@ class Direccion extends Model
         'numero',
         'colonia',
         'codigo_postal',
-        'referencia'
+        'referencia',
+        'agencia_id'
     ];
 
     // Relación con Ciudad
     public function ciudad()
     {
         return $this->belongsTo(Ciudad::class, 'id_ciudad_fk', 'id_ciudad_pk');
+    }
+
+    // Relación con Agencia
+    public function agencia()
+    {
+        return $this->belongsTo(Agencia::class, 'agencia_id', 'id_agencias_pk');
     }
 
     // Accessor para dirección completa
