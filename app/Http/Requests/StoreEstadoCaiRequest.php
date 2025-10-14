@@ -16,18 +16,24 @@ class StoreEstadoCaiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_estado_cai' => 'required|string|max:50|unique:tbl_estado_cai,nombre_estado_cai',
-            'descripcion_estado_cai' => 'nullable|string|max:255'
+            'codigo_estado_cai' => 'nullable|string|max:10',
+            'nombre_estado_cai' => 'required|string|max:50',
+            'descripcion_estado_cai' => 'nullable|string|max:255',
+            'es_final' => 'nullable|boolean',
+            'orden' => 'nullable|integer|min:0'
         ];
     }
 
     public function messages(): array
     {
         return [
+            'codigo_estado_cai.unique' => 'Ya existe un estado CAI con ese código',
+            'codigo_estado_cai.max' => 'El código no puede exceder 10 caracteres',
             'nombre_estado_cai.required' => 'El nombre del estado CAI es obligatorio',
             'nombre_estado_cai.unique' => 'Ya existe un estado CAI con ese nombre',
             'nombre_estado_cai.max' => 'El nombre no puede exceder 50 caracteres',
-            'descripcion_estado_cai.max' => 'La descripción no puede exceder 255 caracteres'
+            'descripcion_estado_cai.max' => 'La descripción no puede exceder 255 caracteres',
+            'orden.min' => 'El orden debe ser un número positivo'
         ];
     }
 

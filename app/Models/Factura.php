@@ -23,6 +23,14 @@ class Factura extends Model
         'id_cotizacion_fk'
     ];
 
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'id_factura_pk';
+    }
+
     public function estadoFactura()
     {
         return $this->belongsTo(EstadoFactura::class, 'id_estado_factura_fk', 'id_estado_factura_pk');
@@ -35,7 +43,7 @@ class Factura extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(Persona::class, 'id_cliente_fk', 'id_persona_pk');
+        return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
     public function cotizacion()

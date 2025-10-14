@@ -1,16 +1,4 @@
-<div x-data="{
-    tab: 'facturas',
-    isFacturaModalOpen: false, 
-    isEditFacturaModalOpen: false, 
-    facturaToEdit: {id: '', numero: '', fecha: '', oc: '', subtotal: '', total: '', total_letras: '', estado_factura: '', cai: '', cliente: ''}, 
-    isDeleteFacturaModalOpen: false, 
-    facturaToDelete: {id: ''},
-    isDetalleModalOpen: false,
-    isEditDetalleModalOpen: false,
-    detalleToEdit: {id_detalle: '', id_factura: '', id_servicio: '', fecha_servicio: '', horas: '', descuento: ''},
-    isDeleteDetalleModalOpen: false,
-    detalleToDelete: {id_detalle: ''}
-}" @include('partials.persist-tab', ['tabKey' => 'admin-facturas-tab']) class="p-6">
+<div x-data="facturasCrud()" @include('partials.persist-tab', ['tabKey' => 'admin-facturas-tab']) class="p-6">
 
     <div class="mb-6">
         <ul class="flex border-b nunito-bold">
@@ -76,62 +64,56 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0001</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-07-30</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">OC-12345</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">5000</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">5500</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Cinco mil quinientos lempiras</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 px-2 py-1 rounded nunito-regular">Pagada</span>
-                        </td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">CAI-987654321</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">BAC credomatic</td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="/admin/formato-factura" target="_blank"
-                                class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular">
-                                <i class="fas fa-eye mr-1"></i> Ver detalles
-                            </a>
-                            <a href="#"
-                                @click.prevent="isEditFacturaModalOpen = true; facturaToEdit = {id: 1, numero: '0001', fecha: '2025-07-30', oc: 'OC-12345', subtotal: 5000, total: 5500, total_letras: 'Cinco mil quinientos lempiras', estado_factura: 'Pagada', cai: 'CAI-987654321', cliente: 'BAC credomatic'}"
-                                class="inline-flex items-center justify-center text-blue-500 hover:text-blue-700 nunito-regular">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="#" @click.prevent="isDeleteFacturaModalOpen = true; facturaToDelete = {id: 1}"
-                                class="inline-flex items-center justify-center text-red-500 hover:text-red-700 nunito-regular">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                    <template x-for="factura in facturas" :key="factura.id || factura.id_factura_pk">
+                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.id || factura.id_factura_pk"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.numero"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.fecha"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.oc || '-'"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.subtotal"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.total"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.total_letras || '-'"></td>
+                            <td class="py-2 px-4">
+                                <span x-text="factura.estado_factura || 'Sin estado'"
+                                      :class="{
+                                          'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300': factura.estado_factura === 'Pagada',
+                                          'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300': factura.estado_factura === 'Pendiente' || factura.estado_factura === 'Emitida' || factura.estado_factura === 'Pendiente de Pago',
+                                          'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300': factura.estado_factura === 'Cancelada' || factura.estado_factura === 'Anulada',
+                                          'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300': factura.estado_factura === 'Parcialmente Pagada',
+                                          'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-300': !factura.estado_factura
+                                      }"
+                                      class="px-2 py-1 rounded nunito-regular">
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.cai || 'Sin CAI'"></td>
+                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="factura.cliente_nombre || 'Sin cliente'"></td>
+                            <td class="py-2 px-4 flex gap-2">
+                                <a href="/admin/formato-factura" target="_blank"
+                                    class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular">
+                                    <i class="fas fa-eye mr-1"></i> Ver detalles
+                                </a>
+                                <a href="#"
+                                    @click.prevent="isEditFacturaModalOpen = true; itemToEdit = factura"
+                                    class="inline-flex items-center justify-center text-blue-500 hover:text-blue-700 nunito-regular">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" @click.prevent="isDeleteFacturaModalOpen = true; itemToDelete = factura"
+                                    class="inline-flex items-center justify-center text-red-500 hover:text-red-700 nunito-regular">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </template>
+                    <!-- Loading state -->
+                    <tr x-show="loadingFacturas" class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td colspan="10" class="py-4 text-center nunito-regular text-gray-800 dark:text-white">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>Cargando facturas...
                         </td>
                     </tr>
-                    <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0002</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-07-31</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">OC-54321</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">6000</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">6500</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Seis mil quinientos lempiras</td>
-                        <td class="py-2 px-4">
-                            <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 px-2 py-1 rounded nunito-regular">Pendiente</span>
-                        </td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">CAI-123456789</td>
-                        <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">Bancafe</td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="/admin/formato-factura" target="_blank"
-                                class="inline-flex items-center justify-center text-xs w-24 h-9 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 mr-2 nunito-regular">
-                                <i class="fas fa-eye mr-1"></i> Ver detalles
-                            </a>
-                            <a href="#"
-                                @click.prevent="isEditFacturaModalOpen = true; facturaToEdit = {id: 2, numero: '0002', fecha: '2025-07-31', oc: 'OC-54321', subtotal: 6000, total: 6500, total_letras: 'Seis mil quinientos lempiras', estado_factura: 'Pendiente', cai: 'CAI-123456789', cliente: 'Bancafe'}"
-                                class="inline-flex items-center justify-center text-blue-500 hover:text-blue-700 nunito-regular">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="#" @click.prevent="isDeleteFacturaModalOpen = true; facturaToDelete = {id: 2}"
-                                class="inline-flex items-center justify-center text-red-500 hover:text-red-700 nunito-regular">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                    <!-- Empty state -->
+                    <tr x-show="!loadingFacturas && facturas.length === 0" class="border-b nunito-regular bg-white dark:bg-gray-900">
+                        <td colspan="10" class="py-4 text-center nunito-regular text-gray-500 dark:text-gray-400">
+                            No hay facturas disponibles
                         </td>
                     </tr>
                 </tbody>
@@ -141,7 +123,7 @@
 
     <!-- Modales Factura -->
     <x-admin.form-modal class="nunito-bold" modalName="isFacturaModalOpen" title="Nueva Factura" submitLabel="Guardar Factura"
-        maxWidth="max-w-2xl">
+        maxWidth="max-w-2xl" formId="formFactura">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="numero_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
@@ -171,78 +153,111 @@
                 <label for="estado_factura_id" class="block text-sm font-medium text-gray-700 nunito-bold">Estado Factura</label>
                 <select id="estado_factura_id" name="estado_factura_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
-                    <option value="1" class="nunito-regular">Pagada</option>
-                    <option value="2" class="nunito-regular">Pendiente</option>
-                    <option value="3" class="nunito-regular">Cancelada</option>
+                    <template x-for="estado in estadosFactura" :key="estado.id || estado.id_estado_factura_pk">
+                        <option :value="estado.id || estado.id_estado_factura_pk" 
+                                x-text="estado.nombre_estado" 
+                                class="nunito-regular">
+                        </option>
+                    </template>
                 </select>
             </div>
             <div>
                 <label for="cai_factura" class="block text-sm font-medium text-gray-700 nunito-bold">CAI</label>
-                <input type="text" id="cai_factura" name="cai_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="cai_factura" name="cai_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="" class="nunito-regular">Seleccione un CAI</option>
+                    <template x-for="cai in cais" :key="cai.id || cai.id_cai_pk">
+                        <option :value="cai.id || cai.id_cai_pk" 
+                                x-text="cai.codigo" 
+                                class="nunito-regular">
+                        </option>
+                    </template>
+                </select>
             </div>
             <div>
                 <label for="cliente_id" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="cliente_id" name="cliente_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
-                    <option value="1" class="nunito-regular">Bac Credomatic</option>
-                    <option value="2" class="nunito-regular">Bancafe</option>
+                    <template x-for="cliente in clientes" :key="cliente.id || cliente.id_cliente_pk">
+                        <option :value="cliente.id || cliente.id_cliente_pk" 
+                                x-text="cliente.nombre" 
+                                class="nunito-regular">
+                        </option>
+                    </template>
                 </select>
             </div>
         </div>
     </x-admin.form-modal>
 
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditFacturaModalOpen" title="Editar Factura" itemToEdit="facturaToEdit"
-        maxWidth="max-w-2xl">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditFacturaModalOpen" title="Editar Factura" itemToEdit="itemToEdit"
+        maxWidth="max-w-2xl" formId="formEditFactura">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="edit_numero_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
-                <input type="text" id="edit_numero_factura" name="edit_numero_factura" :value="facturaToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="edit_numero_factura" name="edit_numero_factura" :value="itemToEdit?.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_fecha_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                <input type="date" id="edit_fecha_factura" name="edit_fecha_factura" :value="facturaToEdit.fecha" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="date" id="edit_fecha_factura" name="edit_fecha_factura" :value="itemToEdit?.fecha" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_oc_factura" class="block text-sm font-medium text-gray-700 nunito-bold">OC</label>
-                <input type="text" id="edit_oc_factura" name="edit_oc_factura" :value="facturaToEdit.oc" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="edit_oc_factura" name="edit_oc_factura" :value="itemToEdit?.oc" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_subtotal_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Subtotal</label>
-                <input type="number" id="edit_subtotal_factura" name="edit_subtotal_factura" :value="facturaToEdit.subtotal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="number" id="edit_subtotal_factura" name="edit_subtotal_factura" :value="itemToEdit?.subtotal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_total_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                <input type="number" id="edit_total_factura" name="edit_total_factura" :value="facturaToEdit.total" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="number" id="edit_total_factura" name="edit_total_factura" :value="itemToEdit?.total" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_total_letras_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Total Letras</label>
-                <input type="text" id="edit_total_letras_factura" name="edit_total_letras_factura" :value="facturaToEdit.total_letras" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="edit_total_letras_factura" name="edit_total_letras_factura" :value="itemToEdit?.total_letras" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_estado_factura_id" class="block text-sm font-medium text-gray-700 nunito-bold">Estado Factura</label>
                 <select id="edit_estado_factura_id" name="edit_estado_factura_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
-                    <option value="1" :selected="facturaToEdit.estado_factura === 'Pagada'" class="nunito-regular">Pagada</option>
-                    <option value="2" :selected="facturaToEdit.estado_factura === 'Pendiente'" class="nunito-regular">Pendiente</option>
-                    <option value="3" :selected="facturaToEdit.estado_factura === 'Cancelada'" class="nunito-regular">Cancelada</option>
+                    <template x-for="estado in estadosFactura" :key="estado.id || estado.id_estado_factura_pk">
+                        <option :value="estado.id || estado.id_estado_factura_pk" 
+                                :selected="(itemToEdit?.estado_factura?.id || itemToEdit?.id_estado_factura_fk) == (estado.id || estado.id_estado_factura_pk)"
+                                x-text="estado.nombre_estado" 
+                                class="nunito-regular">
+                        </option>
+                    </template>
                 </select>
             </div>
             <div>
                 <label for="edit_cai_factura" class="block text-sm font-medium text-gray-700 nunito-bold">CAI</label>
-                <input type="text" id="edit_cai_factura" name="edit_cai_factura" :value="facturaToEdit.cai" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="edit_cai_factura" name="edit_cai_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="" class="nunito-regular">Seleccione un CAI</option>
+                    <template x-for="cai in cais" :key="cai.id || cai.id_cai_pk">
+                        <option :value="cai.id || cai.id_cai_pk" 
+                                :selected="(itemToEdit?.cai?.id || itemToEdit?.id_cai_fk) == (cai.id || cai.id_cai_pk)"
+                                x-text="cai.codigo" 
+                                class="nunito-regular">
+                        </option>
+                    </template>
+                </select>
             </div>
             <div>
                 <label for="edit_cliente_id" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="edit_cliente_id" name="edit_cliente_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
-                    <option value="1" :selected="facturaToEdit.cliente === 'Bac Credomatic'" class="nunito-regular">Bac Credomatic</option>
-                    <option value="2" :selected="facturaToEdit.cliente === 'Bancafe'" class="nunito-regular">Bancafe</option>
+                    <template x-for="cliente in clientes" :key="cliente.id || cliente.id_cliente_pk">
+                        <option :value="cliente.id || cliente.id_cliente_pk" 
+                                :selected="(itemToEdit?.cliente?.id || itemToEdit?.id_cliente_fk) == (cliente.id || cliente.id_cliente_pk)"
+                                x-text="cliente.nombre" 
+                                class="nunito-regular">
+                        </option>
+                    </template>
                 </select>
             </div>
         </div>
     </x-admin.edit-modal>
 
-    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteFacturaModalOpen" itemToDelete="facturaToDelete"
+    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteFacturaModalOpen" itemToDelete="itemToDelete"
         message="¿Estás seguro de que quieres eliminar la factura?" />
 
     <!-- TAB: DETALLE FACTURA -->

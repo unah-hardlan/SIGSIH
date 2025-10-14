@@ -16,7 +16,7 @@ class UpdateFacturaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numero' => 'sometimes|required|string|max:20|unique:tbl_factura,numero,' . $this->route('factura'),
+            'numero' => 'sometimes|required|string|max:20|unique:tbl_factura,numero,' . $this->route('factura')->id_factura_pk . ',id_factura_pk',
             'fecha' => 'sometimes|required|date',
             'oc' => 'sometimes|nullable|string|max:20',
             'subtotal' => 'sometimes|required|numeric|min:0',
@@ -24,7 +24,7 @@ class UpdateFacturaRequest extends FormRequest
             'total_letras' => 'sometimes|nullable|string|max:500',
             'id_estado_factura_fk' => 'sometimes|required|integer|exists:tbl_estado_factura,id_estado_factura_pk',
             'id_cai_fk' => 'sometimes|required|integer|exists:tbl_cai,id_cai_pk',
-            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_persona,id_persona_pk'
+            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk'
         ];
     }
 

@@ -61,6 +61,11 @@ import "./tipo-productos";
 import "./tipo-objetos";
 import "./tipo-movimientos";
 import "./servicios-realizados";
+import "./estados-facturas";
+import "./estados-cai";
+import "./cai";
+import "./facturas";
+import "./servicios-factura";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {

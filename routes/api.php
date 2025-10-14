@@ -146,6 +146,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('estados-cai', EstadoCaiController::class);
     Route::apiResource('cai', CaiController::class);
     Route::apiResource('facturas', FacturaController::class);
+    Route::get('facturas-clientes', [FacturaController::class, 'getClientes']);
     Route::apiResource('detalles-factura', DetalleFacturaController::class);
     Route::apiResource('servicios', ServicioController::class);
     Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
