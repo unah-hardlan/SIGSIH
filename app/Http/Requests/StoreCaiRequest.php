@@ -19,6 +19,7 @@ class StoreCaiRequest extends FormRequest
             'codigo' => 'required|string|max:50|unique:tbl_cai,codigo',
             'rango_inicio' => 'required|string|max:20',
             'rango_fin' => 'required|string|max:20',
+            'consecutivo_actual' => 'required|integer|min:0',
             'fecha_limite' => 'required|date',
             'id_estado_cai_fk' => 'required|integer|exists:tbl_estado_cai,id_estado_cai_pk'
         ];

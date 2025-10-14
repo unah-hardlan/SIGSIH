@@ -12,9 +12,12 @@ class EstadoCaiResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id_estado_cai_pk,
-            'nombre_estado_cai' => $this->nombre_estado_cai,
-            'descripcion_estado_cai' => $this->descripcion_estado_cai
+            'id_estado_cai_pk' => $this->id_estado_cai_pk,
+            'codigo_estado_cai' => $this->codigo,
+            'nombre_estado_cai' => $this->nombre,
+            'descripcion_estado_cai' => $this->descripcion,
+            'es_final' => (bool) $this->es_final,
+            'orden' => (int) ($this->orden ?? 0)
         ];
     }
 }

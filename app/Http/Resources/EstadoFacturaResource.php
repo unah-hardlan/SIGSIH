@@ -13,8 +13,12 @@ class EstadoFacturaResource extends JsonResource
     {
         return [
             'id' => $this->id_estado_factura_pk,
-            'nombre_estado' => $this->nombre_estado,
-            'descripcion_estado_factura' => $this->descripcion_estado_factura
+            'id_estado_factura_pk' => $this->id_estado_factura_pk,
+            'codigo' => $this->codigo,
+            'nombre_estado' => $this->nombre,
+            'descripcion_estado_factura' => $this->descripcion,
+            'es_final' => $this->es_final,
+            'orden' => $this->orden
         ];
     }
 }

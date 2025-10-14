@@ -13,4 +13,9 @@ class EstadoCai extends Model
     protected $fillable = [
         'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
+
+    public function getRouteKeyName()
+    {
+        return $this->getKeyName();
+    }
 }

@@ -13,4 +13,12 @@ class EstadoFactura extends Model
     protected $fillable = [
         'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'id_estado_factura_pk';
+    }
 }
