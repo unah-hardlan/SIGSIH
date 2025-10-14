@@ -176,9 +176,13 @@
         this.$watch('filters.search',debounce(()=>this.fetchCotizaciones()));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
     }
-}" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="deleteCotizacion()">
-    <x-admin.tabla-crud class="nunito-bold" titulo="Cotizaciones">
-        <x-slot:filtros>
+}" x-init="init()" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="deleteCotizacion()">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Cotizaciones</h1>
+    </div>
+
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
             <div class="w-full">
                 <div class="flex">
                     <div class="flex-1 relative">
@@ -203,237 +207,350 @@
                     </button>
                 </div>
             </div>
-        </x-slot:filtros>
+        </x-slot>
 
-        <x-slot:boton>
+        <x-slot name="actions">
             <button @click="openCreate()"
                 class="text-sm w-full sm:w-40 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
                 <i class="fas fa-plus"></i> Generar Cotización
             </button>
-        </x-slot:boton>
+        </x-slot>
 
-        <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            class="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-sm mb-4">
-            <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
-                <div class="w-full md:w-1/2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-white mb-1 nunito-bold">Rango de
-                        fechas</label>
-                    <div class="flex space-x-2">
-                        <input type="date" x-model="filters.desde"
-                            class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
-                        <input type="date" x-model="filters.hasta"
-                            class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
+        <x-slot name="table">
+            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                class="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-sm mb-4">
+                <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
+                    <div class="w-full md:w-1/2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white mb-1 nunito-bold">Rango de
+                            fechas</label>
+                        <div class="flex space-x-2">
+                            <input type="date" x-model="filters.desde"
+                                class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
+                            <input type="date" x-model="filters.hasta"
+                                class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
+                        </div>
+                    </div>
+
+                    <!-- Cliente -->
+                    <div class="w-full md:w-1/2">
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Cliente</label>
+                        <select
+                            class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+                            x-model="filters.cliente">
+                            <option value="">Todos los clientes</option>
+                            <template x-for="cl in clientes" :key="cl.id">
+                                <option :value="cl.id" x-text="cl.nombre"></option>
+                            </template>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Cliente -->
-                <div class="w-full md:w-1/2">
-                    <label
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Cliente</label>
-                    <select
-                        class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
-                        x-model="filters.cliente">
-                        <option value="">Todos los clientes</option>
-                        <template x-for="cl in clientes" :key="cl.id">
-                            <option :value="cl.id" x-text="cl.nombre"></option>
-                        </template>
-                    </select>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Rango de
+                        montos</label>
+                    <div class="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-2 space-y-2 md:space-y-0">
+                        <input type="number" placeholder="Monto mínimo" x-model="filters.montoMin"
+                            class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
+                        <input type="number" placeholder="Monto máximo" x-model="filters.montoMax"
+                            class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <button type="button"
+                        @click="filters={ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' }; fetchCotizaciones();"
+                        class="px-4 py-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 text-sm nunito-regular">Limpiar</button>
+                    <button type="button" @click="applyFilters()"
+                        class="px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm nunito-regular">Aplicar
+                        filtros</button>
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Rango de
-                    montos</label>
-                <div class="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-2 space-y-2 md:space-y-0">
-                    <input type="number" placeholder="Monto mínimo" x-model="filters.montoMin"
-                        class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
-                    <input type="number" placeholder="Monto máximo" x-model="filters.montoMax"
-                        class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-2">
-                <button type="button"
-                    @click="filters={ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' }; fetchCotizaciones();"
-                    class="px-4 py-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 text-sm nunito-regular">Limpiar</button>
-                <button type="button" @click="applyFilters()"
-                    class="px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm nunito-regular">Aplicar
-                    filtros</button>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="nunito-bold">
-                    <tr>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID
-                            Cliente</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha
-                            Cotización</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida
-                            Hasta</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                            Imponible</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                            Impuesto</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total
-                            Imp.</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Otros
-                            Cargos</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                            Anticipo</th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total
-                        </th>
-                        <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                            Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="nunito-regular">
-                    <template x-for="c in cotizaciones" :key="c.id">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="nunito-bold">
                         <tr>
-                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.id"></td>
-                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_id"></td>
-                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.fecha"></td>
-                            <td class="px-4 py-3 border-t border-gray-200" x-text="c.valido_hasta"></td>
-                            <td class="px-4 py-3 border-t border-gray-200"
-                                x-text="'$'+(Number(c.imponible ?? 0)).toFixed(2)"></td>
-                            <td class="px-4 py-3 border-t border-gray-200"
-                                x-text="'$'+(Number(c.impuesto ?? 0)).toFixed(2)"></td>
-                            <td class="px-4 py-3 border-t border-gray-200"
-                                x-text="'$'+(Number(c.total_impuesto ?? 0)).toFixed(2)"></td>
-                            <td class="px-4 py-3 border-t border-gray-200"
-                                x-text="'$'+(Number(c.otros_cargos ?? 0)).toFixed(2)"></td>
-                            <td class="px-4 py-3 border-t border-gray-200"
-                                x-text="'$'+(Number(c.anticipo_requerido ?? 0)).toFixed(2)"></td>
-                            <td class="px-4 py-3 border-t border-gray-200"
-                                x-text="'$'+(Number(c.total ?? 0)).toFixed(2)"></td>
-                            <td class="px-4 py-3 border-t border-gray-200 flex items-center gap-2">
-                                <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
-                                    class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
-                                    <i class='fas fa-eye mr-1'></i> Ver
-                                </a>
-                                <a href="#" @click.prevent="openItems(c)"
-                                    class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-indigo-600 text-white hover:bg-indigo-700 duration-300 nunito-regular">
-                                    <i class="fas fa-database mr-1"></i> Items
-                                </a>
-                                <a href="#" @click.prevent="openEdit(c)" class="text-blue-500 hover:text-blue-700"><i
-                                        class="fas fa-edit"></i></a>
-                                <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                            </td>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID
+                                Cliente</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha
+                                Cotización</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida
+                                Hasta</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Imponible</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Impuesto</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total
+                                Imp.</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Otros
+                                Cargos</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Anticipo</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total
+                            </th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Acciones</th>
                         </tr>
-                    </template>
-                    <tr x-show="!cotizaciones.length && !loading">
-                        <td colspan="7" class="text-center text-gray-500 py-4">Sin datos</td>
-                    </tr>
-                    <tr x-show="loading">
-                        <td colspan="7" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </x-admin.tabla-crud>
+                    </thead>
+                    <tbody class="nunito-regular">
+                        <template x-for="c in cotizaciones" :key="c.id">
+                            <tr>
+                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.id"></td>
+                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_id"></td>
+                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.fecha"></td>
+                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.valido_hasta"></td>
+                                <td class="px-4 py-3 border-t border-gray-200"
+                                    x-text="'$'+(Number(c.imponible ?? 0)).toFixed(2)"></td>
+                                <td class="px-4 py-3 border-t border-gray-200"
+                                    x-text="'$'+(Number(c.impuesto ?? 0)).toFixed(2)"></td>
+                                <td class="px-4 py-3 border-t border-gray-200"
+                                    x-text="'$'+(Number(c.total_impuesto ?? 0)).toFixed(2)"></td>
+                                <td class="px-4 py-3 border-t border-gray-200"
+                                    x-text="'$'+(Number(c.otros_cargos ?? 0)).toFixed(2)"></td>
+                                <td class="px-4 py-3 border-t border-gray-200"
+                                    x-text="'$'+(Number(c.anticipo_requerido ?? 0)).toFixed(2)"></td>
+                                <td class="px-4 py-3 border-t border-gray-200"
+                                    x-text="'$'+(Number(c.total ?? 0)).toFixed(2)"></td>
+                                <td class="px-4 py-3 border-t border-gray-200 flex items-center gap-2">
+                                    <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
+                                        class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
+                                        <i class='fas fa-eye mr-1'></i> Ver
+                                    </a>
+                                    <a href="#" @click.prevent="openItems(c)"
+                                        class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-indigo-600 text-white hover:bg-indigo-700 duration-300 nunito-regular">
+                                        <i class="fas fa-database mr-1"></i> Items
+                                    </a>
+                                    <a href="#" @click.prevent="openEdit(c)" class="text-blue-500 hover:text-blue-700"><i
+                                            class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
+                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr x-show="!cotizaciones.length && !loading">
+                            <td colspan="11" class="text-center text-gray-500 py-4">Sin datos</td>
+                        </tr>
+                        <tr x-show="loading">
+                            <td colspan="11" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </x-slot>
 
-    <!-- Modal: Items Manager por cotización -->
-    <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la cotización" submitLabel="Guardar"
-        formId="items-manager" maxWidth="max-w-5xl">
-        <div class="space-y-4">
-            <div class="flex items-center justify-between gap-2">
-                <div class="text-sm text-gray-600 dark:text-gray-300">Cotización ID: <span class="font-semibold"
-                        x-text="currentCotizacionId"></span></div>
-                <div class="flex items-center gap-2">
+          <x-slot name="cards">
+            <div class="space-y-4">
+                <template x-if="loading"><div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando cotizaciones...</div></template>
+                <template x-if="!loading && cotizaciones.length === 0"><div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div></template>
+                <template x-for="c in cotizaciones" :key="c.id">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
+                            </div>
+                            <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(c.total)"></p>
+                        </div>
+                        <p class="text-xs text-gray-400">
+                            Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
+                        </p>
+                        <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
+                            <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                                <i class='fas fa-eye'></i> Ver
+                            </a>
+                             <button @click.prevent="openItems(c)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
+                                <i class="fas fa-database"></i> Items
+                            </button>
+                             <button @click.prevent="openEdit(c)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                             <button @click.prevent="deleteModal=true; selectedItem=c.id" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </x-slot>
+
+    </x-responsive-table>
+
+    <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la Cotización" submitLabel="Guardar" formId="items-manager" maxWidth="max-w-5xl">
+        <div class="space-y-4 p-4">
+            <!-- Search and Action Bar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="text-sm text-gray-600 dark:text-gray-300 nunito-regular">
+                    Cotización ID: <span class="font-semibold" x-text="currentCotizacionId"></span>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                     <input type="text" placeholder="Buscar descripción..." x-model="itemsSearch"
-                        class="w-64 rounded-md border border-gray-300 dark:border-gray-700 p-1 text-sm bg-white dark:bg-gray-900" />
+                        class="w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
                     <button type="button" @click="openNewItem()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"><i
-                            class="fas fa-plus mr-1"></i>Nuevo</button>
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
+                        <i class="fas fa-plus mr-1"></i> Nuevo
+                    </button>
                     <template x-if="itemMode!=='list'">
                         <button type="button" @click="cancelItemEdit()"
-                            class="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded text-sm">Cancelar</button>
+                                class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
+                            Cancelar
+                        </button>
                     </template>
                 </div>
             </div>
 
+            <!-- Item Form -->
             <template x-if="itemMode!=='list'">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 border rounded-md">
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium">Descripción</label>
-                        <input type="text" x-model="itemForm.descripcion"
-                            class="w-full rounded-md border border-gray-400 p-1" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Precio Unit.</label>
-                        <input type="number" step="0.01" x-model.number="itemForm.precio_unitario"
-                            class="w-full rounded-md border border-gray-400 p-1" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Cantidad</label>
-                        <input type="number" step="0.01" x-model.number="itemForm.cantidad"
-                            class="w-full rounded-md border border-gray-400 p-1" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Impuesto</label>
-                        <input type="number" step="0.01" x-model.number="itemForm.impuesto"
-                            class="w-full rounded-md border border-gray-400 p-1" />
-                    </div>
-                    <div class="md:col-span-5">
-                        <label class="block text-sm font-medium">Total</label>
-                        <input type="number" :value="calcItemTotal(itemForm)" disabled
-                            class="w-full rounded-md border border-gray-200 bg-gray-100 p-1" />
-                    </div>
-                    <div class="md:col-span-5 text-right">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded text-sm"
-                            x-text="itemMode==='create' ? 'Guardar Item' : 'Actualizar Item'"></button>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                    <div class="space-y-4 sm:col-span-2">
+                        <div>
+                            <label for="item_descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</label>
+                            <input type="text" id="item_descripcion" x-model="itemForm.descripcion"
+                                class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                            <template x-if="itemErrors.descripcion">
+                                <p class="text-xs text-red-500 mt-1" x-text="itemErrors.descripcion[0]"></p>
+                            </template>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label for="item_precio" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Precio Unit.</label>
+                                <input type="number" step="0.01" id="item_precio" x-model.number="itemForm.precio_unitario"
+                                    class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right" />
+                                <template x-if="itemErrors.precio_unitario">
+                                    <p class="text-xs text-red-500 mt-1" x-text="itemErrors.precio_unitario[0]"></p>
+                                </template>
+                            </div>
+                            <div>
+                                <label for="item_cantidad" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Cantidad</label>
+                                <input type="number" step="0.01" id="item_cantidad" x-model.number="itemForm.cantidad"
+                                    class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right" />
+                                <template x-if="itemErrors.cantidad">
+                                    <p class="text-xs text-red-500 mt-1" x-text="itemErrors.cantidad[0]"></p>
+                                </template>
+                            </div>
+                            <div>
+                                <label for="item_impuesto" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Impuesto</label>
+                                <input type="number" step="0.01" id="item_impuesto" x-model.number="itemForm.impuesto"
+                                    class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right" />
+                                <template x-if="itemErrors.impuesto">
+                                    <p class="text-xs text-red-500 mt-1" x-text="itemErrors.impuesto[0]"></p>
+                                </template>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="item_total" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Total</label>
+                            <input type="number" id="item_total" :value="calcItemTotal(itemForm)" disabled
+                                class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 nunito-regular text-right" />
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular"
+                                    x-text="itemMode === 'create' ? 'Guardar Item' : 'Actualizar Item'"></button>
+                        </div>
                     </div>
                 </div>
             </template>
 
-            <div class="overflow-x-auto border rounded">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-                        <tr>
-                            <th class="py-2 px-3 text-left">Descripción</th>
-                            <th class="py-2 px-3 text-right">Precio Unit.</th>
-                            <th class="py-2 px-3 text-right">Cantidad</th>
-                            <th class="py-2 px-3 text-right">Impuesto</th>
-                            <th class="py-2 px-3 text-right">Total</th>
-                            <th class="py-2 px-3">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-if="itemsLoading">
+            <!-- Responsive Items Table -->
+            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+                <div class="block md:hidden space-y-3 p-4">
+                    <!-- Mobile: Card Layout -->
+                    <template x-if="itemsLoading">
+                        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Cargando...
+                        </div>
+                    </template>
+                    <template x-if="!itemsLoading && items.length === 0">
+                        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                            Sin items
+                        </div>
+                    </template>
+                    <template x-for="it in items" :key="it.id">
+                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular breack text-end" x-text="it.descripcion"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Precio Unit.</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.precio_unitario)"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Cantidad</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="Number(it.cantidad).toFixed(2)"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Impuesto</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.impuesto)"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Total</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)"></span>
+                                </div>
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button @click.prevent="openEditItem(it)" class="text-blue-500 hover:text-blue-600">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button @click.prevent="deleteItem(it)" class="text-red-500 hover:text-red-600">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <div class="hidden md:block overflow-x-auto">
+                    <!-- Desktop: Table Layout -->
+                    <table class="min-w-full text-sm bg-white dark:bg-gray-800">
+                        <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <td colspan="6" class="py-4 text-center text-gray-600 dark:text-gray-300"><i
-                                        class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
+                                <th class="py-2 px-4 text-left text-gray-700 dark:text-gray-200">Descripción</th>
+                                <th class="py-2 px-4 text-right text-gray-700 dark:text-gray-200">Precio Unit.</th>
+                                <th class="py-2 px-4 text-right text-gray-700 dark:text-gray-200">Cantidad</th>
+                                <th class="py-2 px-4 text-right text-gray-700 dark:text-gray-200">Impuesto</th>
+                                <th class="py-2 px-4 text-right text-gray-700 dark:text-gray-200">Total</th>
+                                <th class="py-2 px-4 text-center text-gray-700 dark:text-gray-200">Acciones</th>
                             </tr>
-                        </template>
-                        <template x-if="!itemsLoading && items.length===0">
-                            <tr>
-                                <td colspan="6" class="py-4 text-center text-gray-600 dark:text-gray-300">Sin items</td>
-                            </tr>
-                        </template>
-                        <template x-for="it in items" :key="it.id">
-                            <tr
-                                class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                <td class="py-2 px-3" x-text="it.descripcion"></td>
-                                <td class="py-2 px-3 text-right" x-text="Number(it.precio_unitario).toFixed(2)"></td>
-                                <td class="py-2 px-3 text-right" x-text="Number(it.cantidad).toFixed(2)"></td>
-                                <td class="py-2 px-3 text-right" x-text="Number(it.impuesto).toFixed(2)"></td>
-                                <td class="py-2 px-3 text-right" x-text="Number(it.total).toFixed(2)"></td>
-                                <td class="py-2 px-3">
-                                    <div class="flex gap-2">
-                                        <a href="#" @click.prevent="openEditItem(it)"
-                                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                        <a href="#" @click.prevent="deleteItem(it)"
-                                            class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                                    </div>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <template x-if="itemsLoading">
+                                <tr>
+                                    <td colspan="6" class="py-4 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando...
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-if="!itemsLoading && items.length === 0">
+                                <tr>
+                                    <td colspan="6" class="py-4 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                                        Sin items
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-for="it in items" :key="it.id">
+                                <tr class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td class="py-2 px-4 text-gray-600 dark:text-gray-300 nunito-regular" x-text="it.descripcion"></td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.precio_unitario)"></td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="Number(it.cantidad).toFixed(2)"></td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.impuesto)"></td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)"></td>
+                                    <td class="py-2 px-4 text-center">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click.prevent="openEditItem(it)" class="text-blue-500 hover:text-blue-600">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button @click.prevent="deleteItem(it)" class="text-red-500 hover:text-red-600">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </x-admin.form-modal>
@@ -602,6 +719,7 @@
                 <!-- Válido Hasta -->
                 <div>
                     <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
+                        Hasta</label>
                         Hasta</label>
                     <input type="date" id="editValidoHasta" name="validoHasta"
                         class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
