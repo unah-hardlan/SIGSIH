@@ -31,6 +31,7 @@ class CoreObjetosSeeder extends Seeder
             ['nombre_objeto' => 'Mantenimiento del sistema', 'descripcion_objeto' => 'Operaciones de mantenimiento del sistema'],
             ['nombre_objeto' => 'Gestión de personas', 'descripcion_objeto' => 'Módulos para administrar personas y sus catálogos'],
             ['nombre_objeto' => 'Gestión de base de datos', 'descripcion_objeto' => 'Herramientas de gestión de base de datos'],
+            ['nombre_objeto' => 'Origen Kardex', 'descripcion_objeto' => 'Catálogo de orígenes para movimientos de Kardex'],
         ];
 
         foreach ($objetos as $obj) {
@@ -44,5 +45,28 @@ class CoreObjetosSeeder extends Seeder
                 'fecha_creacion' => $now,
             ]);
         }
+
+        // Otorgar todos los permisos al rol Administrador para el nuevo objeto si existe
+        try {
+            $adminRolId = DB::table('tbl_ms_rol')->whereRaw("LOWER(rol) = 'administrador'")->value('id_rol_pk');
+            if ($adminRolId) {
+                $objId = DB::table('tbl_objetos')->where('nombre_objeto','Origen Kardex')->value('id_objetos_pk');
+                if ($objId) {
+                    $exists = DB::table('tbl_ms_permisos')->where(['id_rol_fk'=>$adminRolId,'id_objeto_fk'=>$objId])->exists();
+                    if (!$exists) {
+                        DB::table('tbl_ms_permisos')->insert([
+                            'id_rol_fk' => $adminRolId,
+                            'id_objeto_fk' => $objId,
+                            'permiso_insercion' => 1,
+                            'permiso_consultar' => 1,
+                            'permiso_actualizar' => 1,
+                            'permiso_eliminacion' => 1,
+                            'creado_por' => $usuario,
+                            'fecha_creacion' => $now,
+                        ]);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
     }
 }

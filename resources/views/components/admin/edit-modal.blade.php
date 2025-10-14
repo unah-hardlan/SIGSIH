@@ -1,15 +1,15 @@
 @props([
-    'modalName',
-    'title',
-    'submitLabel' => 'Guardar Cambios',
-    'itemToEdit',
-    'maxWidth' => 'max-w-md',
-    'formId' => ''
+'modalName',
+'title',
+'submitLabel' => 'Guardar Cambios',
+'itemToEdit',
+'maxWidth' => 'max-w-md',
+'formId' => ''
 ])
 
-<x-admin.form-modal 
-    :modalName="$modalName" 
-    :title="$title" 
+<x-admin.form-modal
+    :modalName="$modalName"
+    :title="$title"
     :submitLabel="$submitLabel"
     :maxWidth="$maxWidth"
     :formId="$formId">

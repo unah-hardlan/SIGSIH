@@ -44,6 +44,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Models\EstadoOrdenServicio;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,8 +70,8 @@ Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
 // Get de genero para cliente
-Route::middleware(['jwt.auth','throttle:30,1'])->get('catalogos/generos', function() {
-    $items = \App\Models\Genero::select('id_genero_pk as id','genero')->orderBy('genero')->get();
+Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', function () {
+    $items = \App\Models\Genero::select('id_genero_pk as id', 'genero')->orderBy('genero')->get();
     return response()->json([
         'data' => $items,
         'meta' => ['count' => $items->count()]
@@ -117,6 +118,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('departamentos', DepartamentosController::class);
     Route::apiResource('ciudades', CiudadesController::class);
     Route::apiResource('direcciones', DireccionesController::class);
+    Route::apiResource('origenes', \App\Http\Controllers\OrigenController::class);
     Route::apiResource('cotizaciones', \App\Http\Controllers\CotizacionController::class);
     Route::apiResource('acciones-realizadas', \App\Http\Controllers\AccionRealizadaController::class);
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
@@ -129,8 +131,10 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
 
     Route::apiResource('contactos', ContactoController::class);
-    Route::apiResource('estados-solicitud', EstadoSolicitudController::class);
-    Route::apiResource('estados-proyecto', EstadoProyectoController::class);
+    Route::apiResource('estados-solicitud', EstadoSolicitudController::class)
+     ->parameters(['estados-solicitud' => 'estadoSolicitud']);
+   Route::apiResource('estados-proyecto', EstadoProyectoController::class)
+     ->parameters(['estados-proyecto' => 'estadoProyecto']);
     Route::apiResource('proyectos', ProyectoController::class);
     Route::apiResource('gastos', GastosController::class);
     Route::apiResource('ingresos', IngresosController::class);
@@ -150,6 +154,22 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('detalles-factura', DetalleFacturaController::class);
     Route::apiResource('servicios', ServicioController::class);
     Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
+
+    // Catálogo: Estados de Orden de Servicio
+    Route::get('estados-orden-servicio', function () {
+        $items = EstadoOrdenServicio::select(
+            'id_estado_orden_servicio_pk as id',
+            'nombre',
+            'codigo'
+        )
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get();
+        return response()->json([
+            'data' => $items,
+            'meta' => ['count' => $items->count()],
+        ]);
+    });
 
     // Rol único del usuario (FK directa)
     Route::get('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'rol']);

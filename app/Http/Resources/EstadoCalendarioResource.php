@@ -16,8 +16,11 @@ class EstadoCalendarioResource extends JsonResource
     {
         return [
             'id_estado_calendario_pk' => $this->id_estado_calendario_pk,
-            'nombre_estado' => $this->nombre_estado,
-            'descripcion_estado_calendario' => $this->descripcion_estado_calendario,
+            'codigo' => $this->codigo,
+            'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
+            'es_final' => $this->es_final,
+            'orden' => $this->orden,
         ];
     }
 }

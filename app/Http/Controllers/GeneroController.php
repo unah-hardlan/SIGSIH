@@ -16,14 +16,18 @@ class GeneroController extends Controller
         if($q = $request->input('q')){
             $query->where('genero','like',"%$q%");
         }
-        $sortable = [ 'genero' => 'genero' ];
+        $sortable = [
+            'nombre' => 'genero',
+            'genero' => 'genero'
+        ];
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
         $query->orderBy($sortable[$sort] ?? 'id_genero_pk', $direction);
+        
         if($request->boolean('all')){
             return GeneroResource::collection($query->get());
         }
-        $perPage = (int)$request->input('per_page',10);
+        $perPage = (int)$request->input('per_page',15);
         $items = $query->paginate($perPage);
         return GeneroResource::collection($items)->additional([
             'meta'=>[

@@ -75,7 +75,7 @@ class Proyecto extends Model
      */
     public function gastos()
     {
-        return $this->hasMany(Gasto::class, 'id_proyecto_fk', 'id_proyecto_pk');
+        return $this->hasMany(Gastos::class, 'id_proyecto_fk', 'id_proyecto_pk');
     }
 
     /**

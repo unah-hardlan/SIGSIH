@@ -11,31 +11,27 @@ class KardexResource extends JsonResource
     {
         return [
             'id_kardex_pk' => $this->id_kardex_pk,
+            'id_origen_fk' => $this->id_origen_fk,
             'id_producto_fk' => $this->id_producto_fk,
             'id_tipo_movimiento_fk' => $this->id_tipo_movimiento_fk,
-            'cantidad' => (int) $this->cantidad,
-            'fecha_movimiento' => $this->fecha_movimiento?->format('Y-m-d H:i:s'),
+            'cantidad' => (float) $this->cantidad,
+            'fecha_movimiento' => $this->fecha_movimiento?->format('Y-m-d'),
             'motivo' => $this->motivo,
-            'id_tecnico_fk' => $this->id_tecnico_fk,
-            'producto' => $this->whenLoaded('producto', function(){
-                return [
-                    'id_producto_pk' => $this->producto->id_producto_pk,
-                    'nombre_producto' => $this->producto->nombre_producto,
-                ];
-            }),
-            'tipo_movimiento' => $this->whenLoaded('tipoMovimiento', function(){
-                return [
-                    'id_tipo_movimiento_pk' => $this->tipoMovimiento->id_tipo_movimiento_pk,
-                    'nombre_tipo_movimiento' => $this->tipoMovimiento->nombre_tipo_movimiento,
-                ];
-            }),
-            'tecnico' => $this->whenLoaded('tecnico', function(){
-                return [
-                    'id_persona_pk' => $this->tecnico->id_persona_pk,
-                    'primer_nombre' => $this->tecnico->primer_nombre,
-                    'primer_apellido' => $this->tecnico->primer_apellido,
-                ];
-            }),
+            
+            'producto' => $this->whenLoaded('producto', fn() => [
+                'id_producto_pk' => $this->producto->id_producto_pk,
+                'nombre_producto' => $this->producto->nombre_producto,
+            ]),
+            
+            'tipo_movimiento' => $this->whenLoaded('tipoMovimiento', fn() => [
+                'id_tipo_movimiento_pk' => $this->tipoMovimiento->id_tipo_movimiento_pk,
+                'nombre' => $this->tipoMovimiento->nombre_tipo_movimiento, 
+            ]),
+
+            'origen' => $this->whenLoaded('origen', fn() => [
+                'id_origen_pk' => $this->origen->id_origen_pk,
+                'nombre_origen' => $this->origen->nombre_origen,
+            ]),
         ];
     }
 }

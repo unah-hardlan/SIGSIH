@@ -376,6 +376,13 @@ return [
             'type' => 'partial',
             'objects' => ['Tipo de Visita'],
         ],
+        'catalogo-origen-kardex' => [
+            'label' => 'Origen Kardex',
+            'module' => 'catalogo',
+            'blade' => 'admin.partials.catalogo-origen-kardex',
+            'type' => 'partial',
+            'objects' => ['Origen Kardex','Origenes','Origen'],
+        ],
         'catalogo-ubicaciones' => [
             'label' => 'Ubicaciones',
             'module' => 'catalogo',

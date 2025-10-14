@@ -1,4 +1,11 @@
 window.serviciosRealizadosApiHandlers = {
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     /**
      * Fetches the list of servicios realizados from the API.
      * @param {object} component - The Alpine.js component's `this` context.

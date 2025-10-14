@@ -18,14 +18,37 @@ class CotizacionResource extends JsonResource
             'imponible' => (float) $this->imponible,
             'impuesto' => (float) $this->impuesto,
             'total_impuesto' => (float) $this->total_impuesto,
-            'otros_cargos' => (float) $this->otros_cargos,
-            'anticipo_requerido' => (float) $this->anticipo_requerido,
+            'otros_cargos' => $this->otros_cargos !== null ? (float) $this->otros_cargos : null,
+            'anticipo_requerido' => $this->anticipo_requerido !== null ? (float) $this->anticipo_requerido : null,
             'id_cliente_fk' => $this->id_cliente_fk,
-            'cliente' => $this->whenLoaded('cliente', function(){
+            'cliente_nombre' => $this->whenLoaded('cliente', function () {
+                if (!$this->cliente) return null;
+                // Empresa
+                if ($this->cliente->relationLoaded('empresa') && $this->cliente->empresa) {
+                    return $this->cliente->empresa->nombre_comercial
+                        ?? $this->cliente->empresa->razon_social
+                        ?? null;
+                }
+                // Persona (puede venir por belongsToMany personas)
+                if ($this->cliente->relationLoaded('personas') && $this->cliente->personas && $this->cliente->personas->count()) {
+                    $p = $this->cliente->personas->first();
+                    return trim(($p->primer_nombre . ' ' . $p->segundo_nombre . ' ' . $p->primer_apellido . ' ' . $p->segundo_apellido));
+                }
+                return null;
+            }),
+            'cliente' => $this->whenLoaded('cliente', function () {
                 return [
-                    'id_persona_pk' => $this->cliente->id_persona_pk,
-                    'primer_nombre' => $this->cliente->primer_nombre,
-                    'primer_apellido' => $this->cliente->primer_apellido,
+                    'id_cliente_pk' => $this->cliente->id_cliente_pk,
+                    'tipo_cliente' => $this->cliente->tipo_cliente,
+                    'estado_cliente' => $this->cliente->estado_cliente,
+                    'fecha_registro' => $this->cliente->fecha_registro?->toDateTimeString(),
+                    'empresa' => $this->cliente->relationLoaded('empresa') && $this->cliente->empresa
+                        ? [
+                            'nombre_comercial' => $this->cliente->empresa->nombre_comercial,
+                            'razon_social' => $this->cliente->empresa->razon_social,
+                            'rtn' => $this->cliente->empresa->rtn,
+                        ]
+                        : null,
                 ];
             })
         ];

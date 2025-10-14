@@ -1,5 +1,3 @@
-<script src="{{ asset('js/tipo-visitas.js') }}"></script>
-
 <div x-data="{
     isTipoVisitaModalOpen: false,
     isTipoVisitaEditModalOpen: false,

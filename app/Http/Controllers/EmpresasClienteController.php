@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use App\Models\EmpresaCliente;
 use App\Http\Resources\EmpresaClienteResource;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -14,57 +16,62 @@ class EmpresasClienteController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = EmpresaCliente::with(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
+        $query = EmpresaCliente::with(['cliente', 'contactos']);
 
-        // Filtro por nombre empresa
-        if ($request->has('id_nombre_empresa_fk')) {
-            $query->where('id_nombre_empresa_fk', $request->id_nombre_empresa_fk);
-        }
-
-        // Filtro por oficina
-        if ($request->has('id_oficina_fk')) {
-            $query->where('id_oficina_fk', $request->id_oficina_fk);
-        }
-
-        // Filtro por rango de fechas
-        if ($request->has('fecha_desde')) {
-            $query->where('fecha_registro', '>=', $request->fecha_desde);
-        }
-
-        if ($request->has('fecha_hasta')) {
-            $query->where('fecha_registro', '<=', $request->fecha_hasta);
-        }
-
-        // Filtro de búsqueda
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->whereHas('nombreEmpresa', function ($q) use ($search) {
-                $q->where('nombre_empresa', 'LIKE', "%{$search}%");
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre_comercial', 'like', "%{$search}%")
+                    ->orWhere('razon_social', 'like', "%{$search}%")
+                    ->orWhere('rtn', 'like', "%{$search}%");
             });
         }
 
-        // Filtro por estado_empresa propio
-        if ($request->has('estado_empresa')) {
-            $estado = strtolower($request->estado_empresa);
+        if ($estado = $request->input('estado_cliente', $request->input('estado_empresa'))) {
+            $estado = strtolower($estado);
             if (in_array($estado, ['activo', 'inactivo'])) {
-                $query->where('estado_empresa', $estado);
+                $query->whereHas('cliente', function ($clienteQuery) use ($estado) {
+                    $clienteQuery->where('estado_cliente', $estado);
+                });
             }
         }
 
-        $empresasCliente = $query->orderBy('fecha_registro', 'desc')
-            ->paginate($request->get('per_page', 15));
+        if ($desde = $request->input('fecha_desde')) {
+            $query->whereHas('cliente', function ($clienteQuery) use ($desde) {
+                $clienteQuery->whereDate('fecha_registro', '>=', $desde);
+            });
+        }
 
-        return response()->json([
-            'success' => true,
-            'data' => EmpresaClienteResource::collection($empresasCliente->items()),
+        if ($hasta = $request->input('fecha_hasta')) {
+            $query->whereHas('cliente', function ($clienteQuery) use ($hasta) {
+                $clienteQuery->whereDate('fecha_registro', '<=', $hasta);
+            });
+        }
+
+        $query->orderBy('nombre_comercial');
+
+        $perPage = (int) $request->input('per_page', 15);
+        if ($perPage === -1) {
+            $empresas = $query->get();
+            return response()->json([
+                'success' => true,
+                'data' => EmpresaClienteResource::collection($empresas),
+                'pagination' => null,
+            ]);
+        }
+
+        $empresas = $query->paginate(max(1, $perPage));
+
+            return response()->json([
+                'success' => true,
+                'data' => EmpresaClienteResource::collection($empresas),
             'pagination' => [
-                'current_page' => $empresasCliente->currentPage(),
-                'per_page' => $empresasCliente->perPage(),
-                'total' => $empresasCliente->total(),
-                'last_page' => $empresasCliente->lastPage(),
-                'from' => $empresasCliente->firstItem(),
-                'to' => $empresasCliente->lastItem()
-            ]
+                'current_page' => $empresas->currentPage(),
+                'per_page' => $empresas->perPage(),
+                'total' => $empresas->total(),
+                'last_page' => $empresas->lastPage(),
+                'from' => $empresas->firstItem(),
+                'to' => $empresas->lastItem(),
+            ],
         ]);
     }
 
@@ -74,24 +81,39 @@ class EmpresasClienteController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'fecha_registro' => 'required|date',
-            'id_nombre_empresa_fk' => 'required|exists:tbl_nombre_empresa,id_nombre_empresa_pk',
-            'id_direccion_fk' => 'required|exists:tbl_direccion,id_direccion_pk',
-            'id_oficina_fk' => 'required|exists:tbl_oficina_empresa,id_oficina_empresa_pk',
-            'estado_empresa' => 'sometimes|in:activo,inactivo'
+            'nombre_comercial' => 'required|string|max:150',
+            'razon_social' => 'nullable|string|max:150',
+            'rtn' => 'nullable|string|max:30',
+            'descripcion_empresa' => 'nullable|string|max:255',
+            'horario_atencion' => 'nullable|string|max:50',
+            'fecha_registro' => 'nullable|date',
+            'estado_cliente' => 'nullable|in:activo,inactivo',
         ]);
 
-        if (!isset($validated['estado_empresa'])) {
-            $validated['estado_empresa'] = 'activo';
-        }
+        $fechaRegistro = $validated['fecha_registro'] ?? Carbon::now()->toDateString();
+        $estado = $validated['estado_cliente'] ?? 'activo';
 
-        $empresaCliente = EmpresaCliente::create($validated);
-        $empresaCliente->load(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
+        $cliente = Cliente::create([
+            'tipo_cliente' => 'empresa',
+            'fecha_registro' => $fechaRegistro,
+            'estado_cliente' => $estado,
+        ]);
+
+        $empresaCliente = EmpresaCliente::create([
+            'id_cliente_fk' => $cliente->id_cliente_pk,
+            'nombre_comercial' => $validated['nombre_comercial'],
+            'razon_social' => $validated['razon_social'] ?? null,
+            'rtn' => $validated['rtn'] ?? null,
+            'descripcion_empresa' => $validated['descripcion_empresa'] ?? null,
+            'horario_atencion' => $validated['horario_atencion'] ?? null,
+        ]);
+
+        $empresaCliente->load(['cliente', 'contactos']);
 
         return response()->json([
             'success' => true,
             'message' => 'Empresa cliente creada exitosamente',
-            'data' => new EmpresaClienteResource($empresaCliente)
+            'data' => new EmpresaClienteResource($empresaCliente),
         ], 201);
     }
 
@@ -100,18 +122,18 @@ class EmpresasClienteController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $empresaCliente = EmpresaCliente::with(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina'])->find($id);
+        $empresaCliente = EmpresaCliente::with(['cliente', 'contactos'])->find($id);
 
         if (!$empresaCliente) {
             return response()->json([
                 'success' => false,
-                'message' => 'Empresa cliente no encontrada'
+                'message' => 'Empresa cliente no encontrada',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => new EmpresaClienteResource($empresaCliente)
+            'data' => new EmpresaClienteResource($empresaCliente),
         ]);
     }
 
@@ -120,30 +142,50 @@ class EmpresasClienteController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $empresaCliente = EmpresaCliente::find($id);
+        $empresaCliente = EmpresaCliente::with('cliente')->find($id);
 
         if (!$empresaCliente) {
             return response()->json([
                 'success' => false,
-                'message' => 'Empresa cliente no encontrada'
+                'message' => 'Empresa cliente no encontrada',
             ], 404);
         }
 
         $validated = $request->validate([
-            'fecha_registro' => 'sometimes|required|date',
-            'id_nombre_empresa_fk' => 'sometimes|required|exists:tbl_nombre_empresa,id_nombre_empresa_pk',
-            'id_direccion_fk' => 'sometimes|required|exists:tbl_direccion,id_direccion_pk',
-            'id_oficina_fk' => 'sometimes|required|exists:tbl_oficina_empresa,id_oficina_empresa_pk',
-            'estado_empresa' => 'sometimes|in:activo,inactivo'
+            'nombre_comercial' => 'sometimes|required|string|max:150',
+            'razon_social' => 'sometimes|nullable|string|max:150',
+            'rtn' => 'sometimes|nullable|string|max:30',
+            'descripcion_empresa' => 'sometimes|nullable|string|max:255',
+            'horario_atencion' => 'sometimes|nullable|string|max:50',
+            'fecha_registro' => 'sometimes|date',
+            'estado_cliente' => 'sometimes|in:activo,inactivo',
         ]);
 
-        $empresaCliente->update($validated);
-        $empresaCliente->load(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
+        $empresaCliente->fill(array_intersect_key($validated, array_flip([
+            'nombre_comercial',
+            'razon_social',
+            'rtn',
+            'descripcion_empresa',
+            'horario_atencion',
+        ])));
+        $empresaCliente->save();
+
+        if ($empresaCliente->cliente) {
+            if (array_key_exists('fecha_registro', $validated)) {
+                $empresaCliente->cliente->fecha_registro = Carbon::parse($validated['fecha_registro']);
+            }
+            if (array_key_exists('estado_cliente', $validated)) {
+                $empresaCliente->cliente->estado_cliente = strtolower($validated['estado_cliente']);
+            }
+            $empresaCliente->cliente->save();
+        }
+
+        $empresaCliente->load(['cliente', 'contactos']);
 
         return response()->json([
             'success' => true,
             'message' => 'Empresa cliente actualizada exitosamente',
-            'data' => new EmpresaClienteResource($empresaCliente)
+            'data' => new EmpresaClienteResource($empresaCliente),
         ]);
     }
 
@@ -152,20 +194,25 @@ class EmpresasClienteController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
-        $empresaCliente = EmpresaCliente::find($id);
+        $empresaCliente = EmpresaCliente::with('cliente')->find($id);
 
         if (!$empresaCliente) {
             return response()->json([
                 'success' => false,
-                'message' => 'Empresa cliente no encontrada'
+                'message' => 'Empresa cliente no encontrada',
             ], 404);
         }
 
-        $empresaCliente->delete();
+        // Eliminar primero el cliente base (cascade eliminará empresa y contactos)
+        if ($empresaCliente->cliente) {
+            $empresaCliente->cliente->delete();
+        } else {
+            $empresaCliente->delete();
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Empresa cliente eliminada exitosamente'
+            'message' => 'Empresa cliente eliminada exitosamente',
         ]);
     }
 }

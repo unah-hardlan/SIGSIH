@@ -167,11 +167,11 @@
                         </div>
                     </div>
                     <div class="space-y-3">
-                        <div class="flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3">
+                        <div class="flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-teal-500 dark:border-teal-300">
                             <span class="text-lg md:text-base lg:text-2xl nunito-bold text-teal-600 dark:text-teal-400" x-text="fmt(proyectosActivos)">–</span>
                             <span class="text-xs nunito-regular text-teal-600 dark:text-teal-400 bg-teal-100 dark:bg-teal-900/30 px-2 py-1 rounded-full">ACTIVOS</span>
                         </div>
-                        <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                        <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-400 dark:border-gray-300">
                             <span class="text-base md:text-sm lg:text-lg nunito-bold text-gray-600 dark:text-gray-400" x-text="fmt(proyectosFinalizados)">–</span>
                             <span class="text-xs nunito-regular text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">FINALIZADOS</span>
                         </div>
@@ -191,17 +191,17 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="text-center bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3">
+                        <div class="text-center bg-orange-50 dark:bg-orange-800/20 rounded-lg p-3 border border-orange-500 dark:border-orange-300">
                             <div class="text-lg md:text-base lg:text-2xl nunito-bold text-orange-600 dark:text-orange-400 mb-1" x-text="fmt(ticketsAbiertos)">–</div>
                             <div class="text-xs nunito-regular text-orange-600 dark:text-orange-400 uppercase">Abiertos</div>
-                            <div class="w-full bg-orange-200 dark:bg-orange-700/30 rounded-full h-2 mt-2">
-                                <div class="bg-orange-500 dark:bg-orange-400 h-2 rounded-full transition-all duration-300" :style="`width: ${percentTickets('abiertos')}%`"></div>
+                            <div class="w-full bg-orange-500 dark:bg-orange-700/30 rounded-full h-2 mt-2">
+                                <div class="bg-orange-400 dark:bg-orange-400 h-2 rounded-full transition-all duration-300" :style="`width: ${percentTickets('abiertos')}%`"></div>
                             </div>
                         </div>
-                        <div class="text-center bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                        <div class="text-center bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-400 dark:border-gray-300">
                             <div class="text-lg md:text-base lg:text-2xl nunito-bold text-gray-600 dark:text-gray-400 mb-1" x-text="fmt(ticketsCerrados)">–</div>
                             <div class="text-xs nunito-regular text-gray-600 dark:text-gray-400 uppercase">Cerrados</div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                            <div class="w-full bg-gray-400 dark:bg-gray-200 rounded-full h-2 mt-2">
                                 <div class="bg-gray-500 dark:bg-gray-400 h-2 rounded-full transition-all duration-300" :style="`width: ${percentTickets('cerrados')}%`"></div>
                             </div>
                         </div>

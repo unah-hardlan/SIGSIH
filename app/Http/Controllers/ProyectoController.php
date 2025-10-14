@@ -14,7 +14,7 @@ class ProyectoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Proyecto::with(['ordenServicio', 'estadoProyecto']);
+        $query = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         // Filtros opcionales
         if ($request->has('id_orden_servicio_fk')) {
@@ -45,13 +45,12 @@ class ProyectoController extends Controller
             'fecha_estimada_fin_proyecto' => 'nullable|date',
             'fecha_finalizacion_proyecto' => 'nullable|date',
             'descripcion_proyecto' => 'nullable|string|max:500',
-            'actividades_proyecto' => 'nullable|string|max:500',
             'id_orden_servicio_fk' => 'required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_estado_proyecto_fk' => 'required|integer|exists:tbl_estado_proyecto,id_estado_proyecto_pk'
         ]);
 
         $proyecto = Proyecto::create($validatedData);
-        $proyecto->load(['ordenServicio', 'estadoProyecto']);
+        $proyecto->load(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         return new ProyectoResource($proyecto);
     }
@@ -61,7 +60,7 @@ class ProyectoController extends Controller
      */
     public function show($id)
     {
-        $proyecto = Proyecto::with(['ordenServicio', 'estadoProyecto'])->findOrFail($id);
+        $proyecto = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto'])->findOrFail($id);
         return new ProyectoResource($proyecto);
     }
 
@@ -78,13 +77,12 @@ class ProyectoController extends Controller
             'fecha_estimada_fin_proyecto' => 'nullable|date',
             'fecha_finalizacion_proyecto' => 'nullable|date',
             'descripcion_proyecto' => 'nullable|string|max:500',
-            'actividades_proyecto' => 'nullable|string|max:500',
             'id_orden_servicio_fk' => 'sometimes|required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_estado_proyecto_fk' => 'sometimes|required|integer|exists:tbl_estado_proyecto,id_estado_proyecto_pk'
         ]);
 
         $proyecto->update($validatedData);
-        $proyecto->load(['ordenServicio', 'estadoProyecto']);
+        $proyecto->load(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         return new ProyectoResource($proyecto);
     }

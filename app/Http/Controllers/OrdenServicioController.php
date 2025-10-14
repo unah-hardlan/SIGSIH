@@ -14,7 +14,14 @@ class OrdenServicioController extends Controller
      */
     public function index(Request $request)
     {
-        $query = OrdenServicio::with(['solicitudServicio', 'tecnico', 'calificacionServicio', 'cotizacion']);
+        $query = OrdenServicio::with([
+            'solicitudServicio.cliente.empresa',
+            'solicitudServicio.contacto',
+            'tecnico',
+            'estado',
+            'cotizacion',
+            'cotizacionGenerada',
+        ]);
 
         // Filtros opcionales
         if ($request->has('id_solicitud_servicio_fk')) {
@@ -42,18 +49,28 @@ class OrdenServicioController extends Controller
         $validatedData = $request->validate([
             'id_solicitud_servicio_fk' => 'required|integer|exists:tbl_solicitud,id_solicitud_pk',
             'id_tecnico_fk' => 'required|integer|exists:tbl_persona,id_persona_pk',
+            'numero_orden_servicio' => 'nullable|string|max:50',
+            'fecha_creada' => 'nullable|date',
+            'fecha_asignada' => 'nullable|date',
             'fecha_recepcion' => 'required|date',
             'fecha_inicio' => 'nullable|date',
             'fecha_finalizacion' => 'nullable|date',
             'observaciones' => 'nullable|string|max:500',
             'diagnostico_tecnico' => 'nullable|string|max:500',
             'diagnostico_cliente' => 'nullable|string|max:500',
-            'id_calificacion_servicio_fk' => 'nullable|integer|exists:tbl_calificacion_servicio,id_calificacion_servicio_pk',
+            'id_estado_orden_servicio_fk' => 'nullable|integer|exists:tbl_estado_orden_servicio,id_estado_orden_servicio_pk',
             'id_cotizacion_fk' => 'nullable|integer|exists:tbl_cotizacion,id_cotizacion_pk'
         ]);
 
         $ordenServicio = OrdenServicio::create($validatedData);
-        $ordenServicio->load(['solicitudServicio', 'tecnico', 'calificacionServicio', 'cotizacion']);
+        $ordenServicio->load([
+            'solicitudServicio.cliente.empresa',
+            'solicitudServicio.contacto',
+            'tecnico',
+            'estado',
+            'cotizacion',
+            'cotizacionGenerada',
+        ]);
 
         return new OrdenServicioResource($ordenServicio);
     }
@@ -63,7 +80,14 @@ class OrdenServicioController extends Controller
      */
     public function show($id)
     {
-        $ordenServicio = OrdenServicio::with(['solicitudServicio', 'tecnico', 'calificacionServicio', 'cotizacion'])->findOrFail($id);
+        $ordenServicio = OrdenServicio::with([
+            'solicitudServicio.cliente.empresa',
+            'solicitudServicio.contacto',
+            'tecnico',
+            'estado',
+            'cotizacion',
+            'cotizacionGenerada',
+        ])->findOrFail($id);
         return new OrdenServicioResource($ordenServicio);
     }
 
@@ -77,18 +101,28 @@ class OrdenServicioController extends Controller
         $validatedData = $request->validate([
             'id_solicitud_servicio_fk' => 'sometimes|required|integer|exists:tbl_solicitud,id_solicitud_pk',
             'id_tecnico_fk' => 'sometimes|required|integer|exists:tbl_persona,id_persona_pk',
+            'numero_orden_servicio' => 'nullable|string|max:50',
+            'fecha_creada' => 'nullable|date',
+            'fecha_asignada' => 'nullable|date',
             'fecha_recepcion' => 'sometimes|required|date',
             'fecha_inicio' => 'nullable|date',
             'fecha_finalizacion' => 'nullable|date',
             'observaciones' => 'nullable|string|max:500',
             'diagnostico_tecnico' => 'nullable|string|max:500',
             'diagnostico_cliente' => 'nullable|string|max:500',
-            'id_calificacion_servicio_fk' => 'nullable|integer|exists:tbl_calificacion_servicio,id_calificacion_servicio_pk',
+            'id_estado_orden_servicio_fk' => 'nullable|integer|exists:tbl_estado_orden_servicio,id_estado_orden_servicio_pk',
             'id_cotizacion_fk' => 'nullable|integer|exists:tbl_cotizacion,id_cotizacion_pk'
         ]);
 
         $ordenServicio->update($validatedData);
-        $ordenServicio->load(['solicitudServicio', 'tecnico', 'calificacionServicio', 'cotizacion']);
+        $ordenServicio->load([
+            'solicitudServicio.cliente.empresa',
+            'solicitudServicio.contacto',
+            'tecnico',
+            'estado',
+            'cotizacion',
+            'cotizacionGenerada',
+        ]);
 
         return new OrdenServicioResource($ordenServicio);
     }

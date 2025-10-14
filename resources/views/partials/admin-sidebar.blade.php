@@ -33,7 +33,8 @@
         'brightness-100 pointer-events-auto': !logoutModalOpen
     }"
     class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 flex flex-col flex-shrink-0 p-0 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto md:sticky md:top-0 md:h-screen"
-    style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">
+    style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch;"
+    :style="{ zIndex: (isMobile && sidebarOpen) ? 9999 : 40 }">
 
     @php
     use App\Services\PermissionService;
@@ -643,6 +644,15 @@
                             class="py-1 px-3">
                             <i class="fas fa-user-friends text-sm w-4 text-center"></i>
                             Tipo de Visita
+                        </x-admin.sidebar-link>
+                    </li>
+                    @endif
+                    @if($perm->can($u, ['Origen Kardex','Origenes','Origen'], 'consultar'))
+                    <li>
+                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-origen-kardex"
+                            class="py-1 px-3">
+                            <i class="fas fa-map-signs text-sm w-4 text-center"></i>
+                            Origen Kardex
                         </x-admin.sidebar-link>
                     </li>
                     @endif

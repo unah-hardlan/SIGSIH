@@ -101,6 +101,7 @@ class AutoPermissionMiddleware
             'MantenimientoGeneral' => ['Mantenimiento del sistema', 'Mantenimiento'],
             'GestionPersonas' => ['Gestión de personas', 'Gestion de personas'],
             'GestionDb' => ['Gestión de base de datos', 'Gestion de base de datos'],
+            'Origen' => ['Origen Kardex','Origenes','Origen'],
         ];
         $candidates = $synonyms[$controllerBase] ?? [];
         $first = explode('/', trim($request->path(), '/'))[1] ?? '';
