@@ -16,7 +16,7 @@
         @endisset
     </div>
 
-    <div class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="">
         {{ $slot }}
     </div>
 </div>
