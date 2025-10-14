@@ -192,6 +192,7 @@ import "./asignar-roles";
 import "./bitacora";
 import "./toast";
 import "./ubicaciones";
+import "./agencias";
 import "./tipo-visitas";
 import "./tipo-productos";
 import "./tipo-objetos";
@@ -208,6 +209,7 @@ import "./acciones-realizadas";
 import "./productos";
 import "./kardex";
 import "./origen-kardex";
+import "./calendario";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {

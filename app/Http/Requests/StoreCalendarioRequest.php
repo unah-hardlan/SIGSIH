@@ -31,7 +31,7 @@ class StoreCalendarioRequest extends FormRequest
             'id_agencias_fk' => 'required|integer|exists:tbl_agencias,id_agencias_pk',
             'id_orden_servicio_fk' => 'required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_tipo_mantenimiento_fk' => 'required|integer|exists:tbl_tipo_mantenimiento,id_tipo_mantenimiento_pk',
-            'id_cliente_fk' => 'required|integer|exists:tbl_persona,id_persona_pk'
+            'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk'
         ];
     }
 

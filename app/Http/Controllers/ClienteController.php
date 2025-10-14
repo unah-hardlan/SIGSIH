@@ -59,7 +59,32 @@ class ClienteController extends Controller
                 $persona->update($data);
             } else {
                 // Crear nueva persona
-                Persona::create($data);
+                $persona = Persona::create($data);
+            }
+
+            // Asegurar mapeo a cliente PERSONA en tbl_cliente y pivot tbl_cliente_persona
+            try {
+                $cliente = Cliente::firstOrCreate(
+                    ['id_cliente_pk' => $user->id_usuario_pk],
+                    [
+                        'tipo_cliente' => 'persona',
+                        'estado_cliente' => 'activo',
+                        'fecha_registro' => now(),
+                    ]
+                );
+                // Insertar relación en pivote si no existe
+                $exists = DB::table('tbl_cliente_persona')
+                    ->where('id_cliente_fk', $cliente->id_cliente_pk)
+                    ->where('id_persona_fk', $persona->id_persona_pk)
+                    ->exists();
+                if (!$exists) {
+                    DB::table('tbl_cliente_persona')->insert([
+                        'id_cliente_fk' => $cliente->id_cliente_pk,
+                        'id_persona_fk' => $persona->id_persona_pk,
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                // no interrumpir el flujo por fallos de mapeo
             }
 
             DB::commit();

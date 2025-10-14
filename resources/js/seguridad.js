@@ -662,12 +662,11 @@
         store.tipos = [];
         return;
       }
-      // Evitar inicializar este store cuando no estamos en la vista de configuración de acceso
-      if (!shouldInit()) {
-        store.blocked = true;
+      // Si la vista aún no está marcada como configuracion-acceso, no bloquear; la pestaña gestion lo invocará vía x-init.
+      if (!shouldInit() && store._initialized) {
         return;
       }
-      if (shouldInit() && !store._initialized) {
+      if (!store._initialized) {
         store._initialized = true;
         setTimeout(() => { store.init().catch(() => { }); }, 0);
       }
