@@ -8,6 +8,7 @@ use App\Http\Requests\StoreUsuarioRequest;
 use App\Models\Usuario;
 use App\Models\Rol;
 use App\Models\HistorialContrasena;
+use App\Models\Cliente;
 use App\Models\Parametro;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
@@ -191,6 +192,20 @@ class AuthController extends Controller
         $usuario->contrasena = Hash::make($data['contrasena']);
         $usuario->primer_ingreso = 1;
         $usuario->save();
+
+        // Crear mapeo de cliente PERSONA (activo) para este usuario
+        try {
+            Cliente::firstOrCreate(
+                ['id_cliente_pk' => $usuario->id_usuario_pk],
+                [
+                    'tipo_cliente' => 'persona',
+                    'estado_cliente' => 'activo',
+                    'fecha_registro' => now(),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // no bloquear registro si falla
+        }
 
         // Si se requiere verificación de correo, generar token y enviar mail; no iniciar sesión aún
         $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')

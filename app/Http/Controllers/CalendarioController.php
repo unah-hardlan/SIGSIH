@@ -16,7 +16,13 @@ class CalendarioController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Calendario::with(['estado', 'agencia', 'ordenServicio', 'tipoMantenimiento', 'cliente']);
+        $query = Calendario::with([
+            'estado',
+            'agencia.direccion.ciudad.departamento.pais',
+            'ordenServicio',
+            'tipoMantenimiento',
+            'cliente'
+        ]);
 
         // Filtro por estado del calendario
         if ($request->has('id_estado_calendario_fk')) {
@@ -57,7 +63,7 @@ class CalendarioController extends Controller
             $query->where('fecha', '<=', $request->fecha_hasta);
         }
 
-        $calendarios = $query->orderBy('fecha', 'desc')
+    $calendarios = $query->orderBy('fecha', 'desc')
                             ->paginate($request->get('per_page', 15));
 
         return response()->json([

@@ -132,9 +132,9 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
 
     Route::apiResource('contactos', ContactoController::class);
     Route::apiResource('estados-solicitud', EstadoSolicitudController::class)
-     ->parameters(['estados-solicitud' => 'estadoSolicitud']);
-   Route::apiResource('estados-proyecto', EstadoProyectoController::class)
-     ->parameters(['estados-proyecto' => 'estadoProyecto']);
+        ->parameters(['estados-solicitud' => 'estadoSolicitud']);
+    Route::apiResource('estados-proyecto', EstadoProyectoController::class)
+        ->parameters(['estados-proyecto' => 'estadoProyecto']);
     Route::apiResource('proyectos', ProyectoController::class);
     Route::apiResource('gastos', GastosController::class);
     Route::apiResource('ingresos', IngresosController::class);
@@ -154,6 +154,11 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('detalles-factura', DetalleFacturaController::class);
     Route::apiResource('servicios', ServicioController::class);
     Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
+
+    // Catálogo unificado de clientes (personas + empresas) para selectores
+    // Se expone sin 'auto.permiso' para uso general en selectores autenticados
+    Route::get('clientes', [\App\Http\Controllers\ClienteCatalogController::class, 'index'])
+        ->withoutMiddleware('auto.permiso');
 
     // Catálogo: Estados de Orden de Servicio
     Route::get('estados-orden-servicio', function () {

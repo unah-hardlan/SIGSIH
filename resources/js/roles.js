@@ -60,6 +60,7 @@ function createRolesStore() {
       try { return document.querySelector('main')?.dataset?.currentView || ''; } catch (_) { return ''; }
     },
     async init() {
+      if (this._initialized) return;
       if (!hasConfiguracionAcceso()) {
         this.blocked = true;
         this.items = [];
@@ -67,12 +68,9 @@ function createRolesStore() {
         this.error = 'No tienes permisos para ver los roles del sistema.';
         return;
       }
-      // Solo inicializar cuando estamos en la vista de Configuración de Accesos
-      if (this.currentView() !== 'configuracion-acceso') {
-        this.blocked = true;
-        return;
-      }
+      // Permitir inicialización cuando se llama explícitamente desde la pestaña, sin depender de currentView.
       this.blocked = false;
+      this._initialized = true;
       await this.fetchList(1);
     },
     buildQuery(page) {
@@ -110,8 +108,8 @@ function createRolesStore() {
       } finally { this.loading = false; this._abortCtrl = null; }
     },
     setSearch(val) { this.q = val; this.debouncedFetch(); },
-    setSort(val) { this.sort = val || 'rol'; if (!this.blocked) this.fetchList(1); },
-    setDirection(val) { this.direction = (val === 'desc' ? 'desc' : 'asc'); if (!this.blocked) this.fetchList(1); },
+  setSort(val) { this.sort = val || 'rol'; this.fetchList(1); },
+  setDirection(val) { this.direction = (val === 'desc' ? 'desc' : 'asc'); this.fetchList(1); },
 
     openCreate() { this.form = { rol: '', descripcion_rol: '' }; this.isCreateOpen = true; this.error = ''; },
     openEdit(item) { this.current = item; this.form = { rol: item?.rol || '', descripcion_rol: item?.descripcion_rol || '' }; this.isEditOpen = true; this.error = ''; },
