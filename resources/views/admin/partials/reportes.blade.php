@@ -40,7 +40,7 @@
           <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
             <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                 <tr class="border-0">
-                    <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID Reporte</th>
+                        <!--<th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">ID Reporte</th>-->
                     <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Fecha de Reporte</th>
                     <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Observaciones</th>
                     <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Tipo de Visita</th>
