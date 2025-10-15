@@ -32,6 +32,7 @@ class CoreObjetosSeeder extends Seeder
             ['nombre_objeto' => 'Gestión de personas', 'descripcion_objeto' => 'Módulos para administrar personas y sus catálogos'],
             ['nombre_objeto' => 'Gestión de base de datos', 'descripcion_objeto' => 'Herramientas de gestión de base de datos'],
             ['nombre_objeto' => 'Origen Kardex', 'descripcion_objeto' => 'Catálogo de orígenes para movimientos de Kardex'],
+            ['nombre_objeto' => 'Tipo de Mantenimiento', 'descripcion_objeto' => 'Catálogo de tipos de mantenimiento'],
         ];
 
         foreach ($objetos as $obj) {
@@ -50,9 +51,10 @@ class CoreObjetosSeeder extends Seeder
         try {
             $adminRolId = DB::table('tbl_ms_rol')->whereRaw("LOWER(rol) = 'administrador'")->value('id_rol_pk');
             if ($adminRolId) {
-                $objId = DB::table('tbl_objetos')->where('nombre_objeto','Origen Kardex')->value('id_objetos_pk');
-                if ($objId) {
-                    $exists = DB::table('tbl_ms_permisos')->where(['id_rol_fk'=>$adminRolId,'id_objeto_fk'=>$objId])->exists();
+                $objNames = ['Origen Kardex', 'Tipo de Mantenimiento'];
+                $objIds = DB::table('tbl_objetos')->whereIn('nombre_objeto', $objNames)->pluck('id_objetos_pk', 'nombre_objeto');
+                foreach ($objIds as $objId) {
+                    $exists = DB::table('tbl_ms_permisos')->where(['id_rol_fk' => $adminRolId, 'id_objeto_fk' => $objId])->exists();
                     if (!$exists) {
                         DB::table('tbl_ms_permisos')->insert([
                             'id_rol_fk' => $adminRolId,
@@ -67,6 +69,7 @@ class CoreObjetosSeeder extends Seeder
                     }
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
     }
 }

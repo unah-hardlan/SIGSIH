@@ -24,13 +24,20 @@ class UpdateTipoMantenimientoRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Resolver el ID correctamente desde la ruta del resource (param: 'tipos_mantenimiento')
+        $routeId = $this->route('tipos_mantenimiento')
+            ?? $this->route('tipo_mantenimiento')
+            ?? $this->route('id')
+            ?? $this->input('id_tipo_mantenimiento_pk');
+
         return [
             'tipo_mantenimiento' => [
                 'sometimes',
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('tbl_tipo_mantenimiento', 'tipo_mantenimiento')->ignore($this->route('tipo_mantenimiento'), 'id_tipo_mantenimiento_pk')
+                Rule::unique('tbl_tipo_mantenimiento', 'tipo_mantenimiento')
+                    ->ignore($routeId, 'id_tipo_mantenimiento_pk')
             ],
             'descripcion_mantenimiento' => 'sometimes|nullable|string|max:255'
         ];

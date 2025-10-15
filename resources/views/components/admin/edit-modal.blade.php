@@ -13,9 +13,7 @@
     :submitLabel="$submitLabel"
     :maxWidth="$maxWidth"
     :formId="$formId">
-    <template x-if="{{ $itemToEdit }}">
-        <div class="space-y-4">
-            {{ $slot }}
-        </div>
-    </template>
+    <div class="space-y-4" x-show="{{ $itemToEdit }}" x-cloak>
+        {{ $slot }}
+    </div>
 </x-admin.form-modal>

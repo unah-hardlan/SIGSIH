@@ -6,7 +6,7 @@
     isTipoDeleteModalOpen: false,
     tipoToEdit: {nombre: '', descripcion: ''},
     tipoToDelete: {nombre: '', descripcion: ''},
-    ordenarPor: '',
+    ordenarPor: 'nombre',
     loadingTipos: false,
     searchTipos: '', // Para el filtro de búsqueda
     // Si agregas más filtros select, defínelos aquí. Ejemplo:
@@ -22,9 +22,34 @@
     },
     async deleteTipoObjeto() {
         await window.tipoObjetosApiHandlers.deleteTipoObjeto(this);
+    },
+    handleModalSubmit(e){
+        if(e.detail.formId === 'form-agregar-tipo-objeto') this.storeTipoObjeto();
+        if(e.detail.formId === 'form-editar-tipo-objeto') this.updateTipoObjeto();
+    },
+    handleDelete(){ if(this.isTipoDeleteModalOpen) this.deleteTipoObjeto(); },
+    getFilteredTipos(){
+        let list = Array.isArray(this.tipos) ? [...this.tipos] : [];
+        const q = (this.searchTipos || '').toString().toLowerCase().trim();
+        if (q) {
+            list = list.filter(t =>
+                (t.nombre || '').toString().toLowerCase().includes(q) ||
+                (t.descripcion || '').toString().toLowerCase().includes(q)
+            );
+        }
+        const field = this.ordenarPor || 'nombre';
+        list.sort((a,b)=>{
+            const av = (a?.[field] ?? '').toString().toLowerCase();
+            const bv = (b?.[field] ?? '').toString().toLowerCase();
+            if (av < bv) return -1; if (av > bv) return 1; return 0;
+        });
+        return list;
     }
-}" 
+}"
 x-init="fetchTipoObjetos()"
+@keydown.escape.window="isTipoModalOpen=false; isTipoEditModalOpen=false; isTipoDeleteModalOpen=false;"
+@modal-submit.window="handleModalSubmit($event)"
+@confirm-delete.window="handleDelete()">
     <div x-show="tab === 'tipos'">
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-4">Catálogo de Tipos de Objeto</h1>
@@ -55,7 +80,6 @@ x-init="fetchTipoObjetos()"
                     <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
                         <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                             <tr>
-                                <th class="py-2 px-4 text-left">ID</th>
                                 <th class="py-2 px-4 text-left">Nombre</th>
                                 <th class="py-2 px-4 text-left">Descripción</th>
                                 <th class="py-2 px-4 text-left">Creado Por</th>
@@ -68,22 +92,21 @@ x-init="fetchTipoObjetos()"
                         <tbody>
                             <template x-if="loadingTipos">
                                 <tr>
-                                    <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">
+                                    <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de objeto...
                                     </td>
                                 </tr>
                             </template>
                             <template x-if="!loadingTipos && tipos.length === 0">
                                 <tr>
-                                    <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">
+                                    <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
                                         No hay tipos de objeto registrados
                                     </td>
                                 </tr>
                             </template>
-                            <template x-if="!loadingTipos && tipos.length > 0">
-                                <template x-for="tipo in tipos" :key="tipo.id || tipo.nombre">
+                            <template x-if="!loadingTipos && getFilteredTipos().length > 0">
+                                <template x-for="tipo in getFilteredTipos()" :key="tipo.id || tipo.nombre">
                                     <tr class="border-b dark:border-gray-700 nunito-regular">
-                                        <td class="py-2 px-4" x-text="tipo.id"></td>
                                         <td class="py-2 px-4" x-text="tipo.nombre"></td>
                                         <td class="py-2 px-4" x-text="tipo.descripcion"></td>
                                         <td class="py-2 px-4" x-text="tipo.creado_por"></td>
@@ -91,9 +114,9 @@ x-init="fetchTipoObjetos()"
                                         <td class="py-2 px-4" x-text="tipo.modificado_por || '-'"></td>
                                         <td class="py-2 px-4" x-text="tipo.fecha_modificacion ? new Date(tipo.fecha_modificacion).toLocaleDateString() : '-'"></td>
                                         <td class="py-2 px-4 flex gap-2">
-                                            <button @click="isTipoEditModalOpen = true; tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}"
+                                            <button @click="tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
                                                 class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
-                                            <button @click="isTipoDeleteModalOpen = true; tipoToDelete = {id: tipo.id, nombre: tipo.nombre}"
+                                            <button @click="tipoToDelete = {id: tipo.id, nombre: tipo.nombre}; isTipoDeleteModalOpen = true"
                                                 class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
                                         </td>
                                     </tr>
@@ -115,13 +138,12 @@ x-init="fetchTipoObjetos()"
                         No hay tipos de objeto registrados
                     </div>
                 </template>
-                <template x-if="!loadingTipos && tipos.length > 0">
-                    <template x-for="tipo in tipos" :key="tipo.id || tipo.nombre">
+                <template x-if="!loadingTipos && getFilteredTipos().length > 0">
+                    <template x-for="tipo in getFilteredTipos()" :key="tipo.id || tipo.nombre">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded nunito-regular">#<span x-text="tipo.id"></span></span>
                                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="tipo.nombre"></h3>
                                     </div>
                                 </div>
@@ -143,11 +165,11 @@ x-init="fetchTipoObjetos()"
                                 </template>
                             </div>
                             <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <button @click="isTipoEditModalOpen = true; tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}"
+                                <button @click="tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
                                     class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                     <i class="fas fa-edit"></i> Editar
                                 </button>
-                                <button @click="isTipoDeleteModalOpen = true; tipoToDelete = {id: tipo.id, nombre: tipo.nombre}"
+                                <button @click="tipoToDelete = {id: tipo.id, nombre: tipo.nombre}; isTipoDeleteModalOpen = true"
                                     class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                     <i class="fas fa-trash"></i> Eliminar
                                 </button>
@@ -176,21 +198,6 @@ x-init="fetchTipoObjetos()"
                 <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
                 <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el tipo..."></textarea>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Creado por</label>
-                <input type="text" x-model="tipoToEdit.creado_por" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Usuario creador">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Fecha creación</label>
-                <input type="text" :value="new Date(tipoToEdit.fecha_creacion || Date.now()).toLocaleString()" class="w-full border rounded px-3 py-2 nunito-regular bg-gray-100" readonly>
-            </div>
-            <script>
-                document.addEventListener('modal-submit', function(e) {
-                    if (e.detail.formId === 'form-agregar-tipo-objeto') {
-                        window.tipoObjetosApiHandlers.storeTipoObjeto(Alpine.closestDataStack(e.target));
-                    }
-                });
-            </script>
         </x-admin.edit-modal>
 
         <!-- Modal Editar Tipo de Objeto -->
@@ -209,29 +216,6 @@ x-init="fetchTipoObjetos()"
                 <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
                 <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Creado por</label>
-                <input type="text" :value="tipoToEdit.creado_por" class="w-full border rounded px-3 py-2 nunito-regular bg-gray-100" readonly>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Fecha creación</label>
-                <input type="text" :value="new Date(tipoToEdit.fecha_creacion).toLocaleString()" class="w-full border rounded px-3 py-2 nunito-regular bg-gray-100" readonly>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Modificado por</label>
-                <input type="text" :value="tipoToEdit.modificado_por || '-'" class="w-full border rounded px-3 py-2 nunito-regular bg-gray-100" readonly>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Fecha modificación</label>
-                <input type="text" :value="tipoToEdit.fecha_modificacion ? new Date(tipoToEdit.fecha_modificacion).toLocaleString() : '-'" class="w-full border rounded px-3 py-2 nunito-regular bg-gray-100" readonly>
-            </div>
-            <script>
-                document.addEventListener('modal-submit', function(e) {
-                    if (e.detail.formId === 'form-editar-tipo-objeto') {
-                        window.tipoObjetosApiHandlers.updateTipoObjeto(Alpine.closestDataStack(e.target));
-                    }
-                });
-            </script>
         </x-admin.edit-modal>
 
         <!-- Modal Eliminar Tipo de Objeto -->

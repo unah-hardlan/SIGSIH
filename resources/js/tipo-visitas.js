@@ -102,10 +102,10 @@ window.tipoVisitasApiHandlers = {
         if (!component.itemToEdit || !component.itemToEdit.id_tipo_visita_pk)
             return;
         const nombreTrim = String(
-            component.itemToEdit.nombre_tipo_visita || ""
+            component.edit_nombre_tipo_visita ?? component.itemToEdit.nombre_tipo_visita ?? ""
         ).trim();
         const descripcionTrim = String(
-            component.itemToEdit.descripcion_tipo_visita || ""
+            component.edit_descripcion_tipo_visita ?? component.itemToEdit.descripcion_tipo_visita ?? ""
         ).trim();
         if (!nombreTrim) {
             window.showToast &&
@@ -136,10 +136,22 @@ window.tipoVisitasApiHandlers = {
                 nombre_tipo_visita: nombreTrim,
                 descripcion_tipo_visita: descripcionTrim,
             };
+            // Evitar request si no hay cambios
+            if (
+                nombreTrim === (component.itemToEdit.nombre_tipo_visita || "") &&
+                descripcionTrim === (component.itemToEdit.descripcion_tipo_visita || "")
+            ) {
+                window.showToast && window.showToast("No hay cambios para guardar", "warning");
+                component.isTipoVisitaEditModalOpen = false;
+                component.itemToEdit = null;
+                component.edit_nombre_tipo_visita = "";
+                component.edit_descripcion_tipo_visita = "";
+                return;
+            }
             const response = await fetch(
                 `/api/tipos-visita/${component.itemToEdit.id_tipo_visita_pk}`,
                 {
-                    method: "PUT",
+                    method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
                         Accept: "application/json",
@@ -157,6 +169,8 @@ window.tipoVisitasApiHandlers = {
                 );
             component.isTipoVisitaEditModalOpen = false;
             component.itemToEdit = null;
+            component.edit_nombre_tipo_visita = "";
+            component.edit_descripcion_tipo_visita = "";
             await this.fetchTipoVisitas(component);
         } catch (error) {
             console.error("Error updating tipo visita:", error);
