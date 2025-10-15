@@ -9,50 +9,24 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         let inFlight = 0;
         const queue = [];
 
-        const AUTH_KEY = "authToken";
         let tokenPromise = null;
 
-        function getToken() {
+        // We no longer store or use a JS-accessible token; rely on HttpOnly cookie only
+        function getToken() { return null; }
+        function setToken(_) {
             try {
-                return localStorage.getItem(AUTH_KEY) || null;
-            } catch (_) {
-                return null;
-            }
-        }
-
-        function setToken(t) {
-            try {
-                if (t) localStorage.setItem(AUTH_KEY, t);
-                else localStorage.removeItem(AUTH_KEY);
-            } catch (_) {}
-
-            try {
-                if (window.axios) {
-                    if (t)
-                        window.axios.defaults.headers.common[
-                            "Authorization"
-                        ] = `Bearer ${t}`;
-                    else
-                        delete window.axios.defaults.headers.common[
-                            "Authorization"
-                        ];
+                if (window.axios && window.axios.defaults?.headers?.common) {
+                    delete window.axios.defaults.headers.common["Authorization"]; // ensure cleared
                 }
             } catch (_) {}
-
             try {
-                document.dispatchEvent(
-                    new CustomEvent("auth:updated", {
-                        detail: { token: t || null },
-                    })
-                );
+                document.dispatchEvent(new CustomEvent("auth:updated", { detail: { token: null } }));
             } catch (_) {}
         }
 
         async function fetchSessionToken(force = false) {
-            if (!force) {
-                const existing = getToken();
-                if (existing) return existing;
-            }
+            // Do not attempt to mint or persist a token in the client; cookie drives auth
+            if (!force) return null;
 
             if (!tokenPromise) {
                 tokenPromise = (async () => {
@@ -70,10 +44,9 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                             return null;
                         }
                         if (!res.ok) return null;
-                        const data = await res.json().catch(() => null);
-                        const t = data && (data.token || data.access_token);
-                        if (t) setToken(t);
-                        return t || null;
+                        // Ignore body; we don't keep token client-side
+                        await res.json().catch(() => null);
+                        return null;
                     } catch (_) {
                         return null;
                     } finally {
@@ -92,10 +65,8 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 setToken,
                 ensureToken: (force = false) => fetchSessionToken(force),
                 headers() {
-                    const t = getToken();
-                    const h = { Accept: "application/json" };
-                    if (t) h["Authorization"] = `Bearer ${t}`;
-                    return h;
+                    // No Authorization header; rely on same-origin cookie
+                    return { Accept: "application/json" };
                 },
             };
         } catch (_) {}
@@ -109,7 +80,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             merged.headers.set("X-Requested-With", "XMLHttpRequest");
             if (!merged.headers.has("Accept"))
                 merged.headers.set("Accept", "application/json");
-            if (t) merged.headers.set("Authorization", `Bearer ${t}`);
+            // No Authorization header; rely on auth cookie
             return [input, merged];
         }
 
@@ -160,14 +131,24 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
 
                 return new Promise((resolve, reject) => {
                     const run = async () => {
-                        await fetchSessionToken(false);
+                        // No token handling; cookie will be sent automatically
                         let [input, init] = withAuthToApi(args[0], args[1]);
                         let res = await origFetch(input, init);
                         if (res.status === 401) {
-                            setToken(null);
-                            await fetchSessionToken(true);
+                            // Retry once in case of transient conditions
                             [input, init] = withAuthToApi(args[0], args[1]);
                             res = await origFetch(input, init);
+                        }
+                        // Si sigue 401, intentar detectar límite de sesiones para cerrar con mensaje claro
+                        if (res.status === 401) {
+                            try {
+                                const clone = res.clone();
+                                const data = await clone.json().catch(() => null);
+                                if (data && (data.code === 'SESSION_REMOVED_LIMIT')) {
+                                    try { window.showToast && window.showToast('Se superó el límite de sesiones. Esta sesión se cerró para respetar el máximo permitido.', 'warning', { duration: 4000 }); } catch(_) {}
+                                    try { window.appLogout && window.appLogout(); } catch(_) {}
+                                }
+                            } catch(_) {}
                         }
                         return res;
                     };
@@ -1096,21 +1077,12 @@ if (typeof window !== "undefined") {
                 id_cotizacion_fk: "",
             },
             getToken() {
-                try {
-                    return (
-                        window.__AUTH?.getToken?.() ||
-                        localStorage.getItem("authToken")
-                    );
-                } catch (_) {
-                    return null;
-                }
+                // Cookie-based auth only; no JS-accessible token
+                return null;
             },
             setToken(token) {
-                try {
-                    if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
-                    else if (token) localStorage.setItem("authToken", token);
-                } catch (_) {}
-                return token;
+                // No-op in cookie-only mode
+                return null;
             },
             getCsrf() {
                 const m = document.head.querySelector(
@@ -1119,58 +1091,16 @@ if (typeof window !== "undefined") {
                 return m ? m.content : "";
             },
             apiHeaders() {
-                const t = this.getToken();
-                const h = {
+                // Do not add Authorization; rely on HttpOnly cookie
+                return {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 };
-                if (t) h["Authorization"] = "Bearer " + t;
-                return h;
             },
             async requireAuth() {
-                const existing = this.getToken();
-                if (existing) {
-                    this.authError = false;
-                    return true;
-                }
-                try {
-                    // Prefer global ensureToken if available
-                    const t =
-                        typeof window.__AUTH?.ensureToken === "function"
-                            ? await window.__AUTH.ensureToken(false)
-                            : null;
-                    if (t) {
-                        this.authError = false;
-                        return true;
-                    }
-                    const res = await fetch("/session/token", {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": this.getCsrf(),
-                        },
-                        credentials: "same-origin",
-                    });
-                    if (!res.ok) throw new Error("unauthorized");
-                    const data = await res.json();
-                    if (data && (data.token || data.access_token)) {
-                        this.setToken(data.token || data.access_token);
-                        this.authError = false;
-                        return true;
-                    }
-                } catch (e) {
-                    console.error("Auth error", e);
-                }
-                this.authError = true;
-                if (!this.authNotified) {
-                    this.showToast(
-                        "Inicia sesión para gestionar órdenes de servicio.",
-                        "error"
-                    );
-                    this.authNotified = true;
-                }
-                return false;
+                // With cookie auth, assume authenticated; 401 will be handled per-request
+                this.authError = false;
+                return true;
             },
             handleUnauthorized() {
                 this.authError = true;
@@ -1937,21 +1867,10 @@ if (typeof window !== "undefined") {
 
             // Auth helpers (same pattern as órdenes)
             getToken() {
-                try {
-                    return (
-                        window.__AUTH?.getToken?.() ||
-                        localStorage.getItem("authToken")
-                    );
-                } catch (_) {
-                    return null;
-                }
+                return null;
             },
             setToken(token) {
-                try {
-                    if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
-                    else if (token) localStorage.setItem("authToken", token);
-                } catch (_) {}
-                return token;
+                return null;
             },
             getCsrf() {
                 const m = document.head.querySelector(
@@ -1960,40 +1879,13 @@ if (typeof window !== "undefined") {
                 return m ? m.content : "";
             },
             apiHeaders() {
-                const t = this.getToken();
-                const h = {
+                return {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 };
-                if (t) h["Authorization"] = "Bearer " + t;
-                return h;
             },
             async requireAuth() {
-                const existing = this.getToken();
-                if (existing) return true;
-                try {
-                    const t =
-                        typeof window.__AUTH?.ensureToken === "function"
-                            ? await window.__AUTH.ensureToken(false)
-                            : null;
-                    if (t) return true;
-                    const res = await fetch("/session/token", {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": this.getCsrf(),
-                        },
-                        credentials: "same-origin",
-                    });
-                    if (!res.ok) return false;
-                    const data = await res.json();
-                    if (data && (data.token || data.access_token)) {
-                        this.setToken(data.token || data.access_token);
-                        return true;
-                    }
-                } catch (_) {}
-                return false;
+                return true;
             },
 
             showToast(message, type = "ok") {

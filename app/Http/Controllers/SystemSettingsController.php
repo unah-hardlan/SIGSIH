@@ -37,7 +37,17 @@ class SystemSettingsController extends Controller
             ?? config('app.timezone', 'UTC');
         $dateFormat = optional(Parametro::where('parametro', 'app.date_format')->first())->valor
             ?? 'Y-m-d';
-        $sessionsLimit = (int) (optional(Parametro::where('parametro', 'auth.sessions_limit')->first())->valor ?? 1);
+        // Sessions limit: prefer legacy global key if present to reflect what AuthService enforces,
+        // otherwise fall back to the dotted key; default to 1
+        $slLegacy = Parametro::where('parametro', 'AUTH.LIMITE_SESIONES')->value('valor');
+        $slDotted = Parametro::where('parametro', 'auth.sessions_limit')->value('valor');
+        if (is_numeric($slLegacy)) {
+            $sessionsLimit = max(1, (int) $slLegacy);
+        } elseif (is_numeric($slDotted)) {
+            $sessionsLimit = max(1, (int) $slDotted);
+        } else {
+            $sessionsLimit = 1;
+        }
 
         // Admin parameters (fallback chain: standard dotted -> legacy)
         $adminIntentos = (int) (
@@ -153,11 +163,15 @@ class SystemSettingsController extends Controller
             }
         }
 
-        // Sessions limit
+        // Sessions limit (sync both modern and legacy keys so enforcement reads the updated value)
         if (array_key_exists('sessions_limit', $validated)) {
             $sl = (int) $validated['sessions_limit'];
             if ($sl > 0) {
                 $this->persistParametro('auth.sessions_limit', $sl, $user);
+                // Keep legacy/global and common role-specific keys in sync so AuthService picks it up first
+                $this->persistParametro('AUTH.LIMITE_SESIONES', $sl, $user);
+                $this->persistParametro('AUTH.LIMITE_SESIONES.ADMIN', $sl, $user);
+                $this->persistParametro('AUTH.LIMITE_SESIONES.CLIENTE', $sl, $user);
                 Cache::forget('authSessionsLimit');
             }
         }

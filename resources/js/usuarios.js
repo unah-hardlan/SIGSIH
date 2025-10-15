@@ -65,8 +65,8 @@ document.addEventListener('alpine:init', () => {
             finally{ this.rolesLoading=false; }
         },
         debounceFetch(){ clearTimeout(this.debounceTimer); this.debounceTimer=setTimeout(()=>{ this.pagination.page=1; this.fetchUsers(); },400); },
-        getToken(){ const t=localStorage.getItem('token'); if(t) return t; const m=document.cookie.match(/auth_token=([^;]+)/); return m?decodeURIComponent(m[1]):''; },
-        authHeaders(){ return { 'Authorization':'Bearer '+this.getToken(),'Content-Type':'application/json','Accept':'application/json' }; },
+    getToken(){ return null; },
+    authHeaders(){ return { 'Content-Type':'application/json','Accept':'application/json' }; },
         async fetchUsers(){
             if(!this.canAccess()){
                 this.loading=false; this.error='No tienes permisos para ver los usuarios.'; this.users=[]; return;

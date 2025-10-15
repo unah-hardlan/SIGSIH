@@ -11,6 +11,16 @@ use Illuminate\Support\Facades\Hash;
 class AuthService
 {
     /**
+     * Resolve JWT/session TTL in seconds based on config('session.lifetime') minutes.
+     */
+    private function getTokenTtlSeconds(): int
+    {
+        $minutes = (int) config('session.lifetime', 60);
+        // Boundaries: at least 60 seconds to avoid pathological values
+        return max(60, $minutes * 60);
+    }
+
+    /**
      * Autentica un usuario y genera un token JWT.
      *
      * @param string $usuario
@@ -78,20 +88,21 @@ class AuthService
         //  - AUTH.LIMITE_SESIONES.ADMIN
         //  - AUTH.LIMITE_SESIONES.CLIENTE
         // Fallback: AUTH.LIMITE_SESIONES o auth.sessions_limit
-        $limit = $this->determineSessionLimit($user);
-        $sessions = $this->prepareSessions($user, $limit);
+    $limit = $this->determineSessionLimit($user);
+    $sessions = $this->prepareSessions($user, $limit);
 
+        $ttl = $this->getTokenTtlSeconds();
         $payload = [
             'sub'  => $user->getKey(),
             'name' => $user->nombre_usuario,
             'iat'  => time(),
-            'exp'  => time() + 3600,
+            'exp'  => time() + $ttl,
         ];
 
         $token = JWT::encode($payload, $secret, 'HS256');
 
         // Registrar la sesión (token hash) en cache por 1h
-        $this->storeSessionToken($user, $sessions, $token);
+    $this->storeSessionToken($user, $sessions, $token);
 
         return [
             'token' => $token,
@@ -154,11 +165,12 @@ class AuthService
             return ['error' => 'JWT_SECRET no está configurado', 'code' => 500];
         }
 
+        $ttl = $this->getTokenTtlSeconds();
         $payload = [
             'sub'  => $user->getKey(),
             'name' => $user->nombre_usuario,
             'iat'  => time(),
-            'exp'  => time() + 3600,
+            'exp'  => time() + $ttl,
         ];
 
         $token = JWT::encode($payload, $secret, 'HS256');
@@ -232,7 +244,9 @@ class AuthService
             }
         }
 
-        cache()->put($sessionsKey, $sessions, now()->addHours(1));
+        // Mantener el registro por el tiempo de vida del token
+        $ttl = $this->getTokenTtlSeconds();
+        cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
 
         return $sessions;
     }
@@ -241,11 +255,12 @@ class AuthService
     {
         try {
             $tokenId = substr(hash('sha256', $token), 0, 32);
-            $sessions[$tokenId] = time() + 3600;
+            $ttl = $this->getTokenTtlSeconds();
+            $sessions[$tokenId] = time() + $ttl;
             $now = time();
             $sessions = array_filter($sessions, fn($exp) => $exp > $now);
             $sessionsKey = 'user_sessions:' . $user->getKey();
-            cache()->put($sessionsKey, $sessions, now()->addHours(1));
+            cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
         } catch (\Throwable $e) {
             // noop: evitar que un fallo en cache bloquee el login
         }

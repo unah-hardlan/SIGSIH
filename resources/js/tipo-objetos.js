@@ -1,17 +1,6 @@
 window.tipoObjetosApiHandlers = {
-    getToken() {
-        const t = localStorage.getItem("token");
-        if (t) return t;
-        const m = document.cookie.match(/auth_token=([^;]+)/);
-        return m ? decodeURIComponent(m[1]) : "";
-    },
-    authHeaders() {
-        return {
-            Authorization: "Bearer " + this.getToken(),
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        };
-    },
+    getToken() { return null; },
+    authHeaders() { return { "Content-Type": "application/json", Accept: "application/json" }; },
     async fetchTipoObjetos(component) {
         try {
             component.loadingTipos = true;
