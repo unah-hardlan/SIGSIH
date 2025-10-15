@@ -1030,6 +1030,197 @@ function authHeaders() {
     };
 })();
 
+// Global Alpine factory for System Settings (Mantenimiento → General)
+// Registered here so it's available even when the view HTML is injected dynamically (inline <script> won't run on innerHTML)
+if (typeof window !== "undefined") {
+    window.settingsState = function () {
+        const initial = {
+            appLogoUrl: "/images/logo.png",
+            appName: "SIGSIH",
+            appLogoHeight: 96,
+        };
+        return {
+            tab: localStorage.getItem("mantenimientoTab") || "personalizacion",
+            logoUrl: initial.appLogoUrl,
+            nombreSistema: initial.appName,
+            logoHeight: Number(initial.appLogoHeight) || 96,
+            selectedLogoFile: null,
+            savedMessagePersonalizacion: "",
+            savedMessageParametros: "",
+            timezone: "UTC",
+            dateFormat: "Y-m-d",
+            sessionsLimit: 1,
+            requireEmailVerification: false,
+            passwordResetCooldown: 5,
+            passwordResetExpire: 60,
+            passwordResetMaxPerDay: 5,
+            dniFormat: "0000-0000-00000",
+            adminIntentos: 3,
+            adminCorreo: "",
+            adminUsuario: "",
+            adminPassword: "",
+            async init() {
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        credentials: "same-origin",
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.nombreSistema = data.appName || this.nombreSistema;
+                        this.logoUrl = data.logoUrl || this.logoUrl;
+                        this.logoHeight = data.logoHeight || this.logoHeight;
+                        this.timezone = data.timezone || this.timezone;
+                        this.dateFormat = data.dateFormat || this.dateFormat;
+                        this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
+                        this.requireEmailVerification = !!data.requireEmailVerification;
+                        this.passwordResetCooldown =
+                            data.passwordResetCooldown ?? this.passwordResetCooldown;
+                        this.passwordResetExpire =
+                            data.passwordResetExpire ?? this.passwordResetExpire;
+                        this.passwordResetMaxPerDay =
+                            data.passwordResetMaxPerDay ?? this.passwordResetMaxPerDay;
+                        this.dniFormat = (data.dniFormat || this.dniFormat || "").toString();
+                        this.adminIntentos = data.adminIntentos || this.adminIntentos;
+                        this.adminCorreo = data.adminCorreo || this.adminCorreo;
+                        this.adminUsuario = data.adminUsuario || this.adminUsuario;
+                        this.adminPassword = data.adminPassword || this.adminPassword;
+                    }
+                } catch (_) {}
+            },
+            onLogoSelected(e) {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                this.selectedLogoFile = file;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this.logoUrl = ev.target?.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            async guardarPersonalizacion() {
+                const fd = new FormData();
+                if (this.nombreSistema) fd.append("app_name", this.nombreSistema);
+                if (this.selectedLogoFile) fd.append("logo", this.selectedLogoFile);
+                if (this.logoHeight) fd.append("logo_height", String(this.logoHeight));
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        method: "POST",
+                        body: fd,
+                        credentials: "same-origin",
+                        headers: {
+                            "X-CSRF-TOKEN":
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || "",
+                        },
+                    });
+                    if (!res.ok) throw new Error("bad");
+                    const data = await res.json();
+                    this.nombreSistema = data.appName || this.nombreSistema;
+                    this.logoUrl = data.logoUrl || this.logoUrl;
+                    this.logoHeight = data.logoHeight || this.logoHeight;
+                    this.selectedLogoFile = null;
+                    this.savedMessagePersonalizacion =
+                        "Personalización guardada correctamente";
+                    try {
+                        const headerLogo = document.querySelector(
+                            'header img[alt="Logo"]'
+                        );
+                        if (headerLogo) {
+                            if (this.logoUrl) headerLogo.src = this.logoUrl;
+                            if (this.logoHeight)
+                                headerLogo.style.setProperty(
+                                    "--app-logo-max",
+                                    `${this.logoHeight}px`
+                                );
+                        }
+                        if (this.nombreSistema) {
+                            document.title = this.nombreSistema;
+                        }
+                    } catch (_) {}
+                    setTimeout(() => (this.savedMessagePersonalizacion = ""), 2500);
+                } catch (e) {
+                    this.savedMessagePersonalizacion = "No se pudo guardar";
+                    setTimeout(() => (this.savedMessagePersonalizacion = ""), 2500);
+                }
+            },
+            async guardarParametros() {
+                const fd = new FormData();
+                if (this.timezone) fd.append("timezone", this.timezone);
+                if (this.dateFormat) fd.append("date_format", this.dateFormat);
+                if (this.sessionsLimit)
+                    fd.append("sessions_limit", String(this.sessionsLimit));
+                fd.append(
+                    "require_email_verification",
+                    this.requireEmailVerification ? "1" : "0"
+                );
+                if (
+                    this.passwordResetCooldown !== undefined &&
+                    this.passwordResetCooldown !== null
+                )
+                    fd.append(
+                        "password_reset_cooldown",
+                        String(this.passwordResetCooldown)
+                    );
+                if (
+                    this.passwordResetExpire !== undefined &&
+                    this.passwordResetExpire !== null
+                )
+                    fd.append("password_reset_expire", String(this.passwordResetExpire));
+                if (
+                    this.passwordResetMaxPerDay !== undefined &&
+                    this.passwordResetMaxPerDay !== null
+                )
+                    fd.append(
+                        "password_reset_max_per_day",
+                        String(this.passwordResetMaxPerDay)
+                    );
+                if (this.dniFormat) fd.append("dni_format", this.dniFormat);
+                if (this.adminIntentos)
+                    fd.append("admin_intentos", String(this.adminIntentos));
+                if (this.adminCorreo) fd.append("admin_correo", this.adminCorreo);
+                if (this.adminUsuario) fd.append("admin_usuario", this.adminUsuario);
+                if (this.adminPassword) fd.append("admin_password", this.adminPassword);
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        method: "POST",
+                        body: fd,
+                        credentials: "same-origin",
+                        headers: {
+                            "X-CSRF-TOKEN":
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || "",
+                        },
+                    });
+                    if (!res.ok) throw new Error("bad");
+                    const data = await res.json();
+                    this.timezone = data.timezone || this.timezone;
+                    this.dateFormat = data.dateFormat || this.dateFormat;
+                    this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
+                    this.requireEmailVerification = !!data.requireEmailVerification;
+                    this.passwordResetCooldown =
+                        data.passwordResetCooldown ?? this.passwordResetCooldown;
+                    this.passwordResetExpire =
+                        data.passwordResetExpire ?? this.passwordResetExpire;
+                    this.passwordResetMaxPerDay =
+                        data.passwordResetMaxPerDay ?? this.passwordResetMaxPerDay;
+                    this.dniFormat = (data.dniFormat || this.dniFormat || "").toString();
+                    this.adminIntentos = data.adminIntentos || this.adminIntentos;
+                    this.adminCorreo = data.adminCorreo || this.adminCorreo;
+                    this.adminUsuario = data.adminUsuario || this.adminUsuario;
+                    this.adminPassword = data.adminPassword || this.adminPassword;
+                    this.savedMessageParametros = "Parámetros guardados correctamente";
+                    setTimeout(() => (this.savedMessageParametros = ""), 2500);
+                } catch (e) {
+                    this.savedMessageParametros = "No se pudo guardar";
+                    setTimeout(() => (this.savedMessageParametros = ""), 2500);
+                }
+            },
+        };
+    };
+}
+
 // Alpine component factory for Gestión de Órdenes (available globally for Livewire/SPA)
 if (typeof window !== "undefined") {
     window.gestionOrdenes = function (detalleBaseUrl) {

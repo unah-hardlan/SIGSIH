@@ -37,6 +37,30 @@ class SystemSettingsController extends Controller
             ?? config('app.timezone', 'UTC');
         $dateFormat = optional(Parametro::where('parametro', 'app.date_format')->first())->valor
             ?? 'Y-m-d';
+        // Email verification requirement
+        $requireVerify = (bool) (
+            Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
+            ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
+            ?? false
+        );
+        // Password reset parameters
+        $pwdCooldown = (int) (
+            Parametro::where('parametro', 'AUTH.PASSWORD_RESET.COOLDOWN_MINUTES')->value('valor')
+            ?? Parametro::where('parametro', 'auth.password_reset.cooldown_minutes')->value('valor')
+            ?? 5
+        );
+        $pwdExpire = (int) (
+            Parametro::where('parametro', 'AUTH.PASSWORD_RESET.EXPIRE_MINUTES')->value('valor')
+            ?? Parametro::where('parametro', 'auth.password_reset.expire_minutes')->value('valor')
+            ?? 60
+        );
+        $pwdMaxPerDay = (int) (
+            Parametro::where('parametro', 'AUTH.PASSWORD_RESET.MAX_PER_DAY')->value('valor')
+            ?? Parametro::where('parametro', 'auth.password_reset.max_per_day')->value('valor')
+            ?? 5
+        );
+        // DNI format (used across Persona/Profile flows)
+        $dniFormat = Parametro::where('parametro', 'FORMATO DNI')->value('valor') ?? '0000-0000-00000';
         // Sessions limit: prefer legacy global key if present to reflect what AuthService enforces,
         // otherwise fall back to the dotted key; default to 1
         $slLegacy = Parametro::where('parametro', 'AUTH.LIMITE_SESIONES')->value('valor');
@@ -71,6 +95,11 @@ class SystemSettingsController extends Controller
             'logoHeight' => $logoHeight,
             'timezone' => $timezone,
             'dateFormat' => $dateFormat,
+            'requireEmailVerification' => $requireVerify,
+            'passwordResetCooldown' => $pwdCooldown,
+            'passwordResetExpire' => $pwdExpire,
+            'passwordResetMaxPerDay' => $pwdMaxPerDay,
+            'dniFormat' => $dniFormat,
             'sessionsLimit' => $sessionsLimit,
             'adminIntentos' => $adminIntentos,
             'adminCorreo' => $adminCorreo,
@@ -93,6 +122,11 @@ class SystemSettingsController extends Controller
             'timezone' => ['nullable', 'string', 'timezone'],
             'date_format' => ['nullable', 'string', 'in:d/m/Y,m/d/Y,Y-m-d'],
             'sessions_limit' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'require_email_verification' => ['nullable', 'boolean'],
+            'password_reset_cooldown' => ['nullable', 'integer', 'min:0', 'max:120'],
+            'password_reset_expire' => ['nullable', 'integer', 'min:5', 'max:1440'],
+            'password_reset_max_per_day' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'dni_format' => ['nullable', 'string', 'max:40'],
             'admin_intentos' => ['nullable', 'integer', 'min:1', 'max:10'],
             'admin_correo' => ['nullable', 'email', 'max:150'],
             'admin_usuario' => ['nullable', 'string', 'max:60'],
@@ -160,6 +194,44 @@ class SystemSettingsController extends Controller
             if (!empty($df)) {
                 $this->persistParametro('app.date_format', $df, $user);
                 Cache::forget('appDateFormat');
+            }
+        }
+
+        // Require email verification
+        if (array_key_exists('require_email_verification', $validated)) {
+            $val = (bool) $validated['require_email_verification'];
+            $this->persistParametro('AUTH.REQUIERE_VERIFICACION_CORREO', $val ? 1 : 0, $user);
+            $this->persistParametro('auth.require_email_verification', $val ? 1 : 0, $user);
+        }
+
+        // Password reset settings (sync modern and legacy keys)
+        if (array_key_exists('password_reset_cooldown', $validated)) {
+            $val = (int) $validated['password_reset_cooldown'];
+            if ($val >= 0) {
+                $this->persistParametro('AUTH.PASSWORD_RESET.COOLDOWN_MINUTES', $val, $user);
+                $this->persistParametro('auth.password_reset.cooldown_minutes', $val, $user);
+            }
+        }
+        if (array_key_exists('password_reset_expire', $validated)) {
+            $val = (int) $validated['password_reset_expire'];
+            if ($val > 0) {
+                $this->persistParametro('AUTH.PASSWORD_RESET.EXPIRE_MINUTES', $val, $user);
+                $this->persistParametro('auth.password_reset.expire_minutes', $val, $user);
+            }
+        }
+        if (array_key_exists('password_reset_max_per_day', $validated)) {
+            $val = (int) $validated['password_reset_max_per_day'];
+            if ($val > 0) {
+                $this->persistParametro('AUTH.PASSWORD_RESET.MAX_PER_DAY', $val, $user);
+                $this->persistParametro('auth.password_reset.max_per_day', $val, $user);
+            }
+        }
+
+        // DNI format
+        if (array_key_exists('dni_format', $validated)) {
+            $val = $validated['dni_format'];
+            if ($val !== null) {
+                $this->persistParametro('FORMATO DNI', $val, $user);
             }
         }
 
