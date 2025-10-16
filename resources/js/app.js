@@ -196,6 +196,7 @@ import "./productos";
 import "./kardex";
 import "./origen-kardex";
 import "./tipo-mantenimiento";
+import "./reportes-visita";
 import "./calendario";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
