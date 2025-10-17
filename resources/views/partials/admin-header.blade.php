@@ -4,7 +4,7 @@
     <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900">
     <!-- Botón colapsar sidebar -->
     <button @click="sidebarOpen = !sidebarOpen"
-        class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
+    class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 focus:ring-transparent md:hidden">
         <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
@@ -12,7 +12,7 @@
 
     <!-- Botón colapsar sidebar desktop -->
     <button @click="sidebarOpen = !sidebarOpen"
-        class="hidden md:block p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+    class="hidden md:block p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 focus:ring-transparent">
         <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
@@ -64,7 +64,7 @@
         <div class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
             <div x-data="{ open: false, logoutConfirm: false }" class="relative" x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm)">
                 <button @click="open = !open"
-                    class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold focus:outline-none">
+                    class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold focus:outline-none focus:ring-0 focus:ring-transparent">
                     <template x-if="$store.perfil.persona?.avatar_path">
                         <img :src="`${window.location.origin}/storage/${$store.perfil.persona.avatar_path}`" alt="Foto de perfil" class="w-full h-full rounded-full object-cover">
                     </template>
