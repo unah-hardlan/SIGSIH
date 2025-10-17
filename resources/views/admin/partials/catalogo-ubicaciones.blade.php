@@ -3,8 +3,6 @@
     isDepartamentoModalOpen: false,
     isCiudadModalOpen: false,
     isDireccionModalOpen: false,
-    // Removed generic isEditModalOpen and isDeleteModalOpen,
-    // as we now have specific ones for each entity (e.g., isPaisEditModalOpen)
     itemToEdit: null,
     itemToDelete: null,
     isCiudadEditModalOpen: false,

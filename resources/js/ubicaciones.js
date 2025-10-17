@@ -777,4 +777,32 @@ window.paisesApiHandlers = {
                 window.showToast("Error al eliminar la dirección", "error");
         }
     },
+
+    /**
+     * Fetches the list of predefined countries from the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async fetchPaisesPredefinidos(component) {
+        try {
+            const response = await fetch("/api/paises-predefinidos", {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            // Assuming the API returns data in 'data' key or directly an array
+            component.paisesPredefinidos = Array.isArray(data?.data)
+                ? data.data
+                : Array.isArray(data)
+                ? data
+                : [];
+        } catch (error) {
+            console.error("Error fetching paises predefinidos:", error);
+            window.showToast &&
+                window.showToast(
+                    "Error al cargar países predefinidos",
+                    "error"
+                );
+        }
+    },
 };
