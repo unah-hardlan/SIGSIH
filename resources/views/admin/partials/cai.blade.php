@@ -90,7 +90,7 @@ x-init="fetchCai()"
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                            
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Código</th>
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Inicio</th>
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Fin</th>
@@ -104,7 +104,7 @@ x-init="fetchCai()"
                         <template x-if="cais.length > 0">
                             <template x-for="cai in cais" :key="cai.id_cai_pk || cai.id">
                                 <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="cai.id_cai_pk"></td>
+                                    
                                     <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="cai.codigo"></td>
                                     <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="cai.rango_inicio"></td>
                                     <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="cai.rango_fin"></td>

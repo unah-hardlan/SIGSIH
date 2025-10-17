@@ -286,6 +286,8 @@ import {
     faMapSigns,
     faCheckCircle,
     faTimesCircle,
+    faTrashAlt,
+    faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -371,7 +373,9 @@ library.add(
     faClipboardQuestion,
     faMapSigns,
     faCheckCircle,
-    faTimesCircle
+    faTimesCircle,
+    faTrashAlt,
+    faExclamationTriangle
 );
 dom.watch();
 
