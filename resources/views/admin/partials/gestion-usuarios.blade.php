@@ -85,13 +85,13 @@
 
         <x-slot name="cards">
              <template x-if="loading">
-                <div class="p-8 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
             </template>
             <template x-if="!loading && users.length === 0">
-                <div class="p-8 text-center text-gray-500">Sin resultados</div>
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400">Sin resultados</div>
             </template>
             <template x-for="u in users" :key="u.id">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                     <div class="flex justify-between items-start">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-white" x-text="u.nombre_usuario"></h3>

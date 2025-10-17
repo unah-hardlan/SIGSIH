@@ -55,7 +55,6 @@
     return !empty($subNames) ? $perm->can($u, $subNames, 'consultar') : false;
     };
 
-    // Candidatos por módulo (con y sin acentos cuando aplica)
     $canSeguridad = $canModule('Seguridad', ['Gestión de Usuarios','Gestion de
     Usuarios','Usuarios','Parámetros','Parametros','Configuración de accesos','Configuracion de accesos']);
     $canClientes = $canModule('Clientes', ['Empresas','Cotizaciones','Solicitudes','Órdenes de Servicios','Ordenes de

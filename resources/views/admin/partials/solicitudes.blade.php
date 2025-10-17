@@ -56,6 +56,40 @@
                     </a>
                 </div>
             </x-slot>
+            <x-slot name="cards">
+                <template x-if="loadingSolicitudes">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando solicitudes...
+                    </div>
+                </template>
+                <template x-if="!loadingSolicitudes && filteredSolicitudes().length === 0">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                        No se encontraron solicitudes.
+                    </div>
+                </template>
+                <template x-if="!loadingSolicitudes && filteredSolicitudes().length > 0">
+                    <template x-for="sol in filteredSolicitudes()" :key="sol.id">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="'Solicitud ID: ' + sol.id"></h3>
+                                <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Cliente: ' + (sol.cliente_nombre || ('ID ' + sol.id_cliente_fk))"></p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'N° Solicitud ACF: ' + (sol.numero_solicitud_acf || '—')"></p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'N° Solicitud Cliente: ' + (sol.numero_solicitud_cliente || '—')"></p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Descripción: ' + (sol.descripcion_problema || '—')"></p>
+                                <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Estado: ' + (sol.estado_nombre || '—')"></p>
+                            </div>
+                            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <button @click.prevent="openEditSolicitud(sol)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button @click.prevent="openDeleteSolicitud(sol)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </x-slot>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">

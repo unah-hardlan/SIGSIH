@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -150,8 +151,8 @@ class DashboardController extends Controller
             ? Producto::query()->count()
             : 0;
 
-    // Reportes generados: total de registros en bitácora como proxy
-    $reportesGenerados = Bitacora::query()->count();
+    // Reportes generados: contar registros directamente desde tbl_reportes_visita
+    $reportesGenerados = DB::table('tbl_reportes_visita')->count();
 
         return response()->json([
             'totalUsuarios' => $totalUsuarios,

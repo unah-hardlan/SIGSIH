@@ -342,39 +342,39 @@
         </x-slot>
 
           <x-slot name="cards">
-            <div class="space-y-4">
-                <template x-if="loading"><div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando cotizaciones...</div></template>
-                <template x-if="!loading && cotizaciones.length === 0"><div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div></template>
-                <template x-for="c in cotizaciones" :key="c.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
-                            </div>
-                            <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(c.total)"></p>
-                        </div>
-                        <p class="text-xs text-gray-400">
-                            Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
-                        </p>
-                        <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
-                            <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
-                                <i class='fas fa-eye'></i> Ver
-                            </a>
-                             <button @click.prevent="openItems(c)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
-                                <i class="fas fa-database"></i> Items
-                            </button>
-                             <button @click.prevent="openEdit(c)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                             <button @click.prevent="deleteModal=true; selectedItem=c.id" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
+    <div class="space-y-4">
+        <template x-if="loading"><div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando cotizaciones...</div></template>
+        <template x-if="!loading && cotizaciones.length === 0"><div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div></template>
+        <template x-for="c in cotizaciones" :key="c.id">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
                     </div>
-                </template>
+                    <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(c.total)"></p>
+                </div>
+                <p class="text-xs text-gray-400">
+                    Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
+                </p>
+                <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
+                    <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                        <i class='fas fa-eye'></i> Ver
+                    </a>
+                     <button @click.prevent="openItems(c)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
+                        <i class="fas fa-database"></i> Items
+                    </button>
+                     <button @click.prevent="openEdit(c)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                     <button @click.prevent="deleteModal=true; selectedItem=c.id" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
             </div>
-        </x-slot>
+        </template>
+    </div>
+</x-slot>
 
     </x-responsive-table>
 
