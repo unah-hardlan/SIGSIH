@@ -3,8 +3,6 @@
     isDepartamentoModalOpen: false,
     isCiudadModalOpen: false,
     isDireccionModalOpen: false,
-    // Removed generic isEditModalOpen and isDeleteModalOpen,
-    // as we now have specific ones for each entity (e.g., isPaisEditModalOpen)
     itemToEdit: null,
     itemToDelete: null,
     isCiudadEditModalOpen: false,
@@ -18,6 +16,12 @@
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
+    selected_pais: '',
+    listaPaises: window.paisesApiHandlers?.listaPaises || [],
+    searchPais: '',
+    normalize: function(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    },
     departamentos: [],
     loadingDepartamentos: false,
     nombre_departamento: '',
@@ -117,7 +121,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
 @keydown.escape.window="
     isPaisModalOpen = false;
     isDepartamentoModalOpen = false;
-    isCiudadModalOpen = false;
+    isCiudadModalOpen = false;  
     isDireccionModalOpen = false;
     isPaisEditModalOpen = false;
     isPaisDeleteModalOpen = false;
@@ -170,14 +174,14 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Agencia</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Agencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Colonia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Referencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -299,8 +303,8 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -392,9 +396,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -491,9 +495,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -574,8 +578,21 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         formId="formPais">
         <div class="grid grid-cols-1 gap-4">
             <div>
-                <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre País</label>
-                <input type="text" id="nombre_pais" name="nombre_pais" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <label for="search_pais" class="block text-sm font-medium text-gray-700 dark:text-gray-300 nunito-bold">Buscar País</label>
+                <input type="text" id="search_pais" name="search_pais" x-model="searchPais" placeholder="Escribe para buscar..." class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 shadow-sm border focus:border-gray-500 dark:focus:border-gray-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-300 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 nunito-bold">Seleccionar País</label>
+                <div class="mt-1 max-h-60 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <template x-for="pais in listaPaises.filter(p => normalize(p).includes(normalize(searchPais)))" :key="pais">
+                            <button type="button" @click="selected_pais = pais" :class="selected_pais === pais ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="p-2 rounded hover:bg-blue-100 dark:hover:bg-blue-600 text-left nunito-regular">
+                                <span x-text="pais"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                <p x-show="selected_pais" class="mt-2 text-sm text-green-800 dark:text-green-400 nunito-regular">Seleccionado: <span x-text="selected_pais"></span></p>
             </div>
         </div>
     </x-admin.form-modal>
