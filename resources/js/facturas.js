@@ -460,15 +460,21 @@ document.addEventListener('alpine:init', () => {
 
 // Event listeners para manejar envíos de modales
 window.addEventListener('modal-submit', function(event) {
-    const facturasCrudComponent = Alpine.$data(document.querySelector('[x-data*="facturasCrud"]'));
-    if (facturasCrudComponent && facturasCrudComponent.handleModalSubmit) {
-        facturasCrudComponent.handleModalSubmit(event);
-    }
+    try {
+        const el = document.querySelector('[x-data*="facturasCrud"]');
+        const facturasCrudComponent = el ? Alpine.$data(el) : null;
+        if (facturasCrudComponent && facturasCrudComponent.handleModalSubmit) {
+            facturasCrudComponent.handleModalSubmit(event);
+        }
+    } catch (_) { /* ignore if component not present */ }
 });
 
 window.addEventListener('confirm-delete', function(event) {
-    const facturasCrudComponent = Alpine.$data(document.querySelector('[x-data*="facturasCrud"]'));
-    if (facturasCrudComponent && facturasCrudComponent.handleDelete) {
-        facturasCrudComponent.handleDelete();
-    }
+    try {
+        const el = document.querySelector('[x-data*="facturasCrud"]');
+        const facturasCrudComponent = el ? Alpine.$data(el) : null;
+        if (facturasCrudComponent && facturasCrudComponent.handleDelete) {
+            facturasCrudComponent.handleDelete();
+        }
+    } catch (_) { /* ignore if component not present */ }
 });

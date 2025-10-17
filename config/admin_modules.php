@@ -381,7 +381,14 @@ return [
             'module' => 'catalogo',
             'blade' => 'admin.partials.catalogo-origen-kardex',
             'type' => 'partial',
-            'objects' => ['Origen Kardex','Origenes','Origen'],
+            'objects' => ['Origen Kardex', 'Origenes', 'Origen'],
+        ],
+        'catalogo-tipo-mantenimiento' => [
+            'label' => 'Tipo de Mantenimiento',
+            'module' => 'catalogo',
+            'blade' => 'admin.partials.catalogo-tipo-mantenimiento',
+            'type' => 'partial',
+            'objects' => ['Tipo de Mantenimiento'],
         ],
         'catalogo-ubicaciones' => [
             'label' => 'Ubicaciones',

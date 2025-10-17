@@ -9,50 +9,24 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         let inFlight = 0;
         const queue = [];
 
-        const AUTH_KEY = "authToken";
         let tokenPromise = null;
 
-        function getToken() {
+        // We no longer store or use a JS-accessible token; rely on HttpOnly cookie only
+        function getToken() { return null; }
+        function setToken(_) {
             try {
-                return localStorage.getItem(AUTH_KEY) || null;
-            } catch (_) {
-                return null;
-            }
-        }
-
-        function setToken(t) {
-            try {
-                if (t) localStorage.setItem(AUTH_KEY, t);
-                else localStorage.removeItem(AUTH_KEY);
-            } catch (_) {}
-
-            try {
-                if (window.axios) {
-                    if (t)
-                        window.axios.defaults.headers.common[
-                            "Authorization"
-                        ] = `Bearer ${t}`;
-                    else
-                        delete window.axios.defaults.headers.common[
-                            "Authorization"
-                        ];
+                if (window.axios && window.axios.defaults?.headers?.common) {
+                    delete window.axios.defaults.headers.common["Authorization"]; // ensure cleared
                 }
-            } catch (_) {}
-
+            } catch (_) { }
             try {
-                document.dispatchEvent(
-                    new CustomEvent("auth:updated", {
-                        detail: { token: t || null },
-                    })
-                );
-            } catch (_) {}
+                document.dispatchEvent(new CustomEvent("auth:updated", { detail: { token: null } }));
+            } catch (_) { }
         }
 
         async function fetchSessionToken(force = false) {
-            if (!force) {
-                const existing = getToken();
-                if (existing) return existing;
-            }
+            // Do not attempt to mint or persist a token in the client; cookie drives auth
+            if (!force) return null;
 
             if (!tokenPromise) {
                 tokenPromise = (async () => {
@@ -70,10 +44,9 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                             return null;
                         }
                         if (!res.ok) return null;
-                        const data = await res.json().catch(() => null);
-                        const t = data && (data.token || data.access_token);
-                        if (t) setToken(t);
-                        return t || null;
+                        // Ignore body; we don't keep token client-side
+                        await res.json().catch(() => null);
+                        return null;
                     } catch (_) {
                         return null;
                     } finally {
@@ -92,13 +65,11 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 setToken,
                 ensureToken: (force = false) => fetchSessionToken(force),
                 headers() {
-                    const t = getToken();
-                    const h = { Accept: "application/json" };
-                    if (t) h["Authorization"] = `Bearer ${t}`;
-                    return h;
+                    // No Authorization header; rely on same-origin cookie
+                    return { Accept: "application/json" };
                 },
             };
-        } catch (_) {}
+        } catch (_) { }
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -109,7 +80,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             merged.headers.set("X-Requested-With", "XMLHttpRequest");
             if (!merged.headers.has("Accept"))
                 merged.headers.set("Accept", "application/json");
-            if (t) merged.headers.set("Authorization", `Bearer ${t}`);
+            // No Authorization header; rely on auth cookie
             return [input, merged];
         }
 
@@ -153,21 +124,31 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const delay = isDashboard
                     ? Math.floor(Math.random() * 180) + 60
                     : isApi
-                    ? Math.floor(Math.random() * 80)
-                    : 0;
+                        ? Math.floor(Math.random() * 80)
+                        : 0;
 
                 if (!isApi) return origFetch(...args);
 
                 return new Promise((resolve, reject) => {
                     const run = async () => {
-                        await fetchSessionToken(false);
+                        // No token handling; cookie will be sent automatically
                         let [input, init] = withAuthToApi(args[0], args[1]);
                         let res = await origFetch(input, init);
                         if (res.status === 401) {
-                            setToken(null);
-                            await fetchSessionToken(true);
+                            // Retry once in case of transient conditions
                             [input, init] = withAuthToApi(args[0], args[1]);
                             res = await origFetch(input, init);
+                        }
+                        // Si sigue 401, intentar detectar límite de sesiones para cerrar con mensaje claro
+                        if (res.status === 401) {
+                            try {
+                                const clone = res.clone();
+                                const data = await clone.json().catch(() => null);
+                                if (data && (data.code === 'SESSION_REMOVED_LIMIT')) {
+                                    try { window.showToast && window.showToast('Se superó el límite de sesiones. Esta sesión se cerró para respetar el máximo permitido.', 'warning', { duration: 4000 }); } catch (_) { }
+                                    try { window.appLogout && window.appLogout(); } catch (_) { }
+                                }
+                            } catch (_) { }
                         }
                         return res;
                     };
@@ -214,7 +195,10 @@ import "./acciones-realizadas";
 import "./productos";
 import "./kardex";
 import "./origen-kardex";
+import "./tipo-mantenimiento";
+import "./reportes-visita";
 import "./calendario";
+import "./tickets";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -400,7 +384,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) {}
+    } catch (_) { }
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -490,13 +474,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) {}
+            } catch (_) { }
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) {}
+            } catch (_) { }
 
             let sanitized = html;
             try {
@@ -504,30 +488,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) {}
+            } catch (_) { }
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) {}
+                    } catch (_) { }
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) {}
+                        } catch (_) { }
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -537,7 +521,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 if (
                     window.Livewire &&
@@ -545,10 +529,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) {}
+            } catch (_) { }
 
             this.restoreSidebarScrollPosition();
 
@@ -564,7 +548,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) {}
+            } catch (_) { }
         },
 
         saveSidebarScrollPosition() {
@@ -596,7 +580,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) {}
+            } catch (_) { }
             this.updateActiveLinks(url);
         },
 
@@ -683,7 +667,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) {}
+                } catch (_) { }
                 this.updateActiveLinks(path);
             }
         },
@@ -987,17 +971,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1025,7 +1009,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) {}
+    } catch (_) { }
     initializeDashboardChartsWithRetry();
 });
 
@@ -1034,7 +1018,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) {}
+    } catch (_) { }
 
     return { Accept: "application/json" };
 }
@@ -1048,6 +1032,197 @@ function authHeaders() {
         return original(html);
     };
 })();
+
+// Global Alpine factory for System Settings (Mantenimiento → General)
+// Registered here so it's available even when the view HTML is injected dynamically (inline <script> won't run on innerHTML)
+if (typeof window !== "undefined") {
+    window.settingsState = function () {
+        const initial = {
+            appLogoUrl: "/images/logo.png",
+            appName: "SIGSIH",
+            appLogoHeight: 96,
+        };
+        return {
+            tab: localStorage.getItem("mantenimientoTab") || "personalizacion",
+            logoUrl: initial.appLogoUrl,
+            nombreSistema: initial.appName,
+            logoHeight: Number(initial.appLogoHeight) || 96,
+            selectedLogoFile: null,
+            savedMessagePersonalizacion: "",
+            savedMessageParametros: "",
+            timezone: "UTC",
+            dateFormat: "Y-m-d",
+            sessionsLimit: 1,
+            requireEmailVerification: false,
+            passwordResetCooldown: 5,
+            passwordResetExpire: 60,
+            passwordResetMaxPerDay: 5,
+            dniFormat: "0000-0000-00000",
+            adminIntentos: 3,
+            adminCorreo: "",
+            adminUsuario: "",
+            adminPassword: "",
+            async init() {
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        credentials: "same-origin",
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.nombreSistema = data.appName || this.nombreSistema;
+                        this.logoUrl = data.logoUrl || this.logoUrl;
+                        this.logoHeight = data.logoHeight || this.logoHeight;
+                        this.timezone = data.timezone || this.timezone;
+                        this.dateFormat = data.dateFormat || this.dateFormat;
+                        this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
+                        this.requireEmailVerification = !!data.requireEmailVerification;
+                        this.passwordResetCooldown =
+                            data.passwordResetCooldown ?? this.passwordResetCooldown;
+                        this.passwordResetExpire =
+                            data.passwordResetExpire ?? this.passwordResetExpire;
+                        this.passwordResetMaxPerDay =
+                            data.passwordResetMaxPerDay ?? this.passwordResetMaxPerDay;
+                        this.dniFormat = (data.dniFormat || this.dniFormat || "").toString();
+                        this.adminIntentos = data.adminIntentos || this.adminIntentos;
+                        this.adminCorreo = data.adminCorreo || this.adminCorreo;
+                        this.adminUsuario = data.adminUsuario || this.adminUsuario;
+                        this.adminPassword = data.adminPassword || this.adminPassword;
+                    }
+                } catch (_) { }
+            },
+            onLogoSelected(e) {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                this.selectedLogoFile = file;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this.logoUrl = ev.target?.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            async guardarPersonalizacion() {
+                const fd = new FormData();
+                if (this.nombreSistema) fd.append("app_name", this.nombreSistema);
+                if (this.selectedLogoFile) fd.append("logo", this.selectedLogoFile);
+                if (this.logoHeight) fd.append("logo_height", String(this.logoHeight));
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        method: "POST",
+                        body: fd,
+                        credentials: "same-origin",
+                        headers: {
+                            "X-CSRF-TOKEN":
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || "",
+                        },
+                    });
+                    if (!res.ok) throw new Error("bad");
+                    const data = await res.json();
+                    this.nombreSistema = data.appName || this.nombreSistema;
+                    this.logoUrl = data.logoUrl || this.logoUrl;
+                    this.logoHeight = data.logoHeight || this.logoHeight;
+                    this.selectedLogoFile = null;
+                    this.savedMessagePersonalizacion =
+                        "Personalización guardada correctamente";
+                    try {
+                        const headerLogo = document.querySelector(
+                            'header img[alt="Logo"]'
+                        );
+                        if (headerLogo) {
+                            if (this.logoUrl) headerLogo.src = this.logoUrl;
+                            if (this.logoHeight)
+                                headerLogo.style.setProperty(
+                                    "--app-logo-max",
+                                    `${this.logoHeight}px`
+                                );
+                        }
+                        if (this.nombreSistema) {
+                            document.title = this.nombreSistema;
+                        }
+                    } catch (_) { }
+                    setTimeout(() => (this.savedMessagePersonalizacion = ""), 2500);
+                } catch (e) {
+                    this.savedMessagePersonalizacion = "No se pudo guardar";
+                    setTimeout(() => (this.savedMessagePersonalizacion = ""), 2500);
+                }
+            },
+            async guardarParametros() {
+                const fd = new FormData();
+                if (this.timezone) fd.append("timezone", this.timezone);
+                if (this.dateFormat) fd.append("date_format", this.dateFormat);
+                if (this.sessionsLimit)
+                    fd.append("sessions_limit", String(this.sessionsLimit));
+                fd.append(
+                    "require_email_verification",
+                    this.requireEmailVerification ? "1" : "0"
+                );
+                if (
+                    this.passwordResetCooldown !== undefined &&
+                    this.passwordResetCooldown !== null
+                )
+                    fd.append(
+                        "password_reset_cooldown",
+                        String(this.passwordResetCooldown)
+                    );
+                if (
+                    this.passwordResetExpire !== undefined &&
+                    this.passwordResetExpire !== null
+                )
+                    fd.append("password_reset_expire", String(this.passwordResetExpire));
+                if (
+                    this.passwordResetMaxPerDay !== undefined &&
+                    this.passwordResetMaxPerDay !== null
+                )
+                    fd.append(
+                        "password_reset_max_per_day",
+                        String(this.passwordResetMaxPerDay)
+                    );
+                if (this.dniFormat) fd.append("dni_format", this.dniFormat);
+                if (this.adminIntentos)
+                    fd.append("admin_intentos", String(this.adminIntentos));
+                if (this.adminCorreo) fd.append("admin_correo", this.adminCorreo);
+                if (this.adminUsuario) fd.append("admin_usuario", this.adminUsuario);
+                if (this.adminPassword) fd.append("admin_password", this.adminPassword);
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        method: "POST",
+                        body: fd,
+                        credentials: "same-origin",
+                        headers: {
+                            "X-CSRF-TOKEN":
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || "",
+                        },
+                    });
+                    if (!res.ok) throw new Error("bad");
+                    const data = await res.json();
+                    this.timezone = data.timezone || this.timezone;
+                    this.dateFormat = data.dateFormat || this.dateFormat;
+                    this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
+                    this.requireEmailVerification = !!data.requireEmailVerification;
+                    this.passwordResetCooldown =
+                        data.passwordResetCooldown ?? this.passwordResetCooldown;
+                    this.passwordResetExpire =
+                        data.passwordResetExpire ?? this.passwordResetExpire;
+                    this.passwordResetMaxPerDay =
+                        data.passwordResetMaxPerDay ?? this.passwordResetMaxPerDay;
+                    this.dniFormat = (data.dniFormat || this.dniFormat || "").toString();
+                    this.adminIntentos = data.adminIntentos || this.adminIntentos;
+                    this.adminCorreo = data.adminCorreo || this.adminCorreo;
+                    this.adminUsuario = data.adminUsuario || this.adminUsuario;
+                    this.adminPassword = data.adminPassword || this.adminPassword;
+                    this.savedMessageParametros = "Parámetros guardados correctamente";
+                    setTimeout(() => (this.savedMessageParametros = ""), 2500);
+                } catch (e) {
+                    this.savedMessageParametros = "No se pudo guardar";
+                    setTimeout(() => (this.savedMessageParametros = ""), 2500);
+                }
+            },
+        };
+    };
+}
 
 // Alpine component factory for Gestión de Órdenes (available globally for Livewire/SPA)
 if (typeof window !== "undefined") {
@@ -1096,21 +1271,12 @@ if (typeof window !== "undefined") {
                 id_cotizacion_fk: "",
             },
             getToken() {
-                try {
-                    return (
-                        window.__AUTH?.getToken?.() ||
-                        localStorage.getItem("authToken")
-                    );
-                } catch (_) {
-                    return null;
-                }
+                // Cookie-based auth only; no JS-accessible token
+                return null;
             },
             setToken(token) {
-                try {
-                    if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
-                    else if (token) localStorage.setItem("authToken", token);
-                } catch (_) {}
-                return token;
+                // No-op in cookie-only mode
+                return null;
             },
             getCsrf() {
                 const m = document.head.querySelector(
@@ -1119,58 +1285,16 @@ if (typeof window !== "undefined") {
                 return m ? m.content : "";
             },
             apiHeaders() {
-                const t = this.getToken();
-                const h = {
+                // Do not add Authorization; rely on HttpOnly cookie
+                return {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 };
-                if (t) h["Authorization"] = "Bearer " + t;
-                return h;
             },
             async requireAuth() {
-                const existing = this.getToken();
-                if (existing) {
-                    this.authError = false;
-                    return true;
-                }
-                try {
-                    // Prefer global ensureToken if available
-                    const t =
-                        typeof window.__AUTH?.ensureToken === "function"
-                            ? await window.__AUTH.ensureToken(false)
-                            : null;
-                    if (t) {
-                        this.authError = false;
-                        return true;
-                    }
-                    const res = await fetch("/session/token", {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": this.getCsrf(),
-                        },
-                        credentials: "same-origin",
-                    });
-                    if (!res.ok) throw new Error("unauthorized");
-                    const data = await res.json();
-                    if (data && (data.token || data.access_token)) {
-                        this.setToken(data.token || data.access_token);
-                        this.authError = false;
-                        return true;
-                    }
-                } catch (e) {
-                    console.error("Auth error", e);
-                }
-                this.authError = true;
-                if (!this.authNotified) {
-                    this.showToast(
-                        "Inicia sesión para gestionar órdenes de servicio.",
-                        "error"
-                    );
-                    this.authNotified = true;
-                }
-                return false;
+                // With cookie auth, assume authenticated; 401 will be handled per-request
+                this.authError = false;
+                return true;
             },
             handleUnauthorized() {
                 this.authError = true;
@@ -1251,8 +1375,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                  (o) => String(o.value) === String(estadoId)
-                              )
+                                (o) => String(o.value) === String(estadoId)
+                            )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1278,8 +1402,8 @@ if (typeof window !== "undefined") {
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                              .filter(Boolean)
-                              .join(" ")
+                            .filter(Boolean)
+                            .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -1937,21 +2061,10 @@ if (typeof window !== "undefined") {
 
             // Auth helpers (same pattern as órdenes)
             getToken() {
-                try {
-                    return (
-                        window.__AUTH?.getToken?.() ||
-                        localStorage.getItem("authToken")
-                    );
-                } catch (_) {
-                    return null;
-                }
+                return null;
             },
             setToken(token) {
-                try {
-                    if (window.__AUTH?.setToken) window.__AUTH.setToken(token);
-                    else if (token) localStorage.setItem("authToken", token);
-                } catch (_) {}
-                return token;
+                return null;
             },
             getCsrf() {
                 const m = document.head.querySelector(
@@ -1960,40 +2073,13 @@ if (typeof window !== "undefined") {
                 return m ? m.content : "";
             },
             apiHeaders() {
-                const t = this.getToken();
-                const h = {
+                return {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 };
-                if (t) h["Authorization"] = "Bearer " + t;
-                return h;
             },
             async requireAuth() {
-                const existing = this.getToken();
-                if (existing) return true;
-                try {
-                    const t =
-                        typeof window.__AUTH?.ensureToken === "function"
-                            ? await window.__AUTH.ensureToken(false)
-                            : null;
-                    if (t) return true;
-                    const res = await fetch("/session/token", {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": this.getCsrf(),
-                        },
-                        credentials: "same-origin",
-                    });
-                    if (!res.ok) return false;
-                    const data = await res.json();
-                    if (data && (data.token || data.access_token)) {
-                        this.setToken(data.token || data.access_token);
-                        return true;
-                    }
-                } catch (_) {}
-                return false;
+                return true;
             },
 
             showToast(message, type = "ok") {
@@ -2003,8 +2089,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                        ? "bg-yellow-600 text-white"
-                        : "bg-green-600 text-white");
+                            ? "bg-yellow-600 text-white"
+                            : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -2128,9 +2214,8 @@ if (typeof window !== "undefined") {
                     const items = json.data || [];
                     this.contactosOptions = items.map((it) => ({
                         value: String(it.id_contacto_pk || it.id),
-                        label: `${
-                            it.valor_contacto || it.tipo_contacto || "Contacto"
-                        } (ID ${it.id_contacto_pk || it.id})`,
+                        label: `${it.valor_contacto || it.tipo_contacto || "Contacto"
+                            } (ID ${it.id_contacto_pk || it.id})`,
                         id_cliente_fk: String(it.id_cliente_fk || ""),
                     }));
                 } catch (e) {

@@ -16,41 +16,35 @@ class SessionTokenController extends Controller
      */
     public function issue(): JsonResponse
     {
-        $user = auth()->user();
-        if (!$user) {
+        // Reutilizar el token ya emitido (cookie httpOnly), para no crear nuevas sesiones en cada llamado
+        $cookieToken = request()->cookie('auth_token');
+        if (!$cookieToken) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        // Asegurar que sea instancia de Usuario
-        $usuarioModel = null;
-        if ($user instanceof Usuario) {
-            $usuarioModel = $user;
-        } elseif ($user instanceof User) {
-            // Intentar resolver por correo
-            $email = method_exists($user, 'getAttribute') ? (string) $user->getAttribute('email') : '';
-            if ($email !== '') {
-                $usuarioModel = Usuario::whereRaw('LOWER(correo_electronico) = ?', [strtolower($email)])->first();
-            }
-        }
-        if (!$usuarioModel) {
-            // Fallback: intentar por ID si coincide con PK
-            $authId = auth()->id();
-            if ($authId) {
-                $usuarioModel = Usuario::find($authId);
-            }
-        }
-        if (!$usuarioModel) {
-            return response()->json(['message' => 'No se pudo resolver el usuario de aplicación'], 422);
-        }
+        // Validar token y usuario asociado
+        try {
+            $secret = config('jwt.secret');
+            if (!$secret) return response()->json(['message' => 'JWT Secret no configurado'], 500);
+            $decoded = \Firebase\JWT\JWT::decode($cookieToken, new \Firebase\JWT\Key($secret, 'HS256'));
+            $userId = (int) ($decoded->sub ?? 0);
+            if ($userId <= 0) return response()->json(['message' => 'Unauthenticated'], 401);
+            $usuarioModel = \App\Models\Usuario::find($userId);
+            if (!$usuarioModel) return response()->json(['message' => 'Unauthenticated'], 401);
 
-        $result = $this->auth->tokenForUser($usuarioModel);
-        if (isset($result['error'])) {
-            return response()->json(['message' => $result['error']], $result['code'] ?? 500);
+            // Responder con el mismo token y datos básicos del usuario
+            return response()->json([
+                'token' => $cookieToken,
+                'user'  => [
+                    'id'      => $usuarioModel->getKey(),
+                    'usuario' => $usuarioModel->usuario,
+                    'nombre'  => $usuarioModel->nombre_usuario,
+                    'correo'  => $usuarioModel->correo_electronico,
+                    'rol'     => $usuarioModel->rol->rol ?? null,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
         }
-
-        return response()->json([
-            'token' => $result['token'] ?? null,
-            'user'  => $result['user'] ?? null,
-        ]);
     }
 }

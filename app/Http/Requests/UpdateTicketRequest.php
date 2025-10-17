@@ -28,7 +28,7 @@ class UpdateTicketRequest extends FormRequest
             'descripcion_ticket' => 'sometimes|required|string|max:500',
             'id_estado_ticket_fk' => 'sometimes|required|integer|exists:tbl_estado_ticket,id_estado_ticket_pk',
             'id_tecnico_fk' => 'sometimes|required|integer|exists:tbl_persona,id_persona_pk',
-            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_persona,id_persona_pk'
+            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk'
         ];
     }
 
@@ -49,7 +49,7 @@ class UpdateTicketRequest extends FormRequest
             'id_tecnico_fk.required' => 'El técnico asignado es obligatorio',
             'id_tecnico_fk.exists' => 'La persona especificada para técnico no existe',
             'id_cliente_fk.required' => 'El cliente es obligatorio',
-            'id_cliente_fk.exists' => 'La persona especificada para cliente no existe'
+            'id_cliente_fk.exists' => 'El cliente especificado no existe'
         ];
     }
 

@@ -1,110 +1,4 @@
-{{-- resources/views/admin/partials/mantenimiento-general.blade.php --}}
-
-<div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data='{
-        tab: (localStorage.getItem("mantenimientoTab") || "personalizacion"),
-        logoUrl: "{{ addslashes($appLogoUrl ?? asset('images/logo.png')) }}",
-        nombreSistema: "{{ addslashes($appName ?? 'SIGSIH') }}",
-        logoHeight: Number("{{ (int) ($appLogoHeight ?? 96) }}"),
-        selectedLogoFile: null,
-        savedMessagePersonalizacion: "",
-        savedMessageParametros: "",
-        timezone: "UTC",
-        dateFormat: "Y-m-d",
-        sessionsLimit: 1,
-    adminIntentos: 3,
-    adminCorreo: "",
-    adminUsuario: "",
-    adminPassword: "",
-        async init(){
-            try{
-                const res = await fetch("/api-web/system-settings", { credentials: "same-origin" });
-                if(res.ok){
-                    const data = await res.json();
-                    this.nombreSistema = data.appName || this.nombreSistema;
-                    this.logoUrl = data.logoUrl || this.logoUrl;
-                    this.logoHeight = data.logoHeight || this.logoHeight;
-                    this.timezone = data.timezone || this.timezone;
-                    this.dateFormat = data.dateFormat || this.dateFormat;
-                    this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
-                    this.adminIntentos = data.adminIntentos || this.adminIntentos;
-                    this.adminCorreo = data.adminCorreo || this.adminCorreo;
-                    this.adminUsuario = data.adminUsuario || this.adminUsuario;
-                    this.adminPassword = data.adminPassword || this.adminPassword;
-                }
-            }catch(_){ }
-        },
-        onLogoSelected(e){
-            const file = e.target.files?.[0];
-            if(!file) return;
-            this.selectedLogoFile = file;
-            const reader = new FileReader();
-            reader.onload = (ev) => { this.logoUrl = ev.target?.result; };
-            reader.readAsDataURL(file);
-        },
-        async guardarPersonalizacion(){
-            const fd = new FormData();
-            if(this.nombreSistema) fd.append("app_name", this.nombreSistema);
-            if(this.selectedLogoFile) fd.append("logo", this.selectedLogoFile);
-            if(this.logoHeight) fd.append("logo_height", String(this.logoHeight));
-            try{
-                const res = await fetch("/api-web/system-settings", {
-                    method: "POST", body: fd, credentials: "same-origin",
-                    headers: { "X-CSRF-TOKEN": document.querySelector("meta[name=\"csrf-token\"]")?.getAttribute("content") || "" }
-                });
-                if(!res.ok) throw new Error("bad");
-                const data = await res.json();
-                this.nombreSistema = data.appName || this.nombreSistema;
-                this.logoUrl = data.logoUrl || this.logoUrl;
-                this.logoHeight = data.logoHeight || this.logoHeight;
-                this.selectedLogoFile = null;
-                this.savedMessagePersonalizacion = "Personalización guardada correctamente";
-                try{
-                    const headerLogo = document.querySelector("header img[alt=\"Logo\"]");
-                    if(headerLogo){
-                        if(this.logoUrl) headerLogo.src = this.logoUrl;
-                        if(this.logoHeight) headerLogo.style.setProperty("--app-logo-max", `${this.logoHeight}px`);
-                    }
-                    if(this.nombreSistema){ document.title = this.nombreSistema; }
-                }catch(_){ }
-                setTimeout(() => this.savedMessagePersonalizacion = "", 2500);
-            }catch(e){
-                this.savedMessagePersonalizacion = "No se pudo guardar";
-                setTimeout(() => this.savedMessagePersonalizacion = "", 2500);
-            }
-        },
-        async guardarParametros(){
-            const fd = new FormData();
-            if(this.timezone) fd.append("timezone", this.timezone);
-            if(this.dateFormat) fd.append("date_format", this.dateFormat);
-            if(this.sessionsLimit) fd.append("sessions_limit", String(this.sessionsLimit));
-            if(this.adminIntentos) fd.append("admin_intentos", String(this.adminIntentos));
-            if(this.adminCorreo) fd.append("admin_correo", this.adminCorreo);
-            if(this.adminUsuario) fd.append("admin_usuario", this.adminUsuario);
-            if(this.adminPassword) fd.append("admin_password", this.adminPassword);
-            try{
-                const res = await fetch("/api-web/system-settings", {
-                    method: "POST",
-                    body: fd,
-                    credentials: "same-origin",
-                    headers: { "X-CSRF-TOKEN": document.querySelector("meta[name=\"csrf-token\"]")?.getAttribute("content") || "" }
-                });
-                if(!res.ok) throw new Error("bad");
-                const data = await res.json();
-                this.timezone = data.timezone || this.timezone;
-                this.dateFormat = data.dateFormat || this.dateFormat;
-                this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
-                this.adminIntentos = data.adminIntentos || this.adminIntentos;
-                this.adminCorreo = data.adminCorreo || this.adminCorreo;
-                this.adminUsuario = data.adminUsuario || this.adminUsuario;
-                this.adminPassword = data.adminPassword || this.adminPassword;
-                this.savedMessageParametros = "Parámetros guardados correctamente";
-                setTimeout(() => this.savedMessageParametros = "", 2500);
-            }catch(e){
-                this.savedMessageParametros = "No se pudo guardar";
-                setTimeout(() => this.savedMessageParametros = "", 2500);
-            }
-        }
-     }' x-init="init()">
+<div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="settingsState()" x-init="init()">
     <h1 class="text-2xl font-bold mb-6 nunito-bold text-gray-800 dark:text-white">Personalización del Sistema</h1>
 
     <div class="flex border-b dark:border-gray-700 mb-6 gap-4">
@@ -191,6 +85,42 @@
                 <input type="number" min="1" max="10" x-model.number="sessionsLimit"
                     class="border rounded px-3 py-2 w-full nunito-regular 
                     bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Requiere verificación de correo</label>
+                <div class="flex items-center gap-2">
+                    <input id="req-email-verif" type="checkbox" x-model="requireEmailVerification"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700 rounded">
+                    <label for="req-email-verif" class="text-sm text-gray-700 dark:text-gray-300 nunito-regular">Activar verificación obligatoria por correo</label>
+                </div>
+            </div>
+            <div>
+                <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Recuperación de contraseña: enfriamiento (minutos)</label>
+                <input type="number" min="0" max="120" x-model.number="passwordResetCooldown"
+                    class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 nunito-regular">Tiempo mínimo entre solicitudes de reset desde el mismo usuario.</p>
+            </div>
+            <div>
+                <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Recuperación de contraseña: expira en (minutos)</label>
+                <input type="number" min="5" max="1440" x-model.number="passwordResetExpire"
+                    class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 nunito-regular">Validez del token de recuperación.</p>
+            </div>
+            <div>
+                <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Recuperación de contraseña: máximo por día</label>
+                <input type="number" min="1" max="20" x-model.number="passwordResetMaxPerDay"
+                    class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Formato DNI</label>
+                <input type="text" x-model="dniFormat"
+                    class="border rounded px-3 py-2 w-full nunito-regular 
+                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0000-0000-00000">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 nunito-regular">Admite solo dígitos (13) o máscaras con guiones, ej. 0000-0000-00000.</p>
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Intentos de inicio de

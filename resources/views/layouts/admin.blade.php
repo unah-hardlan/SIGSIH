@@ -14,18 +14,18 @@
     @endif
 
     @php
-        $adminModulesDataset = \App\Support\AdminModuleRegistry::modulesForFrontend();
+    $adminModulesDataset = \App\Support\AdminModuleRegistry::modulesForFrontend();
     @endphp
 
     @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/css/theme.css', 'resources/js/app.js',
-    'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js',
+    'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/idle-logout.js', 'resources/js/auth-guard.js', 'resources/js/toast.js',
     'resources/js/tabla-responsive.js'])
 
     <script type="application/json" id="admin-modules-dataset">
         @json($adminModulesDataset)
     </script>
     <script>
-        (function () {
+        (function() {
             try {
                 const el = document.getElementById('admin-modules-dataset');
                 window.__ADMIN_MODULES__ = el && el.textContent ? JSON.parse(el.textContent) : [];
@@ -102,23 +102,23 @@
 </head>
 
 @php
-    use Illuminate\Support\Str;
-    $currentPartial = $partialView ?? null;
-    $initialViewName = $currentPartial ? Str::after($currentPartial, 'admin.partials.') : trim($__env->yieldContent('page-view-name', 'dashboard'));
-    if ($initialViewName === '') {
-        $initialViewName = 'dashboard';
-    }
-    $permissionService = app(\App\Services\PermissionService::class);
-    $authUser = auth()->user();
-    $canConfigAcceso = $permissionService->can($authUser, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar');
-    $canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consultar');
+use Illuminate\Support\Str;
+$currentPartial = $partialView ?? null;
+$initialViewName = $currentPartial ? Str::after($currentPartial, 'admin.partials.') : trim($__env->yieldContent('page-view-name', 'dashboard'));
+if ($initialViewName === '') {
+$initialViewName = 'dashboard';
+}
+$permissionService = app(\App\Services\PermissionService::class);
+$authUser = auth()->user();
+$canConfigAcceso = $permissionService->can($authUser, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar');
+$canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consultar');
 @endphp
 
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
-      }" x-init="initResponsiveSidebar($data); sidebarOpen = !isMobile;" 
-      @closemobilesidebar.window="if (isMobile) { sidebarOpen = false }">
+      }" x-init="initResponsiveSidebar($data); sidebarOpen = !isMobile;"
+    @closemobilesidebar.window="if (isMobile) { sidebarOpen = false }">
     <div class="flex min-h-screen relative">
         <!-- Overlay para móviles SOLO -->
         <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
@@ -151,6 +151,15 @@
             </div>
         </main>
     </div>
+
+    {{-- Idle logout config: minutes = SESSION_LIFETIME, warnSeconds customizable via env PARAM WARN_BEFORE_LOGOUT_SECONDS (optional) --}}
+    @php
+    $idleMinutes = (int) config('session.lifetime', 120);
+    $warnSeconds = (int) (env('WARN_BEFORE_LOGOUT_SECONDS', 30));
+    @endphp
+    <script type="application/json" id="idle-logout-config">
+        @json(['minutes' => $idleMinutes, 'warnSeconds' => $warnSeconds])
+    </script>
 
     <script>
         (function() {

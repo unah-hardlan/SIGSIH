@@ -2,6 +2,13 @@
     function applyNewTokenFromHeader(_resp) {}
 
     window.appLogout = function () {
+        try {
+            // Clear idle tracking across tabs
+            localStorage.removeItem('app:lastActivityAt');
+            if ('BroadcastChannel' in window) {
+                try { new BroadcastChannel('idle-logout').postMessage({ type: 'logout' }); } catch(_) {}
+            }
+        } catch(_) {}
         fetch("/api/logout", {
             method: "POST",
             headers: { Accept: "application/json" },

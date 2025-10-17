@@ -38,6 +38,7 @@ class ReporteVisitaResource extends JsonResource
             'orden_servicio' => $this->whenLoaded('ordenServicio', function(){
                 return [
                     'id_orden_servicio_pk' => $this->ordenServicio->id_orden_servicio_pk,
+                    'numero_orden_servicio' => $this->ordenServicio->numero_orden_servicio,
                 ];
             }),
         ];

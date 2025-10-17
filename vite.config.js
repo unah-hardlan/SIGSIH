@@ -15,6 +15,7 @@ export default defineConfig({
                 "resources/js/sidebar.js",
                 "resources/js/auth.js",
                 "resources/js/session.js",
+                "resources/js/idle-logout.js",
                 "resources/js/auth-guard.js",
                 "resources/js/login-guard.js",
                 "resources/js/toast.js",

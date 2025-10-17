@@ -1,10 +1,10 @@
 {
-  "_index-DQih43yl.js": {
-    "file": "assets/index-DQih43yl.js",
+  "_index-By06x2EI.js": {
+    "file": "assets/index-By06x2EI.js",
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-ka8Pqrc3.css",
+    "file": "assets/app-Cb-n2Dtm.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -24,12 +24,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-C2HHBJT-.js",
+    "file": "assets/app-moAPcss6.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-DQih43yl.js"
+      "_index-By06x2EI.js"
     ]
   },
   "resources/js/auth-guard.js": {
@@ -45,18 +45,24 @@
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-DJlLtLMd.js",
+    "file": "assets/cliente-DN4c8Sl9.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-DQih43yl.js"
+      "_index-By06x2EI.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
     "file": "assets/perfil-Dy571C-Q.js",
     "name": "perfil",
     "src": "resources/js/cliente/perfil.js",
+    "isEntry": true
+  },
+  "resources/js/idle-logout.js": {
+    "file": "assets/idle-logout-DMfofKLG.js",
+    "name": "idle-logout",
+    "src": "resources/js/idle-logout.js",
     "isEntry": true
   },
   "resources/js/login-guard.js": {
@@ -66,7 +72,7 @@
     "isEntry": true
   },
   "resources/js/session.js": {
-    "file": "assets/session-Bb7GTXwl.js",
+    "file": "assets/session-CyVSMNKV.js",
     "name": "session",
     "src": "resources/js/session.js",
     "isEntry": true

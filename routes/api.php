@@ -183,6 +183,36 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     // Usuarios por rol
     Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
 
+    // Catálogo de Técnicos: personas vinculadas a usuarios con rol Técnico (rol principal o en tabla pivot)
+    Route::get('tecnicos', function () {
+        // Buscar rol técnico (match por 'tecn' case/acento-insensible en la medida posible)
+        $roles = \App\Models\Rol::query()
+            ->where('rol', 'like', '%tecn%')
+            ->get(['id_rol_pk','rol']);
+        if ($roles->isEmpty()) {
+            return response()->json([ 'data' => [], 'meta' => ['count' => 0] ]);
+        }
+        $roleIds = $roles->pluck('id_rol_pk')->all();
+        // Usuarios con rol principal técnico
+        $userIdsPrimary = \App\Models\Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+        // Usuarios con rol técnico en pivot N:M
+        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+            ->whereIn('id_rol_fk', $roleIds)
+            ->pluck('id_usuario_fk')->all();
+        $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+        if (empty($userIds)) {
+            return response()->json([ 'data' => [], 'meta' => ['count' => 0] ]);
+        }
+        $personas = \App\Models\Persona::whereIn('id_usuario_fk', $userIds)
+            ->orderBy('primer_nombre')
+            ->orderBy('primer_apellido')
+            ->get(['id_persona_pk as id', 'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido', 'id_usuario_fk']);
+        return response()->json([
+            'data' => $personas,
+            'meta' => ['count' => $personas->count()],
+        ]);
+    })->withoutMiddleware('auto.permiso');
+
     // Dashboard datasets
     Route::get('dashboard/indicadores', [DashboardController::class, 'indicators']);
     Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);
