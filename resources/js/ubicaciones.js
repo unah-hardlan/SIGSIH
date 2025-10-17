@@ -81,6 +81,59 @@ window.paisesApiHandlers = {
     },
 
     /**
+     * Updates an existing country via the API.
+     * @param {object} component - The Alpine.js component's `this` context.
+     */
+    async updatePais(component) {
+        if (!component.itemToEdit || !component.itemToEdit.id) return;
+        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
+        if (!nombreTrim) {
+            window.showToast &&
+                window.showToast("El nombre del país es obligatorio", "error");
+            return;
+        }
+        if (
+            component.paises.some(
+                (p) =>
+                    p.nombre_pais.toLowerCase() === nombreTrim.toLowerCase() &&
+                    p.id_pais_pk !== component.itemToEdit.id
+            )
+        ) {
+            window.showToast &&
+                window.showToast("Ya existe otro país con ese nombre", "error");
+            return;
+        }
+        try {
+            const payload = {
+                nombre_pais: nombreTrim,
+            };
+            const response = await fetch(
+                `/api/paises/${component.itemToEdit.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload),
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            window.showToast &&
+                window.showToast("País actualizado exitosamente", "success");
+            component.isPaisEditModalOpen = false;
+            component.itemToEdit = null;
+            await this.fetchPaises(component);
+        } catch (error) {
+            console.error("Error updating pais:", error);
+            window.showToast &&
+                window.showToast("Error al actualizar el país", "error");
+        }
+    },
+
+    /**
      * Deletes a country via the API.
      * @param {object} component - The Alpine.js component's `this` context.
      */

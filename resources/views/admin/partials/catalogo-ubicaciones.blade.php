@@ -9,6 +9,7 @@
     isCiudadDeleteModalOpen: false,
     isDireccionEditModalOpen: false,
     isDireccionDeleteModalOpen: false,
+    isPaisEditModalOpen: false,
     isPaisDeleteModalOpen: false,
     isDepartamentoEditModalOpen: false,
     isDepartamentoDeleteModalOpen: false,
@@ -45,6 +46,9 @@
     },
     async submitPais() {
         await window.paisesApiHandlers.submitPais(this);
+    },
+    async updatePais() {
+        await window.paisesApiHandlers.updatePais(this);
     },
     async deletePais() {
         await window.paisesApiHandlers.deletePais(this);
@@ -90,6 +94,7 @@
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formPais') this.submitPais();
+        if(event.detail.formId === 'formEditPais') this.updatePais();
         if(event.detail.formId === 'formDepartamento') this.submitDepartamento();
         if(event.detail.formId === 'formEditDepartamento') this.updateDepartamento();
         if(event.detail.formId === 'formCiudad') this.submitCiudad();
@@ -116,7 +121,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
 @keydown.escape.window="
     isPaisModalOpen = false;
     isDepartamentoModalOpen = false;
-    isCiudadModalOpen = false;
+    isCiudadModalOpen = false;  
     isDireccionModalOpen = false;
     isPaisEditModalOpen = false;
     isPaisDeleteModalOpen = false;
@@ -319,6 +324,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
                                             <td class="px-4 py-3">
                                                 <div class="flex justify-center gap-2">
+                                                    <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
                                                     <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                         <i class="fas fa-trash text-sm"></i>
                                                     </button>
@@ -347,6 +355,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
                                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                        <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
                                         <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-trash"></i> Eliminar
                                         </button>
@@ -711,6 +722,12 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
     -->
 
     <!-- Modales Países (Specific) -->
+    <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditPais">
+        <div>
+            <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
+            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+        </div>
+    </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
 
