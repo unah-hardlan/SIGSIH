@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Pais;
 use App\Http\Resources\PaisResource;
 use App\Http\Requests\StorePaisRequest;
-use App\Http\Requests\UpdatePaisRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -73,31 +72,6 @@ class PaisesController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new PaisResource($pais)
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePaisRequest $request, string $id): JsonResponse
-    {
-        $pais = Pais::find($id);
-
-        if (!$pais) {
-            return response()->json([
-                'success' => false,
-                'message' => 'País no encontrado'
-            ], 404);
-        }
-
-        $validated = $request->validated();
-
-        $pais->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'País actualizado exitosamente',
             'data' => new PaisResource($pais)
         ]);
     }

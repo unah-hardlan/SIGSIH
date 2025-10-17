@@ -39,7 +39,7 @@ window.paisesApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitPais(component) {
-        const nombreTrim = String(component.nombre_pais || "").trim();
+        const nombreTrim = String(component.selected_pais || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast("El nombre del país es obligatorio", "error");
@@ -70,66 +70,13 @@ window.paisesApiHandlers = {
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast("País creado exitosamente", "success");
-            component.nombre_pais = "";
+            component.selected_pais = "";
             component.isPaisModalOpen = false;
             await this.fetchPaises(component); // Use 'this' to call other methods within the same handler object
         } catch (error) {
             console.error("Error creating pais:", error);
             window.showToast &&
                 window.showToast("Error al crear el país", "error");
-        }
-    },
-
-    /**
-     * Updates an existing country via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
-    async updatePais(component) {
-        if (!component.itemToEdit || !component.itemToEdit.id) return;
-        const nombreTrim = String(component.itemToEdit.nombre || "").trim();
-        if (!nombreTrim) {
-            window.showToast &&
-                window.showToast("El nombre del país es obligatorio", "error");
-            return;
-        }
-        if (
-            component.paises.some(
-                (p) =>
-                    p.nombre_pais.toLowerCase() === nombreTrim.toLowerCase() &&
-                    p.id_pais_pk !== component.itemToEdit.id
-            )
-        ) {
-            window.showToast &&
-                window.showToast("Ya existe otro país con ese nombre", "error");
-            return;
-        }
-        try {
-            const payload = {
-                nombre_pais: nombreTrim,
-            };
-            const response = await fetch(
-                `/api/paises/${component.itemToEdit.id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    credentials: "same-origin",
-                    body: JSON.stringify(payload),
-                }
-            );
-            const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
-            window.showToast &&
-                window.showToast("País actualizado exitosamente", "success");
-            component.isPaisEditModalOpen = false;
-            component.itemToEdit = null;
-            await this.fetchPaises(component);
-        } catch (error) {
-            console.error("Error updating pais:", error);
-            window.showToast &&
-                window.showToast("Error al actualizar el país", "error");
         }
     },
 
@@ -805,4 +752,202 @@ window.paisesApiHandlers = {
                 );
         }
     },
+
+    listaPaises: [
+        "Afganistán",
+        "Albania",
+        "Alemania",
+        "Andorra",
+        "Angola",
+        "Antigua y Barbuda",
+        "Arabia Saudita",
+        "Argelia",
+        "Argentina",
+        "Armenia",
+        "Australia",
+        "Austria",
+        "Azerbaiyán",
+        "Bahamas",
+        "Bangladés",
+        "Barbados",
+        "Baréin",
+        "Bélgica",
+        "Bielorrusia",
+        "Belice",
+        "Benín",
+        "Birmania (Myanmar)",
+        "Bolivia",
+        "Bosnia y Herzegovina",
+        "Botsuana",
+        "Brasil",
+        "Brunéi",
+        "Bulgaria",
+        "Burkina Faso",
+        "Burundi",
+        "Bután",
+        "Cabo Verde",
+        "Camboya",
+        "Camerún",
+        "Canadá",
+        "Catar",
+        "Chad",
+        "Chile",
+        "China",
+        "Chipre",
+        "Ciudad del Vaticano (Santa Sede)",
+        "Colombia",
+        "Comoras",
+        "Congo (República del)",
+        "Congo (República Democrática del)",
+        "Corea del Norte",
+        "Corea del Sur",
+        "Costa de Marfil",
+        "Costa Rica",
+        "Croacia",
+        "Cuba",
+        "Dinamarca",
+        "Dominica",
+        "Ecuador",
+        "Egipto",
+        "El Salvador",
+        "Emiratos Árabes Unidos",
+        "Eritrea",
+        "Eslovaquia",
+        "Eslovenia",
+        "España",
+        "Estados Unidos",
+        "Estonia",
+        "Esuatini (Suazilandia)",
+        "Etiopía",
+        "Fiyi",
+        "Filipinas",
+        "Finlandia",
+        "Francia",
+        "Gabón",
+        "Gambia",
+        "Georgia",
+        "Ghana",
+        "Granada",
+        "Grecia",
+        "Guatemala",
+        "Guinea",
+        "Guinea-Bisáu",
+        "Guinea Ecuatorial",
+        "Guyana",
+        "Haití",
+        "Honduras",
+        "Hungría",
+        "India",
+        "Indonesia",
+        "Irak",
+        "Irán",
+        "Irlanda",
+        "Islandia",
+        "Islas Marshall",
+        "Islas Salomón",
+        "Israel",
+        "Italia",
+        "Jamaica",
+        "Japón",
+        "Jordania",
+        "Kazajistán",
+        "Kenia",
+        "Kirguistán",
+        "Kiribati",
+        "Kuwait",
+        "Laos",
+        "Lesoto",
+        "Letonia",
+        "Líbano",
+        "Liberia",
+        "Libia",
+        "Liechtenstein",
+        "Lituania",
+        "Luxemburgo",
+        "Macedonia del Norte",
+        "Madagascar",
+        "Malasia",
+        "Malaui",
+        "Maldivas",
+        "Mali",
+        "Malta",
+        "Marruecos",
+        "Mauricio",
+        "Mauritania",
+        "México",
+        "Micronesia",
+        "Moldavia",
+        "Mónaco",
+        "Mongolia",
+        "Montenegro",
+        "Mozambique",
+        "Namibia",
+        "Nauru",
+        "Nepal",
+        "Nicaragua",
+        "Níger",
+        "Nigeria",
+        "Noruega",
+        "Nueva Zelanda",
+        "Omán",
+        "Países Bajos",
+        "Pakistán",
+        "Palaos",
+        "Palestina (Estado Observador)",
+        "Panamá",
+        "Papúa Nueva Guinea",
+        "Paraguay",
+        "Perú",
+        "Polonia",
+        "Portugal",
+        "Reino Unido",
+        "República Centroafricana",
+        "República Checa",
+        "República Dominicana",
+        "Ruanda",
+        "Rumania",
+        "Rusia",
+        "Samoa",
+        "San Cristóbal y Nieves",
+        "San Marino",
+        "San Vicente y las Granadinas",
+        "Santa Lucía",
+        "Santo Tomé y Príncipe",
+        "Senegal",
+        "Serbia",
+        "Seychelles",
+        "Sierra Leona",
+        "Singapur",
+        "Siria",
+        "Somalia",
+        "Sri Lanka",
+        "Sudáfrica",
+        "Sudán",
+        "Sudán del Sur",
+        "Suecia",
+        "Suiza",
+        "Surinam",
+        "Tailandia",
+        "Tanzania",
+        "Tayikistán",
+        "Timor Oriental",
+        "Togo",
+        "Tonga",
+        "Trinidad y Tobago",
+        "Túnez",
+        "Turkmenistán",
+        "Turquía",
+        "Tuvalu",
+        "Ucrania",
+        "Uganda",
+        "Uruguay",
+        "Uzbekistán",
+        "Vanuatu",
+        "Venezuela",
+        "Vietnam",
+        "Yemen",
+        "Yibuti",
+        "Zambia",
+        "Zimbabue",
+    ],
 };

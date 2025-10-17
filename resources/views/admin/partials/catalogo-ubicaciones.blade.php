@@ -9,13 +9,18 @@
     isCiudadDeleteModalOpen: false,
     isDireccionEditModalOpen: false,
     isDireccionDeleteModalOpen: false,
-    isPaisEditModalOpen: false,
     isPaisDeleteModalOpen: false,
     isDepartamentoEditModalOpen: false,
     isDepartamentoDeleteModalOpen: false,
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
+    selected_pais: '',
+    listaPaises: window.paisesApiHandlers?.listaPaises || [],
+    searchPais: '',
+    normalize: function(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    },
     departamentos: [],
     loadingDepartamentos: false,
     nombre_departamento: '',
@@ -40,9 +45,6 @@
     },
     async submitPais() {
         await window.paisesApiHandlers.submitPais(this);
-    },
-    async updatePais() {
-        await window.paisesApiHandlers.updatePais(this);
     },
     async deletePais() {
         await window.paisesApiHandlers.deletePais(this);
@@ -88,7 +90,6 @@
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formPais') this.submitPais();
-        if(event.detail.formId === 'formEditPais') this.updatePais();
         if(event.detail.formId === 'formDepartamento') this.submitDepartamento();
         if(event.detail.formId === 'formEditDepartamento') this.updateDepartamento();
         if(event.detail.formId === 'formCiudad') this.submitCiudad();
@@ -168,14 +169,14 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Agencia</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Agencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Colonia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Referencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -297,8 +298,8 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -318,9 +319,6 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
                                             <td class="px-4 py-3">
                                                 <div class="flex justify-center gap-2">
-                                                    <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                        <i class="fas fa-edit text-sm"></i>
-                                                    </button>
                                                     <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                         <i class="fas fa-trash text-sm"></i>
                                                     </button>
@@ -349,9 +347,6 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
                                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </button>
                                         <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-trash"></i> Eliminar
                                         </button>
@@ -390,9 +385,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -489,9 +484,9 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -572,8 +567,21 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         formId="formPais">
         <div class="grid grid-cols-1 gap-4">
             <div>
-                <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre País</label>
-                <input type="text" id="nombre_pais" name="nombre_pais" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <label for="search_pais" class="block text-sm font-medium text-gray-700 dark:text-gray-300 nunito-bold">Buscar País</label>
+                <input type="text" id="search_pais" name="search_pais" x-model="searchPais" placeholder="Escribe para buscar..." class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 shadow-sm border focus:border-gray-500 dark:focus:border-gray-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-300 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 nunito-bold">Seleccionar País</label>
+                <div class="mt-1 max-h-60 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <template x-for="pais in listaPaises.filter(p => normalize(p).includes(normalize(searchPais)))" :key="pais">
+                            <button type="button" @click="selected_pais = pais" :class="selected_pais === pais ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="p-2 rounded hover:bg-blue-100 dark:hover:bg-blue-600 text-left nunito-regular">
+                                <span x-text="pais"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                <p x-show="selected_pais" class="mt-2 text-sm text-green-800 dark:text-green-400 nunito-regular">Seleccionado: <span x-text="selected_pais"></span></p>
             </div>
         </div>
     </x-admin.form-modal>
@@ -703,12 +711,6 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
     -->
 
     <!-- Modales Países (Specific) -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditPais">
-        <div>
-            <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
-            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-        </div>
-    </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
 
