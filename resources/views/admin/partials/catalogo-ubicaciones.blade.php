@@ -816,7 +816,7 @@
             </div>
             <div>
                 <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
-                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
@@ -966,7 +966,7 @@
             </div>
             <div>
                 <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
-                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
