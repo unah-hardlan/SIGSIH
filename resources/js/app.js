@@ -2007,6 +2007,7 @@ if (typeof window !== "undefined") {
             estadoSolicitud: "",
             ordenarPor: "estado_solicitud",
             searchContacto: "",
+            ordenarPorContacto: "tipo_contacto",
 
             // Modals state
             isModalOpen: false,
@@ -2660,6 +2661,38 @@ if (typeof window !== "undefined") {
             },
 
             // Derived collections and filters
+            filteredContactos() {
+                const term = this.searchContacto.trim().toLowerCase();
+                const list = this.contactos
+                    .filter((c) => {
+                        if (!term) return true;
+                        const cliente = this.clienteLabelById(c.id_cliente_fk) || "";
+                        return [c.tipo_contacto, c.valor_contacto, cliente]
+                            .filter(Boolean)
+                            .some((f) => f.toString().toLowerCase().includes(term));
+                    })
+                    .sort((a, b) => {
+                        switch (this.ordenarPorContacto) {
+                            case "valor_contacto":
+                                return (a.valor_contacto || "").localeCompare(
+                                    b.valor_contacto || "",
+                                    "es"
+                                );
+                            case "cliente": {
+                                const na = this.clienteLabelById(a.id_cliente_fk) || "";
+                                const nb = this.clienteLabelById(b.id_cliente_fk) || "";
+                                return na.localeCompare(nb, "es");
+                            }
+                            case "tipo_contacto":
+                            default:
+                                return (a.tipo_contacto || "").localeCompare(
+                                    b.tipo_contacto || "",
+                                    "es"
+                                );
+                        }
+                    });
+                return list;
+            },
             filteredSolicitudes() {
                 const term = this.searchSolicitud.trim().toLowerCase();
                 const estadoSel = this.estadoSolicitud
