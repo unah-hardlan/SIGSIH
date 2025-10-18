@@ -311,6 +311,7 @@ import {
     faArrowUp,
     faArrowDown,
     faBalanceScale,
+    faInbox,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -401,7 +402,8 @@ library.add(
     faExclamationTriangle,
     faArrowUp,
     faArrowDown,
-    faBalanceScale
+    faBalanceScale,
+    faInbox
 );
 dom.watch();
 
