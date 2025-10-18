@@ -2122,13 +2122,32 @@ if (typeof window !== "undefined") {
             mapSolicitud(item) {
                 const cliente = item.cliente || {};
                 const empresa = cliente.empresa || {};
+                const persona = cliente.persona || {};
                 const estado = item.estado_solicitud || {};
                 const contacto = item.contacto || {};
+                // Build a human-readable client name for both empresa and persona
+                let clienteNombre = "";
+                if ((cliente.tipo || empresa.nombre_comercial || empresa.razon_social)) {
+                    // Try empresa-style fields first
+                    clienteNombre =
+                        cliente.nombre ||
+                        cliente.nombre_comercial ||
+                        empresa.nombre_comercial ||
+                        empresa.razon_social ||
+                        "";
+                }
+                if (!clienteNombre || !String(clienteNombre).trim()) {
+                    // Try persona fields either at root or nested under cliente.persona
+                    const pn = cliente.primer_nombre || persona.primer_nombre || "";
+                    const sn = cliente.segundo_nombre || persona.segundo_nombre || "";
+                    const pa = cliente.primer_apellido || persona.primer_apellido || "";
+                    const sa = cliente.segundo_apellido || persona.segundo_apellido || "";
+                    clienteNombre = [pn, sn, pa, sa].filter(Boolean).join(" ").trim();
+                }
                 return {
                     id: item.id_solicitud_pk,
                     id_cliente_fk: item.id_cliente_fk,
-                    cliente_nombre:
-                        empresa.nombre_comercial || empresa.razon_social || "",
+                    cliente_nombre: clienteNombre,
                     numero_solicitud_acf: item.numero_solicitud_acf,
                     numero_solicitud_cliente: item.numero_solicitud_cliente,
                     descripcion_problema: item.descripcion_problema,
@@ -2143,24 +2162,51 @@ if (typeof window !== "undefined") {
             async fetchClientes() {
                 this.loadingCatalogos.clientes = true;
                 try {
+                    // Reutilizar el mismo catálogo unificado que usa Calendario
                     const params = new URLSearchParams();
-                    params.set("per_page", "200");
+                    params.set("per_page", "500");
+                    params.set("all", "1");
                     const res = await fetch(
-                        "/api/empresas-cliente?" + params.toString(),
-                        { headers: this.apiHeaders() }
+                        "/api/clientes?" + params.toString(),
+                        { headers: this.apiHeaders(), credentials: "same-origin" }
                     );
                     if (!res.ok) throw new Error("Error clientes");
-                    const json = await res.json();
-                    const items = json.data || json?.data?.data || json; // resource wrapper or plain
-                    const options = (items.data || items).map((it) => ({
-                        value: String(it.id_cliente_fk ?? it.id),
-                        label:
-                            it.nombre_comercial ||
-                            it.razon_social ||
-                            `Cliente ${it.id_cliente_fk ?? it.id}`,
-                    }));
-                    this.clientesOptions = options;
-                    this.clientesOptions.sort((a, b) =>
+                    const data = await res.json();
+                    const raw = Array.isArray(data?.data)
+                        ? data.data
+                        : Array.isArray(data?.data?.data)
+                            ? data.data.data
+                            : Array.isArray(data)
+                                ? data
+                                : [];
+                    const mapped = (raw || [])
+                        .map((c) => {
+                            let nombre;
+                            if (c.tipo === "empresa") {
+                                nombre = c.nombre || c.nombre_comercial || c.razon_social || "";
+                            } else {
+                                const parts = [
+                                    c.primer_nombre,
+                                    c.segundo_nombre,
+                                    c.primer_apellido,
+                                    c.segundo_apellido,
+                                ].filter(Boolean);
+                                nombre = parts.join(" ");
+                            }
+                            if (!nombre || !String(nombre).trim()) {
+                                nombre = `Cliente ${c.id}`;
+                            }
+                            const id = c.id;
+                            if (!id) return null;
+                            return { value: String(id), label: nombre };
+                        })
+                        .filter(Boolean);
+                    // De-duplicar por value
+                    const uniq = {};
+                    for (const it of mapped) {
+                        if (!uniq[it.value]) uniq[it.value] = it;
+                    }
+                    this.clientesOptions = Object.values(uniq).sort((a, b) =>
                         a.label.localeCompare(b.label, "es")
                     );
                 } catch (e) {
@@ -2239,6 +2285,16 @@ if (typeof window !== "undefined") {
                 return this.contactosOptions.filter(
                     (c) => String(c.id_cliente_fk || "") === idCliente
                 );
+            },
+
+            // Lookup helper to get client label from unified catalog by id
+            clienteLabelById(id) {
+                if (!id) return "";
+                const sid = String(id);
+                const found = this.clientesOptions.find(
+                    (o) => String(o.value) === sid
+                );
+                return found ? found.label : "";
             },
 
             // CRUD Solicitudes
@@ -2644,8 +2700,10 @@ if (typeof window !== "undefined") {
                                     "es"
                                 );
                             case "cliente":
-                                return (a.cliente_nombre || "").localeCompare(
-                                    b.cliente_nombre || "",
+                                return (
+                                    a.cliente_nombre || this.clienteLabelById(a.id_cliente_fk) || ""
+                                ).localeCompare(
+                                    b.cliente_nombre || this.clienteLabelById(b.id_cliente_fk) || "",
                                     "es"
                                 );
                             case "solicitud_acf":

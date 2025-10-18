@@ -96,7 +96,7 @@
                         </template>
                         <template x-for="sol in filteredSolicitudes()" :key="sol.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.cliente_nombre || ('ID ' + sol.id_cliente_fk)"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.cliente_nombre || clienteLabelById(sol.id_cliente_fk) || '—'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.numero_solicitud_acf || '—'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.numero_solicitud_cliente || '—'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.descripcion_problema || '—'"></td>
