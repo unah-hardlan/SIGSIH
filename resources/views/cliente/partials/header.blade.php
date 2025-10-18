@@ -5,14 +5,12 @@
     $clienteAvatar = $authPersona->avatar_path ?? null;
 @endphp
 <style>
-    @media (max-width: 768px) {
-        .header-fixed {
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-        }
+    .header-fixed {
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
     }
 </style>
 <div class="header-fixed">
