@@ -31,18 +31,29 @@
                 <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Gestión de Solicitudes</h2>
             </x-slot>
             <x-slot name="filtros">
-                @include('partials.filtros-generales', [
-                'searchModel' => 'searchSolicitud',
-                'filtrosSelect' => [
-                'estadoSolicitud' => [
-                'label' => 'estados',
-                'options' => ['Abierta', 'En Proceso', 'Cerrada']
-                ]
-                ],
-                'ordenarOptions' => [
-                'estado_solicitud' => 'Estado'
-                ]
-                ])
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch w-full">
+                    <!-- Buscar -->
+                    <input type="text" x-model="searchSolicitud" placeholder="Buscar..."
+                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-48 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
+
+                    <!-- Estado (dinámico) -->
+                    <select x-model="estadoSolicitud"
+                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                        <option value="">Todos los estados</option>
+                        <template x-for="opt in estadosOptions" :key="opt.value">
+                            <option :value="opt.value" x-text="opt.label"></option>
+                        </template>
+                    </select>
+
+                    <!-- Ordenar por -->
+                    <select x-model="ordenarPor"
+                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                        <option value="estado_solicitud">Ordenar por Estado</option>
+                        <option value="cliente">Ordenar por Cliente</option>
+                        <option value="solicitud_acf">Ordenar por Solicitud ACF</option>
+                        <option value="solicitud_cliente">Ordenar por Solicitud Cliente</option>
+                    </select>
+                </div>
             </x-slot>
             <x-slot name="boton">
                 <div class="flex flex-col gap-2 w-full sm:w-auto">

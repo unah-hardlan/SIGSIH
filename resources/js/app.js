@@ -2637,13 +2637,28 @@ if (typeof window !== "undefined") {
                     })
                     .sort((a, b) => {
                         switch (this.ordenarPor) {
-                            case "id":
-                                return Number(a.id) - Number(b.id);
                             case "estado":
                             case "estado_solicitud":
                                 return (a.estado_nombre || "").localeCompare(
                                     b.estado_nombre || "",
                                     "es"
+                                );
+                            case "cliente":
+                                return (a.cliente_nombre || "").localeCompare(
+                                    b.cliente_nombre || "",
+                                    "es"
+                                );
+                            case "solicitud_acf":
+                                return (String(a.numero_solicitud_acf || "")).localeCompare(
+                                    String(b.numero_solicitud_acf || ""),
+                                    "es",
+                                    { numeric: true }
+                                );
+                            case "solicitud_cliente":
+                                return (String(a.numero_solicitud_cliente || "")).localeCompare(
+                                    String(b.numero_solicitud_cliente || ""),
+                                    "es",
+                                    { numeric: true }
                                 );
                             case "fecha_creacion":
                                 // Campo no disponible: mantener orden estable
