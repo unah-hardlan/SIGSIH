@@ -40,7 +40,6 @@
                 ]
                 ],
                 'ordenarOptions' => [
-                'id' => 'ID',
                 'estado_solicitud' => 'Estado'
                 ]
                 ])
@@ -60,7 +59,6 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud ACF</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud Cliente</th>
@@ -73,21 +71,20 @@
                     <tbody>
                         <template x-if="loadingSolicitudes">
                             <tr>
-                                <td colspan="7" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
+                                <td colspan="6" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
                                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando solicitudes...
                                 </td>
                             </tr>
                         </template>
                         <template x-if="!loadingSolicitudes && filteredSolicitudes().length === 0">
                             <tr>
-                                <td colspan="7" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
+                                <td colspan="6" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
                                     No se encontraron solicitudes.
                                 </td>
                             </tr>
                         </template>
                         <template x-for="sol in filteredSolicitudes()" :key="sol.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.id"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.cliente_nombre || ('ID ' + sol.id_cliente_fk)"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.numero_solicitud_acf || '—'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.numero_solicitud_cliente || '—'"></td>
@@ -116,7 +113,6 @@
                 'searchModel' => 'searchContacto',
                 'filtrosSelect' => [],
                 'ordenarOptions' => [
-                'id' => 'ID',
                 'tipo_contacto' => 'Tipo Contacto',
                 'valor_contacto' => 'Valor Contacto'
                 ]
@@ -131,7 +127,6 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Tipo Contacto</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Valor Contacto</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Persona</th>
@@ -141,21 +136,20 @@
                     <tbody>
                         <template x-if="loadingContactos">
                             <tr>
-                                <td colspan="5" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
+                                <td colspan="4" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
                                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando contactos...
                                 </td>
                             </tr>
                         </template>
                         <template x-if="!loadingContactos && contactos.length === 0">
                             <tr>
-                                <td colspan="5" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
+                                <td colspan="4" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
                                     No se encontraron contactos.
                                 </td>
                             </tr>
                         </template>
                         <template x-for="c in contactos" :key="c.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.id"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.tipo_contacto"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.valor_contacto"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.id_cliente_fk"></td>
