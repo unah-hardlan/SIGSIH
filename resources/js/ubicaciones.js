@@ -643,7 +643,6 @@ window.paisesApiHandlers = {
                 codigo_postal: component.codigo_postal.trim(),
                 referencia: component.referencia.trim(),
                 id_ciudad_fk: ciudadId,
-                agencia_id: component.agencia_direccion || null,
             };
             const response = await fetch("/api/direcciones", {
                 method: "POST",
@@ -664,7 +663,7 @@ window.paisesApiHandlers = {
             component.codigo_postal = "";
             component.referencia = "";
             component.ciudad_direccion = "";
-            component.agencia_direccion = "";
+            
             component.isDireccionModalOpen = false;
             await this.fetchDirecciones(component);
         } catch (error) {
@@ -718,7 +717,6 @@ window.paisesApiHandlers = {
                 codigo_postal: component.itemToEdit.codigo_postal.trim(),
                 referencia: component.itemToEdit.referencia.trim(),
                 id_ciudad_fk: ciudadId,
-                agencia_id: component.itemToEdit.agencia_id || null,
             };
             const response = await fetch(
                 `/api/direcciones/${component.itemToEdit.id}`,
