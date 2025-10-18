@@ -86,19 +86,60 @@
             const dataI = await respI.json().catch(() => ({}));
             let rawIngresos = (respI.ok && Array.isArray(dataI?.data)) ? dataI.data : [];
             // fallback client-side filter
-            this.ingresosProyecto = rawIngresos.filter(i => {
-                return (i.id_proyecto_fk && String(i.id_proyecto_fk) === proyectoId)
-                    || (i.proyecto && String(i.proyecto.id_proyecto_pk) === proyectoId);
+            const filteredIngresos = rawIngresos.filter(i => {
+                // support multiple possible field names for proyecto id
+                const candidates = [
+                    i.id_proyecto_fk,
+                    i.id_proyecto_pk,
+                    i.id_proyecto,
+                    i.proyecto && i.proyecto.id_proyecto_pk,
+                    i.proyecto && i.proyecto.id_proyecto_fk,
+                    i.proyecto && i.proyecto.id_proyecto,
+                    i.proyecto && i.proyecto.id,
+                    i.proyecto && i.proyecto.id_proyecto
+                ];
+                return candidates.some(c => c !== undefined && c !== null && String(c) === proyectoId);
             });
+            console.debug('vista-proyectos: rawIngresos', rawIngresos.length, 'filteredIngresos', filteredIngresos.length, 'proyectoId', proyectoId);
+            this.ingresosProyecto = filteredIngresos;
 
             // fetch gastos filtrados por proyecto
             const respG = await fetch(`/api/gastos?proyecto=${proyectoId}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
             const dataG = await respG.json().catch(() => ({}));
             let rawGastos = (respG.ok && Array.isArray(dataG?.data)) ? dataG.data : [];
-            this.gastosProyecto = rawGastos.filter(g => {
-                return (g.id_proyecto_fk && String(g.id_proyecto_fk) === proyectoId)
-                    || (g.proyecto && String(g.proyecto.id_proyecto_pk) === proyectoId);
+            const filteredGastos = rawGastos.filter(g => {
+                const candidates = [
+                    g.id_proyecto_fk,
+                    g.id_proyecto_pk,
+                    g.id_proyecto,
+                    g.proyecto && g.proyecto.id_proyecto_pk,
+                    g.proyecto && g.proyecto.id_proyecto_fk,
+                    g.proyecto && g.proyecto.id_proyecto,
+                    g.proyecto && g.proyecto.id,
+                    g.proyecto && g.proyecto.id_proyecto
+                ];
+                return candidates.some(c => c !== undefined && c !== null && String(c) === proyectoId);
             });
+            console.debug('vista-proyectos: rawGastos', rawGastos.length, 'filteredGastos', filteredGastos.length, 'proyectoId', proyectoId);
+            this.gastosProyecto = filteredGastos;
+
+            // compute simple totals so the stat cards reflect loaded movimientos
+            try {
+                const ingresosTotal = this.ingresosProyecto.reduce((s, it) => {
+                    const monto = parseFloat(it.monto_ingreso ?? it.monto ?? 0) || 0;
+                    return s + monto;
+                }, 0);
+                const gastosTotal = this.gastosProyecto.reduce((s, it) => {
+                    const monto = parseFloat(it.monto ?? it.monto_ingreso ?? 0) || 0;
+                    return s + monto;
+                }, 0);
+                // write totals back to the proyecto object for binding (non-persistent)
+                proyecto.total_ingresos = ingresosTotal;
+                proyecto.total_gastos = gastosTotal;
+            } catch (errTotals) {
+                // swallow - not critical
+                console.warn('Error calculando totales:', errTotals);
+            }
 
             this.lastLoadedProjectId = proyectoId;
         } catch (e) {
@@ -129,6 +170,33 @@
         } catch (e) {
             return date;
         }
+    }
+    ,
+    combinedMovimientos() {
+        // Merge ingresos and gastos, normalize a date field and type marker
+        const items = [];
+        try {
+            this.ingresosProyecto.forEach(i => {
+                const fecha = i.fecha_ingreso || i.created_at || i.fecha || i.createdAt || null;
+                items.push(Object.assign({}, i, { __tipo: 'ingreso', __fecha: fecha }));
+            });
+            this.gastosProyecto.forEach(g => {
+                const fecha = g.fecha || g.created_at || g.fecha_gasto || g.createdAt || null;
+                items.push(Object.assign({}, g, { __tipo: 'gasto', __fecha: fecha }));
+            });
+            // sort desc by date (most recent first). Invalid dates go to the end.
+            items.sort((a, b) => {
+                const da = a.__fecha ? new Date(a.__fecha) : null;
+                const db = b.__fecha ? new Date(b.__fecha) : null;
+                if (da === null && db === null) return 0;
+                if (da === null) return 1;
+                if (db === null) return -1;
+                return db - da;
+            });
+        } catch (e) {
+            console.error('Error combinando movimientos:', e);
+        }
+        return items;
     }
 }" x-init="init()">
     {{-- Header con navegación de proyecto y botón de nuevo proyecto --}}
@@ -163,10 +231,10 @@
                         <p class="text-sm nunito-regular opacity-90">Ingresos</p>
                     </div>
                 </div>
-                <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency(currentProyecto.total_ingresos || 0)"></div>
+                <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency((currentProyecto && currentProyecto.total_ingresos) ? currentProyecto.total_ingresos : 0)"></div>
                 <p class="text-sm nunito-regular opacity-80">Total recibido</p>
                 <div class="mt-2 pt-2 border-t border-white/20">
-                    <p class="text-xs nunito-regular opacity-70" x-text="'Inicio: ' + formatDate(currentProyecto.fecha_inicio_proyecto)"></p>
+                    <p class="text-xs nunito-regular opacity-70" x-text="'Inicio: ' + formatDate(currentProyecto ? currentProyecto.fecha_inicio_proyecto : null)"></p>
                 </div>
             </div>
         </div>
@@ -182,10 +250,10 @@
                         <p class="text-sm nunito-regular opacity-90">Gastos</p>
                     </div>
                 </div>
-                <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency(currentProyecto.total_gastos || 0)"></div>
+                <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency((currentProyecto && currentProyecto.total_gastos) ? currentProyecto.total_gastos : 0)"></div>
                 <p class="text-sm nunito-regular opacity-80">Total gastado</p>
                 <div class="mt-2 pt-2 border-t border-white/20">
-                    <p class="text-xs nunito-regular opacity-70" x-text="'Fin estimado: ' + formatDate(currentProyecto.fecha_estimada_fin_proyecto)"></p>
+                    <p class="text-xs nunito-regular opacity-70" x-text="'Fin estimado: ' + formatDate(currentProyecto ? currentProyecto.fecha_estimada_fin_proyecto : null)"></p>
                 </div>
             </div>
         </div>
@@ -201,10 +269,10 @@
                         <p class="text-sm nunito-regular opacity-90">Balance</p>
                     </div>
                 </div>
-                <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency((currentProyecto.total_ingresos || 0) - (currentProyecto.total_gastos || 0))"></div>
+                <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency(((currentProyecto && currentProyecto.total_ingresos) ? currentProyecto.total_ingresos : 0) - ((currentProyecto && currentProyecto.total_gastos) ? currentProyecto.total_gastos : 0))"></div>
                 <p class="text-sm nunito-regular opacity-80">Saldo neto</p>
                 <div class="mt-2 pt-2 border-t border-white/20">
-                    <p class="text-xs nunito-regular opacity-70" x-text="'Estado: ' + (currentProyecto.estado_proyecto?.nombre || 'Sin estado')"></p>
+                    <p class="text-xs nunito-regular opacity-70" x-text="'Estado: ' + (currentProyecto && currentProyecto.estado_proyecto ? currentProyecto.estado_proyecto.nombre : 'Sin estado')"></p>
                 </div>
             </div>
         </div>
