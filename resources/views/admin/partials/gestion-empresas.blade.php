@@ -97,6 +97,41 @@
                 </tbody>
             </table>
         </x-slot>
+        <x-slot name="cards">
+            <template x-if="loadingEmpresas">
+                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando empresas...</div>
+            </template>
+            <template x-if="!loadingEmpresas && empresas.length === 0">
+                <div class="p-8 text-center text-gray-500 nunito-regular">No hay empresas registradas</div>
+            </template>
+            <template x-for="e in empresas" :key="'card-emp-'+(e.id || e.raw?.id_cliente_fk || Math.random())">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="e.nombre_comercial"></h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400" x-text="e.razon_social"></p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-xs font-semibold"
+                              :class="e.estado_label==='Activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'"
+                              x-text="e.estado_label"></span>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-300" x-text="e.descripcion_empresa || '—'"></p>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300">
+                        <div><span class="nunito-bold">RTN:</span> <span x-text="e.rtn || '—'"></span></div>
+                        <div><span class="nunito-bold">Registro:</span> <span x-text="e.fecha_registro || '—'"></span></div>
+                        <div class="col-span-2"><span class="nunito-bold">Horario:</span> <span x-text="e.horario_atencion || '—'"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="openEmpresaModal(true, e)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button @click="openDeleteEmpresaModal(e)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </x-slot>
     </x-responsive-table>
 
     <!-- Modal Empresas Cliente -->
