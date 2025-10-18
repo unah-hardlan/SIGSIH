@@ -143,8 +143,7 @@
         formId="orden-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">ID
-                    Solicitud</label>
+                <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -284,8 +283,7 @@
         minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">ID
-                    Solicitud</label>
+                <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="edit_id_solicitud" name="edit_id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">

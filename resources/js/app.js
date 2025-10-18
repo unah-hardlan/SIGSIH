@@ -1591,7 +1591,9 @@ if (typeof window !== "undefined") {
                     const json = await response.json();
                     const opciones = (json.data || []).map((item) => ({
                         value: String(item.id_solicitud_pk),
-                        label: String(item.id_solicitud_pk),
+                        label:
+                            item.nombre_solicitud ||
+                            `Solicitud #${item.id_solicitud_pk}`,
                     }));
                     this.solicitudesOptions = opciones;
                     this.sortOptions("solicitudesOptions");
