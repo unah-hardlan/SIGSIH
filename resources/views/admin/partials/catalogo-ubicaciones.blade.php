@@ -3,6 +3,8 @@
     isDepartamentoModalOpen: false,
     isCiudadModalOpen: false,
     isDireccionModalOpen: false,
+    // Removed generic isEditModalOpen and isDeleteModalOpen,
+    // as we now have specific ones for each entity (e.g., isPaisEditModalOpen)
     itemToEdit: null,
     itemToDelete: null,
     isCiudadEditModalOpen: false,
@@ -16,20 +18,144 @@
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
-    selected_pais: '',
-    listaPaises: window.paisesApiHandlers?.listaPaises || [],
-    searchPais: '',
-    normalize: function(str) {
-        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    normalize(str) { return (str || '').toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''); },
+    caCatalog: ['Belice','Costa Rica','El Salvador','Guatemala','Honduras','Nicaragua','Panamá'],
+    get caOptionsDisponibles() {
+        const have = new Set((this.paises || []).map(p => this.normalize(p.nombre_pais)));
+        const opts = (this.caCatalog || []).filter(n => !have.has(this.normalize(n)));
+        try { return opts.sort((a,b)=> a.localeCompare(b,'es')); } catch(_) { return opts; }
     },
     departamentos: [],
     loadingDepartamentos: false,
     nombre_departamento: '',
     pais_departamento: '',
+    suggestedDepartamentos: [],
+    editSuggestedDepartamentos: [],
+    get selectedPaisNombre() {
+        const id = this.pais_departamento;
+        const p = this.paises.find(pp => String(pp.id_pais_pk) === String(id));
+        return p ? p.nombre_pais : '';
+    },
+    refreshDepartamentoSuggestions() {
+        try {
+            const nombrePais = this.selectedPaisNombre;
+            const list = (window.subdivisionHelper && window.subdivisionHelper.getByPaisName(nombrePais)) || [];
+            this.suggestedDepartamentos = list.map(n => ({ nombre: n }));
+            if (this.suggestedDepartamentos.length > 0) {
+                const exists = this.suggestedDepartamentos.some(o => o.nombre === this.nombre_departamento);
+                if (!exists) this.nombre_departamento = '';
+            }
+        } catch (_) {
+            this.suggestedDepartamentos = [];
+        }
+    },
+    refreshEditDepartamentoSuggestions() {
+        try {
+            const p = this.paises.find(pp => String(pp.id_pais_pk) === String(this.itemToEdit?.pais || ''));
+            const nombrePais = p ? p.nombre_pais : '';
+            const list = (window.subdivisionHelper && window.subdivisionHelper.getByPaisName(nombrePais)) || [];
+            this.editSuggestedDepartamentos = list.map(n => ({ nombre: n }));
+            if (this.editSuggestedDepartamentos.length > 0 && this.itemToEdit) {
+                const exists = this.editSuggestedDepartamentos.some(o => o.nombre === this.itemToEdit.nombre);
+                if (!exists) this.itemToEdit.nombre = '';
+            }
+        } catch (_) {
+            this.editSuggestedDepartamentos = [];
+        }
+    },
     ciudades: [],
     loadingCiudades: false,
     nombre_ciudad: '',
     departamento_ciudad: '',
+    pais_ciudad: '',
+    suggestedCiudades: [],
+    edit_pais_ciudad: '',
+    editSuggestedCiudades: [],
+    get selectedCiudadPaisNombre() {
+        const id = this.pais_ciudad;
+        const p = this.paises.find(pp => String(pp.id_pais_pk) === String(id));
+        return p ? p.nombre_pais : '';
+    },
+    get selectedEditCiudadPaisNombre() {
+        const id = this.edit_pais_ciudad;
+        const p = this.paises.find(pp => String(pp.id_pais_pk) === String(id));
+        return p ? p.nombre_pais : '';
+    },
+    get departamentosFiltradosCiudad() {
+        const pid = this.pais_ciudad;
+        if (!pid) return [];
+        return (this.departamentos || []).filter(d => String(d.id_pais_pk) === String(pid));
+    },
+    get departamentosFiltradosCiudadEdit() {
+        const pid = this.edit_pais_ciudad;
+        if (!pid) return [];
+        return (this.departamentos || []).filter(d => String(d.id_pais_pk) === String(pid));
+    },
+    getDepartamentoNombreById(depId) {
+        const d = (this.departamentos || []).find(x => String(x.id_departamento_pk) === String(depId));
+        return d ? d.nombre_departamento : '';
+    },
+    getDepartamentoByCiudadId(ciudadId) {
+        if (!ciudadId) return null;
+        const city = (this.ciudades || []).find(c => String(c.id_ciudad_pk) === String(ciudadId));
+        if (!city) return null;
+        const dep = (this.departamentos || []).find(d => String(d.id_departamento_pk) === String(city.id_departamento_fk));
+        return dep || null;
+    },
+    getDepartamentoNombreByDireccion(dir) {
+        // Usa el objeto anidado si viene del API, si no, resuelve por listas cargadas
+        const depObj = (dir?.ciudad && dir.ciudad.departamento) || this.getDepartamentoByCiudadId(dir?.id_ciudad_fk);
+        return depObj?.nombre_departamento || '';
+    },
+    getPaisNombreByDireccion(dir) {
+        const depObj = (dir?.ciudad && dir.ciudad.departamento) || this.getDepartamentoByCiudadId(dir?.id_ciudad_fk);
+        const paisId = depObj?.id_pais_pk;
+        if (paisId) {
+            const p = (this.paises || []).find(pp => String(pp.id_pais_pk) === String(paisId));
+            return p ? p.nombre_pais : '';
+        }
+        // Fallback si el backend incluye pais anidado
+        return dir?.ciudad?.departamento?.pais?.nombre_pais || '';
+    },
+    refreshCiudadSuggestions() {
+        try {
+            const paisNombre = this.selectedCiudadPaisNombre;
+            const depNombre = this.getDepartamentoNombreById(this.departamento_ciudad);
+            const list = (window.subdivisionHelper && window.subdivisionHelper.getCitiesByPaisDep(paisNombre, depNombre)) || [];
+            this.suggestedCiudades = list.map(n => ({ nombre: n }));
+            // Reset city name if not among suggestions
+            if (this.suggestedCiudades.length > 0) {
+                const exists = this.suggestedCiudades.some(o => o.nombre === this.nombre_ciudad);
+                if (!exists) this.nombre_ciudad = '';
+            }
+            // Ensure departamento belongs to selected country
+            if (this.pais_ciudad) {
+                const ok = this.departamentosFiltradosCiudad.some(d => String(d.id_departamento_pk) === String(this.departamento_ciudad));
+                if (!ok) this.departamento_ciudad = '';
+            }
+        } catch (_) {
+            this.suggestedCiudades = [];
+        }
+    },
+    refreshEditCiudadSuggestions() {
+        try {
+            const paisNombre = this.selectedEditCiudadPaisNombre;
+            const depNombre = this.getDepartamentoNombreById(this.itemToEdit?.departamento || '');
+            const list = (window.subdivisionHelper && window.subdivisionHelper.getCitiesByPaisDep(paisNombre, depNombre)) || [];
+            this.editSuggestedCiudades = list.map(n => ({ nombre: n }));
+            if (this.editSuggestedCiudades.length > 0 && this.itemToEdit) {
+                const exists = this.editSuggestedCiudades.some(o => o.nombre === this.itemToEdit.nombre);
+                if (!exists) this.itemToEdit.nombre = '';
+            }
+            // Ensure departamento belongs to selected country
+            if (this.edit_pais_ciudad && this.itemToEdit) {
+                const ok = this.departamentosFiltradosCiudadEdit.some(d => String(d.id_departamento_pk) === String(this.itemToEdit.departamento));
+                if (!ok) this.itemToEdit.departamento = '';
+            }
+        } catch (_) {
+            this.editSuggestedCiudades = [];
+        }
+    },
     direcciones: [],
     loadingDirecciones: false,
     direccion: '',
@@ -38,9 +164,7 @@
     codigo_postal: '',
     referencia: '',
     ciudad_direccion: '',
-    agencias: [],
-    loadingAgencias: false,
-    agencia_direccion: '',
+    
     async fetchPaises() {
         await window.paisesApiHandlers.fetchPaises(this);
     },
@@ -80,9 +204,6 @@
     async fetchDirecciones() {
         await window.paisesApiHandlers.fetchDirecciones(this);
     },
-    async fetchAgencias() {
-        await window.paisesApiHandlers.fetchAgencias(this);
-    },
     async submitDireccion() {
         await window.paisesApiHandlers.submitDireccion(this);
     },
@@ -117,11 +238,11 @@
         }
     }
 }"
-x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones(); fetchAgencias()"
-@keydown.escape.window="
+    x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()"
+    @keydown.escape.window="
     isPaisModalOpen = false;
     isDepartamentoModalOpen = false;
-    isCiudadModalOpen = false;  
+    isCiudadModalOpen = false;
     isDireccionModalOpen = false;
     isPaisEditModalOpen = false;
     isPaisDeleteModalOpen = false;
@@ -132,17 +253,17 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
     isDireccionEditModalOpen = false;
     isDireccionDeleteModalOpen = false;
 "
-@modal-submit.window="handleModalSubmit($event)"
-@confirm-delete.window="handleDelete()">
+    @modal-submit.window="handleModalSubmit($event)"
+    @confirm-delete.window="handleDelete()">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Ubicaciones de Agencias</h1>
         <div class="flex flex-wrap gap-2 items-center mb-6">
             @include('partials.filtros-generales', [
-                'searchModel' => 'filtroUbicaciones',
-                'ordenarOptions' => [
-                    'nombre' => 'Nombre',
-                    'id' => 'ID'
-                ]
+            'searchModel' => 'filtroUbicaciones',
+            'ordenarOptions' => [
+            'nombre' => 'Nombre',
+            'id' => 'ID'
+            ]
             ])
         </div>
     </div>
@@ -174,43 +295,45 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                         <table class="w-full text-sm">
                             <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Agencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Calle</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Número</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Colonia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Referencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
+                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 <template x-if="loadingDirecciones">
                                     <tr>
-                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
                                     </tr>
                                 </template>
                                 <template x-if="!loadingDirecciones && direcciones.length === 0">
                                     <tr>
-                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
+                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
                                     </tr>
                                 </template>
                                 <template x-if="!loadingDirecciones && direcciones.length > 0">
                                     <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
                                         <tr class="nunito-regular">
-                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white hidden lg:table-cell" x-text="direccion.colonia"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.codigo_postal"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white hidden lg:table-cell" x-text="direccion.referencia"></td>
                                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="getDepartamentoNombreByDireccion(direccion) || 'N/A'"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="getPaisNombreByDireccion(direccion) || 'N/A'"></td>
                                             <td class="px-4 py-3">
                                                 <div class="flex justify-center gap-2">
                                                     <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                         <i class="fas fa-edit text-sm"></i>
                                                     </button>
-                                                    <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa} (Agencia: ${direccion.agencia ? direccion.agencia.nombre_agencia : 'Sin agencia'})`}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                    <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa}`}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                         <i class="fas fa-trash text-sm"></i>
                                                     </button>
                                                 </div>
@@ -237,10 +360,6 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                             <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                     <div class="space-y-1">
-                                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-bold">Agencia</p>
-                                        <p class="text-base text-gray-900 dark:text-white nunito-regular" x-text="direccion.agencia?.nombre_agencia || 'N/A'"></p>
-                                    </div>
-                                    <div class="space-y-1">
                                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-bold">Dirección</p>
                                         <p class="text-base text-gray-900 dark:text-white nunito-regular" x-text="direccion.calle + ' ' + direccion.numero"></p>
                                         <p class="text-sm text-gray-700 dark:text-gray-300" x-text="direccion.colonia"></p>
@@ -263,7 +382,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                                         <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
-                                        <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa} (Agencia: ${direccion.agencia ? direccion.agencia.nombre_agencia : 'Sin agencia'})`}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                        <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa}`}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </div>
@@ -278,294 +397,294 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         <div class="flex flex-col gap-8">
             <!-- Países y Departamentos lado a lado -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-900 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-white bg-opacity-20 rounded-lg">
-                            <i class="fas fa-globe text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-white nunito-bold">Países</h2>
-                            <p class="text-blue-100 text-sm nunito-regular">Gestiona los países disponibles</p>
+                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-900 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                                    <i class="fas fa-globe text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white nunito-bold">Países</h2>
+                                    <p class="text-blue-100 text-sm nunito-regular">Gestiona los países disponibles</p>
+                                </div>
+                            </div>
+                            <button @click="isPaisModalOpen = true"
+                                class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
+                                <i class="fas fa-plus text-sm"></i>
+                                <span class="text-sm">Nuevo</span>
+                            </button>
                         </div>
                     </div>
-                    <button @click="isPaisModalOpen = true"
-                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
-                        <i class="fas fa-plus text-sm"></i>
-                        <span class="text-sm">Nuevo</span>
-                    </button>
-                </div>
-            </div>
-            <div class="p-6">
-                <x-responsive-table>
-                    <x-slot name="table">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="p-6">
+                        <x-responsive-table>
+                            <x-slot name="table">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                            <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        <template x-if="loadingPaises">
+                                            <tr>
+                                                <td colspan="2" class="px-4 py-3 text-center text-gray-500">Cargando países...</td>
+                                            </tr>
+                                        </template>
+                                        <template x-if="!loadingPaises && paises.length === 0">
+                                            <tr>
+                                                <td colspan="2" class="px-4 py-3 text-center text-gray-500">No hay países registrados</td>
+                                            </tr>
+                                        </template>
+                                        <template x-if="!loadingPaises && paises.length > 0">
+                                            <template x-for="pais in paises" :key="pais.id_pais_pk">
+                                                <tr class="nunito-regular">
+                                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
+                                                    <td class="px-4 py-3">
+                                                        <div class="flex justify-center gap-2">
+                                                            <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                                <i class="fas fa-edit text-sm"></i>
+                                                            </button>
+                                                            <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                                <i class="fas fa-trash text-sm"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </x-slot>
+
+                            <x-slot name="cards">
                                 <template x-if="loadingPaises">
-                                    <tr>
-                                        <td colspan="2" class="px-4 py-3 text-center text-gray-500">Cargando países...</td>
-                                    </tr>
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando países...
+                                    </div>
                                 </template>
                                 <template x-if="!loadingPaises && paises.length === 0">
-                                    <tr>
-                                        <td colspan="2" class="px-4 py-3 text-center text-gray-500">No hay países registrados</td>
-                                    </tr>
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                        No hay países registrados
+                                    </div>
                                 </template>
                                 <template x-if="!loadingPaises && paises.length > 0">
                                     <template x-for="pais in paises" :key="pais.id_pais_pk">
-                                        <tr class="nunito-regular">
-                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
-                                            <td class="px-4 py-3">
-                                                <div class="flex justify-center gap-2">
-                                                    <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                        <i class="fas fa-edit text-sm"></i>
-                                                    </button>
-                                                    <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                        <i class="fas fa-trash text-sm"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
+                                            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                                <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </div>
+                                        </div>
                                     </template>
                                 </template>
-                            </tbody>
-                        </table>
-                    </x-slot>
+                            </x-slot>
+                        </x-responsive-table>
+                    </div>
+                </div>
 
-                    <x-slot name="cards">
-                        <template x-if="loadingPaises">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
-                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando países...
-                            </div>
-                        </template>
-                        <template x-if="!loadingPaises && paises.length === 0">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
-                                No hay países registrados
-                            </div>
-                        </template>
-                        <template x-if="!loadingPaises && paises.length > 0">
-                            <template x-for="pais in paises" :key="pais.id_pais_pk">
-                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
-                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
-                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </button>
-                                        <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
-                                    </div>
+                <!-- Card Departamentos -->
+                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-700 to-green-900 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                                    <i class="fas fa-map-marked-alt text-white text-xl"></i>
                                 </div>
-                            </template>
-                        </template>
-                    </x-slot>
-                </x-responsive-table>
-            </div>
-        </div>
-
-        <!-- Card Departamentos -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
-            <div class="bg-gradient-to-r from-green-700 to-green-900 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-white bg-opacity-20 rounded-lg">
-                            <i class="fas fa-map-marked-alt text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-white nunito-bold">Departamentos</h2>
-                            <p class="text-green-100 text-sm nunito-regular">Gestiona los departamentos por país</p>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white nunito-bold">Departamentos</h2>
+                                    <p class="text-green-100 text-sm nunito-regular">Gestiona los departamentos por país</p>
+                                </div>
+                            </div>
+                            <button @click="isDepartamentoModalOpen = true; refreshDepartamentoSuggestions()"
+                                class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
+                                <i class="fas fa-plus text-sm"></i>
+                                <span class="text-sm">Nuevo</span>
+                            </button>
                         </div>
                     </div>
-                    <button @click="isDepartamentoModalOpen = true"
-                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
-                        <i class="fas fa-plus text-sm"></i>
-                        <span class="text-sm">Nuevo</span>
-                    </button>
-                </div>
-            </div>
-            <div class="p-6">
-                <x-responsive-table>
-                    <x-slot name="table">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="p-6">
+                        <x-responsive-table>
+                            <x-slot name="table">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                            <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
+                                            <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        <template x-if="loadingDepartamentos">
+                                            <tr>
+                                                <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando departamentos...</td>
+                                            </tr>
+                                        </template>
+                                        <template x-if="!loadingDepartamentos && departamentos.length === 0">
+                                            <tr>
+                                                <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay departamentos registrados</td>
+                                            </tr>
+                                        </template>
+                                        <template x-if="!loadingDepartamentos && departamentos.length > 0">
+                                            <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                                                <tr class="nunito-regular">
+                                                    <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
+                                                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
+                                                    <td class="px-4 py-3">
+                                                        <div class="flex justify-center gap-2">
+                                                            <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}; refreshEditDepartamentoSuggestions()" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                                <i class="fas fa-edit text-sm"></i>
+                                                            </button>
+                                                            <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                                <i class="fas fa-trash text-sm"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </x-slot>
+
+                            <x-slot name="cards">
                                 <template x-if="loadingDepartamentos">
-                                    <tr>
-                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando departamentos...</td>
-                                    </tr>
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando departamentos...
+                                    </div>
                                 </template>
                                 <template x-if="!loadingDepartamentos && departamentos.length === 0">
-                                    <tr>
-                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay departamentos registrados</td>
-                                    </tr>
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                        No hay departamentos registrados
+                                    </div>
                                 </template>
                                 <template x-if="!loadingDepartamentos && departamentos.length > 0">
                                     <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
-                                        <tr class="nunito-regular">
-                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
-                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
-                                            <td class="px-4 py-3">
-                                                <div class="flex justify-center gap-2">
-                                                    <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                        <i class="fas fa-edit text-sm"></i>
-                                                    </button>
-                                                    <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                        <i class="fas fa-trash text-sm"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                            <div>
+                                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="departamento.nombre_departamento"></h3>
+                                                <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="departamento.pais?.nombre_pais || 'N/A'"></p>
+                                            </div>
+                                            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}; refreshEditDepartamentoSuggestions()" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                                <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </div>
+                                        </div>
                                     </template>
                                 </template>
-                            </tbody>
-                        </table>
-                    </x-slot>
-
-                    <x-slot name="cards">
-                        <template x-if="loadingDepartamentos">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
-                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando departamentos...
-                            </div>
-                        </template>
-                        <template x-if="!loadingDepartamentos && departamentos.length === 0">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
-                                No hay departamentos registrados
-                            </div>
-                        </template>
-                        <template x-if="!loadingDepartamentos && departamentos.length > 0">
-                            <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
-                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="departamento.nombre_departamento"></h3>
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="departamento.pais?.nombre_pais || 'N/A'"></p>
-                                    </div>
-                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </button>
-                                        <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                        </template>
-                    </x-slot>
-                </x-responsive-table>
-            </div>
-        </div>
-        </div>
-
-        <!-- Card Ciudades -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
-            <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-white bg-opacity-20 rounded-lg">
-                            <i class="fas fa-city text-white text-xl"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-white nunito-bold">Ciudades</h2>
-                            <p class="text-purple-100 text-sm nunito-regular">Gestiona las ciudades por departamento</p>
-                        </div>
+                            </x-slot>
+                        </x-responsive-table>
                     </div>
-                    <button @click="isCiudadModalOpen = true"
-                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
-                        <i class="fas fa-plus text-sm"></i>
-                        <span class="text-sm">Nuevo</span>
-                    </button>
                 </div>
             </div>
-            <div class="p-6">
-                <x-responsive-table>
-                    <x-slot name="table">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white rounded-tl-md">Nombre</th>
-                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
-                                    <th class="px-4 py-3 text-center text-gray-700 dark:text-white rounded-tr-md">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                <template x-if="loadingCiudades">
+
+            <!-- Card Ciudades -->
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
+                <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                                <i class="fas fa-city text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-white nunito-bold">Ciudades</h2>
+                                <p class="text-purple-100 text-sm nunito-regular">Gestiona las ciudades por departamento</p>
+                            </div>
+                        </div>
+                        <button @click="isCiudadModalOpen = true; pais_ciudad=''; departamento_ciudad=''; nombre_ciudad=''; suggestedCiudades=[]"
+                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
+                            <i class="fas fa-plus text-sm"></i>
+                            <span class="text-sm">Nuevo</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <x-responsive-table>
+                        <x-slot name="table">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-300 dark:bg-gray-700 nunito-bold">
                                     <tr>
-                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando ciudades...</td>
+                                        <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Nombre</th>
+                                        <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
+                                        <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                     </tr>
-                                </template>
-                                <template x-if="!loadingCiudades && ciudades.length === 0">
-                                    <tr>
-                                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay ciudades registradas</td>
-                                    </tr>
-                                </template>
-                                <template x-if="!loadingCiudades && ciudades.length > 0">
-                                    <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
-                                        <tr class="nunito-regular">
-                                            <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
-                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
-                                            <td class="px-4 py-3">
-                                                <div class="flex justify-center gap-2">
-                                                    <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                        <i class="fas fa-edit text-sm"></i>
-                                                    </button>
-                                                    <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="text-red-500 hover:text-red-700 p-1 rounded">
-                                                        <i class="fas fa-trash text-sm"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <template x-if="loadingCiudades">
+                                        <tr>
+                                            <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando ciudades...</td>
                                         </tr>
                                     </template>
-                                </template>
-                            </tbody>
-                        </table>
-                    </x-slot>
+                                    <template x-if="!loadingCiudades && ciudades.length === 0">
+                                        <tr>
+                                            <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay ciudades registradas</td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="!loadingCiudades && ciudades.length > 0">
+                                        <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                                            <tr class="nunito-regular">
+                                                <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
+                                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
+                                                <td class="px-4 py-3">
+                                                    <div class="flex justify-center gap-2">
+                                                        <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}; edit_pais_ciudad = (departamentos.find(d => String(d.id_departamento_pk) === String(ciudad.id_departamento_fk))?.id_pais_pk || ''); refreshEditCiudadSuggestions()" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                            <i class="fas fa-edit text-sm"></i>
+                                                        </button>
+                                                        <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="text-red-500 hover:text-red-700 p-1 rounded">
+                                                            <i class="fas fa-trash text-sm"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </x-slot>
 
-                    <x-slot name="cards">
-                        <template x-if="loadingCiudades">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
-                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando ciudades...
-                            </div>
-                        </template>
-                        <template x-if="!loadingCiudades && ciudades.length === 0">
-                            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
-                                No hay ciudades registradas
-                            </div>
-                        </template>
-                        <template x-if="!loadingCiudades && ciudades.length > 0">
-                            <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
-                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="ciudad.nombre_ciudad"></h3>
-                                        <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></p>
-                                    </div>
-                                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </button>
-                                        <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
-                                    </div>
+                        <x-slot name="cards">
+                            <template x-if="loadingCiudades">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando ciudades...
                                 </div>
                             </template>
-                        </template>
-                    </x-slot>
-                </x-responsive-table>
+                            <template x-if="!loadingCiudades && ciudades.length === 0">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
+                                    No hay ciudades registradas
+                                </div>
+                            </template>
+                            <template x-if="!loadingCiudades && ciudades.length > 0">
+                                <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="ciudad.nombre_ciudad"></h3>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></p>
+                                        </div>
+                                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                            <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </x-slot>
+                    </x-responsive-table>
+                </div>
             </div>
-        </div>
         </div>
     </div>
 
@@ -578,21 +697,19 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         formId="formPais">
         <div class="grid grid-cols-1 gap-4">
             <div>
-                <label for="search_pais" class="block text-sm font-medium text-gray-700 dark:text-gray-300 nunito-bold">Buscar País</label>
-                <input type="text" id="search_pais" name="search_pais" x-model="searchPais" placeholder="Escribe para buscar..." class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 shadow-sm border focus:border-gray-500 dark:focus:border-gray-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-300 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 nunito-bold">Seleccionar País</label>
-                <div class="mt-1 max-h-60 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-2">
-                    <div class="grid grid-cols-2 gap-2">
-                        <template x-for="pais in listaPaises.filter(p => normalize(p).includes(normalize(searchPais)))" :key="pais">
-                            <button type="button" @click="selected_pais = pais" :class="selected_pais === pais ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="p-2 rounded hover:bg-blue-100 dark:hover:bg-blue-600 text-left nunito-regular">
-                                <span x-text="pais"></span>
-                            </button>
+                <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
+                <template x-if="caOptionsDisponibles.length > 0">
+                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        <option value="">Selecciona un país</option>
+                        <template x-for="n in caOptionsDisponibles" :key="n">
+                            <option :value="n" x-text="n"></option>
                         </template>
-                    </div>
-                </div>
-                <p x-show="selected_pais" class="mt-2 text-sm text-green-800 dark:text-green-400 nunito-regular">Seleccionado: <span x-text="selected_pais"></span></p>
+                    </select>
+                </template>
+                <template x-if="caOptionsDisponibles.length === 0">
+                    <input type="text" id="nombre_pais" name="nombre_pais" x-model="nombre_pais" placeholder="Todos los países de CA ya están registrados" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border bg-gray-100 text-gray-600 nunito-regular px-2" disabled>
+                </template>
+                <p class="text-xs text-gray-500 mt-1 nunito-regular">Solo países de Centroamérica.</p>
             </div>
         </div>
     </x-admin.form-modal>
@@ -606,17 +723,29 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         formId="formDepartamento">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="nombre_departamento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
-                <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="pais_departamento" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
+                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                     </template>
                 </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
+                <!-- If we have suggestions for the selected country, show a select; otherwise show a text input -->
+                <template x-if="suggestedDepartamentos.length > 0">
+                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        <option value="">Selecciona un departamento</option>
+                        <template x-for="opt in suggestedDepartamentos" :key="opt.nombre">
+                            <option :value="opt.nombre" x-text="opt.nombre"></option>
+                        </template>
+                    </select>
+                </template>
+                <template x-if="suggestedDepartamentos.length === 0">
+                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" />
+                </template>
+                <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedDepartamentos.length === 0">No hay catálogo para el país seleccionado. Puedes escribirlo manualmente.</p>
             </div>
         </div>
     </x-admin.form-modal>
@@ -630,17 +759,37 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         formId="formCiudad">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="nombre_ciudad" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
-                <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
+                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Selecciona un país</option>
+                    <template x-for="pais in paises" :key="pais.id_pais_pk">
+                        <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
+                    </template>
+                </select>
             </div>
             <div>
-                <label for="departamento_ciudad" class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
-                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
+                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="">Selecciona un departamento</option>
-                    <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                    <template x-for="departamento in departamentosFiltradosCiudad" :key="departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
                     </template>
                 </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
+                <template x-if="suggestedCiudades.length > 0">
+                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        <option value="">Selecciona una ciudad</option>
+                        <template x-for="opt in suggestedCiudades" :key="opt.nombre">
+                            <option :value="opt.nombre" x-text="opt.nombre"></option>
+                        </template>
+                    </select>
+                </template>
+                <template x-if="suggestedCiudades.length === 0">
+                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </template>
+                <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedCiudades.length === 0">No hay catálogo para el país/departamento seleccionado. Puedes escribirlo manualmente.</p>
             </div>
         </div>
     </x-admin.form-modal>
@@ -667,21 +816,13 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
             </div>
             <div>
                 <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
-                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
                 <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
-            <div>
-                <label for="agencia_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Agencia (Opcional)</label>
-                <select id="agencia_direccion" name="agencia_direccion" x-model="agencia_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Sin agencia</option>
-                    <template x-for="agencia in agencias" :key="agencia.id_agencias_pk">
-                        <option :value="agencia.id_agencias_pk" x-text="agencia.nombre_agencia"></option>
-                    </template>
-                </select>
-            </div>
+            
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
                 <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -736,16 +877,32 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
-                <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <template x-if="editSuggestedDepartamentos.length > 0">
+                    <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <option value="">Selecciona un departamento</option>
+                        <template x-for="opt in editSuggestedDepartamentos" :key="opt.nombre">
+                            <option :value="opt.nombre" x-text="opt.nombre"></option>
+                        </template>
+                    </select>
+                </template>
+                <template x-if="editSuggestedDepartamentos.length === 0">
+                    <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </template>
             </div>
             <div>
                 <label for="edit_pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                     </template>
                 </select>
+                <script>
+                    document.addEventListener('alpine:init', () => {
+                        // when the modal opens, try to refresh suggestions
+                        // This is a no-op if component isn't ready
+                    });
+                </script>
             </div>
         </div>
     </x-admin.edit-modal>
@@ -756,17 +913,36 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
     <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditCiudad">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label for="edit_nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
-                <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label class="block text-sm font-medium text-gray-700">País</label>
+                <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <option value="">Selecciona un país</option>
+                    <template x-for="pais in paises" :key="pais.id_pais_pk">
+                        <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
+                    </template>
+                </select>
             </div>
             <div>
-                <label for="edit_departamento_ciudad" class="block text-sm font-medium text-gray-700">Departamento</label>
-                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <label class="block text-sm font-medium text-gray-700">Departamento</label>
+                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                     <option value="">Selecciona un departamento</option>
-                    <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                    <template x-for="departamento in departamentosFiltradosCiudadEdit" :key="departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
                     </template>
                 </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
+                <template x-if="editSuggestedCiudades.length > 0">
+                    <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <option value="">Selecciona una ciudad</option>
+                        <template x-for="opt in editSuggestedCiudades" :key="opt.nombre">
+                            <option :value="opt.nombre" x-text="opt.nombre"></option>
+                        </template>
+                    </select>
+                </template>
+                <template x-if="editSuggestedCiudades.length === 0">
+                    <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </template>
             </div>
         </div>
     </x-admin.edit-modal>
@@ -790,21 +966,13 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
             </div>
             <div>
                 <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
-                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
                 <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
             </div>
-            <div>
-                <label for="edit_agencia_direccion" class="block text-sm font-medium text-gray-700">Agencia (Opcional)</label>
-                <select id="edit_agencia_direccion" name="edit_agencia_direccion" x-model="itemToEdit.agencia_id" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                    <option value="">Sin agencia</option>
-                    <template x-for="agencia in agencias" :key="agencia.id_agencias_pk">
-                        <option :value="agencia.id_agencias_pk" x-text="agencia.nombre_agencia"></option>
-                    </template>
-                </select>
-            </div>
+            
             <div>
                 <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
                 <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
