@@ -7,6 +7,8 @@
     gastosProyecto: [],
     loadingMovimientos: false,
     lastLoadedProjectId: null,
+    // Modal de lista de proyectos
+    showProjectListModal: false,
 
     async init() {
         await this.fetchProyectos();
@@ -170,8 +172,26 @@
         } catch (e) {
             return date;
         }
-    }
-    ,
+    },
+
+    openProjectListModal() {
+        this.showProjectListModal = true;
+    },
+
+    closeProjectListModal() {
+        this.showProjectListModal = false;
+    },
+
+    async selectProyecto(index) {
+        if (index >= 0 && index < this.proyectos.length) {
+            this.ingresosProyecto = [];
+            this.gastosProyecto = [];
+            this.currentProyectoIndex = index;
+            this.closeProjectListModal();
+            await this.loadMovimientosForCurrent();
+        }
+    },
+
     combinedMovimientos() {
         // Merge ingresos and gastos, normalize a date field and type marker
         const items = [];
@@ -204,7 +224,7 @@
         <div class="flex items-center space-x-2">
             <button @click="previousProyecto()" :disabled="proyectos.length === 0 || loading" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left"></i></button>
             <div class="flex items-center space-x-2">
-                <h2 class="text-xl nunito-bold text-gray-800 dark:text-white" x-text="loading ? 'Cargando...' : (currentProyecto ? currentProyecto.nombre_proyecto : 'No hay proyectos')"></h2>
+                <h2 @click="openProjectListModal()" class="text-xl nunito-bold text-gray-800 dark:text-white cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" x-text="loading ? 'Cargando...' : (currentProyecto ? currentProyecto.nombre_proyecto : 'No hay proyectos')"></h2>
                 <span x-show="!loading && proyectos.length > 0" class="text-sm text-gray-500 dark:text-gray-400 nunito-regular" x-text="'(' + (currentProyectoIndex + 1) + ' de ' + proyectos.length + ')'"></span>
                 <span x-show="loading" class="inline-block w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></span>
             </div>
@@ -233,9 +253,7 @@
                 </div>
                 <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency((currentProyecto && currentProyecto.total_ingresos) ? currentProyecto.total_ingresos : 0)"></div>
                 <p class="text-sm nunito-regular opacity-80">Total recibido</p>
-                <div class="mt-2 pt-2 border-t border-white/20">
-                    <p class="text-xs nunito-regular opacity-70" x-text="'Inicio: ' + formatDate(currentProyecto ? currentProyecto.fecha_inicio_proyecto : null)"></p>
-                </div>
+                
             </div>
         </div>
 
@@ -252,9 +270,7 @@
                 </div>
                 <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency((currentProyecto && currentProyecto.total_gastos) ? currentProyecto.total_gastos : 0)"></div>
                 <p class="text-sm nunito-regular opacity-80">Total gastado</p>
-                <div class="mt-2 pt-2 border-t border-white/20">
-                    <p class="text-xs nunito-regular opacity-70" x-text="'Fin estimado: ' + formatDate(currentProyecto ? currentProyecto.fecha_estimada_fin_proyecto : null)"></p>
-                </div>
+                
             </div>
         </div>
 
@@ -271,9 +287,7 @@
                 </div>
                 <div class="text-3xl nunito-bold mb-1" x-text="formatCurrency(((currentProyecto && currentProyecto.total_ingresos) ? currentProyecto.total_ingresos : 0) - ((currentProyecto && currentProyecto.total_gastos) ? currentProyecto.total_gastos : 0))"></div>
                 <p class="text-sm nunito-regular opacity-80">Saldo neto</p>
-                <div class="mt-2 pt-2 border-t border-white/20">
-                    <p class="text-xs nunito-regular opacity-70" x-text="'Estado: ' + (currentProyecto && currentProyecto.estado_proyecto ? currentProyecto.estado_proyecto.nombre : 'Sin estado')"></p>
-                </div>
+                
             </div>
         </div>
     </div>
@@ -334,3 +348,62 @@
             </div>
         </div>
     </div>
+
+    {{-- Modal de Lista de Proyectos --}}
+    <div x-show="showProjectListModal" x-cloak @click.self="closeProjectListModal()" style="z-index: 10001; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);" class="fixed inset-0 -top-10 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center p-4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div @click.stop class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
+            {{-- Header del Modal --}}
+            <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-folder-open text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl nunito-bold text-white">Lista de Proyectos</h3>
+                        <p class="text-sm text-emerald-100" x-text="proyectos.length + ' proyecto' + (proyectos.length !== 1 ? 's' : '') + ' disponible' + (proyectos.length !== 1 ? 's' : '')"></p>
+                    </div>
+                </div>
+                <button @click="closeProjectListModal()" class="text-white hover:bg-white/20 rounded-lg p-2 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            {{-- Contenido del Modal --}}
+            <div class="overflow-y-auto max-h-[calc(80vh-120px)] p-6">
+                <div class="space-y-3">
+                    <template x-for="(proyecto, index) in proyectos" :key="proyecto.id_proyecto_pk || index">
+                        <div @click="selectProyecto(index)" :class="index === currentProyectoIndex ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-emerald-400 dark:hover:border-emerald-500'" class="border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4 flex-1">
+                                    <div :class="index === currentProyectoIndex ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-gray-500'" class="w-12 h-12 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                        <i class="fas fa-project-diagram text-xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="nunito-bold text-gray-800 dark:text-white truncate" x-text="proyecto.nombre_proyecto"></h4>
+                                            <span x-show="index === currentProyectoIndex" class="bg-emerald-500 text-white text-xs px-2 py-1 rounded-full nunito-bold flex-shrink-0">
+                                                Actual
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate" x-text="proyecto.descripcion || 'Sin descripción'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right ml-4 flex-shrink-0">
+                                    <div class="nunito-bold text-gray-800 dark:text-white" x-text="formatCurrency((proyecto.total_ingresos || 0) - (proyecto.total_gastos || 0))"></div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Balance</div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <template x-if="proyectos.length === 0">
+                    <div class="text-center py-12">
+                        <i class="fas fa-folder-open text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400">No hay proyectos disponibles</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
