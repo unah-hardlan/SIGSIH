@@ -33,6 +33,7 @@
             class="px-4 py-2 font-semibold focus:outline-none nunito-bold">Objetos</button>
     </div>
     <!-- TAB: Gestión de Roles y Permisos -->
+<!-- TAB: Gestión de Roles y Permisos (FIX MOBILE SPACING) -->
 <div x-show="tab === 'gestion'" x-data="{ ready: false }" x-init="$store.access.init(); ready = true;">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Permisos'">
         <x-slot name="filtros">
@@ -52,7 +53,7 @@
         <!-- Grid con columnas independientes y alturas diferenciadas -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-5 text-gray-900 dark:text-gray-200 items-start lg:rounded-lg b">
             <!-- Roles -->
-            <div class="sm:col-span-1 bg-white dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-3 sm:p-4 h-[400px] sm:h-[500px] flex flex-col" x-data="{ roleQ: '' }">
+            <div class="sm:col-span-1 bg-white dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-3 sm:p-4 h-auto sm:h-[500px] flex flex-col" x-data="{ roleQ: '' }">
                 <div class="flex items-center justify-between mb-2 sm:mb-3">
                     <h3 class="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100">Roles</h3>
                     <span class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-white" x-text="$store.access.roles.length + ' totales'"></span>
@@ -62,7 +63,7 @@
                     <i class="fas fa-search absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm"></i>
                 </div>
                 <!-- Scroll interno sólo para la lista de roles -->
-                <ul class="space-y-1 pr-1 custom-scrollbar flex-1 overflow-auto">
+                <ul class="space-y-1 pr-1 custom-scrollbar flex-1 overflow-auto max-h-[300px] sm:max-h-none">
                     <template x-for="r in $store.access.roles.filter(rr => !roleQ || (rr.rol||'').toLowerCase().includes(roleQ.toLowerCase()))" :key="r.id">
                         <li>
                             <button class="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
@@ -283,319 +284,408 @@
     </x-admin.edit-modal>
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteRoleModalOpen" itemToDelete="roleToDelete"
         message="¿Estás seguro de que quieres eliminar el rol?" />
-</div>
+</div
 
     <!-- TAB: Lista de Roles -->
     <div x-show="tab === 'crear'" x-data="{ ready:false, searchRoles:'', ordenarPor:'rol', direction:'asc' }" x-init="$store.roles.init(); ready=true; $watch('searchRoles', v => $store.roles.setSearch(v)); $watch('ordenarPor', v => $store.roles.setSort(v)); $watch('direction', v => $store.roles.setDirection(v));">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Lista de Roles'">
-            <x-slot name="filtros">
-                <div class="flex flex-wrap gap-4 items-center w-full">
-                    @include('partials.filtros-generales', [
-                    'searchModel' => 'searchRoles',
-                    'filtrosSelect' => [
-                    'direction' => [
-                    'label' => 'Dirección',
-                    'options' => ['Ascendente','Descendente']
-                    ]
-                    ],
-                    'ordenarOptions' => [
-                    'rol' => 'Rol',
-                    'descripcion' => 'Descripción',
-                    'creado' => 'Creado'
-                    ]
-                    ])
-                    <div class="text-sm text-red-600" x-text="$store.roles.error"></div>
-                </div>
-            </x-slot>
-            <x-slot name="boton">
-                <div class="w-full flex justify-end gap-2">
-                    <button @click="$store.roles.openCreate()" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap"><span class="nunito-regular">Agregar rol</span></button>
-                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','roles'); if($store.roles.q) p.set('q',$store.roles.q); if($store.roles.sort){ p.set('sort',$store.roles.sort); p.set('direction',$store.roles.direction||'asc'); } const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                        <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
-                    </button>
-                </div>
-            </x-slot>
-            <div class="overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
-                    <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
-                        <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">Rol</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Creado por</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Fecha de creación</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Lista de Roles'">
+        <x-slot name="filtros">
+            <div class="flex flex-wrap gap-4 items-center w-full">
+                @include('partials.filtros-generales', [
+                'searchModel' => 'searchRoles',
+                'filtrosSelect' => [
+                'direction' => [
+                'label' => 'Dirección',
+                'options' => ['Ascendente','Descendente']
+                ]
+                ],
+                'ordenarOptions' => [
+                'rol' => 'Rol',
+                'descripcion' => 'Descripción',
+                'creado' => 'Creado'
+                ]
+                ])
+                <div class="text-sm text-red-600" x-text="$store.roles.error"></div>
+            </div>
+        </x-slot>
+        <x-slot name="boton">
+            <div class="w-full flex justify-end gap-2">
+                <button @click="$store.roles.openCreate()" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap"><span class="nunito-regular">Agregar rol</span></button>
+                <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','roles'); if($store.roles.q) p.set('q',$store.roles.q); if($store.roles.sort){ p.set('sort',$store.roles.sort); p.set('direction',$store.roles.direction||'asc'); } const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                </button>
+            </div>
+        </x-slot>
+
+        <!-- Vista Tabla Desktop -->
+        <div class="hidden md:block overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
+                <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold">Rol</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Creado por</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Fecha de creación</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="role in $store.roles.items" :key="role.id">
+                        <tr class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                            <td class="py-2 px-4 nunito-regular" x-text="role.rol"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="role.descripcion_rol || ''"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="role.creado_por || ''"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="role.fecha_creacion_formatted || role.fecha_creacion || ''"></td>
+                            <td class="py-2 px-4 flex gap-2 text-sm">
+                                <button @click.prevent="$store.roles.openEdit(role)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
+                                <button @click.prevent="$store.roles.openDelete(role)" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="role in $store.roles.items" :key="role.id">
-                            <tr class="bg-white dark:bg-gray-900">
-                                <td class="py-2 px-4 nunito-regular" x-text="role.rol"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="role.descripcion_rol || ''"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="role.creado_por || ''"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="role.fecha_creacion_formatted || role.fecha_creacion || ''"></td>
-                                <td class="py-2 px-4 flex gap-2 text-sm">
-                                    <button @click.prevent="$store.roles.openEdit(role)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
-                                    <button @click.prevent="$store.roles.openDelete(role)" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        </template>
-                        <tr x-show="$store.roles.items.length === 0">
-                            <td colspan="5" class="py-6 text-center text-gray-500 dark:text-gray-400">Sin resultados</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    </template>
+                    <tr x-show="$store.roles.items.length === 0">
+                        <td colspan="5" class="py-6 text-center text-gray-500 dark:text-gray-400">Sin resultados</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Vista Cards Mobile -->
+        <div class="md:hidden space-y-4">
+            <template x-for="role in $store.roles.items" :key="role.id">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="role.rol"></h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="role.descripcion_rol || 'Sin descripción'"></p>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1 nunito-regular">
+                        <div><span class="font-semibold">Creado por:</span> <span x-text="role.creado_por || 'N/A'"></span></div>
+                        <div><span class="font-semibold">Fecha:</span> <span x-text="role.fecha_creacion_formatted || role.fecha_creacion || 'N/A'"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click.prevent="$store.roles.openEdit(role)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button @click.prevent="$store.roles.openDelete(role)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </template>
+            <div x-show="$store.roles.items.length === 0" class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                Sin resultados
             </div>
-        </x-admin.tabla-crud>
-        <!-- Modal Agregar Rol -->
-        <x-admin.form-modal class="nunito-bold" modalName="$store.roles.isCreateOpen" title="Agregar Rol" submitLabel="Guardar Rol" maxWidth="max-w-xl" formId="form-create-role">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Supervisor" x-model="$store.roles.form.rol" />
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el propósito del rol..." x-model="$store.roles.form.descripcion_rol"></textarea>
-            </div>
-            <div @modal-submit.window="if($event.detail.formId==='form-create-role'){ $store.roles.create() }"></div>
-        </x-admin.form-modal>
-        <!-- Modal Editar y Eliminar -->
-        <x-admin.edit-modal class="nunito-bold" modalName="$store.roles.isEditOpen" title="Editar Rol" itemToEdit="$store.roles.current" maxWidth="max-w-xl" formId="form-edit-role">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.rol" />
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.descripcion_rol"></textarea>
-            </div>
-            <div @modal-submit.window="if($event.detail.formId==='form-edit-role'){ $store.roles.update() }"></div>
-        </x-admin.edit-modal>
-        <x-admin.confirmation-modal class="nunito-bold" modalName="$store.roles.isDeleteOpen" itemToDelete="$store.roles.current" itemNameProperty="rol" message="¿Estás seguro de que quieres eliminar el rol?" />
-        <div @confirm-delete.window="$store.roles.remove()"></div>
-    </div>
+        </div>
+
+    </x-admin.tabla-crud>
+
+    <!-- Modal Agregar Rol -->
+    <x-admin.form-modal class="nunito-bold" modalName="$store.roles.isCreateOpen" title="Agregar Rol" submitLabel="Guardar Rol" maxWidth="max-w-xl" formId="form-create-role">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Supervisor" x-model="$store.roles.form.rol" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+            <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el propósito del rol..." x-model="$store.roles.form.descripcion_rol"></textarea>
+        </div>
+        <div @modal-submit.window="if($event.detail.formId==='form-create-role'){ $store.roles.create() }"></div>
+    </x-admin.form-modal>
+
+    <!-- Modal Editar y Eliminar -->
+    <x-admin.edit-modal class="nunito-bold" modalName="$store.roles.isEditOpen" title="Editar Rol" itemToEdit="$store.roles.current" maxWidth="max-w-xl" formId="form-edit-role">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.rol" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+            <textarea class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.descripcion_rol"></textarea>
+        </div>
+        <div @modal-submit.window="if($event.detail.formId==='form-edit-role'){ $store.roles.update() }"></div>
+    </x-admin.edit-modal>
+
+    <x-admin.confirmation-modal class="nunito-bold" modalName="$store.roles.isDeleteOpen" itemToDelete="$store.roles.current" itemNameProperty="rol" message="¿Estás seguro de que quieres eliminar el rol?" />
+    <div @confirm-delete.window="$store.roles.remove()"></div>
+</div>                                                                                                                      
 
     <!-- TAB: Objetos -->
     <div x-show="tab === 'objetos'" x-data="{ ready:false, searchObjetos:'' }" x-init="$store.objetos.init(); ready=true; $watch('searchObjetos', v => $store.objetos.setSearch(v));">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Objetos'">
-            <x-slot name="filtros">
-                <div class="flex flex-wrap gap-4 items-center w-full">
-                    @include('partials.filtros-generales', [
-                    'searchModel' => 'searchObjetos',
-                    'filtrosSelect' => [],
-                    'ordenarOptions' => []
-                    ])
-                    <!-- Select dinámico de tipos -->
-                    <select class="border rounded px-3 py-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" @change="$store.objetos.setTipo($event.target.value)">
-                        <option value="">Todos los tipos</option>
-                        <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-'+t.id">
-                            <option :value="t.id" x-text="t.nombre"></option>
-                        </template>
-                    </select>
-                    <div class="flex gap-2 ml-auto">
-                        <button @click="$store.objetos.openCreate()"
-                            class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
-                            <span class="nunito-regular">Agregar objeto</span>
-                        </button>
-                        <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','objetos'); if($store.objetos.q) p.set('q',$store.objetos.q); if($store.objetos.tipoId) p.set('id_tipo_objetos_fk',$store.objetos.tipoId); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                            <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
-                        </button>
-                    </div>
-                    <div class="text-sm text-red-600 w-full" x-text="$store.objetos.error"></div>
-                </div>
-            </x-slot>
-            <x-slot name="boton"></x-slot>
-            <div class="overflow-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
-                    <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
-                        <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Creado por</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Fecha creación</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="item in $store.objetos.items" :key="item.id">
-                            <tr class="bg-white dark:bg-gray-900">
-                                <td class="py-2 px-4 nunito-regular" x-text="item.nombre_objeto"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="item.descripcion_objeto || ''"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="$store.objetos.tipoNombre(item.id_tipo_objetos_fk)"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="item.creado_por || ''"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="item.fecha_creacion_formatted || item.fecha_creacion || ''"></td>
-                                <td class="py-2 px-4 flex gap-2">
-                                    <button @click.prevent="$store.objetos.openEdit(item)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
-                                    <button @click.prevent="$store.objetos.openDelete(item)" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        </template>
-                        <tr x-show="$store.objetos.items.length === 0">
-                            <td colspan="6" class="py-6 text-center text-gray-500 dark:text-gray-400">Sin resultados</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <!-- Controles de paginación ocultos por solicitud: se removieron Anterior/Siguiente y el indicador de página -->
-        </x-admin.tabla-crud>
-
-        <!-- Modal Agregar Objeto -->
-        <x-admin.form-modal class="nunito-bold" modalName="$store.objetos.isCreateOpen" title="Agregar Objeto" submitLabel="Guardar Objeto"
-            maxWidth="max-w-xl" formId="form-create-obj">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Objeto X"
-                    x-model="$store.objetos.form.nombre_objeto" />
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el objeto..."
-                    x-model="$store.objetos.form.descripcion_objeto"></textarea>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Tipo</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk">
-                    <option value="">Seleccione…</option>
-                    <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-form-'+t.id">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Objetos'">
+        <x-slot name="filtros">
+            <div class="flex flex-wrap gap-4 items-center w-full">
+                @include('partials.filtros-generales', [
+                'searchModel' => 'searchObjetos',
+                'filtrosSelect' => [],
+                'ordenarOptions' => []
+                ])
+                <!-- Select dinámico de tipos -->
+                <select class="border rounded border-gray-600 text-left px-3 py-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" @change="$store.objetos.setTipo($event.target.value)">
+                    <option value="">Todos los tipos</option>
+                    <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-'+t.id">
                         <option :value="t.id" x-text="t.nombre"></option>
                     </template>
                 </select>
-            </div>
-            <div @modal-submit.window="if($event.detail.formId==='form-create-obj'){ $store.objetos.create() }"></div>
-        </x-admin.form-modal>
-
-        <!-- Modal Editar Objeto -->
-        <x-admin.edit-modal class="nunito-bold" modalName="$store.objetos.isEditOpen" title="Editar Objeto" itemToEdit="$store.objetos.current"
-            maxWidth="max-w-xl" formId="form-edit-obj">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
-                    x-model="$store.objetos.form.nombre_objeto" />
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea class="w-full border rounded px-3 py-2 nunito-regular"
-                    x-model="$store.objetos.form.descripcion_objeto"></textarea>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Tipo</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk">
-                    <option value="">Seleccione…</option>
-                    <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-form-edit-'+t.id">
-                        <option :value="t.id" x-text="t.nombre"></option>
-                    </template>
-                </select>
-            </div>
-            <div @modal-submit.window="if($event.detail.formId==='form-edit-obj'){ $store.objetos.update() }"></div>
-        </x-admin.edit-modal>
-
-        <!-- Modal Eliminar Objeto -->
-        <x-admin.confirmation-modal class="nunito-bold" modalName="$store.objetos.isDeleteOpen" itemToDelete="$store.objetos.current" itemNameProperty="nombre_objeto"
-            message="¿Estás seguro de que quieres eliminar el objeto?" />
-        <div @confirm-delete.window="$store.objetos.remove()"></div>
-    </div>
-
-    <!-- TAB: Asignar Rol a Usuario (dinámico) -->
-    <div x-show="tab === 'asignar'" x-data="{ ready:false, searchAssign:'' }" x-init="$store.assignRoles.init(); ready=true; $watch('searchAssign', v => $store.assignRoles.setSearch(v));">
-        <x-admin.tabla-crud class="nunito-bold" :titulo="'Asignación de Roles a Usuarios'">
-            <x-slot name="filtros">
-                <div class="flex flex-wrap gap-4 mb-4 items-center w-full">
-                    @include('partials.filtros-generales', [
-                    'searchModel' => 'searchAssign',
-                    'filtrosSelect' => [],
-                    'ordenarOptions' => []
-                    ])
-                    <select class="border rounded px-3 py-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" @change="$store.assignRoles.setFilterRol($event.target.value)">
-                        <option value="">Todos los roles</option>
-                        <template x-for="r in $store.assignRoles.roles" :key="'rol-filter-'+r.id">
-                            <option :value="r.id" x-text="r.rol"></option>
-                        </template>
-                    </select>
-                    <div class="text-sm text-red-600" x-text="$store.assignRoles.error"></div>
-                </div>
-            </x-slot>
-            <x-slot name="boton">
-                <div class="w-full flex justify-end gap-2">
-                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','asignar'); if($store.assignRoles.q) p.set('q',$store.assignRoles.q); if($store.assignRoles.filterRol) p.set('id_rol_fk',$store.assignRoles.filterRol); if($store.assignRoles.sort){ p.set('sort',$store.assignRoles.sort); p.set('direction',$store.assignRoles.direction||'asc'); } p.set('all','1'); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                <div class="flex gap-2 ml-auto">
+                    <button @click="$store.objetos.openCreate()"
+                        class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap">
+                        <span class="nunito-regular">Agregar objeto</span>
+                    </button>
+                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','objetos'); if($store.objetos.q) p.set('q',$store.objetos.q); if($store.objetos.tipoId) p.set('id_tipo_objetos_fk',$store.objetos.tipoId); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
                         <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
                     </button>
                 </div>
-            </x-slot>
-            <div class="overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
-                    <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
-                        <tr>
-                            <th class="py-2 px-4 text-left nunito-bold">Usuario</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Rol</th>
-                            <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="u in $store.assignRoles.items" :key="u.id">
-                            <tr class="bg-white dark:bg-gray-900">
-                                <td class="py-2 px-4 nunito-regular" x-text="u.usuario"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="u.nombre_usuario"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></td>
-                                <td class="py-2 px-4">
-                                    <button @click.prevent="$store.assignRoles.openAssign(u)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
-                                </td>
-                            </tr>
-                        </template>
-                        <tr x-show="$store.assignRoles.items.length === 0">
-                            <td colspan="4" class="py-6 text-center text-gray-500 dark:text-gray-400">Sin resultados</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="text-sm text-red-600 w-full" x-text="$store.objetos.error"></div>
             </div>
-        </x-admin.tabla-crud>
+        </x-slot>
+        <x-slot name="boton"></x-slot>
 
-        <!-- Modal Asignar Rol -->
-        <x-admin.form-modal class="nunito-bold" modalName="$store.assignRoles.isAssignOpen" title="Asignar Roles a Usuario" submitLabel="Guardar" maxWidth="max-w-md" formId="form-assign-role">
-            <div class="mb-4" x-show="$store.assignRoles.current">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
-                <input type="text" class="w-full border rounded px-3 py-2 bg-gray-100 nunito-regular" :value="$store.assignRoles.current?.usuario" readonly />
+        <!-- Vista Tabla Desktop -->
+        <div class="hidden md:block overflow-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
+                <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Tipo</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Creado por</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Fecha creación</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="item in $store.objetos.items" :key="item.id">
+                        <tr class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                            <td class="py-2 px-4 nunito-regular" x-text="item.nombre_objeto"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="item.descripcion_objeto || ''"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="$store.objetos.tipoNombre(item.id_tipo_objetos_fk)"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="item.creado_por || ''"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="item.fecha_creacion_formatted || item.fecha_creacion || ''"></td>
+                            <td class="py-2 px-4 flex gap-2">
+                                <button @click.prevent="$store.objetos.openEdit(item)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
+                                <button @click.prevent="$store.objetos.openDelete(item)" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="$store.objetos.items.length === 0">
+                        <td colspan="6" class="py-6 text-center text-gray-500 dark:text-gray-400">Sin resultados</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Vista Cards Mobile -->
+        <div class="md:hidden space-y-4">
+            <template x-for="item in $store.objetos.items" :key="item.id">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="item.nombre_objeto"></h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="item.descripcion_objeto || 'Sin descripción'"></p>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1 nunito-regular">
+                        <div><span class="font-semibold">Tipo:</span> <span x-text="$store.objetos.tipoNombre(item.id_tipo_objetos_fk)"></span></div>
+                        <div><span class="font-semibold">Creado por:</span> <span x-text="item.creado_por || 'N/A'"></span></div>
+                        <div><span class="font-semibold">Fecha:</span> <span x-text="item.fecha_creacion_formatted || item.fecha_creacion || 'N/A'"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click.prevent="$store.objetos.openEdit(item)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button @click.prevent="$store.objetos.openDelete(item)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </template>
+            <div x-show="$store.objetos.items.length === 0" class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                Sin resultados
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Rol principal</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.assignRoles.rol_principal" @change="$store.assignRoles.setPrincipal($event.target.value)" required>
-                    <option value="">Seleccione…</option>
-                    <template x-for="r in $store.assignRoles.roles" :key="'rol-opt-'+r.id">
+        </div>
+
+    </x-admin.tabla-crud>
+
+    <!-- Modal Agregar Objeto -->
+    <x-admin.form-modal class="nunito-bold" modalName="$store.objetos.isCreateOpen" title="Agregar Objeto" submitLabel="Guardar Objeto"
+        maxWidth="max-w-xl" formId="form-create-obj">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Objeto X"
+                x-model="$store.objetos.form.nombre_objeto" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+            <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el objeto..."
+                x-model="$store.objetos.form.descripcion_objeto"></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Tipo</label>
+            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk">
+                <option value="">Seleccione…</option>
+                <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-form-'+t.id">
+                    <option :value="t.id" x-text="t.nombre"></option>
+                </template>
+            </select>
+        </div>
+        <div @modal-submit.window="if($event.detail.formId==='form-create-obj'){ $store.objetos.create() }"></div>
+    </x-admin.form-modal>
+
+    <!-- Modal Editar Objeto -->
+    <x-admin.edit-modal class="nunito-bold" modalName="$store.objetos.isEditOpen" title="Editar Objeto" itemToEdit="$store.objetos.current"
+        maxWidth="max-w-xl" formId="form-edit-obj">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                x-model="$store.objetos.form.nombre_objeto" />
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+            <textarea class="w-full border rounded px-3 py-2 nunito-regular"
+                x-model="$store.objetos.form.descripcion_objeto"></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Tipo</label>
+            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk">
+                <option value="">Seleccione…</option>
+                <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-form-edit-'+t.id">
+                    <option :value="t.id" x-text="t.nombre"></option>
+                </template>
+            </select>
+        </div>
+        <div @modal-submit.window="if($event.detail.formId==='form-edit-obj'){ $store.objetos.update() }"></div>
+    </x-admin.edit-modal>
+
+    <!-- Modal Eliminar Objeto -->
+    <x-admin.confirmation-modal class="nunito-bold" modalName="$store.objetos.isDeleteOpen" itemToDelete="$store.objetos.current" itemNameProperty="nombre_objeto"
+        message="¿Estás seguro de que quieres eliminar el objeto?" />
+    <div @confirm-delete.window="$store.objetos.remove()"></div>
+</div>
+
+    <!-- TAB: Asignar Rol a Usuario (dinámico) -->
+    <div x-show="tab === 'asignar'" x-data="{ ready:false, searchAssign:'' }" x-init="$store.assignRoles.init(); ready=true; $watch('searchAssign', v => $store.assignRoles.setSearch(v));">
+    <x-admin.tabla-crud class="nunito-bold" :titulo="'Asignación de Roles a Usuarios'">
+        <x-slot name="filtros">
+            <div class="flex flex-wrap gap-4 mb-4 items-center w-full">
+                @include('partials.filtros-generales', [
+                'searchModel' => 'searchAssign',
+                'filtrosSelect' => [],
+                'ordenarOptions' => []
+                ])
+                <select class="border rounded border-gray-600 px-4 py-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" @change="$store.assignRoles.setFilterRol($event.target.value)">
+                    <option value="">Todos los roles</option>
+                    <template x-for="r in $store.assignRoles.roles" :key="'rol-filter-'+r.id">
                         <option :value="r.id" x-text="r.rol"></option>
                     </template>
                 </select>
+                <div class="text-sm text-red-600" x-text="$store.assignRoles.error"></div>
             </div>
-            <div class="mb-2">
-                <label class="block text-sm font-medium mb-1 nunito-bold">Roles adicionales</label>
-                <div class="max-h-48 overflow-auto border rounded p-2 space-y-1">
-                    <template x-if="$store.assignRoles.rolesLoading">
-                        <div class="text-sm text-gray-500">Cargando roles asignados…</div>
+        </x-slot>
+        <x-slot name="boton">
+            <div class="w-full flex justify-end gap-2">
+                <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','asignar'); if($store.assignRoles.q) p.set('q',$store.assignRoles.q); if($store.assignRoles.filterRol) p.set('id_rol_fk',$store.assignRoles.filterRol); if($store.assignRoles.sort){ p.set('sort',$store.assignRoles.sort); p.set('direction',$store.assignRoles.direction||'asc'); } p.set('all','1'); const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                </button>
+            </div>
+        </x-slot>
+
+        <!-- Vista Tabla Desktop -->
+        <div class="hidden md:block overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
+                <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold">Usuario</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Nombre</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Rol</th>
+                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="u in $store.assignRoles.items" :key="u.id">
+                        <tr class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                            <td class="py-2 px-4 nunito-regular" x-text="u.usuario"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="u.nombre_usuario"></td>
+                            <td class="py-2 px-4 nunito-regular" x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></td>
+                            <td class="py-2 px-4">
+                                <button @click.prevent="$store.assignRoles.openAssign(u)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
                     </template>
-                    <template x-if="!$store.assignRoles.rolesLoading">
-                        <div>
-                            <template x-for="r in $store.assignRoles.roles" :key="'rol-check-'+r.id">
-                                <label class="flex items-center gap-2 text-sm nunito-regular">
-                                    <input type="checkbox" class="rounded accent-blue-600 dark:accent-blue-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                                        :value="String(r.id)"
-                                        :checked="$store.assignRoles.rol_principal==String(r.id) || $store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
-                                        @change="$store.assignRoles.toggleRole(String(r.id))"
-                                        :disabled="$store.assignRoles.isRoleDisabled(r.id)"
-                                        :title="$store.assignRoles.isRoleDisabled(r.id) ? ($store.assignRoles.rol_principal==String(r.id) ? 'El rol principal siempre está asignado' : 'Combinación inválida con el rol seleccionado') : 'Asignar/Remover rol'" />
-                                    <span x-text="r.rol"></span>
-                                    <div class="ml-auto flex items-center gap-2">
-                                        <span x-show="$store.assignRoles.rol_principal==String(r.id)"
-                                            class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Principal</span>
-                                        <span x-show="$store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
-                                            class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">Asignado</span>
-                                    </div>
-                                </label>
-                            </template>
-                        </div>
-                    </template>
+                    <tr x-show="$store.assignRoles.items.length === 0">
+                        <td colspan="4" class="py-6 text-center text-gray-500 dark:text-gray-400">Sin resultados</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Vista Cards Mobile -->
+        <div class="md:hidden space-y-4">
+            <template x-for="u in $store.assignRoles.items" :key="u.id">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="u.usuario"></h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="u.nombre_usuario"></p>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1 nunito-regular">
+                        <div><span class="font-semibold">Rol:</span> <span x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click.prevent="$store.assignRoles.openAssign(u)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <i class="fas fa-edit"></i> Asignar
+                        </button>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">El rol principal no puede desmarcarse. Puedes agregar roles adicionales marcando las casillas.</p>
+            </template>
+            <div x-show="$store.assignRoles.items.length === 0" class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                Sin resultados
             </div>
-            <div @modal-submit.window="if($event.detail.formId==='form-assign-role'){ $store.assignRoles.saveAssignMulti() }"></div>
-        </x-admin.form-modal>
-    </div>
+        </div>
+
+    </x-admin.tabla-crud>
+
+    <!-- Modal Asignar Rol -->
+    <x-admin.form-modal class="nunito-bold" modalName="$store.assignRoles.isAssignOpen" title="Asignar Roles a Usuario" submitLabel="Guardar" maxWidth="max-w-md" formId="form-assign-role">
+        <div class="mb-4" x-show="$store.assignRoles.current">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
+            <input type="text" class="w-full border rounded px-3 py-2 bg-gray-100 nunito-regular" :value="$store.assignRoles.current?.usuario" readonly />
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Rol principal</label>
+            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.assignRoles.rol_principal" @change="$store.assignRoles.setPrincipal($event.target.value)" required>
+                <option value="">Seleccione…</option>
+                <template x-for="r in $store.assignRoles.roles" :key="'rol-opt-'+r.id">
+                    <option :value="r.id" x-text="r.rol"></option>
+                </template>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label class="block text-sm font-medium mb-1 nunito-bold">Roles adicionales</label>
+            <div class="max-h-48 overflow-auto border rounded p-2 space-y-1">
+                <template x-if="$store.assignRoles.rolesLoading">
+                    <div class="text-sm text-gray-500">Cargando roles asignados…</div>
+                </template>
+                <template x-if="!$store.assignRoles.rolesLoading">
+                    <div>
+                        <template x-for="r in $store.assignRoles.roles" :key="'rol-check-'+r.id">
+                            <label class="flex items-center gap-2 text-sm nunito-regular">
+                                <input type="checkbox" class="rounded accent-blue-600 dark:accent-blue-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                                    :value="String(r.id)"
+                                    :checked="$store.assignRoles.rol_principal==String(r.id) || $store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
+                                    @change="$store.assignRoles.toggleRole(String(r.id))"
+                                    :disabled="$store.assignRoles.isRoleDisabled(r.id)"
+                                    :title="$store.assignRoles.isRoleDisabled(r.id) ? ($store.assignRoles.rol_principal==String(r.id) ? 'El rol principal siempre está asignado' : 'Combinación inválida con el rol seleccionado') : 'Asignar/Remover rol'" />
+                                <span x-text="r.rol"></span>
+                                <div class="ml-auto flex items-center gap-2">
+                                    <span x-show="$store.assignRoles.rol_principal==String(r.id)"
+                                        class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Principal</span>
+                                    <span x-show="$store.assignRoles.rolesSelected.map(String).includes(String(r.id))"
+                                        class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">Asignado</span>
+                                </div>
+                            </label>
+                        </template>
+                    </div>
+                </template>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">El rol principal no puede desmarcarse. Puedes agregar roles adicionales marcando las casillas.</p>
+        </div>
+        <div @modal-submit.window="if($event.detail.formId==='form-assign-role'){ $store.assignRoles.saveAssignMulti() }"></div>
+    </x-admin.form-modal>
+</div>
 </div>

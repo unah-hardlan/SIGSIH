@@ -160,28 +160,31 @@ x-init="fetch(); fetchDirecciones(); $watch('searchAgencia', () => fetch()); $wa
           <label for="nombre_agencia" class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Nombre de la agencia</label>
           <input type="text" id="nombre_agencia" name="nombre_agencia" x-model="formAgencia.nombre" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Ej. Agencia Centro">
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Horario</label>
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs text-gray-500">Días:</span>
-              <template x-for="d in dias" :key="d.key">
-                <label class="inline-flex items-center gap-1 text-sm">
-                  <input type="checkbox" x-model="d.sel" @change="composeHorario()" class="rounded text-blue-600 focus:ring-blue-500"> <span x-text="d.key"></span>
-                </label>
-              </template>
-              <button type="button" class="ml-2 text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 dark:text-white" @click="dias.forEach((d,i)=> d.sel = (i<5)); composeHorario()">Lun–Vie</button>
-              <button type="button" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 dark:text-white" @click="dias.forEach(d=> d.sel = true); composeHorario()">Todos</button>
-              <button type="button" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 dark:text-white" @click="dias.forEach(d=> d.sel = false); composeHorario()">Ninguno</button>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold mb-2">Horario</label>
+          <div class="space-y-3">
+            <div>
+              <span class="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Días:</span>
+              <div class="flex flex-wrap items-center gap-2">
+                <template x-for="d in dias" :key="d.key">
+                  <label class="inline-flex items-center gap-1 text-sm">
+                    <input type="checkbox" x-model="d.sel" @change="composeHorario()" class="rounded text-blue-600 focus:ring-blue-500"> <span x-text="d.key"></span>
+                  </label>
+                </template>
+              </div>
+              <div class="flex flex-wrap gap-1 mt-2">
+                <button type="button" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500" @click="dias.forEach((d,i)=> d.sel = (i<5)); composeHorario()">Lun–Vie</button>
+                <button type="button" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500" @click="dias.forEach(d=> d.sel = true); composeHorario()">Todos</button>
+                <button type="button" class="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-600 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500" @click="dias.forEach(d=> d.sel = false); composeHorario()">Ninguno</button>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500">Hora:</span>
-              <input type="time" x-model="horaInicio" @change="composeHorario()" class="rounded border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-              <span>–</span>
-              <input type="time" x-model="horaFin" @change="composeHorario()" class="rounded border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-            </div>
-            <div class="text-sm text-gray-700 dark:text-gray-200">
-              <span class="font-semibold">Horario:</span> <span x-text="formAgencia.horario || '—'" class="italic"></span>
+            <div>
+              <span class="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Hora:</span>
+              <div class="flex items-center gap-2">
+                <input type="time" x-model="horaInicio" @change="composeHorario()" class="rounded border border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-2 py-1 text-sm">
+                <span class="text-gray-500">–</span>
+                <input type="time" x-model="horaFin" @change="composeHorario()" class="rounded border border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-2 py-1 text-sm">
+              </div>
             </div>
           </div>
         </div>

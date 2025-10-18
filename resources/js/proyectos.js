@@ -71,6 +71,7 @@ window.proyectosApiHandlers = {
             component.id_estado_proyecto_fk = "";
             component.isProyectoModalOpen = false;
             await this.fetchProyectos(component);
+            await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
             console.error("Error creating proyecto:", error);
             window.showToast &&
@@ -149,6 +150,7 @@ window.proyectosApiHandlers = {
             component.isProyectoEditModalOpen = false;
             component.itemToEdit = null;
             await this.fetchProyectos(component);
+            await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
             console.error("Error updating proyecto:", error);
         }
@@ -173,6 +175,7 @@ window.proyectosApiHandlers = {
             component.isProyectoDeleteModalOpen = false;
             component.itemToDelete = null;
             await this.fetchProyectos(component);
+            await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
             console.error("Error deleting proyecto:", error);
             const errorMessage =

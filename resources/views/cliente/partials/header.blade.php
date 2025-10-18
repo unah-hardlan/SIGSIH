@@ -4,6 +4,16 @@
     $clienteIniciales = strtoupper(substr($clienteUsuario, 0, 2));
     $clienteAvatar = $authPersona->avatar_path ?? null;
 @endphp
+<style>
+    .header-fixed {
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
+</style>
+<div class="header-fixed">
 <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-gray-50 dark:bg-gray-900 top-0 z-1">
     <!-- Botón colapsar sidebar móvil -->
     <button @click="sidebarOpen = !sidebarOpen"
@@ -107,3 +117,4 @@
         </div>
     </div>
 </header>
+</div>

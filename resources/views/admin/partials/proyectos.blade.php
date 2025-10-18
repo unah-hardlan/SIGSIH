@@ -592,7 +592,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
                     <select x-model="id_categoria_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                         <option value="">Seleccione...</option>
-                        <template x-for="cat in catalogoCategorias" :key="cat.id_categoria_pk">
+                        <template x-for="cat in catalogoCategorias.filter(c => !c.tipo_categoria || c.tipo_categoria.toLowerCase() === 'ingreso')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria"></option>
                         </template>
                     </select>
@@ -632,7 +632,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
                     <select x-model="ingresoToEdit.id_categoria_fk" x-bind:value="ingresoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                         <option value="">Seleccione...</option>
-                        <template x-for="cat in catalogoCategorias" :key="cat.id_categoria_pk">
+                        <template x-for="cat in catalogoCategorias.filter(c => !c.tipo_categoria || c.tipo_categoria.toLowerCase() === 'ingreso')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria" :selected="ingresoToEdit && (cat.id_categoria_pk == (ingresoToEdit.id_categoria_fk || ingresoToEdit.categoria?.id_categoria_pk))"></option>
                         </template>
                     </select>
@@ -674,7 +674,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
                     <select x-model="id_categoria_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                         <option value="">Seleccione...</option>
-                        <template x-for="cat in catalogoCategorias" :key="cat.id_categoria_pk">
+                        <template x-for="cat in catalogoCategorias.filter(c => c.tipo_categoria && c.tipo_categoria.toLowerCase() === 'gasto')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria"></option>
                         </template>
                     </select>
@@ -735,7 +735,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
                     <select x-model="gastoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                         <option value="">Seleccione...</option>
-                        <template x-for="cat in catalogoCategorias" :key="cat.id_categoria_pk">
+                        <template x-for="cat in catalogoCategorias.filter(c => c.tipo_categoria && c.tipo_categoria.toLowerCase() === 'gasto')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria" :selected="gastoToEdit && (cat.id_categoria_pk == (gastoToEdit.id_categoria_fk || gastoToEdit.categoria?.id_categoria_pk))"></option>
                         </template>
                     </select>

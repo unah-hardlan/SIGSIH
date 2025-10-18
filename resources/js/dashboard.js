@@ -1,8 +1,4 @@
-// Dashboard store and component: cache-first + background revalidation
-// Persists KPI and chart datasets across SPA navigation using Alpine.store and localStorage TTL.
-
 function dashAuthHeaders() {
-    // Ya no añadimos Authorization manual; la cookie auth_token se enviará automáticamente.
     return { Accept: "application/json" };
 }
 
@@ -17,7 +13,7 @@ async function dashTryFetch(url, headers) {
 }
 
 document.addEventListener("alpine:init", () => {
-    const TTL_MS = 120000; // 2 min
+    const TTL_MS = 120000;
 
     // Load persisted cache
     let persisted = {};
