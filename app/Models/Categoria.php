@@ -18,7 +18,8 @@ class Categoria extends Model
     // Corregido para incluir las columnas correctas
     protected $fillable = [
         'nombre_categoria',
-        'descripcion_categoria' 
+        'descripcion_categoria',
+        'tipo_categoria',
     ];
 
     /**
@@ -33,11 +34,5 @@ class Categoria extends Model
     {
         return $this->hasMany(Gastos::class, 'id_categoria_fk', 'id_categoria_pk');
     }
-    //     return $this->hasMany(Ingreso::class, 'id_categoria_fk', 'id_categoria_pk');
-    // }
-
-    // public function gastos(): HasMany
-    // {
-    //     return $this->hasMany(Gasto::class, 'id_categoria_fk', 'id_categoria_pk');
-    // }
+   
 }

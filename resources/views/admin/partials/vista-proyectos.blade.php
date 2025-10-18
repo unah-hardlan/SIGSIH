@@ -287,8 +287,8 @@
 
     {{-- Historial de Movimientos (diseño moderno con tarjetas responsive) --}}
     <div class="mt-6 z-0" x-show="currentProyecto" x-transition>
-        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm dark:shadow-lg border border-gray-200 dark:border-gray-700">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm dark:shadow-lg border border-gray-400 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-400 dark:border-gray-700">
                 <h3 class="text-lg nunito-bold text-gray-800 dark:text-white">Historial de Movimientos</h3>
             </div>
 

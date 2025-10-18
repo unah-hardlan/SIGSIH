@@ -13,6 +13,7 @@ class CategoriaResource extends JsonResource
             'id_categoria_pk' => $this->id_categoria_pk,
             'nombre_categoria' => $this->nombre_categoria,
             'descripcion_categoria' => $this->descripcion_categoria,
+            'tipo_categoria' => $this->tipo_categoria,
         ];
     }
 }
