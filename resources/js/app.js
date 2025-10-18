@@ -2005,7 +2005,7 @@ if (typeof window !== "undefined") {
             tab: "solicitudes",
             searchSolicitud: "",
             estadoSolicitud: "",
-            ordenarPor: "id",
+            ordenarPor: "estado_solicitud",
             searchContacto: "",
 
             // Modals state
@@ -2018,7 +2018,7 @@ if (typeof window !== "undefined") {
             // Estados modals (not wired yet; reserved for future use)
             isEstadoModalOpen: false,
             isEditEstadoModalOpen: false,
-            estadoToEdit: null,
+            estadoToEdit: { id: null, nombre_estado: "", descripcion_estado: "", codigo: "", es_final: 0, orden: 0 },
             isDeleteEstadoModalOpen: false,
             estadoToDelete: null,
 
@@ -2178,8 +2178,9 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
+                    // Usar endpoint web-auth para permitir cookie HttpOnly
                     const res = await fetch(
-                        "/api/estados-solicitud?" + params.toString(),
+                        "/api-web/estados-solicitud?" + params.toString(),
                         { headers: this.apiHeaders() }
                     );
                     if (!res.ok) throw new Error("Error estados");

@@ -9,6 +9,7 @@ use App\Services\PermissionService;
 use App\Support\AdminModuleRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,26 @@ Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, '
 Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
     ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.proyectos.estado.web');
+
+// Catálogo de Estados de Solicitud (cookie-auth para SPA admin)
+Route::get('/api-web/estados-solicitud', function (\Illuminate\Http\Request $request) {
+    $items = DB::table('tbl_estado_solicitud')
+        ->select([
+            'id_estado_solicitud_pk as id',
+            'codigo',
+            'nombre as nombre_estado',
+            'descripcion as descripcion_estado',
+            'es_final',
+            'orden',
+        ])
+        ->orderBy('orden')
+        ->orderBy('nombre')
+        ->get();
+    return response()->json([
+        'data' => $items,
+        'meta' => ['count' => $items->count()],
+    ]);
+})->middleware(['auth.jwt.web','admin.only'])->name('api.web.estados.solicitud');
 
 // API-like fallback para cambiar contraseña del perfil (cookie-based auth)
 Route::post('/api-web/me/password', [ProfileController::class, 'changePassword'])

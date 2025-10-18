@@ -63,7 +63,7 @@
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud ACF</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud Cliente</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción</th>
-                            
+
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
                         </tr>
@@ -179,7 +179,7 @@
                     </template>
                 </select>
             </div>
-            
+
             <div class="col-span-2">
                 <label for="descripcion_problema" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción del
                     Problema</label>
@@ -224,7 +224,7 @@
                     </template>
                 </select>
             </div>
-            
+
             <div class="col-span-2">
                 <label for="edit_descripcion_problema" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción del
                     Problema</label>
