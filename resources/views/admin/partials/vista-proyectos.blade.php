@@ -388,10 +388,7 @@
                                         <p class="text-sm text-gray-500 dark:text-gray-400 truncate" x-text="proyecto.descripcion || 'Sin descripción'"></p>
                                     </div>
                                 </div>
-                                <div class="text-right ml-4 flex-shrink-0">
-                                    <div class="nunito-bold text-gray-800 dark:text-white" x-text="formatCurrency((proyecto.total_ingresos || 0) - (proyecto.total_gastos || 0))"></div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">Balance</div>
-                                </div>
+                                
                             </div>
                         </div>
                     </template>
