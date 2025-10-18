@@ -213,9 +213,7 @@
                 <table class="min-w-full text-sm">
                     <thead class="nunito-bold">
                         <tr>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID
-                                Cliente</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Cliente</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha
                                 Cotización</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida
@@ -239,22 +237,21 @@
                     <tbody class="nunito-regular">
                         <template x-for="c in cotizaciones" :key="c.id">
                             <tr>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.id"></td>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_id"></td>
+                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_nombre || 'Sin cliente'"></td>
                                 <td class="px-4 py-3 border-t border-gray-200" x-text="c.fecha"></td>
                                 <td class="px-4 py-3 border-t border-gray-200" x-text="c.valido_hasta"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.imponible ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.impuesto ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.total_impuesto ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.otros_cargos ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.anticipo_requerido ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.total ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200 flex items-center gap-2">
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
                                         class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
@@ -272,10 +269,10 @@
                             </tr>
                         </template>
                         <tr x-show="!cotizaciones.length && !loading">
-                            <td colspan="11" class="text-center text-gray-500 py-4">Sin datos</td>
+                            <td colspan="10" class="text-center text-gray-500 py-4">Sin datos</td>
                         </tr>
                         <tr x-show="loading">
-                            <td colspan="11" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
+                            <td colspan="10" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -293,7 +290,7 @@
                         <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
                     </div>
-                    <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(c.total)"></p>
+                    <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="'L. ' + (Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></p>
                 </div>
                 <p class="text-xs text-gray-400">
                     Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
@@ -836,7 +833,9 @@
 </div>
 
 <style>
+    /* Slightly smaller table typography for headers and data */
+    table thead th,
     table tbody td {
-        font-size: 0.875rem;
+        font-size: 0.8125rem; /* ~13px */
     }
 </style>
