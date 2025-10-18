@@ -200,6 +200,7 @@ import "./tipo-mantenimiento";
 import "./reportes-visita";
 import "./calendario";
 import "./tickets";
+import "./empresas";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {

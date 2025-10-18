@@ -218,37 +218,60 @@ Route::prefix('admin')
             if ($moduloLower === 'gestion de personas') {
                 return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
             }
-            // Capa dinámica específica para Empresas
+            // Capa dinámica específica para Empresas (según esquema actual)
             if ($moduloLower === 'empresas') {
-                $query = \App\Models\EmpresaCliente::with(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
-                if ($search) {
-                    $query->whereHas('nombreEmpresa', function ($q) use ($search) {
-                        $q->where('nombre_empresa', 'like', "%$search%");
+                $query = \App\Models\Cliente::query()
+                    ->where('tipo_cliente', 'empresa')
+                    ->join('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'tbl_cliente.id_cliente_pk')
+                    ->select([
+                        'tbl_cliente.id_cliente_pk',
+                        'tbl_cliente.fecha_registro',
+                        'tbl_cliente.estado_cliente',
+                        'ce.nombre_comercial',
+                        'ce.razon_social',
+                        'ce.rtn',
+                        'ce.descripcion_empresa',
+                        'ce.horario_atencion',
+                    ]);
+
+                if (!empty($search)) {
+                    $s = "%" . $search . "%";
+                    $query->where(function ($q) use ($s) {
+                        $q->where('ce.nombre_comercial', 'like', $s)
+                          ->orWhere('ce.razon_social', 'like', $s)
+                          ->orWhere('ce.rtn', 'like', $s);
                     });
                 }
+
                 if ($estadoEmpresa && in_array(strtolower($estadoEmpresa), ['activo', 'inactivo'])) {
-                    $query->where('estado_empresa', strtolower($estadoEmpresa));
+                    $query->where('tbl_cliente.estado_cliente', strtolower($estadoEmpresa));
                 }
-                // Ordering (allow subset of safe fields)
+
                 $allowedOrden = [
-                    'nombre_empresa' => 'tbl_nombre_empresa.nombre_empresa',
-                    'estado_empresa' => 'tbl_empresa_cliente.estado_empresa',
-                    'fecha_registro' => 'tbl_empresa_cliente.fecha_registro'
+                    'nombre_empresa' => 'ce.nombre_comercial',
+                    'estado_empresa' => 'tbl_cliente.estado_cliente',
+                    'fecha_registro' => 'tbl_cliente.fecha_registro',
                 ];
                 if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
-                    // join to nombres if ordering by nombre_empresa
-                    if ($ordenarPor === 'nombre_empresa') {
-                        $query->join('tbl_nombre_empresa', 'tbl_nombre_empresa.id_nombre_empresa_pk', '=', 'tbl_empresa_cliente.id_nombre_empresa_fk');
-                    }
                     $query->orderBy($allowedOrden[$ordenarPor], 'asc');
                 } else {
-                    $query->orderBy('fecha_registro', 'desc');
+                    $query->orderBy('tbl_cliente.fecha_registro', 'desc');
                 }
+
                 $empresas = $query->get();
-                // Catálogo nombres (sin estado ya que se removió a nivel UI, pero puede existir en DB)
-                $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')->orderBy('nombre_empresa')->get();
-                // Oficinas
-                $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')->orderBy('nombre_oficina')->get();
+
+                // Catálogos opcionales; si no existen las tablas, devolver colecciones vacías para no romper el reporte
+                try {
+                    $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')
+                        ->orderBy('nombre_empresa')
+                        ->get();
+                } catch (\Throwable $e) { $nombresEmpresa = collect(); }
+                try {
+                    $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')
+                        ->orderBy('nombre_oficina')
+                        ->get();
+                } catch (\Throwable $e) { $oficinasEmpresa = collect(); }
+
                 return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
             }
             return view($view, compact('fecha', 'modulo'));
