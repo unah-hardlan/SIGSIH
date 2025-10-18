@@ -140,7 +140,7 @@
                         <tr>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Tipo Contacto</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Valor Contacto</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">ID Persona</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
                         </tr>
                     </thead>
@@ -163,7 +163,7 @@
                             <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.tipo_contacto"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.valor_contacto"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="c.id_cliente_fk"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="clienteLabelById(c.id_cliente_fk) || '—'"></td>
                                 <td class="py-2 px-4 flex gap-2">
                                     <a href="#" @click.prevent="openEditContacto(c)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="openDeleteContacto(c)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
