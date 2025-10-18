@@ -79,6 +79,7 @@
                                 Cliente</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Descripción
                             </th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Contacto</th>
 
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
@@ -87,7 +88,7 @@
                     <tbody>
                         <template x-if="loadingSolicitudes">
                             <tr>
-                                <td colspan="6"
+                                <td colspan="7"
                                     class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
                                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando solicitudes...
                                 </td>
@@ -95,7 +96,7 @@
                         </template>
                         <template x-if="!loadingSolicitudes && filteredSolicitudes().length === 0">
                             <tr>
-                                <td colspan="6"
+                                <td colspan="7"
                                     class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
                                     No se encontraron solicitudes.
                                 </td>
@@ -112,6 +113,7 @@
                                     x-text="sol.numero_solicitud_cliente || '—'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="sol.descripcion_problema || '—'"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.contacto_valor || '—'"></td>
                                 <td class="py-2 px-4"><span
                                         class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs nunito-regular"
                                         x-text="sol.estado_nombre || '—'"></span></td>
