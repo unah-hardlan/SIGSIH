@@ -2262,12 +2262,17 @@ if (typeof window !== "undefined") {
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     const items = json.data || [];
-                    this.contactosOptions = items.map((it) => ({
-                        value: String(it.id_contacto_pk || it.id),
-                        label: `${it.valor_contacto || it.tipo_contacto || "Contacto"
-                            } (ID ${it.id_contacto_pk || it.id})`,
-                        id_cliente_fk: String(it.id_cliente_fk || ""),
-                    }));
+                    this.contactosOptions = items.map((it) => {
+                        const value = String(it.id_contacto_pk || it.id);
+                        const base = it.valor_contacto || it.tipo_contacto || "Contacto";
+                        const cliente = this.clienteLabelById(it.id_cliente_fk) || "";
+                        const label = cliente ? `${base} — ${cliente}` : base;
+                        return {
+                            value,
+                            label,
+                            id_cliente_fk: String(it.id_cliente_fk || ""),
+                        };
+                    });
                 } catch (e) {
                     console.error(e);
                     this.showToast(
