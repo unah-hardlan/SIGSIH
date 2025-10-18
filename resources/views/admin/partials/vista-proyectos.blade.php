@@ -243,7 +243,7 @@
                     <template x-if="(ingresosProyecto.length + gastosProyecto.length) > 0">
                         <div class="space-y-4">
                             <!-- Combine and sort by date descending -->
-                            <template x-for="mov in [...ingresosProyecto.map(i=>({...i, __tipo: 'ingreso', __fecha: i.fecha_ingreso || i.created_at})), ...gastosProyecto.map(g=>({...g, __tipo: 'gasto', __fecha: g.fecha || g.created_at}))].sort((a,b)=> new Date(b.__fecha) - new Date(a.__fecha))" :key="mov.id_ingresos_pk || mov.id_gasto_pk">
+                            <template x-for="(mov, idx) in combinedMovimientos()" :key="(mov.__tipo || 'mov') + '_' + (mov.id_ingresos_pk || mov.id_gasto_pk || idx)">
                                 <div :class="mov.__tipo === 'ingreso' ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-700' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-700'" class="p-4 rounded-lg border flex items-center justify-between">
                                     <div class="flex items-center gap-4">
                                         <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="mov.__tipo === 'ingreso' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'">
