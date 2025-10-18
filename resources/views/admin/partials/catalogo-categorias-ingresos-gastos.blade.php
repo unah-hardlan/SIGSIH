@@ -169,8 +169,9 @@ x-init="fetchCategorias()"
         </x-admin.form-modal>
 
         <!-- Modal Editar Categoría -->
-        <x-admin.edit-modal class="nunito-bold" modalName="isCategoriaEditModalOpen" title="Editar Categoría" 
+        <x-admin.edit-modal class="nunito-bold" modalName="isCategoriaEditModalOpen" title="Editar Categoría"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditCategoria">
+            <template x-if="itemToEdit">
             <div class="space-y-4">
                 <div>
                     <label for="edit_nombre_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
@@ -192,6 +193,7 @@ x-init="fetchCategorias()"
                     </select>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

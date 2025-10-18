@@ -229,7 +229,8 @@ x-init="fetchKardex(); fetchCatalogos();"
 
         <!-- Modal Editar Movimiento -->
         <x-admin.edit-modal modalName="isKardexEditModalOpen" title="Editar Movimiento" itemToEdit="itemToEdit" formId="formEditKardex" maxWidth="max-w-lg">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="itemToEdit">
+            <template x-if="itemToEdit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label for="edit_id_producto_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Producto</label>
                     <select id="edit_id_producto_fk" x-model="itemToEdit.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -270,6 +271,7 @@ x-init="fetchKardex(); fetchCatalogos();"
                     <textarea id="edit_motivo" x-model="itemToEdit.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

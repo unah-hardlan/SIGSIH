@@ -175,6 +175,7 @@ x-init="fetchEstadosSolicitud()"
         </x-admin.form-modal>
 
         <x-admin.edit-modal modalName="isEstadoSolicitudEditModalOpen" title="Editar Estado de Solicitud" itemToEdit="itemToEdit" formId="formEditEstadoSolicitud" maxWidth="max-w-2xl">
+            <template x-if="itemToEdit">
              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
@@ -197,7 +198,8 @@ x-init="fetchEstadosSolicitud()"
                     <label for="edit_es_final" class="ml-2 block text-sm font-medium text-gray-700">Es Final</label>
                 </div>
             </div>
-        </x-admin.edit-modal>
+           </template>
+       </x-admin.edit-modal>
 
         <x-admin.confirmation-modal modalName="isEstadoSolicitudDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este estado?" />
     </div>

@@ -723,16 +723,19 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
 
     <!-- Modales Países (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditPais">
+        <template x-if="itemToEdit">
         <div>
             <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
             <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
 
     <!-- Modales Departamentos (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditDepartamento">
+        <template x-if="itemToEdit">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
@@ -748,12 +751,14 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </select>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDepartamentoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este departamento?" />
 
     <!-- Modales Ciudades (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditCiudad">
+        <template x-if="itemToEdit">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="edit_nombre_ciudad" class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
@@ -769,12 +774,14 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </select>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
 
     <!-- Modales Direcciones (Specific) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="formEditDireccion">
+        <template x-if="itemToEdit">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
@@ -815,6 +822,7 @@ x-init="fetchPaises(); fetchDepartamentos(); fetchCiudades(); fetchDirecciones()
                 </select>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDireccionDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta dirección?" />

@@ -15,21 +15,25 @@
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             <div class="flex flex-wrap items-center gap-3">
-                <input type="text" x-model="searchOrden" placeholder="Buscar..."
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-auto dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
+                {{-- Reutilizamos el partial de filtros generales para mantener consistencia con gestión de usuarios --}}
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchOrden',
+                    'filtrosSelect' => [],
+                    'ordenarOptions' => [
+                        'fecha_recepcion' => 'Fecha Recepción',
+                        'id' => 'Orden',
+                        'fecha_inicio' => 'Fecha Inicio',
+                        'fecha_finalizacion' => 'Fecha Finalización',
+                    ]
+                ])
+
+                {{-- Select dinámico para filtrar por técnico (las opciones provienen de Alpine: tecnicosDisponibles) --}}
                 <select x-model="tecnicoOrden"
                     class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-auto dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                     <option value="">Todos los técnicos</option>
                     <template x-for="tecnico in tecnicosDisponibles" :key="tecnico.value">
                         <option :value="tecnico.value" x-text="tecnico.label"></option>
                     </template>
-                </select>
-                <select x-model="ordenarPor"
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-auto dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                    <option value="fecha_recepcion">Ordenar por Fecha Recepción</option>
-                    <option value="id">Ordenar por Orden</option>
-                    <option value="fecha_inicio">Ordenar por Fecha Inicio</option>
-                    <option value="fecha_finalizacion">Ordenar por Fecha Finalización</option>
                 </select>
             </div>
         </x-slot>

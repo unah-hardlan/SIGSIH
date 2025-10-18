@@ -628,7 +628,8 @@
     <!-- Modal de Edición de Cotización -->
     <x-admin.edit-modal class="nunito-bold" modalName="editModal" title="Editar Cotización" submitLabel="Actualizar"
         itemToEdit="editForm" maxWidth="max-w-4xl" formId="editCotizacionForm">
-        <div x-show="editForm" class="space-y-4">
+        <template x-if="editForm">
+        <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
 
                 <!-- ID del Cliente -->
@@ -771,6 +772,7 @@
                 </div>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <!-- Modal selector de Items de Cotización -->

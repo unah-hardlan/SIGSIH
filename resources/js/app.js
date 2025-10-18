@@ -1703,6 +1703,29 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
+                    // Server-side filtering params
+                    if (
+                        this.searchOrden &&
+                        String(this.searchOrden).trim() !== ""
+                    ) {
+                        params.set("q", String(this.searchOrden).trim());
+                    }
+                    if (
+                        this.tecnicoOrden &&
+                        String(this.tecnicoOrden).trim() !== ""
+                    ) {
+                        params.set(
+                            "id_tecnico_fk",
+                            String(this.tecnicoOrden).trim()
+                        );
+                    }
+                    if (
+                        this.ordenarPor &&
+                        String(this.ordenarPor).trim() !== ""
+                    ) {
+                        params.set("order_by", String(this.ordenarPor).trim());
+                    }
+
                     const response = await fetch(
                         "/api/ordenes-servicio?" + params.toString(),
                         { headers: this.apiHeaders() }
@@ -2057,6 +2080,35 @@ if (typeof window !== "undefined") {
             },
             async init() {
                 if (!(await this.requireAuth())) return;
+                // Debounce helper (local)
+                const debounce = (fn, ms = 350) => {
+                    let h;
+                    return (...a) => {
+                        clearTimeout(h);
+                        h = setTimeout(() => fn(...a), ms);
+                    };
+                };
+
+                // Watch filters and refetch from server (debounced)
+                this.$watch(
+                    "searchOrden",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    })
+                );
+                this.$watch(
+                    "tecnicoOrden",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    }, 250)
+                );
+                this.$watch(
+                    "ordenarPor",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    }, 150)
+                );
+
                 await Promise.all([
                     this.fetchCatalogos(),
                     this.fetchEstadosOrden(),
@@ -2255,8 +2307,11 @@ if (typeof window !== "undefined") {
                     if (!res.ok) throw new Error("Error estados");
                     const json = await res.json();
                     const options = (json.data || []).map((it) => ({
-                        value: String(it.id),
-                        label: it.nombre_estado || `Estado ${it.id}`,
+                        value: String(it.id_estado_solicitud_pk || it.id),
+                        label:
+                            it.nombre ||
+                            it.nombre_estado ||
+                            `Estado ${it.id_estado_solicitud_pk || it.id}`,
                     }));
                     this.estadosOptions = options;
                     this.estadosOptions.sort((a, b) =>

@@ -41,16 +41,42 @@ class IngresosController extends Controller
             $query->where('monto_ingreso', '<=', $request->monto_max);
         }
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre_ingreso', 'LIKE', "%{$search}%")
-                  ->orWhere('descripcion_ingreso', 'LIKE', "%{$search}%");
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_ingreso', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_ingreso', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('proyecto', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_proyecto', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('categoria', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_categoria', 'like', '%' . $searchTerm . '%');
+                  });
             });
         }
 
-        $ingresos = $query->orderBy('fecha_ingreso', 'desc')
-                          ->paginate($request->get('per_page', 15));
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre_ingreso');
+                    break;
+                case 'fecha':
+                    $query->orderBy('fecha_ingreso');
+                    break;
+                case 'monto':
+                    $query->orderBy('monto_ingreso');
+                    break;
+                default:
+                    $query->orderBy('id_ingresos_pk', 'desc');
+            }
+        } else {
+            $query->orderBy('fecha_ingreso', 'desc');
+        }
+
+        $ingresos = $query->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,

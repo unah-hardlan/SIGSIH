@@ -19,6 +19,7 @@
     id_estado_proyecto_fk: '',
     filtroProyecto: '',
     ordenarPorProyecto: '',
+    ordenarPor: '',
 
     // --- Estado para INGRESOS ---
     isIngresoModalOpen: false,
@@ -125,6 +126,14 @@
     }
 }"
 x-init="fetchProyectos(); fetchIngresos(); fetchGastos(); fetchCatalogos();"
+x-effect="
+$watch('filtroProyecto', () => fetchProyectos());
+$watch('ordenarPorProyecto', () => fetchProyectos());
+$watch('filtroIngreso', () => fetchIngresos());
+$watch('ordenarPorIngreso', () => fetchIngresos());
+$watch('filtroGasto', () => fetchGastos());
+$watch('ordenarPorGasto', () => fetchGastos());
+"
 @keydown.escape.window="
     isProyectoModalOpen = false;
     isProyectoEditModalOpen = false;
@@ -160,6 +169,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <x-slot name="filters">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'filtroProyecto',
+                    'ordenarModel' => 'ordenarPorProyecto',
                     'ordenarOptions' => [
                         'nombre' => 'Nombre',
                         'fecha_inicio' => 'Fecha Inicio'
@@ -265,6 +275,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <x-slot name="filters">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'filtroIngreso',
+                    'ordenarModel' => 'ordenarPorIngreso',
                     'ordenarOptions' => [
                         'nombre' => 'Nombre',
                         'fecha' => 'Fecha',
@@ -361,6 +372,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <x-slot name="filters">
                 @include('partials.filtros-generales', [
                     'searchModel' => 'filtroGasto',
+                    'ordenarModel' => 'ordenarPorGasto',
                     'ordenarOptions' => [
                         'nombre' => 'Nombre',
                         'fecha' => 'Fecha',
@@ -501,7 +513,8 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
 
         <!-- Modal Editar Proyecto -->
         <x-admin.edit-modal modalName="isProyectoEditModalOpen" title="Editar Proyecto" formId="formEditProyecto" itemToEdit="itemToEdit" maxWidth="max-w-4xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="itemToEdit" x-effect="if (itemToEdit && isProyectoEditModalOpen) { $nextTick(() => {
+            <template x-if="itemToEdit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-effect="if (itemToEdit && isProyectoEditModalOpen) { $nextTick(() => {
                     // populate fk ids from loaded relations if missing
                     itemToEdit.id_orden_servicio_fk = itemToEdit.id_orden_servicio_fk || itemToEdit.orden_servicio?.id_orden_servicio_pk || '';
                     itemToEdit.id_estado_proyecto_fk = itemToEdit.id_estado_proyecto_fk || itemToEdit.estado_proyecto?.id_estado_proyecto_pk || '';
@@ -560,6 +573,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <textarea x-model="itemToEdit.descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
         
         <x-admin.confirmation-modal modalName="isProyectoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Seguro que quieres eliminar este proyecto?"/>
@@ -606,7 +620,8 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
 
         <!-- Modal Editar Ingreso -->
         <x-admin.edit-modal modalName="isIngresoEditModalOpen" title="Editar Ingreso" formId="formEditIngreso" itemToEdit="ingresoToEdit" maxWidth="max-w-2xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="ingresoToEdit">
+            <template x-if="ingresoToEdit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
                     <select x-model="ingresoToEdit.id_proyecto_fk" x-bind:value="ingresoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -642,6 +657,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <textarea x-model="ingresoToEdit.descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
         
         <x-admin.confirmation-modal modalName="isIngresoDeleteModalOpen" itemToDelete="ingresoToDelete" message="¿Seguro que quieres eliminar este ingreso?"/>
@@ -688,7 +704,8 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
 
         <!-- Modal Editar Gasto -->
         <x-admin.edit-modal modalName="isGastoEditModalOpen" title="Editar Gasto" formId="formEditGasto" itemToEdit="gastoToEdit" maxWidth="max-w-2xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="gastoToEdit" x-effect="if (gastoToEdit && isGastoEditModalOpen) { $nextTick(() => { gastoToEdit.id_proyecto_fk = gastoToEdit.proyecto?.id_proyecto_pk || ''; gastoToEdit.id_categoria_fk = gastoToEdit.categoria?.id_categoria_pk || ''; // Normalizar fecha para <input type=date>
+            <template x-if="gastoToEdit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-effect="if (gastoToEdit && isGastoEditModalOpen) { $nextTick(() => { gastoToEdit.id_proyecto_fk = gastoToEdit.proyecto?.id_proyecto_pk || ''; gastoToEdit.id_categoria_fk = gastoToEdit.categoria?.id_categoria_pk || ''; // Normalizar fecha para <input type=date>
                     (function(){
                         try {
                             var raw = gastoToEdit.fecha || gastoToEdit.fecha_gasto || '';
@@ -745,6 +762,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <textarea x-model="gastoToEdit.descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
         
         <x-admin.confirmation-modal modalName="isGastoDeleteModalOpen" itemToDelete="gastoToDelete" message="¿Seguro que quieres eliminar este gasto?"/>

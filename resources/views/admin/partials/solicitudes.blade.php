@@ -219,6 +219,7 @@
     <!-- Modal Editar Solicitud -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Solicitud" itemToEdit="solicitudToEdit" formId="solicitud-edit-form"
         maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <template x-if="solicitudToEdit">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
@@ -260,6 +261,7 @@
                 </select>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Solicitud -->
@@ -290,6 +292,7 @@
     <!-- Modal Editar Estado -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoModalOpen" title="Editar Estado de Solicitud" itemToEdit="estadoToEdit"
         maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <template x-if="estadoToEdit">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_nombre_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del
@@ -304,6 +307,7 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Estado -->
@@ -344,6 +348,7 @@
     <!-- Modal Editar Contacto -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditContactoModalOpen" title="Editar Contacto" itemToEdit="contactoToEdit" formId="contacto-edit-form"
         maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
+        <template x-if="contactoToEdit">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Contacto</label>
@@ -368,6 +373,7 @@
                 </select>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <!-- Modal Confirmar Eliminación Contacto -->
