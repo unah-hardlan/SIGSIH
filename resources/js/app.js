@@ -2008,6 +2008,29 @@ if (typeof window !== "undefined") {
             ordenarPor: "estado_solicitud",
             searchContacto: "",
             ordenarPorContacto: "tipo_contacto",
+            reportUrl() {
+                const params = new URLSearchParams();
+                params.set("modulo", "Solicitudes");
+                if (this.searchSolicitud)
+                    params.set("search", this.searchSolicitud);
+                if (this.estadoSolicitud)
+                    params.set("estado_solicitud", this.estadoSolicitud);
+                if (this.ordenarPor)
+                    params.set("ordenar_por", this.ordenarPor);
+                const now = new Date();
+                try {
+                    const fechaStr = now.toLocaleDateString("es-HN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    });
+                    params.set("fecha", fechaStr);
+                } catch (_) {
+                    params.set("fecha", now.toISOString().slice(0, 10));
+                }
+                params.set("fecha_generacion", now.toISOString());
+                return "/admin/reportes-header?" + params.toString();
+            },
 
             // Modals state
             isModalOpen: false,

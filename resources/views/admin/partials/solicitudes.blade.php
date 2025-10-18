@@ -61,8 +61,7 @@
                     <button @click="openCreateSolicitud()"
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva
                         Solicitud</button>
-                    <a href="/admin/reportes-header?modulo=Solicitudes&fecha={{ now()->format('d-M-Y') }}"
-                        target="_blank"
+                    <a :href="reportUrl()" target="_blank"
                         class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
@@ -113,7 +112,8 @@
                                     x-text="sol.numero_solicitud_cliente || '—'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="sol.descripcion_problema || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="sol.contacto_valor || '—'"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
+                                    x-text="sol.contacto_valor || '—'"></td>
                                 <td class="py-2 px-4"><span
                                         class="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs nunito-regular"
                                         x-text="sol.estado_nombre || '—'"></span></td>

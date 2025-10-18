@@ -295,6 +295,78 @@ Route::prefix('admin')
 
                 return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
             }
+            // Capa dinámica específica para Solicitudes (según filtros del UI)
+            if ($moduloLower === 'solicitudes') {
+                $ordenarPor = $request->query('ordenar_por');
+                $search = $request->query('search');
+                $estadoSolicitud = $request->query('estado_solicitud');
+
+                $clienteNombreExpr = "COALESCE(ce.nombre_comercial, ce.razon_social, CONCAT_WS(' ', p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido))";
+
+                $query = DB::table('tbl_solicitud as s')
+                    ->join('tbl_cliente as c', 'c.id_cliente_pk', '=', 's.id_cliente_fk')
+                    ->leftJoin('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'c.id_cliente_pk')
+                    ->leftJoin('tbl_cliente_persona as cp', 'cp.id_cliente_fk', '=', 'c.id_cliente_pk')
+                    ->leftJoin('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                    ->leftJoin('tbl_estado_solicitud as es', 'es.id_estado_solicitud_pk', '=', 's.id_estado_solicitud_fk')
+                    ->leftJoin('tbl_contacto as co', 'co.id_contacto_pk', '=', 's.id_contacto_fk')
+                    ->select([
+                        's.id_solicitud_pk as id',
+                        's.numero_solicitud_acf',
+                        's.numero_solicitud_cliente',
+                        's.descripcion_problema',
+                        's.id_estado_solicitud_fk',
+                        's.id_cliente_fk',
+                        'es.nombre as estado_nombre',
+                        'co.valor_contacto',
+                        DB::raw($clienteNombreExpr . ' as cliente_nombre'),
+                    ]);
+
+                if (!empty($estadoSolicitud)) {
+                    // Si viene un id numérico, filtra por FK. Si viene texto, intenta por nombre/código
+                    if (is_numeric($estadoSolicitud)) {
+                        $query->where('s.id_estado_solicitud_fk', (int) $estadoSolicitud);
+                    } else {
+                        $query->where(function ($q) use ($estadoSolicitud) {
+                            $q->where('es.nombre', 'like', '%' . $estadoSolicitud . '%')
+                              ->orWhere('es.codigo', 'like', '%' . $estadoSolicitud . '%');
+                        });
+                    }
+                }
+
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $query->where(function ($q) use ($s, $clienteNombreExpr) {
+                        $q->where('s.numero_solicitud_acf', 'like', $s)
+                          ->orWhere('s.numero_solicitud_cliente', 'like', $s)
+                          ->orWhere('s.descripcion_problema', 'like', $s)
+                          ->orWhere('es.nombre', 'like', $s)
+                          ->orWhere('es.codigo', 'like', $s)
+                          ->orWhere(DB::raw($clienteNombreExpr), 'like', $s);
+                    });
+                }
+
+                // Map de orden permitido
+                $allowedOrden = [
+                    'estado_solicitud' => 'es.nombre',
+                    'cliente' => DB::raw($clienteNombreExpr),
+                    'solicitud_acf' => 's.numero_solicitud_acf',
+                    'solicitud_cliente' => 's.numero_solicitud_cliente',
+                ];
+                if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
+                    $orderColumn = $allowedOrden[$ordenarPor];
+                    // orderColumn puede ser raw expression o string
+                    $query->orderBy($orderColumn, 'asc');
+                } else {
+                    $query->orderBy('es.nombre', 'asc')
+                          ->orderBy('s.id_solicitud_pk', 'asc');
+                }
+
+                // Evitar duplicados por join con personas
+                $solicitudes = $query->distinct()->get();
+
+                return view($view, compact('fecha', 'modulo', 'solicitudes', 'ordenarPor', 'search', 'estadoSolicitud', 'fechaGeneracion'));
+            }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
 
