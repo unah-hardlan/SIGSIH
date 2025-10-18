@@ -35,6 +35,10 @@
     }
 }"
 x-init="fetchCategorias()"
+x-effect="
+$watch('filtroCategoria', () => fetchCategorias());
+$watch('ordenarPor', () => fetchCategorias());
+"
 @keydown.escape.window="
     isCategoriaModalOpen = false;
     isCategoriaEditModalOpen = false;
@@ -51,6 +55,7 @@ x-init="fetchCategorias()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroCategoria',
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre_categoria' => 'Nombre',
                     'id_categoria_pk' => 'ID'
