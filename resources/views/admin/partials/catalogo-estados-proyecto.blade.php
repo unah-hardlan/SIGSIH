@@ -36,6 +36,10 @@
     }
 }"
 x-init="fetchEstadosProyecto()"
+x-effect="
+$watch('filtroEstadoProyecto', () => fetchEstadosProyecto());
+$watch('ordenarPor', () => fetchEstadosProyecto());
+"
 @keydown.escape.window="
     isEstadoProyectoModalOpen = false;
     isEstadoProyectoEditModalOpen = false;
@@ -52,6 +56,7 @@ x-init="fetchEstadosProyecto()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoProyecto',
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'

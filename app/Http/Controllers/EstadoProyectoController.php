@@ -15,30 +15,33 @@ class EstadoProyectoController extends Controller
     {
         $query = EstadoProyecto::query();
 
-        if ($q = $request->input('q')) {
-            $query->where(function($sub) use ($q) {
-                $sub->where('nombre', 'like', "%$q%")
-                    ->orWhere('descripcion', 'like', "%$q%")
-                    ->orWhere('codigo', 'like', "%$q%");
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($sub) use ($searchTerm) {
+                $sub->where('nombre', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('descripcion', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('codigo', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        $sortable = [
-            'nombre' => 'nombre',
-            'codigo' => 'codigo',
-            'orden'  => 'orden',
-            'id'     => 'id_estado_proyecto_pk',
-        ];
-
-        $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction','asc')) === 'desc' ? 'desc' : 'asc';
-
-        if ($sort && isset($sortable[$sort])) {
-            $query->orderBy($sortable[$sort], $direction);
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre');
+                    break;
+                case 'id':
+                    $query->orderBy('id_estado_proyecto_pk');
+                    break;
+                default:
+                    $query->orderBy('orden', 'asc');
+            }
         } else {
             $query->orderBy('orden', 'asc');
         }
-        
+
         $estadosProyecto = $query->get();
 
         return EstadoProyectoResource::collection($estadosProyecto);
