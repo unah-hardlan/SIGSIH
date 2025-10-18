@@ -306,6 +306,40 @@
                 </tbody>
             </table>
         </x-slot>
+        <x-slot name="cards">
+            <template x-if="loadingEmpresas">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando empresas...
+                </div>
+            </template>
+            <template x-if="!loadingEmpresas && empresas.length === 0">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                    No hay empresas registradas
+                </div>
+            </template>
+            <template x-if="!loadingEmpresas && empresas.length > 0">
+                <template x-for="e in empresas" :key="e.id">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="e.nombre_comercial"></h3>
+                            <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Razón Social: ' + e.razon_social"></p>
+                            <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'RTN: ' + e.rtn"></p>
+                            <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Descripción: ' + e.descripcion_empresa"></p>
+                            <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Horario: ' + e.horario_atencion"></p>
+                            <p class="text-sm text-gray-700 dark:text-gray-300" x-text="'Estado: ' + e.estado_label"></p>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <button @click.prevent="openEmpresaModal(true, e)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button @click.prevent="openDeleteEmpresaModal(e)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </x-slot>
     </x-responsive-table>
 
     <!-- Modal Empresas Cliente -->
@@ -375,4 +409,11 @@
         item-to-delete="empresaToDelete"
         item-name-property="nombre_comercial"
         message="¿Estás seguro de que deseas eliminar la empresa cliente" />
+
+    <!-- Ajuste para eliminar espacio en blanco -->
+    <style>
+        body {
+            margin-bottom: 0;
+        }
+    </style>
 </div>

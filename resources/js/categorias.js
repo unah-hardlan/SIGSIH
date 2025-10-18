@@ -28,11 +28,21 @@ window.categoriasApiHandlers = {
         const descripcionTrim = String(
             component.descripcion_categoria || ""
         ).trim();
+        const tipoTrim = String(component.tipo_categoria || "").trim();
 
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre de la categoría es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        if (!tipoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El tipo de categoría es obligatorio",
                     "error"
                 );
             return;
@@ -54,6 +64,7 @@ window.categoriasApiHandlers = {
             const payload = {
                 nombre_categoria: nombreTrim,
                 descripcion_categoria: descripcionTrim,
+                tipo_categoria: tipoTrim,
             };
 
             const response = await fetch("/api/categorias", {
@@ -85,6 +96,7 @@ window.categoriasApiHandlers = {
 
             component.nombre_categoria = "";
             component.descripcion_categoria = "";
+            component.tipo_categoria = "";
             component.isCategoriaModalOpen = false;
             await this.fetchCategorias(component);
         } catch (error) {
@@ -104,11 +116,23 @@ window.categoriasApiHandlers = {
         const descripcionTrim = String(
             component.itemToEdit.descripcion_categoria || ""
         ).trim();
+        const tipoTrim = String(
+            component.itemToEdit.tipo_categoria || ""
+        ).trim();
 
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre de la categoría es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        if (!tipoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El tipo de categoría es obligatorio",
                     "error"
                 );
             return;
@@ -134,6 +158,7 @@ window.categoriasApiHandlers = {
             const payload = {
                 nombre_categoria: nombreTrim,
                 descripcion_categoria: descripcionTrim,
+                tipo_categoria: tipoTrim,
             };
 
             const response = await fetch(

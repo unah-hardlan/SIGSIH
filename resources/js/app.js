@@ -12,16 +12,22 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         let tokenPromise = null;
 
         // We no longer store or use a JS-accessible token; rely on HttpOnly cookie only
-        function getToken() { return null; }
+        function getToken() {
+            return null;
+        }
         function setToken(_) {
             try {
                 if (window.axios && window.axios.defaults?.headers?.common) {
-                    delete window.axios.defaults.headers.common["Authorization"]; // ensure cleared
+                    delete window.axios.defaults.headers.common[
+                        "Authorization"
+                    ]; // ensure cleared
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
-                document.dispatchEvent(new CustomEvent("auth:updated", { detail: { token: null } }));
-            } catch (_) { }
+                document.dispatchEvent(
+                    new CustomEvent("auth:updated", { detail: { token: null } })
+                );
+            } catch (_) {}
         }
 
         async function fetchSessionToken(force = false) {
@@ -69,7 +75,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return { Accept: "application/json" };
                 },
             };
-        } catch (_) { }
+        } catch (_) {}
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -124,8 +130,8 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const delay = isDashboard
                     ? Math.floor(Math.random() * 180) + 60
                     : isApi
-                        ? Math.floor(Math.random() * 80)
-                        : 0;
+                    ? Math.floor(Math.random() * 80)
+                    : 0;
 
                 if (!isApi) return origFetch(...args);
 
@@ -143,12 +149,26 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         if (res.status === 401) {
                             try {
                                 const clone = res.clone();
-                                const data = await clone.json().catch(() => null);
-                                if (data && (data.code === 'SESSION_REMOVED_LIMIT')) {
-                                    try { window.showToast && window.showToast('Se superó el límite de sesiones. Esta sesión se cerró para respetar el máximo permitido.', 'warning', { duration: 4000 }); } catch (_) { }
-                                    try { window.appLogout && window.appLogout(); } catch (_) { }
+                                const data = await clone
+                                    .json()
+                                    .catch(() => null);
+                                if (
+                                    data &&
+                                    data.code === "SESSION_REMOVED_LIMIT"
+                                ) {
+                                    try {
+                                        window.showToast &&
+                                            window.showToast(
+                                                "Se superó el límite de sesiones. Esta sesión se cerró para respetar el máximo permitido.",
+                                                "warning",
+                                                { duration: 4000 }
+                                            );
+                                    } catch (_) {}
+                                    try {
+                                        window.appLogout && window.appLogout();
+                                    } catch (_) {}
                                 }
-                            } catch (_) { }
+                            } catch (_) {}
                         }
                         return res;
                     };
@@ -288,6 +308,9 @@ import {
     faTimesCircle,
     faTrashAlt,
     faExclamationTriangle,
+    faArrowUp,
+    faArrowDown,
+    faBalanceScale,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -375,7 +398,10 @@ library.add(
     faCheckCircle,
     faTimesCircle,
     faTrashAlt,
-    faExclamationTriangle
+    faExclamationTriangle,
+    faArrowUp,
+    faArrowDown,
+    faBalanceScale
 );
 dom.watch();
 
@@ -388,7 +414,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) { }
+    } catch (_) {}
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -478,13 +504,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) { }
+            } catch (_) {}
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) { }
+            } catch (_) {}
 
             let sanitized = html;
             try {
@@ -492,30 +518,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) { }
+            } catch (_) {}
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) { }
+                    } catch (_) {}
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) { }
+                        } catch (_) {}
                     }
                 }
-            } catch (_) { }
+            } catch (_) {}
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -525,7 +551,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 if (
                     window.Livewire &&
@@ -533,10 +559,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) { }
+            } catch (_) {}
 
             this.restoreSidebarScrollPosition();
 
@@ -552,7 +578,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) { }
+            } catch (_) {}
         },
 
         saveSidebarScrollPosition() {
@@ -584,7 +610,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) { }
+            } catch (_) {}
             this.updateActiveLinks(url);
         },
 
@@ -671,7 +697,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) { }
+                } catch (_) {}
                 this.updateActiveLinks(path);
             }
         },
@@ -975,17 +1001,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1013,7 +1039,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) { }
+    } catch (_) {}
     initializeDashboardChartsWithRetry();
 });
 
@@ -1022,7 +1048,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) { }
+    } catch (_) {}
 
     return { Accept: "application/json" };
 }
@@ -1078,21 +1104,33 @@ if (typeof window !== "undefined") {
                         this.logoHeight = data.logoHeight || this.logoHeight;
                         this.timezone = data.timezone || this.timezone;
                         this.dateFormat = data.dateFormat || this.dateFormat;
-                        this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
-                        this.requireEmailVerification = !!data.requireEmailVerification;
+                        this.sessionsLimit =
+                            data.sessionsLimit || this.sessionsLimit;
+                        this.requireEmailVerification =
+                            !!data.requireEmailVerification;
                         this.passwordResetCooldown =
-                            data.passwordResetCooldown ?? this.passwordResetCooldown;
+                            data.passwordResetCooldown ??
+                            this.passwordResetCooldown;
                         this.passwordResetExpire =
-                            data.passwordResetExpire ?? this.passwordResetExpire;
+                            data.passwordResetExpire ??
+                            this.passwordResetExpire;
                         this.passwordResetMaxPerDay =
-                            data.passwordResetMaxPerDay ?? this.passwordResetMaxPerDay;
-                        this.dniFormat = (data.dniFormat || this.dniFormat || "").toString();
-                        this.adminIntentos = data.adminIntentos || this.adminIntentos;
+                            data.passwordResetMaxPerDay ??
+                            this.passwordResetMaxPerDay;
+                        this.dniFormat = (
+                            data.dniFormat ||
+                            this.dniFormat ||
+                            ""
+                        ).toString();
+                        this.adminIntentos =
+                            data.adminIntentos || this.adminIntentos;
                         this.adminCorreo = data.adminCorreo || this.adminCorreo;
-                        this.adminUsuario = data.adminUsuario || this.adminUsuario;
-                        this.adminPassword = data.adminPassword || this.adminPassword;
+                        this.adminUsuario =
+                            data.adminUsuario || this.adminUsuario;
+                        this.adminPassword =
+                            data.adminPassword || this.adminPassword;
                     }
-                } catch (_) { }
+                } catch (_) {}
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
@@ -1106,9 +1144,12 @@ if (typeof window !== "undefined") {
             },
             async guardarPersonalizacion() {
                 const fd = new FormData();
-                if (this.nombreSistema) fd.append("app_name", this.nombreSistema);
-                if (this.selectedLogoFile) fd.append("logo", this.selectedLogoFile);
-                if (this.logoHeight) fd.append("logo_height", String(this.logoHeight));
+                if (this.nombreSistema)
+                    fd.append("app_name", this.nombreSistema);
+                if (this.selectedLogoFile)
+                    fd.append("logo", this.selectedLogoFile);
+                if (this.logoHeight)
+                    fd.append("logo_height", String(this.logoHeight));
                 try {
                     const res = await fetch("/api-web/system-settings", {
                         method: "POST",
@@ -1144,11 +1185,17 @@ if (typeof window !== "undefined") {
                         if (this.nombreSistema) {
                             document.title = this.nombreSistema;
                         }
-                    } catch (_) { }
-                    setTimeout(() => (this.savedMessagePersonalizacion = ""), 2500);
+                    } catch (_) {}
+                    setTimeout(
+                        () => (this.savedMessagePersonalizacion = ""),
+                        2500
+                    );
                 } catch (e) {
                     this.savedMessagePersonalizacion = "No se pudo guardar";
-                    setTimeout(() => (this.savedMessagePersonalizacion = ""), 2500);
+                    setTimeout(
+                        () => (this.savedMessagePersonalizacion = ""),
+                        2500
+                    );
                 }
             },
             async guardarParametros() {
@@ -1173,7 +1220,10 @@ if (typeof window !== "undefined") {
                     this.passwordResetExpire !== undefined &&
                     this.passwordResetExpire !== null
                 )
-                    fd.append("password_reset_expire", String(this.passwordResetExpire));
+                    fd.append(
+                        "password_reset_expire",
+                        String(this.passwordResetExpire)
+                    );
                 if (
                     this.passwordResetMaxPerDay !== undefined &&
                     this.passwordResetMaxPerDay !== null
@@ -1185,9 +1235,12 @@ if (typeof window !== "undefined") {
                 if (this.dniFormat) fd.append("dni_format", this.dniFormat);
                 if (this.adminIntentos)
                     fd.append("admin_intentos", String(this.adminIntentos));
-                if (this.adminCorreo) fd.append("admin_correo", this.adminCorreo);
-                if (this.adminUsuario) fd.append("admin_usuario", this.adminUsuario);
-                if (this.adminPassword) fd.append("admin_password", this.adminPassword);
+                if (this.adminCorreo)
+                    fd.append("admin_correo", this.adminCorreo);
+                if (this.adminUsuario)
+                    fd.append("admin_usuario", this.adminUsuario);
+                if (this.adminPassword)
+                    fd.append("admin_password", this.adminPassword);
                 try {
                     const res = await fetch("/api-web/system-settings", {
                         method: "POST",
@@ -1204,20 +1257,31 @@ if (typeof window !== "undefined") {
                     const data = await res.json();
                     this.timezone = data.timezone || this.timezone;
                     this.dateFormat = data.dateFormat || this.dateFormat;
-                    this.sessionsLimit = data.sessionsLimit || this.sessionsLimit;
-                    this.requireEmailVerification = !!data.requireEmailVerification;
+                    this.sessionsLimit =
+                        data.sessionsLimit || this.sessionsLimit;
+                    this.requireEmailVerification =
+                        !!data.requireEmailVerification;
                     this.passwordResetCooldown =
-                        data.passwordResetCooldown ?? this.passwordResetCooldown;
+                        data.passwordResetCooldown ??
+                        this.passwordResetCooldown;
                     this.passwordResetExpire =
                         data.passwordResetExpire ?? this.passwordResetExpire;
                     this.passwordResetMaxPerDay =
-                        data.passwordResetMaxPerDay ?? this.passwordResetMaxPerDay;
-                    this.dniFormat = (data.dniFormat || this.dniFormat || "").toString();
-                    this.adminIntentos = data.adminIntentos || this.adminIntentos;
+                        data.passwordResetMaxPerDay ??
+                        this.passwordResetMaxPerDay;
+                    this.dniFormat = (
+                        data.dniFormat ||
+                        this.dniFormat ||
+                        ""
+                    ).toString();
+                    this.adminIntentos =
+                        data.adminIntentos || this.adminIntentos;
                     this.adminCorreo = data.adminCorreo || this.adminCorreo;
                     this.adminUsuario = data.adminUsuario || this.adminUsuario;
-                    this.adminPassword = data.adminPassword || this.adminPassword;
-                    this.savedMessageParametros = "Parámetros guardados correctamente";
+                    this.adminPassword =
+                        data.adminPassword || this.adminPassword;
+                    this.savedMessageParametros =
+                        "Parámetros guardados correctamente";
                     setTimeout(() => (this.savedMessageParametros = ""), 2500);
                 } catch (e) {
                     this.savedMessageParametros = "No se pudo guardar";
@@ -1379,8 +1443,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                (o) => String(o.value) === String(estadoId)
-                            )
+                                  (o) => String(o.value) === String(estadoId)
+                              )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1406,8 +1470,8 @@ if (typeof window !== "undefined") {
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                            .filter(Boolean)
-                            .join(" ")
+                              .filter(Boolean)
+                              .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -2093,8 +2157,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                            ? "bg-yellow-600 text-white"
-                            : "bg-green-600 text-white");
+                        ? "bg-yellow-600 text-white"
+                        : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -2218,8 +2282,9 @@ if (typeof window !== "undefined") {
                     const items = json.data || [];
                     this.contactosOptions = items.map((it) => ({
                         value: String(it.id_contacto_pk || it.id),
-                        label: `${it.valor_contacto || it.tipo_contacto || "Contacto"
-                            } (ID ${it.id_contacto_pk || it.id})`,
+                        label: `${
+                            it.valor_contacto || it.tipo_contacto || "Contacto"
+                        } (ID ${it.id_contacto_pk || it.id})`,
                         id_cliente_fk: String(it.id_cliente_fk || ""),
                     }));
                 } catch (e) {
