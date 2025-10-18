@@ -95,6 +95,28 @@
         const d = (this.departamentos || []).find(x => String(x.id_departamento_pk) === String(depId));
         return d ? d.nombre_departamento : '';
     },
+    getDepartamentoByCiudadId(ciudadId) {
+        if (!ciudadId) return null;
+        const city = (this.ciudades || []).find(c => String(c.id_ciudad_pk) === String(ciudadId));
+        if (!city) return null;
+        const dep = (this.departamentos || []).find(d => String(d.id_departamento_pk) === String(city.id_departamento_fk));
+        return dep || null;
+    },
+    getDepartamentoNombreByDireccion(dir) {
+        // Usa el objeto anidado si viene del API, si no, resuelve por listas cargadas
+        const depObj = (dir?.ciudad && dir.ciudad.departamento) || this.getDepartamentoByCiudadId(dir?.id_ciudad_fk);
+        return depObj?.nombre_departamento || '';
+    },
+    getPaisNombreByDireccion(dir) {
+        const depObj = (dir?.ciudad && dir.ciudad.departamento) || this.getDepartamentoByCiudadId(dir?.id_ciudad_fk);
+        const paisId = depObj?.id_pais_pk;
+        if (paisId) {
+            const p = (this.paises || []).find(pp => String(pp.id_pais_pk) === String(paisId));
+            return p ? p.nombre_pais : '';
+        }
+        // Fallback si el backend incluye pais anidado
+        return dir?.ciudad?.departamento?.pais?.nombre_pais || '';
+    },
     refreshCiudadSuggestions() {
         try {
             const paisNombre = this.selectedCiudadPaisNombre;
@@ -279,18 +301,20 @@
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Código Postal</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white hidden lg:table-cell">Referencia</th>
                                     <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Ciudad</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">Departamento</th>
+                                    <th class="px-4 py-3 text-left text-gray-700 dark:text-white">País</th>
                                     <th class="px-4 py-3 text-center text-gray-700 dark:text-white">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 <template x-if="loadingDirecciones">
                                     <tr>
-                                        <td colspan="7" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
+                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
                                     </tr>
                                 </template>
                                 <template x-if="!loadingDirecciones && direcciones.length === 0">
                                     <tr>
-                                        <td colspan="7" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
+                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
                                     </tr>
                                 </template>
                                 <template x-if="!loadingDirecciones && direcciones.length > 0">
@@ -302,6 +326,8 @@
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.codigo_postal"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white hidden lg:table-cell" x-text="direccion.referencia"></td>
                                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="direccion.ciudad?.nombre_ciudad || 'N/A'"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="getDepartamentoNombreByDireccion(direccion) || 'N/A'"></td>
+                                            <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="getPaisNombreByDireccion(direccion) || 'N/A'"></td>
                                             <td class="px-4 py-3">
                                                 <div class="flex justify-center gap-2">
                                                     <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
