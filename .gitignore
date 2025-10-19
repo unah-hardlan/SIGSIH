@@ -28,4 +28,4 @@ yarn-error.log
 Thumbs.db
 
 # Vite
-/public/hot
+/public/hot/public/build/
