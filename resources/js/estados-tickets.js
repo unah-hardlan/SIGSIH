@@ -1,24 +1,31 @@
-window.estadosTicketsApiHandlers = {
-    authHeaders() {
-        return {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        };
-    },
 
+window.estadosTicketsApiHandlers = {
     /**
-     * Fetches the list of estados tickets from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
+     * @param {object} component
      */
     async fetchEstadosTickets(component) {
         component.loadingEstadosTickets = true;
         try {
-            const response = await fetch("/api/estados-ticket", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroEstadoTicket) {
+                params.set("q", component.filtroEstadoTicket);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+            params.set("all", "true");
+
+            const response = await fetch(
+                `/api/estados-ticket?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
+
             component.estadosTickets = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -34,8 +41,7 @@ window.estadosTicketsApiHandlers = {
     },
 
     /**
-     * Submits a new estado ticket to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
+     * @param {object} component
      */
     async submitEstadoTicket(component) {
         const nombreTrim = String(component.nombre || "").trim();
@@ -60,7 +66,6 @@ window.estadosTicketsApiHandlers = {
             return;
         }
 
-        // Validar duplicados por nombre
         if (
             component.estadosTickets.some(
                 (et) => et.nombre.toLowerCase() === nombreTrim.toLowerCase()
@@ -71,7 +76,6 @@ window.estadosTicketsApiHandlers = {
             return;
         }
 
-        // Validar duplicados por código
         if (
             component.estadosTickets.some(
                 (et) => et.codigo.toLowerCase() === codigoTrim.toLowerCase()
@@ -93,16 +97,13 @@ window.estadosTicketsApiHandlers = {
 
             const response = await fetch("/api/estados-ticket", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
+                headers: this.authHeaders(),
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
+
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -136,8 +137,7 @@ window.estadosTicketsApiHandlers = {
     },
 
     /**
-     * Updates an existing estado ticket via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
+     * @param {object} component
      */
     async updateEstadoTicket(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_estado_ticket_pk)
@@ -157,7 +157,6 @@ window.estadosTicketsApiHandlers = {
                 );
             return;
         }
-
         if (!codigoTrim) {
             window.showToast &&
                 window.showToast(
@@ -166,8 +165,6 @@ window.estadosTicketsApiHandlers = {
                 );
             return;
         }
-
-        // Validar duplicados por nombre
         if (
             component.estadosTickets.some(
                 (et) =>
@@ -183,8 +180,6 @@ window.estadosTicketsApiHandlers = {
                 );
             return;
         }
-
-        // Validar duplicados por código
         if (
             component.estadosTickets.some(
                 (et) =>
@@ -214,17 +209,14 @@ window.estadosTicketsApiHandlers = {
                 `/api/estados-ticket/${component.itemToEdit.id_estado_ticket_pk}`,
                 {
                     method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
+                    headers: this.authHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
+
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -257,8 +249,8 @@ window.estadosTicketsApiHandlers = {
     },
 
     /**
-     * Deletes an estado ticket via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
+     
+     * @param {object} component 
      */
     async deleteEstadoTicket(component) {
         if (
