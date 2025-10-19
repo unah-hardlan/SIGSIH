@@ -10,6 +10,7 @@
     filtroGenero: '',
     // catálogos dinámicos
     catalogoGeneros: [],      // [{id, genero}]
+    catalogoUsuarios: [],     // [{id, usuario}]
     catalogosError: '',
     _catalogosPromise: null,
     catalogosTTLms: 300000, // 5 min (ya no se usa localStorage)
@@ -22,6 +23,7 @@
         setTimeout(()=>{ el.classList.add('opacity-0','transition'); },2500);
         setTimeout(()=> el.remove(),3000);
     },
+    _usuariosById: {},
     // orden fijo por nombre asc
     ordenarPor: 'nombre',
     ordenarDir: 'asc',
@@ -59,7 +61,7 @@
 
         async loadCatalogos(){
             // Evitar llamadas duplicadas / tormenta
-            if(this.catalogoGeneros.length) return;
+            if(this.catalogoGeneros.length && this.catalogoUsuarios.length) return;
             if(this._catalogosPromise) return this._catalogosPromise;
 
             this._catalogosPromise = (async ()=>{
@@ -76,13 +78,19 @@
                         }
                         return fetch(url,{ credentials: 'same-origin' });
                     };
-                    const [gRes] = await Promise.all([
+                    const [gRes, uRes] = await Promise.all([
                         fetchWithRetry('/api/generos?all=1'),
+                        // Traer catálogo de usuarios (solo id y usuario si el backend lo permite)
+                        fetchWithRetry('/api/usuarios?per_page=5000')
                     ]);
-                    const bad = [gRes].find(r=>!r.ok);
+                    const bad = [gRes, uRes].find(r=>!r.ok);
                     if(bad){ throw new Error('Error catálogos ('+bad.status+')'); }
-                    const [gData] = await Promise.all([ gRes.json() ]);
+                    const [gData, uData] = await Promise.all([ gRes.json(), uRes.json() ]);
                     this.catalogoGeneros = (gData.data||[]).map(x=>({id:x.id, genero:x.genero}));
+                    const usuariosArr = Array.isArray(uData?.data) ? uData.data : (Array.isArray(uData) ? uData : []);
+                    this.catalogoUsuarios = usuariosArr.map(u=>({ id: u.id ?? u.id_usuario_pk ?? u.id_user ?? u.usuario_id ?? '', usuario: u.usuario ?? u.username ?? u.nombre_usuario ?? '' })).filter(x=>x.id!=='' && x.usuario);
+                    // índice para lookup O(1)
+                    this._usuariosById = Object.fromEntries(this.catalogoUsuarios.map(u=>[String(u.id), u.usuario]));
                 }catch(e){ this.catalogosError = e.message || 'Error catálogos'; this.notify(this.catalogosError,'error'); }
                 finally { this._catalogosPromise=null; }
             })();
@@ -125,12 +133,7 @@
                 const data = await res.json();
                 // data is a Laravel resource collection with data[] and meta
             const items = Array.isArray(data?.data) ? data.data : [];
-                this.personas = items.map(p => ({
-                    ...p,
-                    // mantener IDs originales y aplanar nombres para mostrar
-                    genero_nombre: p.genero?.genero || '',
-                    usuario: p.id_usuario_fk || ''
-                }));
+                this.personas = items.map(p => this.mapPersona(p));
         const meta = data?.meta || {};
         this._suppressWatch = true;
         const nextPage = meta.page || 1;
@@ -149,9 +152,11 @@
             return {
                 ...p,
                 genero_nombre: p.genero?.genero || '',
-                usuario: p.id_usuario_fk || ''
+                // preferir string si backend lo envía, si no, mapear por catálogo
+                usuario: p.usuario?.usuario || p.usuario || this._usuariosById[String(p.id_usuario_fk||'')] || ''
             };
         },
+        usuarioNombreById(id){ try{ return this._usuariosById[String(id||'')] || ''; }catch(_){ return ''; } },
         sortLocal(){
             const map = { nombre: 'primer_nombre', dni: 'dni' };
             const key = map[this.ordenarPor] || 'primer_nombre';
@@ -293,7 +298,7 @@
                             <td class="py-2 px-4" x-text="[persona.primer_nombre, persona.segundo_nombre, persona.primer_apellido, persona.segundo_apellido].filter(Boolean).join(' ')"></td>
                             <td class="py-2 px-4" x-text="persona.dni"></td>
                             <td class="py-2 px-4" x-text="persona.genero_nombre"></td>
-                            <td class="py-2 px-4" x-text="persona.usuario || '—'"></td>
+                            <td class="py-2 px-4" x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '—'"></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
@@ -321,7 +326,7 @@
                     </div>
                     <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span x-text="p.genero_nombre || '—'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="p.usuario || '—'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '—'"></span></div>
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <button @click="openEdit(p)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
