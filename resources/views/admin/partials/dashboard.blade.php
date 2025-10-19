@@ -1,35 +1,4 @@
-<div class="z-10" x-data="scrollPosition()" x-init="restoreScrollPosition()">
-    <script>
-        function scrollPosition() {
-            return {
-                saveScrollPosition() {
-                    localStorage.setItem('dashboardScrollPosition', window.scrollY);
-                },
-                restoreScrollPosition() {
-                    const savedPosition = localStorage.getItem('dashboardScrollPosition');
-                    if (savedPosition) {
-                        setTimeout(() => {
-                            window.scrollTo(0, parseInt(savedPosition));
-                        }, 100);
-                    }
-                },
-                init() {
-                    // Save scroll position before page unload
-                    window.addEventListener('beforeunload', this.saveScrollPosition);
-
-                    // Also save on visibility change (when tab becomes hidden)
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.hidden) {
-                            this.saveScrollPosition();
-                        }
-                    });
-
-                    // Restore position on page load
-                    this.restoreScrollPosition();
-                }
-            }
-        }
-    </script>
+<div class="z-10" x-data="scrollPosition()" x-init="init()">
     <div class="flex items-center my-1 mb-10">
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
         <div class="mx-4">
@@ -40,7 +9,9 @@
             </div>
         </div>
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
-    </div>    <!-- Dashboard KPIs -->
+    </div>
+    
+    <!-- Dashboard KPIs -->
     <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6"> <!-- Fila 1: Usuarios, Empresas, Órdenes -->
             <!-- Card 1: Total Usuarios -->
@@ -224,7 +195,7 @@
     </div>
 
     <div class="mb-8">
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <x-admin.sidebar-link-static href="#" :active="false" view-name="gestion-ordenes" class="bg-white dark:bg-gray-800 p-4 border border-blue-400 border-opacity-50 rounded-lg shadow-md transition-shadow duration-200 text-center">
                 <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                     <i class="fas fa-plus text-blue-500 dark:text-blue-400"></i>
@@ -281,40 +252,41 @@
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
     </div>
 
-<div class="mb-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
-            <div class="flex items-center px-4 py-3 bg-purple-50 dark:bg-purple-900/20 rounded-t-xl border-b border-purple-100 dark:border-purple-700">
-                <i class="fas fa-clipboard-list text-purple-700 dark:text-purple-400 mr-2"></i>
-                <h3 class="text-sm nunito-bold text-purple-700 dark:text-purple-300">Órdenes de Servicio por Estado</h3>
-            </div>
-            <div class="p-6">
-                <div class="relative h-64">
-                    <canvas id="ordenesChart"></canvas>
+    <div class="mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
+                <div class="flex items-center px-4 py-3 bg-purple-50 dark:bg-purple-900/20 rounded-t-xl border-b border-purple-100 dark:border-purple-700">
+                    <i class="fas fa-clipboard-list text-purple-700 dark:text-purple-400 mr-2"></i>
+                    <h3 class="text-sm nunito-bold text-purple-700 dark:text-purple-300">Órdenes de Servicio por Estado</h3>
+                </div>
+                <div class="p-6">
+                    <div class="relative h-64">
+                        <canvas id="ordenesChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
-            <div class="flex items-center px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-t-xl border-b border-indigo-100 dark:border-indigo-700">
-                <i class="fas fa-file-invoice-dollar text-indigo-700 dark:text-indigo-400 mr-2"></i>
-                <h3 class="text-sm nunito-bold text-indigo-700 dark:text-indigo-300">Cotizaciones por Mes</h3>
-            </div>
-            <div class="p-6">
-                <div class="relative h-64">
-                    <canvas id="cotizacionesChart"></canvas>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
+                <div class="flex items-center px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-t-xl border-b border-indigo-100 dark:border-indigo-700">
+                    <i class="fas fa-file-invoice-dollar text-indigo-700 dark:text-indigo-400 mr-2"></i>
+                    <h3 class="text-sm nunito-bold text-indigo-700 dark:text-indigo-300">Cotizaciones por Mes</h3>
+                </div>
+                <div class="p-6">
+                    <div class="relative h-64">
+                        <canvas id="cotizacionesChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
-            <div class="flex items-center px-4 py-3 bg-teal-50 dark:bg-teal-900/20 rounded-t-xl border-b border-teal-100 dark:border-teal-700">
-                <i class="fas fa-project-diagram text-teal-700 dark:text-teal-400 mr-2"></i>
-                <h3 class="text-sm nunito-bold text-teal-700 dark:text-teal-300">Proyectos por Estado</h3>
-            </div>
-            <div class="p-6">
-                <div class="relative h-64">
-                    <canvas id="proyectosChart"></canvas>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-400 border-opacity-50 hover:border-blue-500 transition-colors duration-300">
+                <div class="flex items-center px-4 py-3 bg-teal-50 dark:bg-teal-900/20 rounded-t-xl border-b border-teal-100 dark:border-teal-700">
+                    <i class="fas fa-project-diagram text-teal-700 dark:text-teal-400 mr-2"></i>
+                    <h3 class="text-sm nunito-bold text-teal-700 dark:text-teal-300">Proyectos por Estado</h3>
+                </div>
+                <div class="p-6">
+                    <div class="relative h-64">
+                        <canvas id="proyectosChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
