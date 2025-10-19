@@ -9,10 +9,18 @@ window.proyectosApiHandlers = {
     async fetchProyectos(component) {
         component.loadingProyectos = true;
         try {
-            const response = await fetch("/api/proyectos", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroProyecto)
+                params.set("q", component.filtroProyecto);
+            if (component.ordenarPorProyecto)
+                params.set("sort", component.ordenarPorProyecto);
+            const response = await fetch(
+                `/api/proyectos?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
             component.proyectos = Array.isArray(data?.data) ? data.data : [];
@@ -196,7 +204,12 @@ window.ingresosApiHandlers = {
     async fetchIngresos(component) {
         component.loadingIngresos = true;
         try {
-            const response = await fetch("/api/ingresos", {
+            const params = new URLSearchParams();
+            if (component.filtroIngreso)
+                params.set("q", component.filtroIngreso);
+            if (component.ordenarPorIngreso)
+                params.set("sort", component.ordenarPorIngreso);
+            const response = await fetch(`/api/ingresos?${params.toString()}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
@@ -393,7 +406,11 @@ window.gastosApiHandlers = {
     async fetchGastos(component) {
         component.loadingGastos = true;
         try {
-            const response = await fetch("/api/gastos", {
+            const params = new URLSearchParams();
+            if (component.filtroGasto) params.set("q", component.filtroGasto);
+            if (component.ordenarPorGasto)
+                params.set("sort", component.ordenarPorGasto);
+            const response = await fetch(`/api/gastos?${params.toString()}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });

@@ -146,11 +146,13 @@ x-init="fetchGeneros()"
 
         <!-- Modal Editar Género -->
         <x-admin.edit-modal class="nunito-bold" modalName="isGeneroEditModalOpen" title="Editar Género" itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditGenero">
+            <template x-if="itemToEdit">
             <div>
                 <label for="edit_genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                 <input type="text" id="edit_genero" x-model="itemToEdit.genero" required
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

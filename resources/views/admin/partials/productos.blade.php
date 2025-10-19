@@ -107,7 +107,8 @@ x-init="fetchProductos(); fetchTipoProductos()"
 
         <!-- Modal Editar Producto -->
         <x-admin.edit-modal class="nunito-bold" modalName="isProductoEditModalOpen" title="Editar Producto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditProducto">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-if="itemToEdit">
+            <template x-if="itemToEdit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label for="edit_sku" class="block text-sm font-medium">SKU</label><input type="text" id="edit_sku" x-model="itemToEdit.sku" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
                 <div><label for="edit_nombre_producto" class="block text-sm font-medium">Nombre</label><input type="text" id="edit_nombre_producto" x-model="itemToEdit.nombre_producto" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
                 <div class="md:col-span-2"><label for="edit_descripcion_producto" class="block text-sm font-medium">Descripción</label><textarea id="edit_descripcion_producto" x-model="itemToEdit.descripcion_producto" rows="3" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea></div>
@@ -117,6 +118,7 @@ x-init="fetchProductos(); fetchTipoProductos()"
                 <div><label for="edit_stock_minimo" class="block text-sm font-medium">Stock Mínimo</label><input type="number" id="edit_stock_minimo" x-model="itemToEdit.stock_minimo" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
                 <div class="md:col-span-2"><label for="edit_id_tipo_producto_fk" class="block text-sm font-medium">Tipo Producto</label><select id="edit_id_tipo_producto_fk" x-model="itemToEdit.id_tipo_producto_fk" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"><option value="">Seleccionar Tipo</option><template x-for="tipo in tipoProductos" :key="tipo.id_tipo_producto_pk"><option :value="tipo.id_tipo_producto_pk" x-text="tipo.nombre_tipo_producto"></option></template></select></div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->
