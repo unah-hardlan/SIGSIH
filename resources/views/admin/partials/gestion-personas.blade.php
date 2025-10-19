@@ -256,6 +256,21 @@
             if(this.isModalOpenPersonas) return this.createPersona();
             if(this.isEditModalOpenPersonas) return this.updatePersona();
             if(this.isDeleteModalOpenPersonas) return this.deletePersona();
+    },
+
+    // Generar URL de reporte dinámica con filtros actuales
+    reportUrl(){
+        try{
+            const p = new URLSearchParams();
+            p.set('modulo','Gestion de Personas');
+            if(this.searchPersonas) p.set('q', this.searchPersonas);
+            const map = { nombre: 'nombre', dni: 'dni' };
+            const sort = map[this.ordenarPor] || 'nombre';
+            p.set('sort', sort);
+            p.set('direction', (this.ordenarDir==='desc' ? 'desc' : 'asc'));
+            if(this.filtroGenero) p.set('genero', this.filtroGenero);
+            return `/admin/reportes-header?${p.toString()}`;
+        }catch(_){ return '/admin/reportes-header?modulo=Gestion%20de%20Personas'; }
     }
     }" x-init="init()" @modal-submit.window="onModalSubmit()">
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4" title="Gestión de Personas">
@@ -278,7 +293,12 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="openAdd()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Persona</button>
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <button @click="openAdd()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Persona</button>
+                <a :href="reportUrl()" target="_blank" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-alt"></i> Generar Reporte
+                </a>
+            </div>
         </x-slot>
 
         <x-slot name="table">
