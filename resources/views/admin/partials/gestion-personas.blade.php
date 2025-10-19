@@ -352,6 +352,7 @@
     <!-- Modal Editar Persona -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit"
         maxWidth="max-w-2xl">
+        <template x-if="itemToEdit">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
@@ -386,6 +387,7 @@
             </div>
             
         </div>
+        </template>
     </x-admin.edit-modal>
     <!-- Modal Eliminar Persona -->
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpenPersonas" itemToDelete="itemToDelete"

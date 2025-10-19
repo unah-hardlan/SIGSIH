@@ -11,6 +11,8 @@
     tipo_categoria: '',
     filtroCategoria: '',
     ordenarPor: '',
+    currentPage: 1,
+    perPage: 10,
     async fetchCategorias() {
         // NOTA: El JS deberá ser actualizado para usar estos nuevos nombres de campo
         await window.categoriasApiHandlers.fetchCategorias(this);
@@ -32,9 +34,32 @@
         if (this.isCategoriaDeleteModalOpen) {
             this.deleteCategoria();
         }
+    },
+    paginatedCategorias() {
+        return this.categorias.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.categorias.length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
     }
 }"
 x-init="fetchCategorias()"
+x-effect="
+$watch('filtroCategoria', () => { fetchCategorias(); currentPage = 1; });
+$watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
+"
 @keydown.escape.window="
     isCategoriaModalOpen = false;
     isCategoriaEditModalOpen = false;
@@ -51,6 +76,7 @@ x-init="fetchCategorias()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroCategoria',
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre_categoria' => 'Nombre',
                     'id_categoria_pk' => 'ID'
@@ -92,7 +118,7 @@ x-init="fetchCategorias()"
                         </tr>
                     </template>
                     <template x-if="!loadingCategorias && categorias.length > 0">
-                        <template x-for="(categoria, index) in categorias" :key="categoria.id_categoria_pk">
+                        <template x-for="(categoria, index) in paginatedCategorias()" :key="categoria.id_categoria_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === categorias.length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="categoria.nombre_categoria"></td>
@@ -121,7 +147,7 @@ x-init="fetchCategorias()"
                 </div>
             </template>
             <template x-if="!loadingCategorias && categorias.length > 0">
-                <template x-for="categoria in categorias" :key="categoria.id_categoria_pk">
+                <template x-for="categoria in paginatedCategorias()" :key="categoria.id_categoria_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="categoria.nombre_categoria"></h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="categoria.descripcion_categoria"></p>
@@ -139,6 +165,8 @@ x-init="fetchCategorias()"
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <x-pagination />
 
     <!-- Modales -->
     <div>
@@ -169,8 +197,9 @@ x-init="fetchCategorias()"
         </x-admin.form-modal>
 
         <!-- Modal Editar Categoría -->
-        <x-admin.edit-modal class="nunito-bold" modalName="isCategoriaEditModalOpen" title="Editar Categoría" 
+        <x-admin.edit-modal class="nunito-bold" modalName="isCategoriaEditModalOpen" title="Editar Categoría"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditCategoria">
+            <template x-if="itemToEdit">
             <div class="space-y-4">
                 <div>
                     <label for="edit_nombre_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
@@ -192,6 +221,7 @@ x-init="fetchCategorias()"
                     </select>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

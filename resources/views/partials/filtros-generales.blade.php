@@ -2,7 +2,7 @@
 'searchModel' => 'search',
 'filtrosSelect' => [], // clave => ['label' => 'Texto bonito', 'options' => [...] ]
 'ordenarOptions' => [], // ['campo' => 'Nombre bonito']
-'ordenarModel' => 'ordenarPor', // permite usar un modelo distinto para ordenar
+'ordenarModel' => 'ordenarPor', // Modelo para el select de ordenar
 ])
 
 <input type="text" x-model="{{ $searchModel }}" placeholder="Buscar..."
@@ -18,9 +18,11 @@
 @endforeach
 
 @if (count($ordenarOptions))
+<template x-if="typeof {{ $ordenarModel }} !== 'undefined'">
 <select x-model="{{ $ordenarModel }}" class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
     @foreach ($ordenarOptions as $valor => $texto)
     <option value="{{ $valor }}">Ordenar por {{ $texto }}</option>
     @endforeach
 </select>
+</template>
 @endif
