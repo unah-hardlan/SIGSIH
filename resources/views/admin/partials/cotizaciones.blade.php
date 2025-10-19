@@ -32,7 +32,13 @@
     },
     addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); },
     removeItem(index, formRef='form'){ this[formRef].items.splice(index,1); this.calcTotals(this[formRef]); },
-    apiHeaders(){ const t=localStorage.getItem('authToken'); return { 'Content-Type':'application/json','Accept':'application/json', ...(t?{ 'Authorization':'Bearer '+t }:{}) }; },
+    apiHeaders(){ return { 'Content-Type':'application/json','Accept':'application/json' }; },
+    async ensureAuth(){ return true; },
+    async doFetch(url, opts={}, tryAuth=true){
+        const hasBody = !!opts.body;
+        // Las cookies HTTP gestionan la autenticación automáticamente
+        return fetch(url, opts);
+    },
     showToast(msg,type='ok'){ let d=document.createElement('div'); d.className='fixed top-4 right-4 z-50 px-3 py-2 rounded text-sm shadow '+(type==='error'?'bg-red-600 text-white':'bg-green-600 text-white'); d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); },
     // Auth helpers: get a JWT from web session if needed
     async ensureAuth(){

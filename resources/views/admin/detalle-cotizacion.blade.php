@@ -478,31 +478,12 @@
                 items: [],
                 contactoNombre: '',
                 apiHeaders() {
-                    const t = localStorage.getItem('authToken');
                     return {
                         'Accept': 'application/json',
-                        ...(t ? {
-                            'Authorization': 'Bearer ' + t
-                        } : {})
                     };
                 },
                 async ensureToken() {
-                    if (localStorage.getItem('authToken')) return true;
-                    try {
-                        const r = await fetch('/session/token', {
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-                        if (r.ok) {
-                            const j = await r.json();
-                            if (j?.token) {
-                                localStorage.setItem('authToken', j.token);
-                                return true;
-                            }
-                        }
-                    } catch (e) {}
-                    return false;
+                    return true; 
                 },
                 async fetchWithAuth(url) {
                     let r = await fetch(url, {
