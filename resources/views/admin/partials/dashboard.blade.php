@@ -1,7 +1,7 @@
 <div class="z-10" x-data="scrollPosition()" x-init="init()">
 
     <div class="flex items-center my-1 mb-10 mt-10">
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full border border-blue-200 dark:border-blue-700 shadow-sm">
                 <i class="fas fa-user text-blue-600 dark:text-blue-400 text-lg"></i>
@@ -9,7 +9,7 @@
                 <i class="fas fa-id-card text-indigo-600 dark:text-indigo-400 text-sm"></i>
             </div>
         </div>
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
     </div>
 
     <div class="max-w-md mx-auto my-10 font-sans bg-slate-900 p-0.5 rounded-2xl dark:bg-gradient-to-br dark:from-cyan-400 dark:via-purple-500 dark:to-pink-500 from-dark-50 via-indigo-400 to-blue-400">
@@ -19,16 +19,15 @@
                     class="w-32 h-32 rounded-full object-cover ring-2 ring-slate-300 dark:ring-cyan-400/50" 
                     src="https://placehold.co/128x128/313131/FFFFFF?text=Perfil" 
                     alt="Imagen de perfil del usuario"
-                    onerror="this.onerror=null; this.src='https://placehold.co/128x128/cccccc/FFFFFF?text=Error';"
                 >
             </div>
 
             <div class="text-center">
-                <h1 class="text-3xl font-bold text-black dark:text-white">Ana Sofía</h1>
-                <h2 class="text-xl font-medium text-slate-700 dark:text-slate-200 mb-4">Rodríguez Martínez</h2>
+                <h1 class="text-3xl font-bold text-black dark:text-white">Nombres</h1>
+                <h2 class="text-xl font-medium text-slate-700 dark:text-slate-200 mb-4">Apellidos</h2>
 
                 <p class="text-md text-purple-600 dark:text-cyan-400 font-semibold mt-2 mb-6">
-                    Diseñadora Gráfica Senior
+                   Aqui va el rol
                 </p>
                 
                 <hr class="border-slate-700 my-6">
@@ -44,7 +43,7 @@
     </div>
 
     <div class="flex items-center my-1 mb-10 mt-10">
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full border border-blue-200 dark:border-blue-700 shadow-sm">
                 <i class="fas fa-chart-bar text-blue-600 dark:text-blue-400 text-lg"></i>
@@ -52,7 +51,7 @@
                 <i class="fas fa-chart-line text-indigo-600 dark:text-indigo-400 text-sm"></i>
             </div>
         </div>
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
     </div>
 
 
@@ -227,7 +226,7 @@
     </div>
 
     <div class="flex items-center my-12">
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 rounded-full border border-green-200 dark:border-green-700 shadow-md">
                 <i class="fas fa-rocket text-green-600 dark:text-green-400 text-xl animate-pulse"></i>
@@ -235,7 +234,7 @@
                 <i class="fas fa-bolt text-teal-600 dark:text-teal-400 text-lg"></i>
             </div>
         </div>
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
     </div>
 
     <div class="mb-8">
@@ -285,7 +284,7 @@
     </div>
 
     <div class="flex items-center my-12">
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 rounded-full border border-purple-200 dark:border-purple-700 shadow-md">
                 <i class="fas fa-chart-pie text-purple-600 dark:text-purple-400 text-xl"></i>
@@ -293,7 +292,7 @@
                 <i class="fas fa-chart-line text-blue-600 dark:text-blue-400 text-lg"></i>
             </div>
         </div>
-        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
     </div>
 
     <div class="mb-12">

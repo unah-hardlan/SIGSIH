@@ -1,6 +1,5 @@
 @extends('cliente.layouts.standalone')
 @section('content')
-<!-- Toggle de tema sticky en esquina superior derecha -->
 <div class="fixed top-4 right-4 z-50">
     <button 
         onclick="toggleTheme()" 
@@ -17,12 +16,9 @@
 </div>
 
 <div class="w-full max-w-4xl mx-auto">
-    <!-- Tarjeta principal -->
     <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
-        <!-- Header de la tarjeta -->
         <div class="bg-gradient-to-r from-blue-800 to-blue-900 p-6 text-center">
             <div class="w-20 h-20 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <!-- Logo de la empresa -->
                 <div class="w-15 h-15 rounded-full overflow-hidden bg-white flex items-center justify-center p-1">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo SIGSIH" class="w-full h-full object-contain">
                 </div>
@@ -31,16 +27,13 @@
             <p class="text-blue-100 text-sm">Completa tu perfil para comenzar a usar Hardlan.</p>
         </div>
 
-        <!-- Contenido del formulario -->
         <div class="p-6">
             <form action="{{ route('cliente.configurar-perfil.store') }}" method="POST" id="profile-form" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 
-                <!-- Sección de Avatar -->
                 <div class="text-center mb-6">
                     <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Foto de Perfil</h3>
                     <div class="flex flex-col items-center">
-                        <!-- Preview del avatar -->
                         <div class="relative mb-3">
                             <div class="w-24 h-24 rounded-full border-3 border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700">
                                 <img id="avatar-preview" class="w-full h-full object-cover hidden" alt="Preview">
@@ -52,7 +45,6 @@
                             </div>
                         </div>
                         
-                        <!-- Zona de drag and drop -->
                         <div id="avatar-drop-zone" class="w-full max-w-xs border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-300 ease-in-out">
                             <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="previewImage(this)">
                             <label for="avatar" class="cursor-pointer">
@@ -72,9 +64,7 @@
                     </div>
                 </div>
 
-                <!-- Grid de campos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Primer Nombre -->
                     <div class="space-y-1">
                         <label for="primer_nombre" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Primer Nombre <span class="text-red-500">*</span>
@@ -95,7 +85,6 @@
                         @enderror
                     </div>
 
-                    <!-- Segundo Nombre -->
                     <div class="space-y-1">
                         <label for="segundo_nombre" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Segundo Nombre
@@ -113,7 +102,6 @@
                         @enderror
                     </div>
 
-                    <!-- Primer Apellido -->
                     <div class="space-y-1">
                         <label for="primer_apellido" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Primer Apellido <span class="text-red-500">*</span>
@@ -134,7 +122,6 @@
                         @enderror
                     </div>
 
-                    <!-- Segundo Apellido -->
                     <div class="space-y-1">
                         <label for="segundo_apellido" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Segundo Apellido
@@ -152,7 +139,6 @@
                         @enderror
                     </div>
 
-                    <!-- DNI -->
                     <div class="space-y-1">
                         <label for="dni" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             DNI <span class="text-red-500">*</span>
@@ -173,7 +159,6 @@
                         @enderror
                     </div>
 
-                    <!-- Género -->
                     <div class="space-y-1">
                         <label for="id_genero_fk" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Género <span class="text-red-500">*</span>
@@ -199,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- Botón de envío -->
                 <div class="pt-4">
                     <button 
                         type="submit" 
@@ -215,7 +199,6 @@
                     </button>
                 </div>
 
-                <!-- Separador o mensaje de empresa -->
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
                         <div class="flex items-center justify-center mb-2">
@@ -237,7 +220,6 @@
                     </div>
                 </div>
 
-                <!-- Mensaje de error global -->
                 @if(session('error'))
                     <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
                         <div class="flex">
@@ -261,7 +243,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="text-center mt-8">
         <p class="text-sm text-gray-500 dark:text-gray-400">
             ¿Necesitas ayuda? <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Contacta soporte</a>
@@ -274,7 +255,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('profile-form');
     const submitBtn = document.getElementById('submit-btn');
 
-    // Validation rules
     const validators = {
         name: value => value.trim().length >= 2 || 'Debe tener al menos 2 caracteres',
     dni: value => /^[0-9-]{6,20}$/.test(value.trim()) || 'DNI inválido (solo números y guiones, 6-20 caracteres)',
@@ -288,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Track which fields the user has interacted with
     const touched = {};
     let triedSubmit = false;
 
@@ -321,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const res = validators[rule](value);
 
-        // Only show errors if field was touched or a submit was attempted
         if (res === true) {
             clearError(input);
             return true;
@@ -346,7 +324,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return ok;
     }
 
-    // Initialize touched map and attach listeners
     form.querySelectorAll('[data-validate]').forEach(input => {
         touched[input.id] = false;
         const ev = input.type === 'file' ? 'change' : 'input';
@@ -357,7 +334,6 @@ document.addEventListener('DOMContentLoaded', function() {
             validateAll();
         });
 
-        // also mark touched on blur to catch selects and keyboard navigation
         input.addEventListener('blur', () => {
             touched[input.id] = true;
             validateInput(input);
@@ -384,10 +360,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         reader.readAsDataURL(file);
     }
-    // expose preview function for inline onchange attr
     window.previewImage = previewImage;
 
-    // initial validation pass (do not show errors yet)
     validateAll();
 
     form.addEventListener('submit', function(e) {
@@ -411,13 +385,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Función para toggle del tema con animación suave
 function toggleTheme() {
     const html = document.documentElement;
     const button = document.querySelector('.theme-toggle');
     const isDark = html.classList.contains('dark');
     
-    // Animación del botón
     button.style.transform = 'scale(0.9)';
     
     setTimeout(() => {
@@ -429,7 +401,6 @@ function toggleTheme() {
             localStorage.setItem('theme', 'dark');
         }
         
-        // Restaurar escala del botón
         button.style.transform = 'scale(1)';
     }, 100);
 }
