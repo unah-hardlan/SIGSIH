@@ -41,12 +41,39 @@ class GastosController extends Controller
             $query->where('monto_gasto', '<=', $request->monto_max);
         }
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre_gasto', 'LIKE', "%{$search}%")
-                  ->orWhere('descripcion_gasto', 'LIKE', "%{$search}%");
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_gasto', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_gasto', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('proyecto', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_proyecto', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('categoria', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_categoria', 'like', '%' . $searchTerm . '%');
+                  });
             });
+        }
+
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre_gasto');
+                    break;
+                case 'fecha':
+                    $query->orderBy('fecha_gasto');
+                    break;
+                case 'monto':
+                    $query->orderBy('monto_gasto');
+                    break;
+                default:
+                    $query->orderBy('id_gasto_pk', 'desc');
+            }
+        } else {
+            $query->orderBy('fecha_gasto', 'desc');
         }
 
         $gastos = $query->paginate(15);

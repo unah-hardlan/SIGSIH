@@ -497,6 +497,7 @@
             </div>
 
         </div>
+        </template>
     </x-admin.edit-modal>
     <!-- Modal Eliminar Persona -->
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpenPersonas" itemToDelete="itemToDelete"

@@ -36,6 +36,10 @@
     }
 }"
 x-init="fetchEstadosProyecto()"
+x-effect="
+$watch('filtroEstadoProyecto', () => fetchEstadosProyecto());
+$watch('ordenarPor', () => fetchEstadosProyecto());
+"
 @keydown.escape.window="
     isEstadoProyectoModalOpen = false;
     isEstadoProyectoEditModalOpen = false;
@@ -52,6 +56,7 @@ x-init="fetchEstadosProyecto()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoProyecto',
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'
@@ -187,6 +192,7 @@ x-init="fetchEstadosProyecto()"
 
         <!-- Modal Editar Estado de Proyecto -->
         <x-admin.edit-modal class="nunito-bold" modalName="isEstadoProyectoEditModalOpen" title="Editar Estado de Proyecto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditEstadoProyecto">
+            <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
@@ -214,6 +220,7 @@ x-init="fetchEstadosProyecto()"
                     <label for="edit_es_final" class="ml-2 block text-sm font-medium text-gray-700 nunito-bold">Es Final</label>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->
