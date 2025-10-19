@@ -1,10 +1,10 @@
 {
-  "_index-dDPV8Otl.js": {
-    "file": "assets/index-dDPV8Otl.js",
+  "_index-DvfRO_VF.js": {
+    "file": "assets/index-DvfRO_VF.js",
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-7-JrQkAX.css",
+    "file": "assets/app-DCnN-Jvm.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -24,12 +24,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-De8w4OAU.js",
+    "file": "assets/app-BR-IG7fZ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-dDPV8Otl.js"
+      "_index-DvfRO_VF.js"
     ]
   },
   "resources/js/auth-guard.js": {
@@ -45,12 +45,12 @@
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-DXZ1vuZt.js",
+    "file": "assets/cliente-CEPtnBHe.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-dDPV8Otl.js"
+      "_index-DvfRO_VF.js"
     ]
   },
   "resources/js/cliente/perfil.js": {

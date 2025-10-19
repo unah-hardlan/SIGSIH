@@ -1,49 +1,100 @@
-<div class="max-w-4xl mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="{
+<script>
+window.__backupDb = function() {
+    return {
         tab: localStorage.getItem('dbTab') || 'respaldo',
-    showModal: false,
-    modalMsg: '',
-    openModal(msg) { this.modalMsg = msg; this.showModal = true; document.documentElement.classList.add('overflow-hidden'); },
-    closeModal() { this.showModal = false; document.documentElement.classList.remove('overflow-hidden'); },
+        showModal: false,
+        modalMsg: '',
+        openModal(msg) {
+            this.modalMsg = msg;
+            this.showModal = true;
+            document.documentElement.classList.add('overflow-hidden');
+        },
+        closeModal() {
+            this.showModal = false;
+            document.documentElement.classList.remove('overflow-hidden');
+        },
         estadoConexion: 'inicial',
-       
         // Ruta sugerida por defecto (puedes cambiarla antes de respaldar)
         path: '',
-    isBackingUp: false,
+        isBackingUp: false,
         backupMsg: '',
         downloadUrl: '',
-    driver: 'mysql',
+        driver: 'mysql',
         respaldoExitoso: false,
         mensajeRespaldo: '',
-    confirmPassword: '',
-    lastBackupAt: null,
-        init(){
-            // Construir nombre con fecha-hora: YYYYMMDD-HHMMSS
-            const pad = n => String(n).padStart(2,'0');
+        confirmPassword: '',
+        lastBackupAt: null,
+        init() {
+            const pad = n => String(n).padStart(2, '0');
             const d = new Date();
-            const ts = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-            if(!this.path){ this.path = 'C\\backups\\backup-' + ts + '.sql'; }
+            const ts =
+                `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+            if (!this.path) {
+                this.path = 'C\\backups\\backup-' + ts + '.sql';
+            }
         },
-        async doBackup(){
-            try{
-                this.isBackingUp = true; this.backupMsg='';
-                // Para seguridad, usamos la conexión configurada en Laravel; estos campos son informativos
-                const body = { path: this.path, confirm_password: this.confirmPassword };
-                const r = await fetch('/api/db/backup', { method: 'POST', headers: { 'Content-Type':'application/json','Accept':'application/json' }, credentials:'include', body: JSON.stringify(body) });
-                const data = await r.json().catch(()=>({}));
-                if(!r.ok){ throw new Error(data.message || data.error || 'Fallo realizando respaldo'); }
+        async doBackup() {
+            this.isBackingUp = true;
+            this.backupMsg = '';
+            try {
+                const body = {
+                    path: this.path,
+                    confirm_password: this.confirmPassword
+                };
+                const r = await fetch('/api/db/backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(body)
+                });
+                const data = await r.json().catch(() => ({}));
+                // Soportar "soft error" (HTTP 200 con ok=false)
+                if (data && data.ok === false && (data.code === 'INVALID_CONFIRM_PASSWORD' || data.code ===
+                        'MISSING_CONFIRM_PASSWORD')) {
+                    const msg = (data && data.errors && data.errors.confirm_password && data.errors
+                        .confirm_password[0]) || data.error || 'Contraseña incorrecta';
+                    this.backupMsg = msg;
+                    this.respaldoExitoso = false;
+                    this.mensajeRespaldo = (data.code === 'MISSING_CONFIRM_PASSWORD') ? 'Falta contraseña' :
+                        'Contraseña incorrecta';
+                    return;
+                }
+                if (!r.ok) {
+                    // Manejo explícito de validaciones (422) o forbidden (403)
+                    if (r.status === 422 || r.status === 403) {
+                        const msg = (data && data.errors && data.errors.confirm_password && data.errors
+                            .confirm_password[0]) || data.error || 'Contraseña incorrecta';
+                        this.backupMsg = msg;
+                        this.respaldoExitoso = false;
+                        this.mensajeRespaldo = 'Contraseña incorrecta';
+                        return; // Evitar lanzar excepción para no llenar consola
+                    }
+                    // Otros errores
+                    const msg = data.message || data.error || 'Fallo realizando respaldo';
+                    this.backupMsg = msg;
+                    this.respaldoExitoso = false;
+                    this.mensajeRespaldo = 'Error al respaldar';
+                    return;
+                }
                 this.backupMsg = `Respaldo listo: ${data.path || ''}`;
                 this.respaldoExitoso = true;
                 this.mensajeRespaldo = 'Respaldo exitoso';
                 this.lastBackupAt = new Date();
-                if (data.download_url) { this.downloadUrl = data.download_url; }
-            }catch(e){
-                this.backupMsg = e.message || 'Error';
-                this.respaldoExitoso = false;
-                this.mensajeRespaldo = 'Error al respaldar';
+                if (data.download_url) {
+                    this.downloadUrl = data.download_url;
+                }
+            } finally {
+                this.isBackingUp = false;
             }
-            finally{ this.isBackingUp = false; }
         }
-     }">
+    };
+};
+</script>
+
+<div class="max-w-4xl mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="__backupDb()">
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-0 overflow-hidden mb-6">
         <!-- Header con icono y etiqueta -->

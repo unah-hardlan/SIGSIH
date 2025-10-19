@@ -60,16 +60,29 @@ class GestionDbController extends Controller
         $provided = $request->has('confirm_password') ? (string)$request->input('confirm_password') : null;
         if ($expected === '') {
             // Si la BD no tiene contraseña en .env, permitir confirmación vacía o no enviada
-            if ($provided === null) { $provided = ''; }
+            if ($provided === null) {
+                $provided = '';
+            }
         } else {
-            // Si hay contraseña configurada, exigir que el usuario la envíe
+            // Si hay contraseña configurada, exigir que el usuario la envíe (respuesta suave para evitar 422 en consola)
             if ($provided === null || $provided === '') {
-                return response()->json(['error' => 'Debe ingresar la contraseña para confirmar el respaldo.'], 422);
+                return response()->json([
+                    'ok' => false,
+                    'code' => 'MISSING_CONFIRM_PASSWORD',
+                    'error' => 'Debe ingresar la contraseña para confirmar el respaldo.',
+                    'errors' => ['confirm_password' => ['Debe ingresar la contraseña para confirmar el respaldo.']],
+                ], 200);
             }
         }
         // Comparación segura
         if (!hash_equals($expected, (string)$provided)) {
-            return response()->json(['error' => 'Contraseña de verificación incorrecta.'], 403);
+            // Evitar ruido en consola (422): devolvemos 200 con error estructurado para manejo en UI
+            return response()->json([
+                'ok' => false,
+                'code' => 'INVALID_CONFIRM_PASSWORD',
+                'error' => 'Contraseña de verificación incorrecta.',
+                'errors' => ['confirm_password' => ['Contraseña de verificación incorrecta.']],
+            ], 200);
         }
 
         try {
@@ -124,7 +137,10 @@ class GestionDbController extends Controller
             ];
             foreach ($candidates as $cand) {
                 if (stripos(PHP_OS, 'WIN') === 0) {
-                    if (@file_exists($cand)) { $mysqldump = $cand; break; }
+                    if (@file_exists($cand)) {
+                        $mysqldump = $cand;
+                        break;
+                    }
                 } else {
                     // En Linux/Mac confiar en PATH o rutas absolutas si las hubiera
                 }
@@ -135,35 +151,43 @@ class GestionDbController extends Controller
         // No obligatorio: se permite cualquier extensión
 
         // Detectar plugin-dir si se requiere (Windows + MySQL 8: caching_sha2_password.dll)
-    $pluginDir = $this->unquote(env('MYSQL_PLUGIN_DIR'));
+        $pluginDir = $this->unquote(env('MYSQL_PLUGIN_DIR'));
         if (!$pluginDir && stripos(PHP_OS, 'WIN') === 0) {
             // Si mysqldump está en ...\bin\mysqldump.exe intentar ..\lib\plugin
             $binDir = @dirname($mysqldump);
             if ($binDir && preg_match('/\\\\bin$/i', $binDir)) {
                 $candidate = preg_replace('/\\\\bin$/i', '\\\\lib\\\\plugin', $binDir);
-                if ($candidate && @is_dir($candidate)) { $pluginDir = $candidate; }
+                if ($candidate && @is_dir($candidate)) {
+                    $pluginDir = $candidate;
+                }
             }
             // XAMPP estructura típica: C:\xampp\mysql\bin -> C:\xampp\mysql\lib\plugin
             if (!$pluginDir && $binDir) {
                 $cand = str_replace('\\\\bin', '\\\\lib\\\\plugin', $binDir);
-                if ($cand && @is_dir($cand)) { $pluginDir = $cand; }
+                if ($cand && @is_dir($cand)) {
+                    $pluginDir = $cand;
+                }
             }
         }
 
-    // Ejecutar mysqldump escribiendo directamente al archivo (--result-file) para evitar usar memoria PHP
+        // Ejecutar mysqldump escribiendo directamente al archivo (--result-file) para evitar usar memoria PHP
         $args = [];
         $args[] = $mysqldump;
         $args[] = "--host={$host}";
         $args[] = "--port={$port}";
         $args[] = "--user={$user}";
-        if ($pass !== '') { $args[] = "--password={$pass}"; }
-        if ($pluginDir) { $args[] = "--plugin-dir={$pluginDir}"; }
+        if ($pass !== '') {
+            $args[] = "--password={$pass}";
+        }
+        if ($pluginDir) {
+            $args[] = "--plugin-dir={$pluginDir}";
+        }
         $args[] = '--routines';
         $args[] = '--events';
         $args[] = '--single-transaction';
         $args[] = '--quick';
         $args[] = '--hex-blob';
-    $args[] = "--result-file={$storagePath}";
+        $args[] = "--result-file={$storagePath}";
         $args[] = $db;
 
         // Construir comando seguro (sin redirección; capturamos stdout)
@@ -178,7 +202,7 @@ class GestionDbController extends Controller
         }
         $cmd = ltrim($cmd);
 
-        $descriptorspec = [ 0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w'] ];
+        $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $proc = @proc_open($cmd, $descriptorspec, $pipes, null, null);
         if (!\is_resource($proc)) {
             return response()->json(['error' => 'No se pudo iniciar mysqldump. Configure MYSQLDUMP_PATH en el .env (por ejemplo C:\\xampp\\mysql\\bin\\mysqldump.exe) o agregue mysqldump al PATH del sistema.'], 500);
@@ -186,7 +210,8 @@ class GestionDbController extends Controller
         fclose($pipes[0]);
         $stdout = stream_get_contents($pipes[1]) ?: '';
         $stderr = stream_get_contents($pipes[2]) ?: '';
-        fclose($pipes[1]); fclose($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
         $exit = proc_close($proc);
 
         if ($exit !== 0) {
@@ -206,12 +231,20 @@ class GestionDbController extends Controller
         }
 
         // Si el usuario proporcionó un path destino, intentar copiar como conveniencia
-        $copied = false; $copyError = null; $finalPath = $storagePath;
+        $copied = false;
+        $copyError = null;
+        $finalPath = $storagePath;
         if ($path && is_string($path)) {
             $destDir = dirname($path);
-            if (!is_dir($destDir)) { @mkdir($destDir, 0775, true); }
-            if (@copy($storagePath, $path)) { $copied = true; $finalPath = $path; }
-            else { $copyError = 'No se pudo copiar al destino solicitado. Verifique permisos.'; }
+            if (!is_dir($destDir)) {
+                @mkdir($destDir, 0775, true);
+            }
+            if (@copy($storagePath, $path)) {
+                $copied = true;
+                $finalPath = $path;
+            } else {
+                $copyError = 'No se pudo copiar al destino solicitado. Verifique permisos.';
+            }
         }
 
         $downloadUrl = route('db.backup.download', ['file' => $filename]);
