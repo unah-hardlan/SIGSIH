@@ -9,55 +9,66 @@
             <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="SOLICITUDES" :logoSize="96" />
 
-            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Solicitudes</h2>
+            <h2 class="text-xl nunito-bold text-gray-800 mb-2 text-center">Listado de Solicitudes</h2>
+            @php
+                $ordenarPor = isset($ordenarPor) && (is_string($ordenarPor) || is_numeric($ordenarPor)) ? (string) $ordenarPor : '';
+                $search = isset($search) ? (string) $search : '';
+                $estadoSolicitud = isset($estadoSolicitud) ? (string) $estadoSolicitud : '';
+            @endphp
+            @if(!empty($search) || !empty($estadoSolicitud) || !empty($ordenarPor))
+                <div class="text-xs text-gray-600 nunito-regular mb-6 text-center">
+                    @if(!empty($search))<span class="mr-3">Buscar: <span class="nunito-bold">{{ $search }}</span></span>@endif
+                    @if(!empty($estadoSolicitud))<span class="mr-3">Estado: <span class="nunito-bold">{{ $estadoSolicitud }}</span></span>@endif
+                    @if(!empty($ordenarPor))
+                        @php
+                            $labels = [
+                                'estado_solicitud' => 'Estado',
+                                'cliente' => 'Cliente',
+                                'solicitud_acf' => 'Solicitud ACF',
+                                'solicitud_cliente' => 'Solicitud Cliente',
+                            ];
+                            $ordenLbl = $labels[$ordenarPor] ?? $ordenarPor;
+                        @endphp
+                        <span class="mr-3">Ordenado por: <span class="nunito-bold">{{ $ordenLbl }}</span></span>
+                    @endif
+                </div>
+            @endif
             <div class="overflow-x-auto mb-8">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Cliente</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">N° Solicitud ACF</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">N° Solicitud Cliente</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Descripción</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Fecha Creación</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Contacto</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">CLI-001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">ACF-2025-001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">SOL-001</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Problema con equipo de red</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-07-01</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Abierta</td>
-                        </tr>
+                        @php $rows = collect($solicitudes ?? []); @endphp
+                        @forelse($rows as $row)
+                            @php
+                                // $row puede ser stdClass; convertir a array para acceso seguro
+                                $r = is_array($row) ? $row : (is_object($row) ? get_object_vars($row) : []);
+                            @endphp
+                            <tr>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r['cliente_nombre'] ?? '—' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r['numero_solicitud_acf'] ?? '—' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r['numero_solicitud_cliente'] ?? '—' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r['descripcion_problema'] ?? '—' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r['valor_contacto'] ?? '—' }}</td>
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $r['estado_nombre'] ?? '—' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="border border-gray-300 py-4 px-3 text-center text-gray-600 nunito-regular">No se encontraron solicitudes con los filtros seleccionados.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Contactos</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full border-collapse border border-gray-300">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Tipo Contacto</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Valor Contacto</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID Persona</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Email</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">contacto@empresa.com</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">PER-001</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Sección Contactos eliminada del reporte de Solicitudes por no requerirse -->
         </div>
     </div>
 </div>
