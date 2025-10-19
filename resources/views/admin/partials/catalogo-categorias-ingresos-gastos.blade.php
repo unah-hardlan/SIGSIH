@@ -5,6 +5,8 @@
     itemToEdit: null,
     itemToDelete: null,
     categorias: [],
+    // alias expected by the pagination component (component checks `numbers.length`)
+    numbers: [],
     loadingCategorias: false,
     nombre_categoria: '',
     descripcion_categoria: '',
@@ -16,15 +18,23 @@
     async fetchCategorias() {
         // NOTA: El JS deberá ser actualizado para usar estos nuevos nombres de campo
         await window.categoriasApiHandlers.fetchCategorias(this);
+        // keep the pagination component's alias in sync
+        this.numbers = this.categorias;
     },
     async submitCategoria() {
         await window.categoriasApiHandlers.submitCategoria(this);
+        // ensure numbers reflects the latest categorias after create
+        this.numbers = this.categorias;
     },
     async updateCategoria() {
         await window.categoriasApiHandlers.updateCategoria(this);
+        // ensure numbers reflects the latest categorias after update
+        this.numbers = this.categorias;
     },
     async deleteCategoria() {
         await window.categoriasApiHandlers.deleteCategoria(this);
+        // ensure numbers reflects the latest categorias after delete
+        this.numbers = this.categorias;
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formCategoria') this.submitCategoria();
@@ -69,7 +79,7 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
 @confirm-delete.window="handleDelete()">
 
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Categorías</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Categorías de ingresos y gastos</h1>
     </div>
 
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
