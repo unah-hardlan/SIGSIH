@@ -225,13 +225,14 @@
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-                <select id="id_cliente" name="id_cliente" x-model="formSolicitud.id_cliente_fk"
+                <select id="id_cliente" name="id_cliente" x-model="formSolicitud.id_cliente_fk" @change="onClienteChange()"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk" x-text="errors.id_cliente_fk?.[0]"></p>
             </div>
 
             <div class="col-span-2">
@@ -241,6 +242,7 @@
                 <textarea id="descripcion_problema" name="descripcion_problema" rows="2"
                     x-model="formSolicitud.descripcion_problema"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema" x-text="errors.descripcion_problema?.[0]"></p>
             </div>
             <div>
                 <label for="estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
@@ -252,16 +254,19 @@
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk" x-text="errors.id_estado_solicitud_fk?.[0]"></p>
             </div>
             <div>
                 <label for="id_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
                 <select id="id_contacto" name="id_contacto" x-model="formSolicitud.id_contacto_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    :disabled="!formSolicitud.id_cliente_fk"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="" class="nunito-regular">Seleccione un contacto</option>
                     <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk" x-text="errors.id_contacto_fk?.[0]"></p>
             </div>
         </div>
     </x-admin.form-modal>
@@ -273,13 +278,14 @@
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="edit_id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-                <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk"
+                <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk" @change="onClienteChange()"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk" x-text="errors.id_cliente_fk?.[0]"></p>
             </div>
 
             <div class="col-span-2">
@@ -289,6 +295,7 @@
                 <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
                     x-model="formSolicitud.descripcion_problema"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema" x-text="errors.descripcion_problema?.[0]"></p>
             </div>
             <div>
                 <label for="edit_estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de
@@ -302,17 +309,20 @@
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk" x-text="errors.id_estado_solicitud_fk?.[0]"></p>
             </div>
             <div>
                 <label for="edit_id_contacto"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
                 <select id="edit_id_contacto" name="edit_id_contacto" x-model="formSolicitud.id_contacto_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    :disabled="!formSolicitud.id_cliente_fk"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="" class="nunito-regular">Seleccione un contacto</option>
                     <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk" x-text="errors.id_contacto_fk?.[0]"></p>
             </div>
         </div>
         </template>

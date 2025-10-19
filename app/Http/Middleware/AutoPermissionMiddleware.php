@@ -96,6 +96,7 @@ class AutoPermissionMiddleware
             // 'TipoPersona' removido
             'Genero' => ['Género', 'Genero', 'Géneros', 'Generos'],
             'Persona' => ['Persona', 'Personas', 'Gestión de personas', 'Gestion de personas'],
+            'Solicitud' => ['Solicitud', 'Solicitudes', 'Gestión de solicitudes', 'Gestion de solicitudes'],
             'Dashboard' => ['Dashboard'],
             // Nuevos
             'MantenimientoGeneral' => ['Mantenimiento del sistema', 'Mantenimiento'],
