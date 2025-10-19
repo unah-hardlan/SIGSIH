@@ -312,8 +312,8 @@
 
 </head>
 
-<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-    <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
+<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-[#171C25] text-gray-800 dark:text-gray-100">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-[#171C25]">
         <div class="fixed top-4 right-4">
             <label @click.prevent="toggleTheme()"
                 class="switch cursor-pointer rounded-full border border-gray-400 dark:border-gray-500">

@@ -17,18 +17,14 @@
     'resources/css/app.css',
     'resources/css/global.css',
     'resources/css/theme.css',
-    'resources/js/app.js',
     'resources/js/cliente.js',
     'resources/js/sidebar.js',
     'resources/js/session.js',
-    'resources/js/idle-logout.js',
-    'resources/js/auth-guard.js',
     'resources/js/toast.js',
     'resources/js/tabla-responsive.js',
     'resources/js/spa-cliente.js'
     ])
 
-    <!-- Script de tema (idéntico al admin para consistencia) -->
     <script>
         (function() {
             try {
@@ -46,7 +42,6 @@
         rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
-    <!-- Bootstrap auth info para Alpine (cliente) -->
     <script type="application/json" id="cliente-auth-bootstrap">
         @json(['user' => $authUser ?? null, 'persona' => $authPersona ?? null])
     </script>
@@ -64,7 +59,6 @@
                 user: initial.user,
                 persona: initial.persona,
             });
-            // Store para controlar oscurecimiento del sidebar cuando modal logout abierto
             Alpine.store('clienteLogout', {
                 modalOpen: false
             });
@@ -80,7 +74,6 @@
     x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile"
     @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
     <div class="flex min-h-screen relative">
-        <!-- Overlay móvil -->
         <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
@@ -97,7 +90,6 @@
             </div>
             @endif
 
-            <!-- Contenido principal sin fondo envolvente -->
             <div class="p-3 sm:p-6 rounded-lg">
                 @yield('content')
             </div>

@@ -7,11 +7,37 @@
     // Form
     formItem:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'' },
     errors:{},
-    apiHeaders(){ const t=localStorage.getItem('authToken'); return { 'Content-Type':'application/json', 'Accept':'application/json', ...(t?{ 'Authorization':'Bearer '+t }:{}) }; },
+    apiHeaders(){ return { 'Content-Type':'application/json', 'Accept':'application/json' }; },
     showToast(msg,type='ok'){ let d=document.createElement('div'); d.className='fixed top-4 right-4 z-50 px-3 py-2 rounded text-sm shadow '+(type==='error'?'bg-red-600 text-white':'bg-green-600 text-white'); d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); },
     fmt(n){ if(n==null) return ''; return Number(n).toFixed(2); },
     calcTotalObj(o){ const pu=Number(o.precio_unitario||0); const c=Number(o.cantidad||0); const imp=Number(o.impuesto||0); return +(pu*c+imp).toFixed(2); },
-    async fetchItems(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.search) p.set('q',this.search); p.set('per_page','100'); const r=await fetch('/api/items-cotizacion?'+p.toString(),{ headers:{ 'Accept':'application/json', ...(localStorage.getItem('authToken')?{ 'Authorization':'Bearer '+localStorage.getItem('authToken') }:{}) } }); if(!r.ok) throw new Error(); const j=await r.json(); const data=j.data||j||[]; this.items=data.map(it=>({ id:it.id_item_cotizacion_pk, descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, total:it.total, id_cotizacion_fk:it.id_cotizacion_fk })); }catch(e){ this.showToast('Error cargando items','error'); } finally { this.loading=false; } },
+    async fetchItems(){
+        this.loading=true;
+        try{
+            const p=new URLSearchParams();
+            if(this.search) p.set('q',this.search);
+            p.set('per_page','100');
+            const r=await fetch('/api/items-cotizacion?'+p.toString(),{
+                headers:{ 'Accept':'application/json' }
+            });
+            if(!r.ok) throw new Error();
+            const j=await r.json();
+            const data=j.data||j||[];
+            this.items=data.map(it=>({
+                id:it.id_item_cotizacion_pk,
+                descripcion:it.descripcion,
+                precio_unitario:it.precio_unitario,
+                cantidad:it.cantidad,
+                impuesto:it.impuesto,
+                total:it.total,
+                id_cotizacion_fk:it.id_cotizacion_fk
+            }));
+        }catch(e){
+            this.showToast('Error cargando items','error');
+        } finally {
+            this.loading=false;
+        }
+    },
     openCreate(){ this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'' }; this.errors={}; this.isItemModalOpen=true; },
     async submitCreate(){ try{ const payload={ ...this.formItem, total:this.calcTotalObj(this.formItem) }; const r=await fetch('/api/items-cotizacion',{ method:'POST', headers:this.apiHeaders(), body:JSON.stringify(payload) }); if(r.status===422){ this.errors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); this.isItemModalOpen=false; this.fetchItems(); this.showToast('Item creado'); }catch(e){ this.showToast('No se creó','error'); } },
     openEdit(it){ this.itemToEdit={ ...it }; this.formItem={ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:it.id_cotizacion_fk }; this.isEditItemModalOpen=true; },
