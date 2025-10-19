@@ -18,7 +18,7 @@
     @endphp
 
     @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/css/theme.css', 'resources/js/app.js',
-    'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/idle-logout.js', 'resources/js/auth-guard.js', 'resources/js/toast.js',
+    'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/idle-logout.js', 'resources/js/toast.js',
     'resources/js/tabla-responsive.js'])
 
     <script type="application/json" id="admin-modules-dataset">
