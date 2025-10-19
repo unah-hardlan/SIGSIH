@@ -314,6 +314,11 @@ import {
     faArrowDown,
     faBalanceScale,
     faInbox,
+    faSortDown,
+    faS,
+    faSort,
+    faSortUp,
+    faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -405,7 +410,10 @@ library.add(
     faArrowUp,
     faArrowDown,
     faBalanceScale,
-    faInbox
+    faInbox,
+    faSortDown,
+    faSortUp,
+    faIdCard
 );
 dom.watch();
 
@@ -2139,8 +2147,7 @@ if (typeof window !== "undefined") {
                     params.set("search", this.searchSolicitud);
                 if (this.estadoSolicitud)
                     params.set("estado_solicitud", this.estadoSolicitud);
-                if (this.ordenarPor)
-                    params.set("ordenar_por", this.ordenarPor);
+                if (this.ordenarPor) params.set("ordenar_por", this.ordenarPor);
                 const now = new Date();
                 try {
                     const fechaStr = now.toLocaleDateString("es-HN", {
@@ -2166,7 +2173,14 @@ if (typeof window !== "undefined") {
             // Estados modals (not wired yet; reserved for future use)
             isEstadoModalOpen: false,
             isEditEstadoModalOpen: false,
-            estadoToEdit: { id: null, nombre_estado: "", descripcion_estado: "", codigo: "", es_final: 0, orden: 0 },
+            estadoToEdit: {
+                id: null,
+                nombre_estado: "",
+                descripcion_estado: "",
+                codigo: "",
+                es_final: 0,
+                orden: 0,
+            },
             isDeleteEstadoModalOpen: false,
             estadoToDelete: null,
 
@@ -2275,7 +2289,11 @@ if (typeof window !== "undefined") {
                 const contacto = item.contacto || {};
                 // Build a human-readable client name for both empresa and persona
                 let clienteNombre = "";
-                if ((cliente.tipo || empresa.nombre_comercial || empresa.razon_social)) {
+                if (
+                    cliente.tipo ||
+                    empresa.nombre_comercial ||
+                    empresa.razon_social
+                ) {
                     // Try empresa-style fields first
                     clienteNombre =
                         cliente.nombre ||
@@ -2286,11 +2304,22 @@ if (typeof window !== "undefined") {
                 }
                 if (!clienteNombre || !String(clienteNombre).trim()) {
                     // Try persona fields either at root or nested under cliente.persona
-                    const pn = cliente.primer_nombre || persona.primer_nombre || "";
-                    const sn = cliente.segundo_nombre || persona.segundo_nombre || "";
-                    const pa = cliente.primer_apellido || persona.primer_apellido || "";
-                    const sa = cliente.segundo_apellido || persona.segundo_apellido || "";
-                    clienteNombre = [pn, sn, pa, sa].filter(Boolean).join(" ").trim();
+                    const pn =
+                        cliente.primer_nombre || persona.primer_nombre || "";
+                    const sn =
+                        cliente.segundo_nombre || persona.segundo_nombre || "";
+                    const pa =
+                        cliente.primer_apellido ||
+                        persona.primer_apellido ||
+                        "";
+                    const sa =
+                        cliente.segundo_apellido ||
+                        persona.segundo_apellido ||
+                        "";
+                    clienteNombre = [pn, sn, pa, sa]
+                        .filter(Boolean)
+                        .join(" ")
+                        .trim();
                 }
                 return {
                     id: item.id_solicitud_pk,
@@ -2316,22 +2345,29 @@ if (typeof window !== "undefined") {
                     params.set("all", "1");
                     const res = await fetch(
                         "/api/clientes?" + params.toString(),
-                        { headers: this.apiHeaders(), credentials: "same-origin" }
+                        {
+                            headers: this.apiHeaders(),
+                            credentials: "same-origin",
+                        }
                     );
                     if (!res.ok) throw new Error("Error clientes");
                     const data = await res.json();
                     const raw = Array.isArray(data?.data)
                         ? data.data
                         : Array.isArray(data?.data?.data)
-                            ? data.data.data
-                            : Array.isArray(data)
-                                ? data
-                                : [];
+                        ? data.data.data
+                        : Array.isArray(data)
+                        ? data
+                        : [];
                     const mapped = (raw || [])
                         .map((c) => {
                             let nombre;
                             if (c.tipo === "empresa") {
-                                nombre = c.nombre || c.nombre_comercial || c.razon_social || "";
+                                nombre =
+                                    c.nombre ||
+                                    c.nombre_comercial ||
+                                    c.razon_social ||
+                                    "";
                             } else {
                                 const parts = [
                                     c.primer_nombre,
@@ -2415,8 +2451,10 @@ if (typeof window !== "undefined") {
                     // Map contacts with a user-friendly label and keep reference to cliente
                     this.contactosOptions = items.map((it) => {
                         const value = String(it.id_contacto_pk || it.id);
-                        const base = it.valor_contacto || it.tipo_contacto || "Contacto";
-                        const cliente = this.clienteLabelById(it.id_cliente_fk) || "";
+                        const base =
+                            it.valor_contacto || it.tipo_contacto || "Contacto";
+                        const cliente =
+                            this.clienteLabelById(it.id_cliente_fk) || "";
                         const label = cliente ? `${base} — ${cliente}` : base;
                         return {
                             value,
@@ -2849,10 +2887,13 @@ if (typeof window !== "undefined") {
                 const list = this.contactos
                     .filter((c) => {
                         if (!term) return true;
-                        const cliente = this.clienteLabelById(c.id_cliente_fk) || "";
+                        const cliente =
+                            this.clienteLabelById(c.id_cliente_fk) || "";
                         return [c.tipo_contacto, c.valor_contacto, cliente]
                             .filter(Boolean)
-                            .some((f) => f.toString().toLowerCase().includes(term));
+                            .some((f) =>
+                                f.toString().toLowerCase().includes(term)
+                            );
                     })
                     .sort((a, b) => {
                         switch (this.ordenarPorContacto) {
@@ -2862,8 +2903,12 @@ if (typeof window !== "undefined") {
                                     "es"
                                 );
                             case "cliente": {
-                                const na = this.clienteLabelById(a.id_cliente_fk) || "";
-                                const nb = this.clienteLabelById(b.id_cliente_fk) || "";
+                                const na =
+                                    this.clienteLabelById(a.id_cliente_fk) ||
+                                    "";
+                                const nb =
+                                    this.clienteLabelById(b.id_cliente_fk) ||
+                                    "";
                                 return na.localeCompare(nb, "es");
                             }
                             case "tipo_contacto":
@@ -2917,19 +2962,29 @@ if (typeof window !== "undefined") {
                                 );
                             case "cliente":
                                 return (
-                                    a.cliente_nombre || this.clienteLabelById(a.id_cliente_fk) || ""
+                                    a.cliente_nombre ||
+                                    this.clienteLabelById(a.id_cliente_fk) ||
+                                    ""
                                 ).localeCompare(
-                                    b.cliente_nombre || this.clienteLabelById(b.id_cliente_fk) || "",
+                                    b.cliente_nombre ||
+                                        this.clienteLabelById(
+                                            b.id_cliente_fk
+                                        ) ||
+                                        "",
                                     "es"
                                 );
                             case "solicitud_acf":
-                                return (String(a.numero_solicitud_acf || "")).localeCompare(
+                                return String(
+                                    a.numero_solicitud_acf || ""
+                                ).localeCompare(
                                     String(b.numero_solicitud_acf || ""),
                                     "es",
                                     { numeric: true }
                                 );
                             case "solicitud_cliente":
-                                return (String(a.numero_solicitud_cliente || "")).localeCompare(
+                                return String(
+                                    a.numero_solicitud_cliente || ""
+                                ).localeCompare(
                                     String(b.numero_solicitud_cliente || ""),
                                     "es",
                                     { numeric: true }
