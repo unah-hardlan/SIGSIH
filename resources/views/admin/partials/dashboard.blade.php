@@ -1,5 +1,49 @@
 <div class="z-10" x-data="scrollPosition()" x-init="init()">
-    <div class="flex items-center my-1 mb-10">
+
+    <div class="flex items-center my-1 mb-10 mt-10">
+        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+        <div class="mx-4">
+            <div class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full border border-blue-200 dark:border-blue-700 shadow-sm">
+                <i class="fas fa-user text-blue-600 dark:text-blue-400 text-lg"></i>
+                <span class="text-sm nunito-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">Perfil</span>
+                <i class="fas fa-id-card text-indigo-600 dark:text-indigo-400 text-sm"></i>
+            </div>
+        </div>
+        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+    </div>
+
+    <div class="max-w-md mx-auto my-10 font-sans bg-slate-900 p-0.5 rounded-2xl dark:bg-gradient-to-br dark:from-cyan-400 dark:via-purple-500 dark:to-pink-500 from-dark-50 via-indigo-400 to-blue-400">
+        <div class="bg-slate-100 dark:bg-slate-900 rounded-xl p-8">
+            <div class="flex justify-center mb-6">
+                <img 
+                    class="w-32 h-32 rounded-full object-cover ring-2 ring-slate-300 dark:ring-cyan-400/50" 
+                    src="https://placehold.co/128x128/313131/FFFFFF?text=Perfil" 
+                    alt="Imagen de perfil del usuario"
+                    onerror="this.onerror=null; this.src='https://placehold.co/128x128/cccccc/FFFFFF?text=Error';"
+                >
+            </div>
+
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-black dark:text-white">Ana Sofía</h1>
+                <h2 class="text-xl font-medium text-slate-700 dark:text-slate-200 mb-4">Rodríguez Martínez</h2>
+
+                <p class="text-md text-purple-600 dark:text-cyan-400 font-semibold mt-2 mb-6">
+                    Diseñadora Gráfica Senior
+                </p>
+                
+                <hr class="border-slate-700 my-6">
+                
+                <div class="flex flex-col items-center justify-center space-y-2">
+                    <span class="text-sm font-bold text-blue-700 dark:text-slate-400">DNI</span>
+                    <span class="text-lg font-mono tracking-wider text-white bg-slate-800 px-4 py-2 rounded-lg">
+                        0801-1992-54321
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center my-1 mb-10 mt-10">
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
         <div class="mx-4">
             <div class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full border border-blue-200 dark:border-blue-700 shadow-sm">
@@ -10,8 +54,8 @@
         </div>
         <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
     </div>
-    
-    <!-- Dashboard KPIs -->
+
+
     <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6"> <!-- Fila 1: Usuarios, Empresas, Órdenes -->
             <!-- Card 1: Total Usuarios -->
@@ -291,4 +335,6 @@
             </div>
         </div>
     </div>
+
+   
 </div>

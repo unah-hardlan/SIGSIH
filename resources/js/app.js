@@ -318,6 +318,7 @@ import {
     faS,
     faSort,
     faSortUp,
+    faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -411,7 +412,8 @@ library.add(
     faBalanceScale,
     faInbox,
     faSortDown,
-    faSortUp
+    faSortUp,
+    faIdCard
 );
 dom.watch();
 
