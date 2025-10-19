@@ -2448,6 +2448,7 @@ if (typeof window !== "undefined") {
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     const items = json.data || [];
+                    // Map contacts with a user-friendly label and keep reference to cliente
                     this.contactosOptions = items.map((it) => {
                         const value = String(it.id_contacto_pk || it.id);
                         const base =
@@ -2461,13 +2462,8 @@ if (typeof window !== "undefined") {
                             id_cliente_fk: String(it.id_cliente_fk || ""),
                         };
                     });
-                    this.contactosOptions = items.map((it) => ({
-                        value: String(it.id_contacto_pk || it.id),
-                        label: `${
-                            it.valor_contacto || it.tipo_contacto || "Contacto"
-                        } (ID ${it.id_contacto_pk || it.id})`,
-                        id_cliente_fk: String(it.id_cliente_fk || ""),
-                    }));
+                    // Optional: sort by label for nicer UX
+                    this.contactosOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -2482,10 +2478,15 @@ if (typeof window !== "undefined") {
                 const idCliente = String(
                     this.formSolicitud.id_cliente_fk || ""
                 );
-                if (!idCliente) return this.contactosOptions;
+                // If no cliente selected, don't show any contacts yet
+                if (!idCliente) return [];
                 return this.contactosOptions.filter(
                     (c) => String(c.id_cliente_fk || "") === idCliente
                 );
+            },
+            // When cliente changes, clear selected contacto to avoid mismatches
+            onClienteChange() {
+                this.formSolicitud.id_contacto_fk = "";
             },
 
             // Lookup helper to get client label from unified catalog by id
@@ -2576,7 +2577,14 @@ if (typeof window !== "undefined") {
                         this.errors = err.errors || {};
                         throw new Error("Validación");
                     }
-                    if (!res.ok) throw new Error("Error al crear la solicitud");
+                    if (!res.ok) {
+                        let msg = "Error al crear la solicitud";
+                        try {
+                            const errText = await res.text();
+                            if (errText) msg += `: ${errText.slice(0, 300)}`;
+                        } catch (_) {}
+                        throw new Error(msg);
+                    }
                     const json = await res.json();
                     if (json.data)
                         this.solicitudes.unshift(this.mapSolicitud(json.data));
@@ -2672,6 +2680,19 @@ if (typeof window !== "undefined") {
                 }
             },
             submitSolicitud() {
+                // quick client-side validation
+                this.errors = {};
+                const errs = {};
+                if (!this.formSolicitud.id_cliente_fk) errs.id_cliente_fk = ["Seleccione un cliente."];
+                if (!this.formSolicitud.descripcion_problema || String(this.formSolicitud.descripcion_problema).trim().length === 0)
+                    errs.descripcion_problema = ["La descripción es obligatoria."];
+                if (!this.formSolicitud.id_estado_solicitud_fk) errs.id_estado_solicitud_fk = ["Seleccione un estado."];
+                if (!this.formSolicitud.id_contacto_fk) errs.id_contacto_fk = ["Seleccione un contacto."];
+                if (Object.keys(errs).length) {
+                    this.errors = errs;
+                    this.showToast("Complete los campos requeridos", "warn");
+                    return;
+                }
                 if (this.formSolicitud.id) this.updateSolicitud();
                 else this.createSolicitud();
             },

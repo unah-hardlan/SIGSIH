@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Solicitud;
+use Illuminate\Validation\Rule;
 use App\Http\Resources\SolicitudResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -59,24 +60,57 @@ class SolicitudController extends Controller
             'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
             'descripcion_problema' => 'required|string|max:500',
             'id_estado_solicitud_fk' => 'required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
-            'id_contacto_fk' => 'required|integer|exists:tbl_contacto,id_contacto_pk'
+            'id_contacto_fk' => [
+                'required',
+                'integer',
+                Rule::exists('tbl_contacto', 'id_contacto_pk')->where(function ($q) use ($request) {
+                    return $q->where('id_cliente_fk', $request->input('id_cliente_fk'));
+                }),
+            ],
         ]);
 
-        // Autogenerar números correlativos
-        $maxAcf = \App\Models\Solicitud::max('numero_solicitud_acf');
-        $nextAcf = (int)($maxAcf ?? 0) + 1;
+        // Usar transacción para evitar condiciones de carrera al calcular correlativos por cliente
+        $solicitud = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            // Calcular correlativo global ACF con mínimo 1000, bloqueando la última fila para reducir condiciones de carrera
+            $lastAcfRow = \Illuminate\Support\Facades\DB::table('tbl_solicitud')
+                ->select('numero_solicitud_acf')
+                ->orderByDesc('numero_solicitud_acf')
+                ->lockForUpdate()
+                ->first();
 
-        // Cliente puede tener su propio correlativo; si no, usar global similar al ACF
-        $maxCli = \App\Models\Solicitud::where('id_cliente_fk', $validated['id_cliente_fk'])->max('numero_solicitud_cliente');
-        $nextCli = (int)($maxCli ?? 0) + 1;
+            $maxAcf = $lastAcfRow?->numero_solicitud_acf;
+            if ($maxAcf === null) {
+                $nextAcf = 1000;
+            } else {
+                $maxAcf = (int) $maxAcf;
+                $nextAcf = $maxAcf < 1000 ? 1000 : ($maxAcf + 1);
+            }
 
-        $solicitud = new \App\Models\Solicitud();
-        $solicitud->fill($validated);
-        $solicitud->numero_solicitud_acf = $nextAcf;
-        $solicitud->numero_solicitud_cliente = $nextCli;
-        $solicitud->save();
+            // Bloquear el conjunto de filas de este cliente para calcular el correlativo del cliente de forma segura
+            $lockRow = \Illuminate\Support\Facades\DB::table('tbl_solicitud')
+                ->where('id_cliente_fk', $validated['id_cliente_fk'])
+                ->lockForUpdate()
+                ->selectRaw('MAX(numero_solicitud_cliente) as max_cli')
+                ->first();
 
-    return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
+            $maxCli = $lockRow?->max_cli;
+            if ($maxCli === null) {
+                $nextCli = 1000;
+            } else {
+                $maxCli = (int) $maxCli;
+                $nextCli = $maxCli < 1000 ? 1000 : ($maxCli + 1);
+            }
+
+            $sol = new \App\Models\Solicitud();
+            $sol->fill($validated);
+            $sol->numero_solicitud_acf = $nextAcf;
+            $sol->numero_solicitud_cliente = $nextCli;
+            $sol->save();
+
+            return $sol;
+        });
+
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
     }
 
     /**
@@ -99,7 +133,14 @@ class SolicitudController extends Controller
             'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
             'descripcion_problema' => 'sometimes|required|string|max:500',
             'id_estado_solicitud_fk' => 'sometimes|required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
-            'id_contacto_fk' => 'sometimes|required|integer|exists:tbl_contacto,id_contacto_pk'
+            'id_contacto_fk' => [
+                'sometimes', 'required', 'integer',
+                Rule::exists('tbl_contacto', 'id_contacto_pk')->where(function ($q) use ($request) {
+                    $clienteId = $request->input('id_cliente_fk');
+                    if ($clienteId === null) return $q; // if cliente not provided in this update, skip client filter
+                    return $q->where('id_cliente_fk', $clienteId);
+                }),
+            ],
         ]);
 
         $solicitud->update($validatedData);
