@@ -319,6 +319,7 @@ import {
     faSort,
     faSortUp,
     faIdCard,
+    faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -413,7 +414,8 @@ library.add(
     faInbox,
     faSortDown,
     faSortUp,
-    faIdCard
+    faIdCard,
+    faFolderOpen
 );
 dom.watch();
 
@@ -2463,7 +2465,9 @@ if (typeof window !== "undefined") {
                         };
                     });
                     // Optional: sort by label for nicer UX
-                    this.contactosOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
+                    this.contactosOptions.sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                    );
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -2683,11 +2687,20 @@ if (typeof window !== "undefined") {
                 // quick client-side validation
                 this.errors = {};
                 const errs = {};
-                if (!this.formSolicitud.id_cliente_fk) errs.id_cliente_fk = ["Seleccione un cliente."];
-                if (!this.formSolicitud.descripcion_problema || String(this.formSolicitud.descripcion_problema).trim().length === 0)
-                    errs.descripcion_problema = ["La descripción es obligatoria."];
-                if (!this.formSolicitud.id_estado_solicitud_fk) errs.id_estado_solicitud_fk = ["Seleccione un estado."];
-                if (!this.formSolicitud.id_contacto_fk) errs.id_contacto_fk = ["Seleccione un contacto."];
+                if (!this.formSolicitud.id_cliente_fk)
+                    errs.id_cliente_fk = ["Seleccione un cliente."];
+                if (
+                    !this.formSolicitud.descripcion_problema ||
+                    String(this.formSolicitud.descripcion_problema).trim()
+                        .length === 0
+                )
+                    errs.descripcion_problema = [
+                        "La descripción es obligatoria.",
+                    ];
+                if (!this.formSolicitud.id_estado_solicitud_fk)
+                    errs.id_estado_solicitud_fk = ["Seleccione un estado."];
+                if (!this.formSolicitud.id_contacto_fk)
+                    errs.id_contacto_fk = ["Seleccione un contacto."];
                 if (Object.keys(errs).length) {
                     this.errors = errs;
                     this.showToast("Complete los campos requeridos", "warn");
