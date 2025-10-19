@@ -194,4 +194,9 @@
   .modal-form-scroll {
     max-height: calc(85vh - 80px);
   }
+
+  select:focus {
+    outline: none;
+    box-shadow: none;
+  }
 </style>
