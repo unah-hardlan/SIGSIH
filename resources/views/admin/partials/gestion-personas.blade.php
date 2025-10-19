@@ -10,6 +10,7 @@
     filtroGenero: '',
     // catálogos dinámicos
     catalogoGeneros: [],      // [{id, genero}]
+    catalogoUsuarios: [],     // [{id, usuario}]
     catalogosError: '',
     _catalogosPromise: null,
     catalogosTTLms: 300000, // 5 min (ya no se usa localStorage)
@@ -22,6 +23,7 @@
         setTimeout(()=>{ el.classList.add('opacity-0','transition'); },2500);
         setTimeout(()=> el.remove(),3000);
     },
+    _usuariosById: {},
     // orden fijo por nombre asc
     ordenarPor: 'nombre',
     ordenarDir: 'asc',
@@ -32,7 +34,7 @@
         error: '',
         // pagination
         page: 1,
-        perPage: 10,
+    perPage: 5000,
         total: 0,
         lastPage: 1,
     // internals to prevent storm of requests
@@ -41,7 +43,7 @@
         // forms
         addForm: {
             primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
-            dni: '', id_genero_fk: ''
+            dni: '', id_genero_fk: '', id_usuario_fk: ''
         },
 
         init(){
@@ -59,7 +61,7 @@
 
         async loadCatalogos(){
             // Evitar llamadas duplicadas / tormenta
-            if(this.catalogoGeneros.length) return;
+            if(this.catalogoGeneros.length && this.catalogoUsuarios.length) return;
             if(this._catalogosPromise) return this._catalogosPromise;
 
             this._catalogosPromise = (async ()=>{
@@ -76,13 +78,20 @@
                         }
                         return fetch(url,{ credentials: 'same-origin' });
                     };
-                    const [gRes] = await Promise.all([
-                        fetchWithRetry('/api/generos?all=1'),
+                    const [gRes, uRes] = await Promise.all([
+                        // Endpoint de catálogo estable que devuelve { data: [{id, genero}] }
+                        fetchWithRetry('/api/catalogos/generos'),
+                        // Traer catálogo de usuarios (solo id y usuario si el backend lo permite)
+                        fetchWithRetry('/api/usuarios?per_page=5000')
                     ]);
-                    const bad = [gRes].find(r=>!r.ok);
+                    const bad = [gRes, uRes].find(r=>!r.ok);
                     if(bad){ throw new Error('Error catálogos ('+bad.status+')'); }
-                    const [gData] = await Promise.all([ gRes.json() ]);
+                    const [gData, uData] = await Promise.all([ gRes.json(), uRes.json() ]);
                     this.catalogoGeneros = (gData.data||[]).map(x=>({id:x.id, genero:x.genero}));
+                    const usuariosArr = Array.isArray(uData?.data) ? uData.data : (Array.isArray(uData) ? uData : []);
+                    this.catalogoUsuarios = usuariosArr.map(u=>({ id: u.id ?? u.id_usuario_pk ?? u.id_user ?? u.usuario_id ?? '', usuario: u.usuario ?? u.username ?? u.nombre_usuario ?? '' })).filter(x=>x.id!=='' && x.usuario);
+                    // índice para lookup O(1)
+                    this._usuariosById = Object.fromEntries(this.catalogoUsuarios.map(u=>[String(u.id), u.usuario]));
                 }catch(e){ this.catalogosError = e.message || 'Error catálogos'; this.notify(this.catalogosError,'error'); }
                 finally { this._catalogosPromise=null; }
             })();
@@ -125,12 +134,7 @@
                 const data = await res.json();
                 // data is a Laravel resource collection with data[] and meta
             const items = Array.isArray(data?.data) ? data.data : [];
-                this.personas = items.map(p => ({
-                    ...p,
-                    // mantener IDs originales y aplanar nombres para mostrar
-                    genero_nombre: p.genero?.genero || '',
-                    usuario: p.id_usuario_fk || ''
-                }));
+                this.personas = items.map(p => this.mapPersona(p));
         const meta = data?.meta || {};
         this._suppressWatch = true;
         const nextPage = meta.page || 1;
@@ -149,9 +153,11 @@
             return {
                 ...p,
                 genero_nombre: p.genero?.genero || '',
-                usuario: p.id_usuario_fk || ''
+                // preferir string si backend lo envía, si no, mapear por catálogo
+                usuario: p.usuario?.usuario || p.usuario || this._usuariosById[String(p.id_usuario_fk||'')] || ''
             };
         },
+        usuarioNombreById(id){ try{ return this._usuariosById[String(id||'')] || ''; }catch(_){ return ''; } },
         sortLocal(){
             const map = { nombre: 'primer_nombre', dni: 'dni' };
             const key = map[this.ordenarPor] || 'primer_nombre';
@@ -170,12 +176,19 @@
             let i=0; for(; i < this.personas.length; i++){ const cmp=(this.personas[i].primer_nombre||'').toLowerCase(); if(nombre < cmp){ break; } }
             this.personas.splice(i,0,persona);
         },
+        usuariosSinPersona(){
+            try{
+                const usados = new Set(this.personas.map(p=>String(p.id_usuario_fk||'')));
+                return this.catalogoUsuarios.filter(u=>!usados.has(String(u.id)));
+            }catch(_){ return this.catalogoUsuarios; }
+        },
         openAdd(){
-            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '' };
+            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '', id_usuario_fk: '' };
             this.isModalOpenPersonas = true;
         },
         async createPersona(){
             try{
+                if(!this.addForm.id_usuario_fk){ this.notify('Seleccione un usuario','error'); return; }
                 const res = await fetch('/api/personas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -243,100 +256,184 @@
             if(this.isModalOpenPersonas) return this.createPersona();
             if(this.isEditModalOpenPersonas) return this.updatePersona();
             if(this.isDeleteModalOpenPersonas) return this.deletePersona();
+    },
+
+    // Generar URL de reporte dinámica con filtros actuales
+    reportUrl(){
+        try{
+            const p = new URLSearchParams();
+            p.set('modulo','Gestion de Personas');
+            if(this.searchPersonas) p.set('q', this.searchPersonas);
+            const map = { nombre: 'nombre', dni: 'dni' };
+            const sort = map[this.ordenarPor] || 'nombre';
+            p.set('sort', sort);
+            p.set('direction', (this.ordenarDir==='desc' ? 'desc' : 'asc'));
+            if(this.filtroGenero) p.set('genero', this.filtroGenero);
+            return `/admin/reportes-header?${p.toString()}`;
+        }catch(_){ return '/admin/reportes-header?modulo=Gestion%20de%20Personas'; }
     }
     }" x-init="init()" @modal-submit.window="onModalSubmit()">
-    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Personas'">
-        <x-slot name="filtros">
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4" title="Gestión de Personas">
+        <x-slot name="filters">
             @include('partials.filtros-generales', [
             'searchModel' => 'searchPersonas',
-            'filtrosSelect' => [
-            'filtroGenero' => [
-            'label' => 'Género',
-            'options' => ['Masculino', 'Femenino']
-            ]
-            ],
+            // Usaremos un select dinámico para Género a partir del catálogo cargado por fetch
+            'filtrosSelect' => [],
             'ordenarOptions' => [
             'nombre' => 'Nombre',
             'dni' => 'DNI'
             ]
             ])
+            <select x-model="filtroGenero"
+                class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                <option value="">Todos los géneros</option>
+                <template x-for="op in catalogoGeneros" :key="'filtro-genero-'+op.id">
+                    <option :value="op.genero" x-text="op.genero"></option>
+                </template>
+            </select>
         </x-slot>
 
-        <!-- Tabla de personas -->
-        <div class="overflow-x-auto w-full">
-            <div x-show="loading" class="p-3 text-sm text-gray-600 nunito-regular">Cargando…</div>
-            <table class="min-w-full text-sm">
+        <x-slot name="actions">
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <button @click="openAdd()"
+                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar
+                    Persona</button>
+                <a :href="reportUrl()" target="_blank"
+                    class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-alt"></i> Generar Reporte
+                </a>
+            </div>
+        </x-slot>
+
+        <x-slot name="table">
+            <table
+                class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
-                        
-                        <th class="py-2 px-4 text-left nunito-bold">Género</th>
-                        
-                        <th class="py-2 px-4 text-left nunito-bold">Usuario</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                        <th class="py-2 px-4 text-left">Primer Nombre</th>
+                        <th class="py-2 px-4 text-left">Segundo Nombre</th>
+                        <th class="py-2 px-4 text-left">Primer Apellido</th>
+                        <th class="py-2 px-4 text-left">Segundo Apellido</th>
+                        <th class="py-2 px-4 text-left">DNI</th>
+                        <th class="py-2 px-4 text-left">Género</th>
+                        <th class="py-2 px-4 text-left">Usuario</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="persona in personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.id"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.primer_nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.primer_apellido"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_apellido"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.dni"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.genero_nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.usuario || '-' "></td>
-                            <td class="py-2 px-4 flex gap-2 nunito-regular">
-                                <a href="#" @click="openEdit(persona)"
-                                    class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="#" @click="openDelete(persona)"
-                                    class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i
+                                    class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
+                        </tr>
+                    </template>
+                    <template
+                        x-if="!loading && personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero)).length===0">
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td>
+                        </tr>
+                    </template>
+                    <template x-for="persona in personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero))"
+                        :key="persona.id">
+                        <tr class="border-b dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4" x-text="persona.primer_nombre || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.segundo_nombre || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.primer_apellido || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.segundo_apellido || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.dni || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.genero_nombre || '-' "></td>
+                            <td class="py-2 px-4"
+                                x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '-' "></td>
+                            <td class="py-2 px-4 flex gap-2">
+                                <a href="#" @click.prevent="openEdit(persona)"
+                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="openDelete(persona)"
+                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
                 </tbody>
             </table>
-        </div>
+        </x-slot>
 
-        <!-- Paginación removida -->
-    </x-admin.tabla-crud>
+        <x-slot name="cards">
+            <template x-if="loading">
+                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i>
+                    Cargando…</div>
+            </template>
+            <template
+                x-if="!loading && personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero)).length===0">
+                <div class="p-8 text-center text-gray-500 nunito-regular">No hay personas</div>
+            </template>
+            <template x-for="p in personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero))"
+                :key="'card-p-'+p.id">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white"
+                                x-text="[p.primer_nombre,p.segundo_nombre,p.primer_apellido,p.segundo_apellido].filter(Boolean).join(' ')">
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="p.dni"></p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Nombre:</span> <span
+                                x-text="p.primer_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Nombre:</span> <span
+                                x-text="p.segundo_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Apellido:</span> <span
+                                x-text="p.primer_apellido || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Apellido:</span> <span
+                                x-text="p.segundo_apellido || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span
+                                x-text="p.genero_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span
+                                x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '-'"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="openEdit(p)"
+                            class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i
+                                class="fas fa-edit"></i> Editar</button>
+                        <button @click="openDelete(p)"
+                            class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i
+                                class="fas fa-trash"></i> Eliminar</button>
+                    </div>
+                </div>
+            </template>
+        </x-slot>
+    </x-responsive-table>
 
     <!-- Modal Agregar Persona -->
-    <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona" submitLabel="Guardar"
-        maxWidth="max-w-2xl">
+    <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona"
+        submitLabel="Guardar" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_nombre" placeholder="Ej: Juan" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.primer_nombre" placeholder="Ej: Juan" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_nombre" placeholder="Ej: Carlos" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.segundo_nombre" placeholder="Ej: Carlos" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_apellido" placeholder="Ej: Pérez" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.primer_apellido" placeholder="Ej: Pérez" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_apellido" placeholder="Ej: Gómez" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.segundo_apellido" placeholder="Ej: Gómez" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.dni"
+                    placeholder="Ej: 0000-0000-00000 o 0000000000000" />
             </div>
-            
-            
+
+
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
                 <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk">
@@ -346,36 +443,49 @@
                     </template>
                 </select>
             </div>
-            
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="u in usuariosSinPersona()" :key="'u-add-'+u.id">
+                        <option :value="u.id" x-text="u.usuario"></option>
+                    </template>
+                </select>
+            </div>
+
         </div>
     </x-admin.form-modal>
     <!-- Modal Editar Persona -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit"
-        maxWidth="max-w-2xl">
-        <template x-if="itemToEdit">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona"
+        itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="itemToEdit.primer_nombre" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="itemToEdit.segundo_nombre" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="itemToEdit.primer_apellido" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="itemToEdit.segundo_apellido" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
-                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" />
+                <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni"
+                    placeholder="Ej: 0000-0000-00000 o 0000000000000" />
             </div>
-            
-            
+
+
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
                 <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk">
@@ -385,7 +495,7 @@
                     </template>
                 </select>
             </div>
-            
+
         </div>
         </template>
     </x-admin.edit-modal>

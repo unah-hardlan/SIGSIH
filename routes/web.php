@@ -367,6 +367,82 @@ Route::prefix('admin')
 
                 return view($view, compact('fecha', 'modulo', 'solicitudes', 'ordenarPor', 'search', 'estadoSolicitud', 'fechaGeneracion'));
             }
+            // Capa dinámica específica para Bitácora (según filtros del UI)
+            if ($moduloLower === 'bitacora') {
+                $search = $request->query('search');
+                $accion = $request->query('accion');
+                $usuario = $request->query('usuario');
+                $objeto = $request->query('objeto');
+                $desde = $request->query('desde');
+                $hasta = $request->query('hasta');
+                $sort = $request->query('sort', 'fecha_evento');
+                $direction = strtolower($request->query('direction','desc')) === 'asc' ? 'asc' : 'desc';
+
+                $q = DB::table('tbl_ms_bitacora as b')
+                    ->leftJoin('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'b.id_usuario_fk')
+                    ->leftJoin('tbl_objetos as o', 'o.id_objetos_pk', '=', 'b.id_objetos_fk')
+                    ->select([
+                        'b.id_bitacora_pk as id',
+                        'b.fecha_evento',
+                        'b.accion',
+                        'b.descripcion',
+                        'b.creado_por',
+                        'b.fecha_creacion',
+                        'u.usuario as usuario_nombre',
+                        'o.nombre_objeto as objeto_nombre',
+                    ]);
+
+                if (!empty($accion)) {
+                    $q->where('b.accion', $accion);
+                }
+                if (!empty($usuario)) {
+                    $uLike = '%' . $usuario . '%';
+                    $q->where('u.usuario', 'like', $uLike);
+                }
+                if (!empty($objeto)) {
+                    $oLike = '%' . $objeto . '%';
+                    $q->where('o.nombre_objeto', 'like', $oLike);
+                }
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $q->where(function ($w) use ($s) {
+                        $w->where('b.accion', 'like', $s)
+                          ->orWhere('b.descripcion', 'like', $s);
+                    });
+                }
+                if (!empty($desde)) {
+                    $q->whereDate('b.fecha_evento', '>=', $desde);
+                }
+                if (!empty($hasta)) {
+                    $q->whereDate('b.fecha_evento', '<=', $hasta);
+                }
+
+                $allowedSort = [
+                    'fecha_evento' => 'b.fecha_evento',
+                    'usuario' => 'u.usuario',
+                    'objeto' => 'o.nombre_objeto',
+                    'accion' => 'b.accion',
+                    'fecha_creacion' => 'b.fecha_creacion',
+                ];
+                $q->orderBy($allowedSort[$sort] ?? 'b.fecha_evento', $direction);
+
+                $rows = $q->get();
+                // Mapear a estructura esperada por la vista (con claves anidadas usuario/objeto)
+                $items = $rows->map(function ($r) {
+                    return [
+                        'id' => $r->id,
+                        'fecha_evento' => $r->fecha_evento,
+                        'accion' => $r->accion,
+                        'descripcion' => $r->descripcion,
+                        'creado_por' => $r->creado_por,
+                        'fecha_creacion' => $r->fecha_creacion,
+                        'usuario' => ['usuario' => $r->usuario_nombre],
+                        'objeto' => ['nombre_objeto' => $r->objeto_nombre],
+                    ];
+                });
+
+                return view($view, compact('fecha', 'modulo', 'items', 'search', 'accion', 'usuario', 'objeto', 'desde', 'hasta', 'sort', 'direction'));
+            }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
 

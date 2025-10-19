@@ -1,23 +1,23 @@
 <div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="settingsState()" x-init="init()">
     <h1 class="text-2xl font-bold mb-6 nunito-bold text-gray-800 dark:text-white">Personalización del Sistema</h1>
 
-    <div class="flex border-b dark:border-gray-700 mb-6 gap-4">
+    <div class="flex flex-wrap border-b dark:border-gray-700 mb-6 gap-2 sm:gap-4">
         <button @click="tab = 'personalizacion'; localStorage.setItem('mantenimientoTab', 'personalizacion')"
             :class="tab === 'personalizacion' ? 'text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-700 dark:text-gray-300'"
-            class="px-4 py-2 font-semibold focus:outline-none nunito-regular">Personalización</button>
+            class="px-4 py-2 font-semibold focus:outline-none nunito-regular w-full sm:w-auto text-center">Personalización</button>
         <button @click="tab = 'parametros'; localStorage.setItem('mantenimientoTab', 'parametros')"
             :class="tab === 'parametros' ? 'text-blue-600 border-b-2 border-blue-600 dark:text-blue-400 dark:border-blue-400' : 'text-gray-700 dark:text-gray-300'"
-            class="px-4 py-2 font-semibold focus:outline-none nunito-regular">Parámetros</button>
+            class="px-4 py-2 font-semibold focus:outline-none nunito-regular w-full sm:w-auto text-center">Parámetros</button>
     </div>
 
     <!-- TAB Personalización -->
     <div x-show="tab === 'personalizacion'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
         <h2 class="text-lg font-semibold mb-4 nunito-bold text-gray-800 dark:text-white">Apariencia e Identidad</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block font-medium mb-4 nunito-bold text-gray-700 dark:text-gray-300">Logo del
                     sistema</label>
-                <img :src="logoUrl" alt="Logo actual" class="mb-4" :style="'height:' + logoHeight + 'px; width:auto'">
+                <img :src="logoUrl" alt="Logo actual" class="mb-4 max-w-full object-contain" :style="'height:' + logoHeight + 'px; width:auto'">
                 <input type="file" @change="onLogoSelected($event)" accept="image/*"
                     class="block mb-2 nunito-regular
                     bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -26,13 +26,13 @@
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Altura del logo
                     (px)</label>
                 <input type="number" min="24" max="256" x-model.number="logoHeight"
-                    class="border rounded px-3 py-2 w-32 nunito-regular 
+                    class="border rounded px-3 py-2 w-full sm:w-32 nunito-regular 
                     bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 nunito-regular">Se aplica globalmente (header,
                     reportes, login).</p>
             </div>
         </div>
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Nombre del
                     sistema</label>
@@ -42,7 +42,7 @@
                     placeholder="Nombre del sistema">
             </div>
         </div>
-        <div class="mt-6 flex items-center justify-end">
+        <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <span x-show="savedMessagePersonalizacion" x-text="savedMessagePersonalizacion"
                 class="text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900 px-3 py-1 rounded mr-3 text-sm"></span>
             <button @click="guardarPersonalizacion()" type="button"
@@ -55,7 +55,7 @@
     <!-- TAB Parámetros -->
     <div x-show="tab === 'parametros'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold mb-4 nunito-bold text-gray-800 dark:text-white">Parámetros Generales</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Zona horaria</label>
                 <select
@@ -155,7 +155,7 @@
                     placeholder="PASSWORD">
             </div>
         </div>
-        <div class="mt-6 flex items-center justify-end">
+        <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <span x-show="savedMessageParametros" x-text="savedMessageParametros"
                 class="text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900 px-3 py-1 rounded mr-3 text-sm"></span>
             <button @click="guardarParametros()" type="button"

@@ -1,10 +1,10 @@
 {
-  "_index-By06x2EI.js": {
-    "file": "assets/index-By06x2EI.js",
+  "_index-dDPV8Otl.js": {
+    "file": "assets/index-dDPV8Otl.js",
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cb-n2Dtm.css",
+    "file": "assets/app-BzPQSlW9.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -24,12 +24,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CP__v3lq.js",
+    "file": "assets/app-4kAY1LOl.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-By06x2EI.js"
+      "_index-dDPV8Otl.js"
     ]
   },
   "resources/js/auth-guard.js": {
@@ -39,18 +39,18 @@
     "isEntry": true
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-CPlk-FyB.js",
+    "file": "assets/auth-BbfYrrlr.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-DN4c8Sl9.js",
+    "file": "assets/cliente-DXZ1vuZt.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-By06x2EI.js"
+      "_index-dDPV8Otl.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
