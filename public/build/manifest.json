@@ -4,7 +4,7 @@
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-pBRpYZq3.css",
+    "file": "assets/app-BzPQSlW9.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -24,7 +24,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bo7hCZZ4.js",
+    "file": "assets/app-4kAY1LOl.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -39,7 +39,7 @@
     "isEntry": true
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-CPlk-FyB.js",
+    "file": "assets/auth-BbfYrrlr.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
