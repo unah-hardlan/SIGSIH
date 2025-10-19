@@ -4,7 +4,8 @@
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4" title="Bitácora">
         <x-slot name="filters">
             <div class="flex flex-col sm:flex-row flex-wrap items-stretch gap-3 w-full">
-                <input type="text" x-model="filters.search" @keyup.enter="fetch()" placeholder="Buscar (acción/descripción)"
+                <input type="text" x-model="filters.search" @keyup.enter="fetch()"
+                    placeholder="Buscar (acción/descripción)"
                     class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-64 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
                 <select x-model="filters.accion" @change="fetch()"
                     class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-44 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
@@ -38,21 +39,24 @@
                     <option value="asc">Asc</option>
                 </select>
                 <div class="flex gap-2 w-full sm:w-auto">
-                    <button @click="resetFilters()" class="px-4 py-2 border rounded nunito-regular bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600">Limpiar</button>
-                    <button @click="fetch()" class="px-4 py-2 bg-blue-600 text-white rounded nunito-regular hover:bg-blue-700">Buscar</button>
+                    <button @click="resetFilters()"
+                        class="px-4 py-2 border rounded nunito-regular bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600">Limpiar</button>
+                    <button @click="fetch()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded nunito-regular hover:bg-blue-700">Buscar</button>
                 </div>
             </div>
         </x-slot>
 
         <x-slot name="actions">
             <a :href="reportUrl()" target="_blank"
-               class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                 <i class="fas fa-file-alt"></i> Generar Reporte
             </a>
         </x-slot>
 
         <x-slot name="table">
-            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
+            <table
+                class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left">Fecha Evento</th>
@@ -66,7 +70,8 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
+                            <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular"><i
+                                    class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                         </tr>
                     </template>
                     <template x-if="!loading && items.length===0">
@@ -100,7 +105,8 @@
 
         <x-slot name="cards">
             <template x-if="loading">
-                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
+                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i>
+                    Cargando...</div>
             </template>
             <template x-if="!loading && items.length===0">
                 <div class="p-8 text-center text-gray-500 nunito-regular">Sin resultados</div>
@@ -109,15 +115,20 @@
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="b.usuario?.usuario || '-' "></h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="b.fecha_evento_formatted || b.fecha_evento || '-' "></p>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="b.usuario?.usuario || '-' ">
+                            </h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400"
+                                x-text="b.fecha_evento_formatted || b.fecha_evento || '-' "></p>
                         </div>
                         <span class="px-2 py-1 rounded text-xs font-semibold" x-text="b.accion"></span>
                     </div>
                     <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Objeto:</span> <span x-text="b.objeto?.nombre_objeto || '-' "></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Descripción:</span> <span x-text="b.descripcion || '-' "></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Creado por:</span> <span x-text="b.creado_por || b.usuario?.usuario || '-' "></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Objeto:</span> <span
+                                x-text="b.objeto?.nombre_objeto || '-' "></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Descripción:</span> <span
+                                x-text="b.descripcion || '-' "></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Creado por:</span> <span
+                                x-text="b.creado_por || b.usuario?.usuario || '-' "></span></div>
                     </div>
                 </div>
             </template>
@@ -125,28 +136,31 @@
     </x-responsive-table>
 
     <!-- Paginación -->
-    <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4" x-show="pagination.total>0">
+    <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
+        x-show="pagination.total>0">
         <div class="text-sm nunito-regular text-gray-700 dark:text-gray-300">
             <i class="fas fa-info-circle mr-2"></i>
-            Página <span class="font-semibold" x-text="pagination.page"></span> de <span class="font-semibold" x-text="pagination.last_page"></span> • 
+            Página <span class="font-semibold" x-text="pagination.page"></span> de <span class="font-semibold"
+                x-text="pagination.last_page"></span> •
             Total: <span class="font-semibold" x-text="pagination.total"></span> registros
         </div>
         <div class="flex gap-2">
-            <button class="px-4 py-2 border rounded-lg nunito-regular bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
-                    :disabled="pagination.page<=1" 
-                    @click="changePage(pagination.page-1)">
+            <button
+                class="px-4 py-2 border rounded-lg nunito-regular bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                :disabled="pagination.page<=1" @click="changePage(pagination.page-1)">
                 <i class="fas fa-chevron-left mr-2"></i>Anterior
             </button>
-            <button class="px-4 py-2 border rounded-lg nunito-regular bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
-                    :disabled="pagination.page>=pagination.last_page" 
-                    @click="changePage(pagination.page+1)">
+            <button
+                class="px-4 py-2 border rounded-lg nunito-regular bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                :disabled="pagination.page>=pagination.last_page" @click="changePage(pagination.page+1)">
                 Siguiente<i class="fas fa-chevron-right ml-2"></i>
             </button>
         </div>
     </div>
 
     <!-- Error -->
-    <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg" x-show="error">
+    <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+        x-show="error">
         <div class="flex items-center gap-2 text-red-600 dark:text-red-400">
             <i class="fas fa-exclamation-triangle"></i>
             <span class="nunito-regular text-sm" x-text="error"></span>
