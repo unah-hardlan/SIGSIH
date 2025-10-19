@@ -55,30 +55,27 @@
             <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left">ID</th>
                         <th class="py-2 px-4 text-left">Fecha Evento</th>
                         <th class="py-2 px-4 text-left">Usuario</th>
                         <th class="py-2 px-4 text-left">Objeto</th>
                         <th class="py-2 px-4 text-left">Acción</th>
                         <th class="py-2 px-4 text-left">Descripción</th>
                         <th class="py-2 px-4 text-left">Creado por</th>
-                        <th class="py-2 px-4 text-left">Fecha Creación</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
+                            <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                         </tr>
                     </template>
                     <template x-if="!loading && items.length===0">
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">Sin resultados</td>
+                            <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular">Sin resultados</td>
                         </tr>
                     </template>
                     <template x-for="b in items" :key="b.id">
                         <tr class="border-b dark:border-gray-700 nunito-regular">
-                            <td class="py-2 px-4" x-text="b.id"></td>
                             <td class="py-2 px-4" x-text="b.fecha_evento_formatted || b.fecha_evento || '-' "></td>
                             <td class="py-2 px-4" x-text="b.usuario?.usuario || '-' "></td>
                             <td class="py-2 px-4" x-text="b.objeto?.nombre_objeto || '-' "></td>
@@ -95,7 +92,6 @@
                             </td>
                             <td class="py-2 px-4 break-words" x-text="b.descripcion || '-' "></td>
                             <td class="py-2 px-4" x-text="b.creado_por || b.usuario?.usuario || '-' "></td>
-                            <td class="py-2 px-4" x-text="b.fecha_creacion_formatted || b.fecha_creacion || '-' "></td>
                         </tr>
                     </template>
                 </tbody>
@@ -122,7 +118,6 @@
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Objeto:</span> <span x-text="b.objeto?.nombre_objeto || '-' "></span></div>
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Descripción:</span> <span x-text="b.descripcion || '-' "></span></div>
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Creado por:</span> <span x-text="b.creado_por || b.usuario?.usuario || '-' "></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Fecha creación:</span> <span x-text="b.fecha_creacion_formatted || b.fecha_creacion || '-' "></span></div>
                     </div>
                 </div>
             </template>
