@@ -79,7 +79,8 @@
                         return fetch(url,{ credentials: 'same-origin' });
                     };
                     const [gRes, uRes] = await Promise.all([
-                        fetchWithRetry('/api/generos?all=1'),
+                        // Endpoint de catálogo estable que devuelve { data: [{id, genero}] }
+                        fetchWithRetry('/api/catalogos/generos'),
                         // Traer catálogo de usuarios (solo id y usuario si el backend lo permite)
                         fetchWithRetry('/api/usuarios?per_page=5000')
                     ]);
@@ -254,17 +255,19 @@
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'searchPersonas',
-                'filtrosSelect' => [
-                    'filtroGenero' => [
-                        'label' => 'Género',
-                        'options' => ['Masculino', 'Femenino']
-                    ]
-                ],
+                // Usaremos un select dinámico para Género a partir del catálogo cargado por fetch
+                'filtrosSelect' => [],
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'dni' => 'DNI'
                 ]
             ])
+            <select x-model="filtroGenero" class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                <option value="">Todos los géneros</option>
+                <template x-for="op in catalogoGeneros" :key="'filtro-genero-'+op.id">
+                    <option :value="op.genero" x-text="op.genero"></option>
+                </template>
+            </select>
         </x-slot>
 
         <x-slot name="actions">
