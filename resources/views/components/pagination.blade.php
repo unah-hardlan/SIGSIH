@@ -1,15 +1,15 @@
 @props([])
 
-<div x-show="categorias.length > perPage" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+<div x-show="numbers.length > perPage" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
     <!-- Mostrando (centered, supports light/dark) -->
     <div class="mb-2">
         <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
             Mostrando
             <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPage - 1) * perPage + 1"></strong>
             a
-            <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPage * perPage, categorias.length)"></strong>
+            <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPage * perPage, numbers.length)"></strong>
             de
-            <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="categorias.length"></strong>
+            <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="numbers.length"></strong>
             resultados
         </span>
     </div>
