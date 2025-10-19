@@ -25,6 +25,12 @@ class UpdateCategoriaRequest extends FormRequest
                 Rule::unique('tbl_categorias', 'nombre_categoria')->ignore($categoriaId, 'id_categoria_pk'),
             ],
             'descripcion_categoria' => 'sometimes|nullable|string|max:255',
+            'tipo_categoria' => [
+                'sometimes',
+                'required',
+                'string',
+                Rule::in(['ingreso', 'gasto'])
+            ],
         ];
     }
 }

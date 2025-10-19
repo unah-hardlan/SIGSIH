@@ -2,10 +2,17 @@ window.categoriasApiHandlers = {
     async fetchCategorias(component) {
         component.loadingCategorias = true;
         try {
-            const response = await fetch("/api/categorias", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroCategoria)
+                params.set("q", component.filtroCategoria);
+            if (component.ordenarPor) params.set("sort", component.ordenarPor);
+            const response = await fetch(
+                `/api/categorias?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
 
@@ -28,11 +35,21 @@ window.categoriasApiHandlers = {
         const descripcionTrim = String(
             component.descripcion_categoria || ""
         ).trim();
+        const tipoTrim = String(component.tipo_categoria || "").trim();
 
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre de la categoría es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        if (!tipoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El tipo de categoría es obligatorio",
                     "error"
                 );
             return;
@@ -54,6 +71,7 @@ window.categoriasApiHandlers = {
             const payload = {
                 nombre_categoria: nombreTrim,
                 descripcion_categoria: descripcionTrim,
+                tipo_categoria: tipoTrim,
             };
 
             const response = await fetch("/api/categorias", {
@@ -85,6 +103,7 @@ window.categoriasApiHandlers = {
 
             component.nombre_categoria = "";
             component.descripcion_categoria = "";
+            component.tipo_categoria = "";
             component.isCategoriaModalOpen = false;
             await this.fetchCategorias(component);
         } catch (error) {
@@ -104,11 +123,23 @@ window.categoriasApiHandlers = {
         const descripcionTrim = String(
             component.itemToEdit.descripcion_categoria || ""
         ).trim();
+        const tipoTrim = String(
+            component.itemToEdit.tipo_categoria || ""
+        ).trim();
 
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
                     "El nombre de la categoría es obligatorio",
+                    "error"
+                );
+            return;
+        }
+
+        if (!tipoTrim) {
+            window.showToast &&
+                window.showToast(
+                    "El tipo de categoría es obligatorio",
                     "error"
                 );
             return;
@@ -134,6 +165,7 @@ window.categoriasApiHandlers = {
             const payload = {
                 nombre_categoria: nombreTrim,
                 descripcion_categoria: descripcionTrim,
+                tipo_categoria: tipoTrim,
             };
 
             const response = await fetch(

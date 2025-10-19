@@ -5,25 +5,57 @@
     itemToEdit: null,
     itemToDelete: null,
     estadosProyecto: [],
+    categorias: [],
+    numbers: [],
     loadingEstadosProyecto: false,
     codigo: '',
     nombre: '',
     descripcion: '',
     es_final: false,
     orden: '',
+    currentPage: 1,
+    perPage: 10,
+    paginatedEstadosProyecto() {
+        return this.estadosProyecto.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.estadosProyecto.length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
+    },
     filtroEstadoProyecto: '',
     ordenarPor: '',
     async fetchEstadosProyecto() {
         await window.estadosProyectoApiHandlers.fetchEstadosProyecto(this);
+    // synchronize aliases for reusable pagination components
+    this.categorias = this.estadosProyecto;
+    this.numbers = this.estadosProyecto;
     },
     async submitEstadoProyecto() {
         await window.estadosProyectoApiHandlers.submitEstadoProyecto(this);
+    this.categorias = this.estadosProyecto;
+    this.numbers = this.estadosProyecto;
     },
     async updateEstadoProyecto() {
         await window.estadosProyectoApiHandlers.updateEstadoProyecto(this);
+    this.categorias = this.estadosProyecto;
+    this.numbers = this.estadosProyecto;
     },
     async deleteEstadoProyecto() {
         await window.estadosProyectoApiHandlers.deleteEstadoProyecto(this);
+    this.categorias = this.estadosProyecto;
+    this.numbers = this.estadosProyecto;
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formEstadoProyecto') this.submitEstadoProyecto();
@@ -36,6 +68,10 @@
     }
 }"
 x-init="fetchEstadosProyecto()"
+x-effect="
+$watch('filtroEstadoProyecto', () => { fetchEstadosProyecto(); currentPage = 1; });
+$watch('ordenarPor', () => { fetchEstadosProyecto(); currentPage = 1; });
+"
 @keydown.escape.window="
     isEstadoProyectoModalOpen = false;
     isEstadoProyectoEditModalOpen = false;
@@ -52,6 +88,7 @@ x-init="fetchEstadosProyecto()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoProyecto',
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'
@@ -95,9 +132,9 @@ x-init="fetchEstadosProyecto()"
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosProyecto && estadosProyecto.length > 0">
-                        <template x-for="(estadoProyecto, index) in estadosProyecto" :key="estadoProyecto.id_estado_proyecto_pk">
+                        <template x-for="(estadoProyecto, index) in paginatedEstadosProyecto()" :key="estadoProyecto.id_estado_proyecto_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === estadosProyecto.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedEstadosProyecto().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="estadoProyecto.nombre"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="estadoProyecto.codigo"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="estadoProyecto.descripcion"></td>
@@ -128,7 +165,7 @@ x-init="fetchEstadosProyecto()"
                 </div>
             </template>
             <template x-if="!loadingEstadosProyecto && estadosProyecto.length > 0">
-                <template x-for="estadoProyecto in estadosProyecto" :key="estadoProyecto.id_estado_proyecto_pk">
+                <template x-for="estadoProyecto in paginatedEstadosProyecto()" :key="estadoProyecto.id_estado_proyecto_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estadoProyecto.nombre"></h3>
@@ -150,6 +187,9 @@ x-init="fetchEstadosProyecto()"
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- Paginación del lado del cliente -->
+    <x-pagination />
 
     <!-- Modales -->
     <div>
@@ -187,6 +227,7 @@ x-init="fetchEstadosProyecto()"
 
         <!-- Modal Editar Estado de Proyecto -->
         <x-admin.edit-modal class="nunito-bold" modalName="isEstadoProyectoEditModalOpen" title="Editar Estado de Proyecto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditEstadoProyecto">
+            <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
@@ -214,6 +255,7 @@ x-init="fetchEstadosProyecto()"
                     <label for="edit_es_final" class="ml-2 block text-sm font-medium text-gray-700 nunito-bold">Es Final</label>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

@@ -9,6 +9,7 @@ use App\Services\PermissionService;
 use App\Support\AdminModuleRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,26 @@ Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, '
 Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
     ->middleware(['auth.jwt.web','admin.only'])
     ->name('dashboard.proyectos.estado.web');
+
+// Catálogo de Estados de Solicitud (cookie-auth para SPA admin)
+Route::get('/api-web/estados-solicitud', function (\Illuminate\Http\Request $request) {
+    $items = DB::table('tbl_estado_solicitud')
+        ->select([
+            'id_estado_solicitud_pk as id',
+            'codigo',
+            'nombre as nombre_estado',
+            'descripcion as descripcion_estado',
+            'es_final',
+            'orden',
+        ])
+        ->orderBy('orden')
+        ->orderBy('nombre')
+        ->get();
+    return response()->json([
+        'data' => $items,
+        'meta' => ['count' => $items->count()],
+    ]);
+})->middleware(['auth.jwt.web','admin.only'])->name('api.web.estados.solicitud');
 
 // API-like fallback para cambiar contraseña del perfil (cookie-based auth)
 Route::post('/api-web/me/password', [ProfileController::class, 'changePassword'])
@@ -218,38 +239,209 @@ Route::prefix('admin')
             if ($moduloLower === 'gestion de personas') {
                 return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
             }
-            // Capa dinámica específica para Empresas
+            // Capa dinámica específica para Empresas (según esquema actual)
             if ($moduloLower === 'empresas') {
-                $query = \App\Models\EmpresaCliente::with(['nombreEmpresa', 'direccion.ciudad.departamento.pais', 'oficina']);
-                if ($search) {
-                    $query->whereHas('nombreEmpresa', function ($q) use ($search) {
-                        $q->where('nombre_empresa', 'like', "%$search%");
+                $query = \App\Models\Cliente::query()
+                    ->where('tipo_cliente', 'empresa')
+                    ->join('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'tbl_cliente.id_cliente_pk')
+                    ->select([
+                        'tbl_cliente.id_cliente_pk',
+                        'tbl_cliente.fecha_registro',
+                        'tbl_cliente.estado_cliente',
+                        'ce.nombre_comercial',
+                        'ce.razon_social',
+                        'ce.rtn',
+                        'ce.descripcion_empresa',
+                        'ce.horario_atencion',
+                    ]);
+
+                if (!empty($search)) {
+                    $s = "%" . $search . "%";
+                    $query->where(function ($q) use ($s) {
+                        $q->where('ce.nombre_comercial', 'like', $s)
+                          ->orWhere('ce.razon_social', 'like', $s)
+                          ->orWhere('ce.rtn', 'like', $s);
                     });
                 }
+
                 if ($estadoEmpresa && in_array(strtolower($estadoEmpresa), ['activo', 'inactivo'])) {
-                    $query->where('estado_empresa', strtolower($estadoEmpresa));
+                    $query->where('tbl_cliente.estado_cliente', strtolower($estadoEmpresa));
                 }
-                // Ordering (allow subset of safe fields)
+
                 $allowedOrden = [
-                    'nombre_empresa' => 'tbl_nombre_empresa.nombre_empresa',
-                    'estado_empresa' => 'tbl_empresa_cliente.estado_empresa',
-                    'fecha_registro' => 'tbl_empresa_cliente.fecha_registro'
+                    'nombre_empresa' => 'ce.nombre_comercial',
+                    'estado_empresa' => 'tbl_cliente.estado_cliente',
+                    'fecha_registro' => 'tbl_cliente.fecha_registro',
                 ];
                 if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
-                    // join to nombres if ordering by nombre_empresa
-                    if ($ordenarPor === 'nombre_empresa') {
-                        $query->join('tbl_nombre_empresa', 'tbl_nombre_empresa.id_nombre_empresa_pk', '=', 'tbl_empresa_cliente.id_nombre_empresa_fk');
-                    }
                     $query->orderBy($allowedOrden[$ordenarPor], 'asc');
                 } else {
-                    $query->orderBy('fecha_registro', 'desc');
+                    $query->orderBy('tbl_cliente.fecha_registro', 'desc');
                 }
+
                 $empresas = $query->get();
-                // Catálogo nombres (sin estado ya que se removió a nivel UI, pero puede existir en DB)
-                $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')->orderBy('nombre_empresa')->get();
-                // Oficinas
-                $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')->orderBy('nombre_oficina')->get();
+
+                // Catálogos opcionales; si no existen las tablas, devolver colecciones vacías para no romper el reporte
+                try {
+                    $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')
+                        ->orderBy('nombre_empresa')
+                        ->get();
+                } catch (\Throwable $e) { $nombresEmpresa = collect(); }
+                try {
+                    $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')
+                        ->orderBy('nombre_oficina')
+                        ->get();
+                } catch (\Throwable $e) { $oficinasEmpresa = collect(); }
+
                 return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
+            }
+            // Capa dinámica específica para Solicitudes (según filtros del UI)
+            if ($moduloLower === 'solicitudes') {
+                $ordenarPor = $request->query('ordenar_por');
+                $search = $request->query('search');
+                $estadoSolicitud = $request->query('estado_solicitud');
+
+                $clienteNombreExpr = "COALESCE(ce.nombre_comercial, ce.razon_social, CONCAT_WS(' ', p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido))";
+
+                $query = DB::table('tbl_solicitud as s')
+                    ->join('tbl_cliente as c', 'c.id_cliente_pk', '=', 's.id_cliente_fk')
+                    ->leftJoin('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'c.id_cliente_pk')
+                    ->leftJoin('tbl_cliente_persona as cp', 'cp.id_cliente_fk', '=', 'c.id_cliente_pk')
+                    ->leftJoin('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                    ->leftJoin('tbl_estado_solicitud as es', 'es.id_estado_solicitud_pk', '=', 's.id_estado_solicitud_fk')
+                    ->leftJoin('tbl_contacto as co', 'co.id_contacto_pk', '=', 's.id_contacto_fk')
+                    ->select([
+                        's.id_solicitud_pk as id',
+                        's.numero_solicitud_acf',
+                        's.numero_solicitud_cliente',
+                        's.descripcion_problema',
+                        's.id_estado_solicitud_fk',
+                        's.id_cliente_fk',
+                        'es.nombre as estado_nombre',
+                        'co.valor_contacto',
+                        DB::raw($clienteNombreExpr . ' as cliente_nombre'),
+                    ]);
+
+                if (!empty($estadoSolicitud)) {
+                    // Si viene un id numérico, filtra por FK. Si viene texto, intenta por nombre/código
+                    if (is_numeric($estadoSolicitud)) {
+                        $query->where('s.id_estado_solicitud_fk', (int) $estadoSolicitud);
+                    } else {
+                        $query->where(function ($q) use ($estadoSolicitud) {
+                            $q->where('es.nombre', 'like', '%' . $estadoSolicitud . '%')
+                              ->orWhere('es.codigo', 'like', '%' . $estadoSolicitud . '%');
+                        });
+                    }
+                }
+
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $query->where(function ($q) use ($s, $clienteNombreExpr) {
+                        $q->where('s.numero_solicitud_acf', 'like', $s)
+                          ->orWhere('s.numero_solicitud_cliente', 'like', $s)
+                          ->orWhere('s.descripcion_problema', 'like', $s)
+                          ->orWhere('es.nombre', 'like', $s)
+                          ->orWhere('es.codigo', 'like', $s)
+                          ->orWhere(DB::raw($clienteNombreExpr), 'like', $s);
+                    });
+                }
+
+                // Map de orden permitido
+                $allowedOrden = [
+                    'estado_solicitud' => 'es.nombre',
+                    'cliente' => DB::raw($clienteNombreExpr),
+                    'solicitud_acf' => 's.numero_solicitud_acf',
+                    'solicitud_cliente' => 's.numero_solicitud_cliente',
+                ];
+                if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
+                    $orderColumn = $allowedOrden[$ordenarPor];
+                    // orderColumn puede ser raw expression o string
+                    $query->orderBy($orderColumn, 'asc');
+                } else {
+                    $query->orderBy('es.nombre', 'asc')
+                          ->orderBy('s.id_solicitud_pk', 'asc');
+                }
+
+                // Evitar duplicados por join con personas
+                $solicitudes = $query->distinct()->get();
+
+                return view($view, compact('fecha', 'modulo', 'solicitudes', 'ordenarPor', 'search', 'estadoSolicitud', 'fechaGeneracion'));
+            }
+            // Capa dinámica específica para Bitácora (según filtros del UI)
+            if ($moduloLower === 'bitacora') {
+                $search = $request->query('search');
+                $accion = $request->query('accion');
+                $usuario = $request->query('usuario');
+                $objeto = $request->query('objeto');
+                $desde = $request->query('desde');
+                $hasta = $request->query('hasta');
+                $sort = $request->query('sort', 'fecha_evento');
+                $direction = strtolower($request->query('direction','desc')) === 'asc' ? 'asc' : 'desc';
+
+                $q = DB::table('tbl_ms_bitacora as b')
+                    ->leftJoin('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'b.id_usuario_fk')
+                    ->leftJoin('tbl_objetos as o', 'o.id_objetos_pk', '=', 'b.id_objetos_fk')
+                    ->select([
+                        'b.id_bitacora_pk as id',
+                        'b.fecha_evento',
+                        'b.accion',
+                        'b.descripcion',
+                        'b.creado_por',
+                        'b.fecha_creacion',
+                        'u.usuario as usuario_nombre',
+                        'o.nombre_objeto as objeto_nombre',
+                    ]);
+
+                if (!empty($accion)) {
+                    $q->where('b.accion', $accion);
+                }
+                if (!empty($usuario)) {
+                    $uLike = '%' . $usuario . '%';
+                    $q->where('u.usuario', 'like', $uLike);
+                }
+                if (!empty($objeto)) {
+                    $oLike = '%' . $objeto . '%';
+                    $q->where('o.nombre_objeto', 'like', $oLike);
+                }
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $q->where(function ($w) use ($s) {
+                        $w->where('b.accion', 'like', $s)
+                          ->orWhere('b.descripcion', 'like', $s);
+                    });
+                }
+                if (!empty($desde)) {
+                    $q->whereDate('b.fecha_evento', '>=', $desde);
+                }
+                if (!empty($hasta)) {
+                    $q->whereDate('b.fecha_evento', '<=', $hasta);
+                }
+
+                $allowedSort = [
+                    'fecha_evento' => 'b.fecha_evento',
+                    'usuario' => 'u.usuario',
+                    'objeto' => 'o.nombre_objeto',
+                    'accion' => 'b.accion',
+                    'fecha_creacion' => 'b.fecha_creacion',
+                ];
+                $q->orderBy($allowedSort[$sort] ?? 'b.fecha_evento', $direction);
+
+                $rows = $q->get();
+                // Mapear a estructura esperada por la vista (con claves anidadas usuario/objeto)
+                $items = $rows->map(function ($r) {
+                    return [
+                        'id' => $r->id,
+                        'fecha_evento' => $r->fecha_evento,
+                        'accion' => $r->accion,
+                        'descripcion' => $r->descripcion,
+                        'creado_por' => $r->creado_por,
+                        'fecha_creacion' => $r->fecha_creacion,
+                        'usuario' => ['usuario' => $r->usuario_nombre],
+                        'objeto' => ['nombre_objeto' => $r->objeto_nombre],
+                    ];
+                });
+
+                return view($view, compact('fecha', 'modulo', 'items', 'search', 'accion', 'usuario', 'objeto', 'desde', 'hasta', 'sort', 'direction'));
             }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');

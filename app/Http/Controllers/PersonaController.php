@@ -12,7 +12,7 @@ class PersonaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Persona::query()->with(['genero']);
+    $query = Persona::query()->with(['genero']);
         if($q = $request->input('q')){
             $query->where(function($sub) use ($q){
                 $sub->where('primer_nombre','like',"%$q%")
@@ -88,7 +88,7 @@ class PersonaController extends Controller
     $tipo = $request->input('tipo'); // deprecado
         $genero = $request->input('genero'); // puede ser nombre
 
-    $query = Persona::query()->with(['genero']);
+    $query = Persona::query()->with(['genero','usuario']);
         if($q){
             $query->where(function($sub) use ($q){
                 $sub->where('primer_nombre','like',"%$q%")

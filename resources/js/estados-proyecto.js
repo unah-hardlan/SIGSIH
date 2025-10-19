@@ -2,10 +2,17 @@ window.estadosProyectoApiHandlers = {
     async fetchEstadosProyecto(component) {
         component.loadingEstadosProyecto = true;
         try {
-            const response = await fetch("/api/estados-proyecto", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroEstadoProyecto)
+                params.set("q", component.filtroEstadoProyecto);
+            if (component.ordenarPor) params.set("sort", component.ordenarPor);
+            const response = await fetch(
+                `/api/estados-proyecto?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
 

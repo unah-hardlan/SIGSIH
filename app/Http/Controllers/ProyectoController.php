@@ -29,6 +29,44 @@ class ProyectoController extends Controller
             $query->where('nombre_proyecto', 'like', '%' . $request->nombre_proyecto . '%');
         }
 
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_proyecto', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_proyecto', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('ordenServicio', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('numero_orden_servicio', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('estadoProyecto', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre', 'like', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre_proyecto');
+                    break;
+                case 'fecha_inicio':
+                    $query->orderBy('fecha_inicio_proyecto');
+                    break;
+                case 'fecha_estimada':
+                    $query->orderBy('fecha_estimada_fin_proyecto');
+                    break;
+                case 'fecha_fin':
+                    $query->orderBy('fecha_finalizacion_proyecto');
+                    break;
+                default:
+                    $query->orderBy('id_proyecto_pk', 'desc');
+            }
+        } else {
+            $query->orderBy('id_proyecto_pk', 'desc');
+        }
+
         $proyectos = $query->paginate(15);
 
         return ProyectoResource::collection($proyectos);

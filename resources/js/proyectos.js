@@ -9,10 +9,18 @@ window.proyectosApiHandlers = {
     async fetchProyectos(component) {
         component.loadingProyectos = true;
         try {
-            const response = await fetch("/api/proyectos", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroProyecto)
+                params.set("q", component.filtroProyecto);
+            if (component.ordenarPorProyecto)
+                params.set("sort", component.ordenarPorProyecto);
+            const response = await fetch(
+                `/api/proyectos?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
             component.proyectos = Array.isArray(data?.data) ? data.data : [];
@@ -71,6 +79,7 @@ window.proyectosApiHandlers = {
             component.id_estado_proyecto_fk = "";
             component.isProyectoModalOpen = false;
             await this.fetchProyectos(component);
+            await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
             console.error("Error creating proyecto:", error);
             window.showToast &&
@@ -149,6 +158,7 @@ window.proyectosApiHandlers = {
             component.isProyectoEditModalOpen = false;
             component.itemToEdit = null;
             await this.fetchProyectos(component);
+            await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
             console.error("Error updating proyecto:", error);
         }
@@ -173,6 +183,7 @@ window.proyectosApiHandlers = {
             component.isProyectoDeleteModalOpen = false;
             component.itemToDelete = null;
             await this.fetchProyectos(component);
+            await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
             console.error("Error deleting proyecto:", error);
             const errorMessage =
@@ -193,7 +204,12 @@ window.ingresosApiHandlers = {
     async fetchIngresos(component) {
         component.loadingIngresos = true;
         try {
-            const response = await fetch("/api/ingresos", {
+            const params = new URLSearchParams();
+            if (component.filtroIngreso)
+                params.set("q", component.filtroIngreso);
+            if (component.ordenarPorIngreso)
+                params.set("sort", component.ordenarPorIngreso);
+            const response = await fetch(`/api/ingresos?${params.toString()}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
@@ -390,7 +406,11 @@ window.gastosApiHandlers = {
     async fetchGastos(component) {
         component.loadingGastos = true;
         try {
-            const response = await fetch("/api/gastos", {
+            const params = new URLSearchParams();
+            if (component.filtroGasto) params.set("q", component.filtroGasto);
+            if (component.ordenarPorGasto)
+                params.set("sort", component.ordenarPorGasto);
+            const response = await fetch(`/api/gastos?${params.toString()}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });

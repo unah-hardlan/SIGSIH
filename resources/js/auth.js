@@ -492,7 +492,6 @@ function registerAuth() {
         if (!window.Alpine.data("authPage")) {
             // Only register if not already registered
             window.Alpine.data("authPage", createAuthPage);
-            console.log("Alpine.js data 'authPage' registered.");
         } else {
             console.log("Alpine.js data 'authPage' already registered.");
         }

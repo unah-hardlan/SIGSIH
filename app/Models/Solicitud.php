@@ -16,6 +16,7 @@ class Solicitud extends Model
 
     protected $fillable = [
         'id_cliente_fk',
+        'nombre_solicitud',
         'numero_solicitud_acf',
         'numero_solicitud_cliente',
         'descripcion_problema',

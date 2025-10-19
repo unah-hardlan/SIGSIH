@@ -4,13 +4,13 @@
     selectedItem:null,
     generateCotizacionModal:false,
     editModal:false,
-    showFilters:false,
     loading:false,
     saving:false,
     // Data
     cotizaciones:[],
     clientes:[],
     filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
+    ordenarPor:'',
     // Items manager (por cotización)
     itemsModal:false, currentCotizacionId:null, itemsLoading:false, itemsSearch:'', items:[],
     itemMode:'list', itemForm:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }, itemEditId:null, itemErrors:{},
@@ -32,7 +32,13 @@
     },
     addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); },
     removeItem(index, formRef='form'){ this[formRef].items.splice(index,1); this.calcTotals(this[formRef]); },
-    apiHeaders(){ const t=localStorage.getItem('authToken'); return { 'Content-Type':'application/json','Accept':'application/json', ...(t?{ 'Authorization':'Bearer '+t }:{}) }; },
+    apiHeaders(){ return { 'Content-Type':'application/json','Accept':'application/json' }; },
+    async ensureAuth(){ return true; },
+    async doFetch(url, opts={}, tryAuth=true){
+        const hasBody = !!opts.body;
+        // Las cookies HTTP gestionan la autenticación automáticamente
+        return fetch(url, opts);
+    },
     showToast(msg,type='ok'){ let d=document.createElement('div'); d.className='fixed top-4 right-4 z-50 px-3 py-2 rounded text-sm shadow '+(type==='error'?'bg-red-600 text-white':'bg-green-600 text-white'); d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); },
     // Auth helpers: get a JWT from web session if needed
     async ensureAuth(){
@@ -151,7 +157,7 @@
         this.calcTotals(target);
         this.catalogModal=false;
     },
-    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
+    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('order_by', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
             .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
             .filter(c=>c.id!=null);
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
@@ -167,15 +173,17 @@
         finally{ this.saving=false; } },
     async updateCotizacion(){ if(!this.editForm) return; this.saving=true; try{ this.calcTotals(this.editForm); const payload={ valido_hasta:this.editForm.valido_hasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk }; const r=await this.doFetch('/api/cotizaciones/'+this.editForm.id,{ method:'PUT', body:JSON.stringify(payload) }); if(!r.ok) throw new Error(); this.showToast('Actualizada'); this.editModal=false; this.fetchCotizaciones(); }catch(e){ this.showToast('No se actualizó','error'); } finally{ this.saving=false; } },
     async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await this.doFetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE' }); if(!r.ok) throw new Error(); this.cotizaciones=this.cotizaciones.filter(c=>c.id!==this.selectedItem); this.showToast('Eliminada'); }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
-    applyFilters(){ this.fetchCotizaciones(); },
     init(){
         // Proactively ensure API auth from web session
         this.ensureAuth();
         this.fetchClientes(); this.fetchCotizaciones();
         const debounce=(fn,ms=400)=>{let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms);};};
         this.$watch('filters.search',debounce(()=>this.fetchCotizaciones()));
+        this.$watch('ordenarPor',debounce(()=>this.fetchCotizaciones()));
+        this.$watch('filters.cliente',debounce(()=>this.fetchCotizaciones()));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
     }
+        
 }" x-init="init()" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="deleteCotizacion()">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Cotizaciones</h1>
@@ -183,30 +191,20 @@
 
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
-            <div class="w-full">
-                <div class="flex">
-                    <div class="flex-1 relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-2">
-                            <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
-                                <path
-                                    d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z">
-                                </path>
-                            </svg>
-                        </span>
-                        <input placeholder="Buscar por ID o cliente" x-model="filters.search"
-                            class="appearance-none rounded-md border border-gray-300 dark:border-gray-700 block pl-8 pr-6 py-2 w-full bg-white dark:bg-gray-900 text-sm placeholder-gray-400 dark:placeholder-gray-400 text-gray-700 dark:text-gray-200 focus:border-blue-500 focus:outline-none nunito-regular" />
-                    </div>
-                    <button @click="showFilters = !showFilters"
-                        class="ml-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm flex items-center nunito-regular">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
-                        Filtros
-                    </button>
-                </div>
-            </div>
+            @include('partials.filtros-generales', [
+                'searchModel' => 'filters.search',
+                'ordenarOptions' => [
+                    'fecha' => 'Fecha',
+                    'total' => 'Total',
+                    'id' => 'ID Cotización'
+                ]
+            ])
+            <select x-model="filters.cliente" class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 sm:ml-0">
+                <option value="">Todos los clientes</option>
+                <template x-for="cl in clientes" :key="cl.id">
+                    <option :value="cl.id" x-text="cl.nombre"></option>
+                </template>
+            </select>
         </x-slot>
 
         <x-slot name="actions">
@@ -217,64 +215,11 @@
         </x-slot>
 
         <x-slot name="table">
-            <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                class="bg-gray-50 dark:bg-gray-800 p-4 rounded-md shadow-sm mb-4">
-                <div class="flex flex-wrap md:flex-nowrap gap-4 mb-4">
-                    <div class="w-full md:w-1/2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-white mb-1 nunito-bold">Rango de
-                            fechas</label>
-                        <div class="flex space-x-2">
-                            <input type="date" x-model="filters.desde"
-                                class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
-                            <input type="date" x-model="filters.hasta"
-                                class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-white" />
-                        </div>
-                    </div>
-
-                    <!-- Cliente -->
-                    <div class="w-full md:w-1/2">
-                        <label
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Cliente</label>
-                        <select
-                            class="w-full rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
-                            x-model="filters.cliente">
-                            <option value="">Todos los clientes</option>
-                            <template x-for="cl in clientes" :key="cl.id">
-                                <option :value="cl.id" x-text="cl.nombre"></option>
-                            </template>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 nunito-bold">Rango de
-                        montos</label>
-                    <div class="flex flex-wrap md:flex-nowrap space-x-0 md:space-x-2 space-y-2 md:space-y-0">
-                        <input type="number" placeholder="Monto mínimo" x-model="filters.montoMin"
-                            class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
-                        <input type="number" placeholder="Monto máximo" x-model="filters.montoMax"
-                            class="w-full md:w-1/2 rounded-md border border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 text-sm bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" />
-                    </div>
-                </div>
-
-                <div class="flex justify-end space-x-2">
-                    <button type="button"
-                        @click="filters={ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' }; fetchCotizaciones();"
-                        class="px-4 py-1 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 text-sm nunito-regular">Limpiar</button>
-                    <button type="button" @click="applyFilters()"
-                        class="px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm nunito-regular">Aplicar
-                        filtros</button>
-                </div>
-            </div>
-
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="nunito-bold">
                         <tr>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">ID
-                                Cliente</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Cliente</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha
                                 Cotización</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida
@@ -298,22 +243,21 @@
                     <tbody class="nunito-regular">
                         <template x-for="c in cotizaciones" :key="c.id">
                             <tr>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.id"></td>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_id"></td>
+                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_nombre || 'Sin cliente'"></td>
                                 <td class="px-4 py-3 border-t border-gray-200" x-text="c.fecha"></td>
                                 <td class="px-4 py-3 border-t border-gray-200" x-text="c.valido_hasta"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.imponible ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.impuesto ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.total_impuesto ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.otros_cargos ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.anticipo_requerido ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'$'+(Number(c.total ?? 0)).toFixed(2)"></td>
+                                    x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
                                 <td class="px-4 py-3 border-t border-gray-200 flex items-center gap-2">
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
                                         class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
@@ -331,10 +275,10 @@
                             </tr>
                         </template>
                         <tr x-show="!cotizaciones.length && !loading">
-                            <td colspan="11" class="text-center text-gray-500 py-4">Sin datos</td>
+                            <td colspan="10" class="text-center text-gray-500 py-4">Sin datos</td>
                         </tr>
                         <tr x-show="loading">
-                            <td colspan="11" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
+                            <td colspan="10" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -342,39 +286,39 @@
         </x-slot>
 
           <x-slot name="cards">
-            <div class="space-y-4">
-                <template x-if="loading"><div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando cotizaciones...</div></template>
-                <template x-if="!loading && cotizaciones.length === 0"><div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div></template>
-                <template x-for="c in cotizaciones" :key="c.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
-                            </div>
-                            <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(c.total)"></p>
-                        </div>
-                        <p class="text-xs text-gray-400">
-                            Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
-                        </p>
-                        <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
-                            <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
-                                <i class='fas fa-eye'></i> Ver
-                            </a>
-                             <button @click.prevent="openItems(c)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
-                                <i class="fas fa-database"></i> Items
-                            </button>
-                             <button @click.prevent="openEdit(c)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                             <button @click.prevent="deleteModal=true; selectedItem=c.id" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </div>
+    <div class="space-y-4">
+        <template x-if="loading"><div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando cotizaciones...</div></template>
+        <template x-if="!loading && cotizaciones.length === 0"><div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div></template>
+        <template x-for="c in cotizaciones" :key="c.id">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
                     </div>
-                </template>
+                    <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="'L. ' + (Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></p>
+                </div>
+                <p class="text-xs text-gray-400">
+                    Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
+                </p>
+                <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
+                    <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                        <i class='fas fa-eye'></i> Ver
+                    </a>
+                     <button @click.prevent="openItems(c)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
+                        <i class="fas fa-database"></i> Items
+                    </button>
+                     <button @click.prevent="openEdit(c)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                     <button @click.prevent="deleteModal=true; selectedItem=c.id" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
             </div>
-        </x-slot>
+        </template>
+    </div>
+</x-slot>
 
     </x-responsive-table>
 
@@ -690,7 +634,8 @@
     <!-- Modal de Edición de Cotización -->
     <x-admin.edit-modal class="nunito-bold" modalName="editModal" title="Editar Cotización" submitLabel="Actualizar"
         itemToEdit="editForm" maxWidth="max-w-4xl" formId="editCotizacionForm">
-        <div x-show="editForm" class="space-y-4">
+        <template x-if="editForm">
+        <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
 
                 <!-- ID del Cliente -->
@@ -833,6 +778,7 @@
                 </div>
             </div>
         </div>
+        </template>
     </x-admin.edit-modal>
 
     <!-- Modal selector de Items de Cotización -->
@@ -895,7 +841,9 @@
 </div>
 
 <style>
+    /* Slightly smaller table typography for headers and data */
+    table thead th,
     table tbody td {
-        font-size: 0.875rem;
+        font-size: 0.8125rem; /* ~13px */
     }
 </style>

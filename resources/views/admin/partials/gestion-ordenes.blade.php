@@ -8,197 +8,146 @@
             performDeleteOrden();
         }
     ">
-    <div class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold">
-            <x-slot name="titulo">
-                <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold">Lista de Órdenes de Servicio</h2>
-            </x-slot>
-            <x-slot name="filtros">
-                <div class="flex flex-wrap items-center gap-3">
-                    <input type="text" x-model="searchOrden" placeholder="Buscar..."
-                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-48 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
-                    <select x-model="tecnicoOrden"
-                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                        <option value="">Todos los técnicos</option>
-                        <template x-for="tecnico in tecnicosDisponibles" :key="tecnico.value">
-                            <option :value="tecnico.value" x-text="tecnico.label"></option>
-                        </template>
-                    </select>
-                    <select x-model="ordenarPor"
-                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                        <option value="fecha_recepcion">Ordenar por Fecha Recepción</option>
-                        <option value="id">Ordenar por Orden</option>
-                        <option value="fecha_inicio">Ordenar por Fecha Inicio</option>
-                        <option value="fecha_finalizacion">Ordenar por Fecha Finalización</option>
-                    </select>
-                </div>
-            </x-slot>
-            <x-slot name="boton">
-                <button @click="openCreateOrden()"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm"
-                    :disabled="saving">
-                    <span x-show="!saving">Nueva Orden</span>
-                    <span x-show="saving" class="flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>
-                        Guardando...</span>
-                </button>
-            </x-slot>
+    <!-- Título de la página, ahora fuera del componente de tabla -->
+    <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold mb-4">Lista de Órdenes de Servicio</h2>
+
+    <!-- Componente responsive que manejará la tabla y las tarjetas -->
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
+            <div class="flex flex-wrap items-center gap-3">
+                {{-- Reutilizamos el partial de filtros generales para mantener consistencia con gestión de usuarios --}}
+                @include('partials.filtros-generales', [
+                    'searchModel' => 'searchOrden',
+                    'filtrosSelect' => [],
+                    'ordenarOptions' => [
+                        'fecha_recepcion' => 'Fecha Recepción',
+                        'id' => 'Orden',
+                        'fecha_inicio' => 'Fecha Inicio',
+                        'fecha_finalizacion' => 'Fecha Finalización',
+                    ]
+                ])
+
+                {{-- Select dinámico para filtrar por técnico (las opciones provienen de Alpine: tecnicosDisponibles) --}}
+                <select x-model="tecnicoOrden"
+                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-auto dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                    <option value="">Todos los técnicos</option>
+                    <template x-for="tecnico in tecnicosDisponibles" :key="tecnico.value">
+                        <option :value="tecnico.value" x-text="tecnico.label"></option>
+                    </template>
+                </select>
+            </div>
+        </x-slot>
+
+        <x-slot name="actions">
+            <button @click="openCreateOrden()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm w-full sm:w-auto"
+                :disabled="saving">
+                <span x-show="!saving">Nueva Orden</span>
+                <span x-show="saving" class="flex items-center justify-center gap-2"><i class="fas fa-spinner fa-spin"></i>
+                    Guardando...</span>
+            </button>
+        </x-slot>
+
+        <x-slot name="table">
             <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="min-w-full text-xs">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Orden</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Solicitud
-                            </th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Técnico</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Estado</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Recepción
-                            </th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Inicio</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Fecha Finalización</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cotización</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Observaciones</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Diag. Cliente</th>
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Diag. Técnico</th>
-
-                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Acciones</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Orden</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Solicitud</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Técnico</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Estado</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Cliente</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Recepción</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Inicio</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Fin</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Cotización</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Observaciones</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Cliente</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Técnico</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-if="loadingOrdenes">
-                            <tr>
-                                <td colspan="13"
-                                    class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
-                                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando órdenes de servicio...
-                                </td>
-                            </tr>
+                            <tr><td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td></tr>
                         </template>
                         <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
-                            <tr>
-                                <td colspan="13"
-                                    class="py-4 px-4 text-center text-gray-600 dark:text-gray-300 nunito-regular">
-                                    No se encontraron órdenes de servicio.
-                                </td>
-                            </tr>
+                            <tr><td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300">No se encontraron órdenes.</td></tr>
                         </template>
                         <template x-for="orden in filteredOrdenes()" :key="orden.id">
-                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">
-                                    <span class="text-xs text-gray-500 nunito-bold" x-text="orden.numero || '—'"></span>
-                                </td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">
-                                    <span class="text-xs text-gray-500 nunito-bold" x-text="orden.numero_solicitud || '—'"></span>
-                                </td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">
-                                    <span class="text-xs text-gray-500 nunito-bold" x-text="orden.tecnico_nombre || '—'"></span>
-                                </td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="orden.estado || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="orden.cliente_nombre || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
-                                    x-text="orden.fecha_recepcion || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="orden.fecha_inicio || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="orden.fecha_finalizacion || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular">
-                                    <div class="flex flex-col">
-                                        <span x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></span>
-                                    </div>
-                                </td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular max-w-[16rem] truncate" :title="orden.observaciones || ''" x-text="orden.observaciones || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular max-w-[14rem] truncate" :title="orden.diagnostico_cliente || ''" x-text="orden.diagnostico_cliente || '—'"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular max-w-[14rem] truncate" :title="orden.diagnostico_tecnico || ''" x-text="orden.diagnostico_tecnico || '—'"></td>
-
-                                <td class="py-2 px-4">
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero_solicitud || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.tecnico_nombre || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.estado || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.cliente_nombre || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.fecha_recepcion || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.fecha_inicio || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.fecha_finalizacion || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[12rem] truncate" :title="orden.observaciones || ''" x-text="orden.observaciones || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate" :title="orden.diagnostico_cliente || ''" x-text="orden.diagnostico_cliente || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate" :title="orden.diagnostico_tecnico || ''" x-text="orden.diagnostico_tecnico || '—'"></td>
+                                <td class="py-1 px-2">
                                     <div class="flex gap-2 items-center">
                                         <a :href="detalleUrl(orden.id)" target="_blank"
-                                            class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
+                                            class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600">
                                             <i class="fas fa-eye mr-1"></i> Ver
                                         </a>
-                                        <a href="#" @click.prevent="openEditOrden(orden)"
-                                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                        <a href="#" @click.prevent="openDeleteOrden(orden)"
-                                            class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr x-show="expandedRows[orden.id]" x-transition
-                                class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                                <td colspan="13" class="py-3 px-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                                        <div>
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Estado:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.estado || '—'"></span>
-                                        </div>
-                                        <div>
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha
-                                                Inicio:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.fecha_inicio || '—'"></span>
-                                        </div>
-                                        <div>
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Fecha
-                                                Finalización:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.fecha_finalizacion || '—'"></span>
-                                        </div>
-                                        <div>
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Cliente:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.cliente_nombre || '—'"></span>
-                                        </div>
-                                        <div>
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Contacto:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.contacto_valor ? (orden.contacto_valor + (orden.contacto_tipo ? ' (' + orden.contacto_tipo + ')' : '')) : '—'"></span>
-                                        </div>
-                                        <div>
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Cotización:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></span>
-                                        </div>
-                                        <div class="md:col-span-2 lg:col-span-3">
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Observaciones:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.observaciones || '—'"></span>
-                                        </div>
-                                        <div class="md:col-span-2 lg:col-span-3">
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico
-                                                Técnico:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.diagnostico_tecnico || '—'"></span>
-                                        </div>
-                                        <div class="md:col-span-2 lg:col-span-3">
-                                            <span
-                                                class="font-semibold text-gray-600 dark:text-gray-300 nunito-bold">Diagnóstico
-                                                Cliente:</span>
-                                            <span class="ml-2 text-gray-900 dark:text-gray-200 nunito-regular"
-                                                x-text="orden.diagnostico_cliente || '—'"></span>
-                                        </div>
-
+                                        <a href="#" @click.prevent="openEditOrden(orden)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                        <a href="#" @click.prevent="openDeleteOrden(orden)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         </template>
+                    </tbody>
                 </table>
             </div>
-        </x-admin.tabla-crud>
-    </div>
+        </x-slot>
+
+        <x-slot name="cards">
+            <div class="space-y-4 px-2 sm:px-0">
+                <template x-if="loadingOrdenes">
+                    <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
+                </template>
+                <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
+                    <div class="p-8 text-center text-gray-500 dark:text-gray-400">No se encontraron órdenes.</div>
+                </template>
+                <template x-for="orden in filteredOrdenes()" :key="orden.id">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Orden #<span x-text="orden.numero || '—'"></span></h3>
+                                <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" x-text="orden.estado || '—'"></span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 pt-2"><b>Cliente:</b> <span x-text="orden.cliente_nombre || '—'"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300"><b>Técnico:</b> <span x-text="orden.tecnico_nombre || '—'"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300"><b>Recepción:</b> <span x-text="orden.fecha_recepcion || '—'"></span></p>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700 flex-wrap">
+                            <a :href="detalleUrl(orden.id)" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                            <button @click.prevent="openEditOrden(orden)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button @click.prevent="openDeleteOrden(orden)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </x-slot>
+    </x-responsive-table>
 
     <!-- Modal Nueva Orden -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Orden" submitLabel="Guardar Orden"
         formId="orden-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">ID
-                    Solicitud</label>
+                <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
@@ -338,8 +287,7 @@
         minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">ID
-                    Solicitud</label>
+                <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="edit_id_solicitud" name="edit_id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">

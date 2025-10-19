@@ -15,10 +15,58 @@ async function dashTryFetch(url, headers) {
 document.addEventListener("alpine:init", () => {
     const TTL_MS = 120000;
 
+    // Scroll position component - Defined globally
+    window.scrollPosition = function () {
+        return {
+            saveScrollPosition() {
+                try {
+                    sessionStorage.setItem(
+                        "dashboardScrollPosition",
+                        window.scrollY
+                    );
+                } catch (e) {
+                    console.warn("Could not save scroll position:", e);
+                }
+            },
+            restoreScrollPosition() {
+                try {
+                    const savedPosition = sessionStorage.getItem(
+                        "dashboardScrollPosition"
+                    );
+                    if (savedPosition) {
+                        setTimeout(() => {
+                            window.scrollTo(0, parseInt(savedPosition));
+                        }, 100);
+                    }
+                } catch (e) {
+                    console.warn("Could not restore scroll position:", e);
+                }
+            },
+            init() {
+                // Save scroll position before page unload
+                window.addEventListener("beforeunload", () =>
+                    this.saveScrollPosition()
+                );
+
+                // Also save on visibility change (when tab becomes hidden)
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden) {
+                        this.saveScrollPosition();
+                    }
+                });
+
+                // Restore position on page load
+                this.restoreScrollPosition();
+            },
+        };
+    };
+
     // Load persisted cache
     let persisted = {};
     try {
-        persisted = JSON.parse(localStorage.getItem("dashboard.cache") || "{}");
+        persisted = JSON.parse(
+            sessionStorage.getItem("dashboard.cache") || "{}"
+        );
     } catch (_) {}
 
     const now = () => Date.now();
@@ -41,7 +89,7 @@ document.addEventListener("alpine:init", () => {
 
         persist() {
             try {
-                localStorage.setItem(
+                sessionStorage.setItem(
                     "dashboard.cache",
                     JSON.stringify({
                         ttlMs: this.ttlMs,

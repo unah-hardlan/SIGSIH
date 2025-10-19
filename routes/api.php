@@ -155,6 +155,11 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
     Route::apiResource('servicios', ServicioController::class);
     Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
 
+    // Gestión DB
+    // Respaldos (MySQL)
+    Route::post('db/backup', [\App\Http\Controllers\GestionDbController::class, 'backup']);
+    Route::get('db/backup/download', [\App\Http\Controllers\GestionDbController::class, 'download'])->name('db.backup.download');
+
     // Catálogo unificado de clientes (personas + empresas) para selectores
     // Se expone sin 'auto.permiso' para uso general en selectores autenticados
     Route::get('clientes', [\App\Http\Controllers\ClienteCatalogController::class, 'index'])

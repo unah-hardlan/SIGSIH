@@ -22,6 +22,11 @@ class StoreCategoriaRequest extends FormRequest
                 Rule::unique('tbl_categorias', 'nombre_categoria')
             ],
             'descripcion_categoria' => 'nullable|string|max:255',
+            'tipo_categoria' => [
+                'required',
+                'string',
+                Rule::in(['ingreso', 'gasto'])
+            ],
         ];
     }
 }
