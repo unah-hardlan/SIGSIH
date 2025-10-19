@@ -245,71 +245,92 @@
             if(this.isDeleteModalOpenPersonas) return this.deletePersona();
     }
     }" x-init="init()" @modal-submit.window="onModalSubmit()">
-    <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Personas'">
-        <x-slot name="filtros">
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4" title="Gestión de Personas">
+        <x-slot name="filters">
             @include('partials.filtros-generales', [
-            'searchModel' => 'searchPersonas',
-            'filtrosSelect' => [
-            'filtroGenero' => [
-            'label' => 'Género',
-            'options' => ['Masculino', 'Femenino']
-            ]
-            ],
-            'ordenarOptions' => [
-            'nombre' => 'Nombre',
-            'dni' => 'DNI'
-            ]
+                'searchModel' => 'searchPersonas',
+                'filtrosSelect' => [
+                    'filtroGenero' => [
+                        'label' => 'Género',
+                        'options' => ['Masculino', 'Femenino']
+                    ]
+                ],
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'dni' => 'DNI'
+                ]
             ])
         </x-slot>
 
-        <!-- Tabla de personas -->
-        <div class="overflow-x-auto w-full">
-            <div x-show="loading" class="p-3 text-sm text-gray-600 nunito-regular">Cargando…</div>
-            <table class="min-w-full text-sm">
+        <x-slot name="actions">
+            <button @click="openAdd()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Persona</button>
+        </x-slot>
+
+        <x-slot name="table">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Nombre</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Primer Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Segundo Apellido</th>
-                        <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">DNI</th>
-                        
-                        <th class="py-2 px-4 text-left nunito-bold">Género</th>
-                        
-                        <th class="py-2 px-4 text-left nunito-bold">Usuario</th>
-                        <th class="py-2 px-4 text-left nunito-bold">Acciones</th>
+                        <th class="py-2 px-4 text-left">Nombre</th>
+                        <th class="py-2 px-4 text-left">DNI</th>
+                        <th class="py-2 px-4 text-left">Género</th>
+                        <th class="py-2 px-4 text-left">Usuario</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <template x-if="loading">
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
+                        </tr>
+                    </template>
+                    <template x-if="!loading && personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero)).length===0">
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td>
+                        </tr>
+                    </template>
                     <template x-for="persona in personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
-                        <tr class="border-b nunito-regular">
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.id"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.primer_nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.primer_apellido"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.segundo_apellido"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.dni"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.genero_nombre"></td>
-                            <td class="py-2 px-4 nunito-regular" x-text="persona.usuario || '-' "></td>
-                            <td class="py-2 px-4 flex gap-2 nunito-regular">
-                                <a href="#" @click="openEdit(persona)"
-                                    class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="#" @click="openDelete(persona)"
-                                    class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                        <tr class="border-b dark:border-gray-700 nunito-regular">
+                            <td class="py-2 px-4" x-text="[persona.primer_nombre, persona.segundo_nombre, persona.primer_apellido, persona.segundo_apellido].filter(Boolean).join(' ')"></td>
+                            <td class="py-2 px-4" x-text="persona.dni"></td>
+                            <td class="py-2 px-4" x-text="persona.genero_nombre"></td>
+                            <td class="py-2 px-4" x-text="persona.usuario || '—'"></td>
+                            <td class="py-2 px-4 flex gap-2">
+                                <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
                 </tbody>
             </table>
-        </div>
+        </x-slot>
 
-        <!-- Paginación removida -->
-    </x-admin.tabla-crud>
+        <x-slot name="cards">
+            <template x-if="loading">
+                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</div>
+            </template>
+            <template x-if="!loading && personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero)).length===0">
+                <div class="p-8 text-center text-gray-500 nunito-regular">No hay personas</div>
+            </template>
+            <template x-for="p in personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero))" :key="'card-p-'+p.id">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="[p.primer_nombre,p.segundo_nombre,p.primer_apellido,p.segundo_apellido].filter(Boolean).join(' ')"></h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="p.dni"></p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span x-text="p.genero_nombre || '—'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="p.usuario || '—'"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="openEdit(p)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                        <button @click="openDelete(p)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                    </div>
+                </div>
+            </template>
+        </x-slot>
+    </x-responsive-table>
 
     <!-- Modal Agregar Persona -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona" submitLabel="Guardar"
