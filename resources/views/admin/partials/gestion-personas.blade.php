@@ -278,7 +278,10 @@
             <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left">Nombre</th>
+                        <th class="py-2 px-4 text-left">Primer Nombre</th>
+                        <th class="py-2 px-4 text-left">Segundo Nombre</th>
+                        <th class="py-2 px-4 text-left">Primer Apellido</th>
+                        <th class="py-2 px-4 text-left">Segundo Apellido</th>
                         <th class="py-2 px-4 text-left">DNI</th>
                         <th class="py-2 px-4 text-left">Género</th>
                         <th class="py-2 px-4 text-left">Usuario</th>
@@ -288,20 +291,23 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
                         </tr>
                     </template>
                     <template x-if="!loading && personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero)).length===0">
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td>
                         </tr>
                     </template>
                     <template x-for="persona in personas.filter(p => equalsNormalized(p.genero_nombre, filtroGenero))" :key="persona.id">
                         <tr class="border-b dark:border-gray-700 nunito-regular">
-                            <td class="py-2 px-4" x-text="[persona.primer_nombre, persona.segundo_nombre, persona.primer_apellido, persona.segundo_apellido].filter(Boolean).join(' ')"></td>
-                            <td class="py-2 px-4" x-text="persona.dni"></td>
-                            <td class="py-2 px-4" x-text="persona.genero_nombre"></td>
-                            <td class="py-2 px-4" x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '—'"></td>
+                            <td class="py-2 px-4" x-text="persona.primer_nombre || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.segundo_nombre || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.primer_apellido || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.segundo_apellido || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.dni || '-' "></td>
+                            <td class="py-2 px-4" x-text="persona.genero_nombre || '-' "></td>
+                            <td class="py-2 px-4" x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '-' "></td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                 <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
@@ -328,8 +334,12 @@
                         </div>
                     </div>
                     <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span x-text="p.genero_nombre || '—'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '—'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Nombre:</span> <span x-text="p.primer_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Nombre:</span> <span x-text="p.segundo_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Apellido:</span> <span x-text="p.primer_apellido || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Apellido:</span> <span x-text="p.segundo_apellido || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span x-text="p.genero_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '-'"></span></div>
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <button @click="openEdit(p)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
