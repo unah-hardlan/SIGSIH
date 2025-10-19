@@ -34,7 +34,7 @@
         error: '',
         // pagination
         page: 1,
-        perPage: 10,
+    perPage: 5000,
         total: 0,
         lastPage: 1,
     // internals to prevent storm of requests
@@ -43,7 +43,7 @@
         // forms
         addForm: {
             primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
-            dni: '', id_genero_fk: ''
+            dni: '', id_genero_fk: '', id_usuario_fk: ''
         },
 
         init(){
@@ -176,12 +176,19 @@
             let i=0; for(; i < this.personas.length; i++){ const cmp=(this.personas[i].primer_nombre||'').toLowerCase(); if(nombre < cmp){ break; } }
             this.personas.splice(i,0,persona);
         },
+        usuariosSinPersona(){
+            try{
+                const usados = new Set(this.personas.map(p=>String(p.id_usuario_fk||'')));
+                return this.catalogoUsuarios.filter(u=>!usados.has(String(u.id)));
+            }catch(_){ return this.catalogoUsuarios; }
+        },
         openAdd(){
-            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '' };
+            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '', id_usuario_fk: '' };
             this.isModalOpenPersonas = true;
         },
         async createPersona(){
             try{
+                if(!this.addForm.id_usuario_fk){ this.notify('Seleccione un usuario','error'); return; }
                 const res = await fetch('/api/personas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -382,6 +389,15 @@
                     <option value="">Seleccione</option>
                     <template x-for="op in catalogoGeneros" :key="op.id">
                         <option :value="op.id" x-text="op.genero"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk">
+                    <option value="">Seleccione</option>
+                    <template x-for="u in usuariosSinPersona()" :key="'u-add-'+u.id">
+                        <option :value="u.id" x-text="u.usuario"></option>
                     </template>
                 </select>
             </div>
