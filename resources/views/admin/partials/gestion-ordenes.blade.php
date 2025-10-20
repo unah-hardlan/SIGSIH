@@ -17,14 +17,14 @@
             <div class="flex flex-wrap items-center gap-3">
                 {{-- Reutilizamos el partial de filtros generales para mantener consistencia con gestión de usuarios --}}
                 @include('partials.filtros-generales', [
-                    'searchModel' => 'searchOrden',
-                    'filtrosSelect' => [],
-                    'ordenarOptions' => [
-                        'fecha_recepcion' => 'Fecha Recepción',
-                        'id' => 'Orden',
-                        'fecha_inicio' => 'Fecha Inicio',
-                        'fecha_finalizacion' => 'Fecha Finalización',
-                    ]
+                'searchModel' => 'searchOrden',
+                'filtrosSelect' => [],
+                'ordenarOptions' => [
+                'fecha_recepcion' => 'Fecha Recepción',
+                'id' => 'Orden',
+                'fecha_inicio' => 'Fecha Inicio',
+                'fecha_finalizacion' => 'Fecha Finalización',
+                ]
                 ])
 
                 {{-- Select dinámico para filtrar por técnico (las opciones provienen de Alpine: tecnicosDisponibles) --}}
@@ -43,7 +43,8 @@
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm w-full sm:w-auto"
                 :disabled="saving">
                 <span x-show="!saving">Nueva Orden</span>
-                <span x-show="saving" class="flex items-center justify-center gap-2"><i class="fas fa-spinner fa-spin"></i>
+                <span x-show="saving" class="flex items-center justify-center gap-2"><i
+                        class="fas fa-spinner fa-spin"></i>
                     Guardando...</span>
             </button>
         </x-slot>
@@ -70,33 +71,55 @@
                     </thead>
                     <tbody>
                         <template x-if="loadingOrdenes">
-                            <tr><td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td></tr>
+                            <tr>
+                                <td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300"><i
+                                        class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
+                            </tr>
                         </template>
                         <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
-                            <tr><td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300">No se encontraron órdenes.</td></tr>
+                            <tr>
+                                <td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
+                                    encontraron órdenes.</td>
+                            </tr>
                         </template>
                         <template x-for="orden in filteredOrdenes()" :key="orden.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero_solicitud || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.tecnico_nombre || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.estado || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.cliente_nombre || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.fecha_recepcion || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.fecha_inicio || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.fecha_finalizacion || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[12rem] truncate" :title="orden.observaciones || ''" x-text="orden.observaciones || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate" :title="orden.diagnostico_cliente || ''" x-text="orden.diagnostico_cliente || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate" :title="orden.diagnostico_tecnico || ''" x-text="orden.diagnostico_tecnico || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero || '—'">
+                                </td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.numero_solicitud || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.tecnico_nombre || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.estado || '—'">
+                                </td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.cliente_nombre || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.fecha_recepcion || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.fecha_inicio || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.fecha_finalizacion || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[12rem] truncate"
+                                    :title="orden.observaciones || ''" x-text="orden.observaciones || '—'"></td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate"
+                                    :title="orden.diagnostico_cliente || ''" x-text="orden.diagnostico_cliente || '—'">
+                                </td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate"
+                                    :title="orden.diagnostico_tecnico || ''" x-text="orden.diagnostico_tecnico || '—'">
+                                </td>
                                 <td class="py-1 px-2">
                                     <div class="flex gap-2 items-center">
                                         <a :href="detalleUrl(orden.id)" target="_blank"
                                             class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600">
                                             <i class="fas fa-eye mr-1"></i> Ver
                                         </a>
-                                        <a href="#" @click.prevent="openEditOrden(orden)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                        <a href="#" @click.prevent="openDeleteOrden(orden)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                        <a href="#" @click.prevent="openEditOrden(orden)"
+                                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                        <a href="#" @click.prevent="openDeleteOrden(orden)"
+                                            class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
                             </tr>
@@ -109,30 +132,42 @@
         <x-slot name="cards">
             <div class="space-y-4 px-2 sm:px-0">
                 <template x-if="loadingOrdenes">
-                    <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
+                    <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i
+                            class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
                 </template>
                 <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400">No se encontraron órdenes.</div>
                 </template>
                 <template x-for="orden in filteredOrdenes()" :key="orden.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div>
                             <div class="flex justify-between items-start">
-                                <h3 class="font-semibold text-gray-900 dark:text-white">Orden #<span x-text="orden.numero || '—'"></span></h3>
-                                <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" x-text="orden.estado || '—'"></span>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">Orden #<span
+                                        x-text="orden.numero || '—'"></span></h3>
+                                <span
+                                    class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                    x-text="orden.estado || '—'"></span>
                             </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-300 pt-2"><b>Cliente:</b> <span x-text="orden.cliente_nombre || '—'"></span></p>
-                            <p class="text-sm text-gray-600 dark:text-gray-300"><b>Técnico:</b> <span x-text="orden.tecnico_nombre || '—'"></span></p>
-                            <p class="text-sm text-gray-600 dark:text-gray-300"><b>Recepción:</b> <span x-text="orden.fecha_recepcion || '—'"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 pt-2"><b>Cliente:</b> <span
+                                    x-text="orden.cliente_nombre || '—'"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300"><b>Técnico:</b> <span
+                                    x-text="orden.tecnico_nombre || '—'"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300"><b>Recepción:</b> <span
+                                    x-text="orden.fecha_recepcion || '—'"></span></p>
                         </div>
-                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700 flex-wrap">
-                            <a :href="detalleUrl(orden.id)" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                        <div
+                            class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700 flex-wrap">
+                            <a :href="detalleUrl(orden.id)" target="_blank"
+                                class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
                                 <i class="fas fa-eye"></i> Ver
                             </a>
-                            <button @click.prevent="openEditOrden(orden)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                            <button @click.prevent="openEditOrden(orden)"
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button @click.prevent="openDeleteOrden(orden)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                            <button @click.prevent="openDeleteOrden(orden)"
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
@@ -151,6 +186,7 @@
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
                     </template>
@@ -165,10 +201,11 @@
                 </template>
             </div>
             <div>
-                <label for="id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold">ID Técnico</label>
+                <label for="id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold"> Técnico</label>
                 <select id="id_tecnico" name="id_tecnico" x-model="formOrden.id_tecnico_fk"
                     :disabled="loadingCatalogos.tecnicos"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
                     </template>
@@ -201,7 +238,8 @@
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
-                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2" x-show="loadingCatalogos.estadosOrden">
+                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2"
+                    x-show="loadingCatalogos.estadosOrden">
                     <i class="fas fa-spinner fa-spin"></i>
                     <span>Cargando estados...</span>
                 </div>
@@ -259,12 +297,12 @@
             </div>
 
             <div>
-                <label for="id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">ID
+                <label for="id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Cotización</label>
                 <select id="id_cotizacion" name="id_cotizacion" x-model="formOrden.id_cotizacion_fk"
                     :disabled="loadingCatalogos.cotizaciones"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Sin cotización</option>
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
                     </template>
@@ -287,10 +325,12 @@
         minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
+                <label for="edit_id_solicitud"
+                    class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="edit_id_solicitud" name="edit_id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
                     </template>
@@ -305,11 +345,12 @@
                 </template>
             </div>
             <div>
-                <label for="edit_id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold">ID
+                <label for="edit_id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Técnico</label>
                 <select id="edit_id_tecnico" name="edit_id_tecnico" x-model="formOrden.id_tecnico_fk"
                     :disabled="loadingCatalogos.tecnicos"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <option value="">Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
                     </template>
@@ -334,16 +375,18 @@
                 </template>
             </div>
             <div>
-                <label for="edit_id_estado_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
-                <select id="edit_id_estado_orden" name="edit_id_estado_orden" x-model="formOrden.id_estado_orden_servicio_fk"
-                    :disabled="loadingCatalogos.estadosOrden"
+                <label for="edit_id_estado_orden"
+                    class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
+                <select id="edit_id_estado_orden" name="edit_id_estado_orden"
+                    x-model="formOrden.id_estado_orden_servicio_fk" :disabled="loadingCatalogos.estadosOrden"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                     <option value="">Estado por defecto</option>
                     <template x-for="opt in estadosOrdenOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
-                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2" x-show="loadingCatalogos.estadosOrden">
+                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2"
+                    x-show="loadingCatalogos.estadosOrden">
                     <i class="fas fa-spinner fa-spin"></i>
                     <span>Cargando estados...</span>
                 </div>
@@ -401,12 +444,12 @@
             </div>
 
             <div>
-                <label for="edit_id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">ID
+                <label for="edit_id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Cotización</label>
                 <select id="edit_id_cotizacion" name="edit_id_cotizacion" x-model="formOrden.id_cotizacion_fk"
                     :disabled="loadingCatalogos.cotizaciones"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Sin cotización</option>
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
                     </template>
