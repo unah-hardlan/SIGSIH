@@ -1,10 +1,25 @@
 {
-  "_index-D41Ftq_p.js": {
-    "file": "assets/index-D41Ftq_p.js",
-    "name": "index"
+  "_index-BYJawPu-.js": {
+    "file": "assets/index-BYJawPu-.js",
+    "name": "index",
+    "dynamicImports": [
+      "node_modules/laravel-echo/dist/echo.js",
+      "_pusher-DWQ63Jd7.js"
+    ]
+  },
+  "_pusher-DWQ63Jd7.js": {
+    "file": "assets/pusher-DWQ63Jd7.js",
+    "name": "pusher",
+    "isDynamicEntry": true
+  },
+  "node_modules/laravel-echo/dist/echo.js": {
+    "file": "assets/echo-DL0QqwGZ.js",
+    "name": "echo",
+    "src": "node_modules/laravel-echo/dist/echo.js",
+    "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-BvSWjls_.css",
+    "file": "assets/app-BJZ1LaWQ.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -24,12 +39,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-1KXsU8eX.js",
+    "file": "assets/app-Ct7UKE6Q.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-D41Ftq_p.js"
+      "_index-BYJawPu-.js"
     ]
   },
   "resources/js/auth.js": {
@@ -39,12 +54,12 @@
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-CxXsi4CP.js",
+    "file": "assets/cliente-BTZasvyJ.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-D41Ftq_p.js"
+      "_index-BYJawPu-.js"
     ]
   },
   "resources/js/cliente/perfil.js": {

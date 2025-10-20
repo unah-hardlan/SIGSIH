@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Notifications\PasswordResetNotification;
 use App\Notifications\VerifyEmailNotification;
+use App\Notifications\SystemNotification;
+use Illuminate\Support\Facades\Notification;
 
 
 class AuthController extends Controller
@@ -90,15 +92,17 @@ class AuthController extends Controller
         // Añadir redirect según rol
         try {
             $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
-            if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+            if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
                 // Verificar si el cliente necesita configurar su perfil
                 $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
-                
-                if (!$persona || 
-                    empty($persona->primer_nombre) || 
-                    empty($persona->primer_apellido) || 
-                    empty($persona->dni) || 
-                    empty($persona->id_genero_fk)) {
+
+                if (
+                    !$persona ||
+                    empty($persona->primer_nombre) ||
+                    empty($persona->primer_apellido) ||
+                    empty($persona->dni) ||
+                    empty($persona->id_genero_fk)
+                ) {
                     $payload['redirect_url'] = route('cliente.configurar-perfil');
                 } else {
                     $payload['redirect_url'] = route('cliente.perfil');
@@ -162,7 +166,7 @@ class AuthController extends Controller
         return $redirect;
     }
 
-   
+
     public function register(StoreUsuarioRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -207,6 +211,31 @@ class AuthController extends Controller
             // no bloquear registro si falla
         }
 
+        // Notificar a administradores: nuevo usuario registrado
+        try {
+            $adminRoleId = Rol::where('rol', 'Administrador')->value('id_rol_pk');
+            if ($adminRoleId) {
+                $admins = Usuario::where('id_rol_fk', (int)$adminRoleId)->get();
+                if ($admins->count() > 0) {
+                    $payload = [
+                        'title' => 'Nuevo usuario registrado',
+                        'body'  => sprintf('Usuario: %s (%s)', $usuario->usuario, (string) $usuario->correo_electronico),
+                        'url'   => '/admin/usuarios',
+                        'icon'  => 'fa-user-plus',
+                        'severity' => 'info',
+                        'module' => 'usuarios',
+                        'meta'  => [
+                            'id_usuario_pk' => $usuario->id_usuario_pk,
+                            'nombre_usuario' => $usuario->nombre_usuario,
+                        ],
+                    ];
+                    Notification::send($admins, new SystemNotification($payload));
+                }
+            }
+        } catch (\Throwable $e) {
+            // no bloquear registro si notificación falla
+        }
+
         // Si se requiere verificación de correo, generar token y enviar mail; no iniciar sesión aún
         $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
@@ -230,8 +259,8 @@ class AuthController extends Controller
         $token = $tokenResult['token'] ?? null;
         $payload = $tokenResult;
         unset($payload['token']);
-    $payload['redirect_url'] = route('cliente.perfil');
-    $response = response()->json($payload, 201);
+        $payload['redirect_url'] = route('cliente.perfil');
+        $response = response()->json($payload, 201);
         if ($token) {
             $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';

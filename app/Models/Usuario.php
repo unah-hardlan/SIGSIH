@@ -21,9 +21,9 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         'estado_usuario',
         'contrasena',
         'correo_electronico',
-    'email_verified_at',
-    'email_verification_token',
-    'email_verification_sent_at',
+        'email_verified_at',
+        'email_verification_token',
+        'email_verification_sent_at',
         'id_rol_fk',
         'primer_ingreso',
         'fecha_ultima_conexion',
@@ -164,6 +164,39 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
     public function routeNotificationForMail($notification)
     {
         return $this->correo_electronico;
+    }
+
+    // Broadcast notifications use private channel App.Models.Usuario.{id}
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'App.Models.Usuario.' . $this->getKey();
+    }
+
+    // Use custom DB notifications table/model
+    public function notifications()
+    {
+        return $this->morphMany(DbNotification::class, 'notifiable', 'tipo_notificable', 'id_notificable')
+            ->orderBy('fecha_creacion', 'desc');
+    }
+
+    // Direct hint for Database channel: use our custom relation for persistence
+    public function routeNotificationForDatabase($notification)
+    {
+        return $this->notifications();
+    }
+
+    public function readNotifications()
+    {
+        return $this->morphMany(DbNotification::class, 'notifiable', 'tipo_notificable', 'id_notificable')
+            ->whereNotNull('fecha_lectura')
+            ->orderBy('fecha_creacion', 'desc');
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->morphMany(DbNotification::class, 'notifiable', 'tipo_notificable', 'id_notificable')
+            ->whereNull('fecha_lectura')
+            ->orderBy('fecha_creacion', 'desc');
     }
 
     // Email verification helpers

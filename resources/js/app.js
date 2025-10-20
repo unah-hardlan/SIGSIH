@@ -1,4 +1,5 @@
 import "./bootstrap";
+import "./notifications";
 
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
