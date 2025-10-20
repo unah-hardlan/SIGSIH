@@ -36,6 +36,11 @@
     }
 }"
 x-init="fetchEstadosTickets()"
+{{-- AÑADIDO: Este bloque observa los cambios en los filtros y llama a la API automáticamente. --}}
+x-effect="
+    $watch('filtroEstadoTicket', () => fetchEstadosTickets());
+    $watch('ordenarPor', () => fetchEstadosTickets());
+"
 @keydown.escape.window="
     isEstadoTicketModalOpen = false;
     isEstadoTicketEditModalOpen = false;
@@ -51,6 +56,7 @@ x-init="fetchEstadosTickets()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoTicket',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento a la variable 'ordenarPor'. --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'

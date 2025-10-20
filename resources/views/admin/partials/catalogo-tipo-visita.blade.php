@@ -8,9 +8,11 @@
     loadingTipoVisitas: false,
     nombre_tipo_visita: '',
     descripcion_tipo_visita: '',
-    // Campos locales de edición para evitar leer itemToEdit cuando es null
     edit_nombre_tipo_visita: '',
     edit_descripcion_tipo_visita: '',
+    // AÑADIDO: Variables para el filtro y ordenamiento
+    filtroTipoVisita: '',
+    ordenarPor: '',
     async fetchTipoVisitas() {
         await window.tipoVisitasApiHandlers.fetchTipoVisitas(this);
     },
@@ -34,6 +36,11 @@
     }
 }"
 x-init="fetchTipoVisitas()"
+{{-- AÑADIDO: Este bloque observa los cambios y llama a la API automáticamente --}}
+x-effect="
+    $watch('filtroTipoVisita', () => fetchTipoVisitas());
+    $watch('ordenarPor', () => fetchTipoVisitas());
+"
 @keydown.escape.window="
     isTipoVisitaModalOpen = false;
     isTipoVisitaEditModalOpen = false;
@@ -49,6 +56,7 @@ x-init="fetchTipoVisitas()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroTipoVisita',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Tipo'

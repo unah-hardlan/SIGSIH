@@ -33,6 +33,11 @@
     }
 }"
 x-init="fetchAccionesRealizadas()"
+{{-- AÑADIDO: Este bloque observa los cambios en los filtros y llama a la API automáticamente --}}
+x-effect="
+    $watch('filtroAccionRealizada', () => fetchAccionesRealizadas());
+    $watch('ordenarPor', () => fetchAccionesRealizadas());
+"
 @keydown.escape.window="
     isAccionRealizadaModalOpen = false;
     isAccionRealizadaEditModalOpen = false;
@@ -49,9 +54,10 @@ x-init="fetchAccionesRealizadas()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroAccionRealizada',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de orden a la variable de Alpine --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
-                    'id_accion_realizada_pk' => 'ID' // Corregido
+                    'id_accion_realizada_pk' => 'ID'
                 ]
             ])
         </x-slot>
