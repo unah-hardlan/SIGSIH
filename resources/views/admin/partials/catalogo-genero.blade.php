@@ -1,75 +1,209 @@
-<div x-data="{ 
-    isModalOpenGenero: false, 
-    isEditModalOpenGenero: false, 
-    isDeleteModalOpenGenero: false, 
-    itemToEdit: {id: '', nombre: '', descripcion: ''}, 
-    itemToDelete: {id: ''}, 
-    searchGenero: '' 
-}">
-    <x-admin.tabla-crud :titulo="'Gestión de Géneros'">
-        <x-slot name="filtros">
-            <div class="flex flex-wrap gap-2 items-center">
-                <input type="text" x-model="searchGenero" placeholder="Buscar género..." class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-            </div>
+<div x-data="{
+    isGeneroModalOpen: false,
+    isGeneroEditModalOpen: false,
+    isGeneroDeleteModalOpen: false,
+    itemToEdit: null,
+    itemToDelete: null,
+    generos: [],
+    loadingGeneros: false,
+    genero: '',
+    filtroGenero: '',
+    ordenarPor: 'genero',
+    // Lista filtrada y ordenada (ascendente)
+    get filteredGeneros() {
+        const term = String(this.filtroGenero || '').toLowerCase().trim();
+        const sortKey = this.ordenarPor || 'genero';
+        let items = Array.isArray(this.generos) ? [...this.generos] : [];
+
+        if (term) {
+            items = items.filter((g) => {
+                const parts = [
+                    g?.genero,
+                    String(g?.id_genero_pk)
+                ].map(v => String(v ?? '').toLowerCase());
+                return parts.some(p => p.includes(term));
+            });
+        }
+
+        items.sort((a,b) => {
+            let va = a?.[sortKey];
+            let vb = b?.[sortKey];
+            if (sortKey === 'genero') {
+                va = String(va ?? '').toLowerCase();
+                vb = String(vb ?? '').toLowerCase();
+            } else if (sortKey === 'id_genero_pk') {
+                va = Number(va ?? 0);
+                vb = Number(vb ?? 0);
+            }
+            if (va < vb) return -1;
+            if (va > vb) return 1;
+            return 0;
+        });
+
+        return items;
+    },
+    async fetchGeneros() {
+        await window.generosApiHandlers.fetchGeneros(this);
+    },
+    async submitGenero() {
+        await window.generosApiHandlers.submitGenero(this);
+    },
+    async updateGenero() {
+        await window.generosApiHandlers.updateGenero(this);
+    },
+    async deleteGenero() {
+        await window.generosApiHandlers.deleteGenero(this);
+    },
+    handleModalSubmit(event) {
+        if(event.detail.formId === 'formGenero') this.submitGenero();
+        if(event.detail.formId === 'formEditGenero') this.updateGenero();
+    },
+    handleDelete() {
+        if (this.isGeneroDeleteModalOpen) {
+            this.deleteGenero();
+        }
+    }
+}" x-init="fetchGeneros()" @keydown.escape.window="
+    isGeneroModalOpen = false;
+    isGeneroEditModalOpen = false;
+    isGeneroDeleteModalOpen = false;
+" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Géneros</h1>
+    </div>
+
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
+            @include('partials.filtros-generales', [
+            'searchModel' => 'filtroGenero',
+            'ordenarOptions' => [
+            'genero' => 'Nombre',
+            'id_genero_pk' => 'ID Género'
+            ]
+            ])
         </x-slot>
-        <x-slot name="boton">
-            <div class="w-full flex justify-center sm:justify-end">
-                <button @click="isModalOpenGenero = true"
-                    class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">Agregar
-                    género
-                </button>
-            </div>
+
+        <x-slot name="actions">
+            <button @click="isGeneroModalOpen = true"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+                Nuevo género
+            </button>
         </x-slot>
-        <div class="overflow-x-auto w-full">
-            <table class="min-w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="py-2 px-4 text-left">Id Género</th>
-                        <th class="py-2 px-4 text-left">Género</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
+
+        <x-slot name="table">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th
+                            class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
+                            Nombre</th>
+                        <th
+                            class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
+                            Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-b">
-                        <td class="py-2 px-4">1</td>
-                        <td class="py-2 px-4">Masculino</td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="#" @click="isEditModalOpenGenero = true; itemToEdit = {genero: 'Masculino'}"
-                                class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isDeleteModalOpenGenero = true; itemToDelete = {genero: 'Masculino'}"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                    <tr class="border-b">
-                        <td class="py-2 px-4">2</td>
-                        <td class="py-2 px-4">Femenino</td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="#" @click="isEditModalOpenGenero = true; itemToEdit = {genero: 'Femenino'}"
-                                class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click="isDeleteModalOpenGenero = true; itemToDelete = {genero: 'Femenino'}"
-                                class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
+                    <template x-if="loadingGeneros">
+                        <tr>
+                            <td colspan="2" class="py-8 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando géneros...
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingGeneros && generos.length === 0">
+                        <tr>
+                            <td colspan="2" class="py-8 text-center text-gray-500 nunito-regular">
+                                No hay géneros registrados
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingGeneros && filteredGeneros.length > 0">
+                        <template x-for="(genero, index) in filteredGeneros" :key="genero.id_genero_pk">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === filteredGeneros.length - 1 }">
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
+                                    x-text="genero.genero"></td>
+                                <td class="py-2 px-4 flex gap-2"
+                                    :class="{ 'last:rounded-br-lg': index === filteredGeneros.length - 1 }">
+                                    <a href="#"
+                                        @click.prevent="isGeneroEditModalOpen = true; itemToEdit = {id_genero_pk: genero.id_genero_pk, genero: genero.genero}"
+                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#"
+                                        @click.prevent="isGeneroDeleteModalOpen = true; itemToDelete = {id_genero_pk: genero.id_genero_pk, nombre: genero.genero}"
+                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
                 </tbody>
             </table>
-        </div>
-    </x-admin.tabla-crud>
-    
-    <!-- Modales género -->
-    <x-admin.form-modal modalName="isModalOpenGenero" title="Agregar Género" submitLabel="Guardar" maxWidth="max-w-md">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Género</label>
-            <input type="text" class="w-full border rounded px-3 py-2" placeholder="Ej: Masculino" />
-        </div>
-    </x-admin.form-modal>
-    
-    <x-admin.edit-modal modalName="isEditModalOpenGenero" title="Editar Género" itemToEdit="itemToEdit" maxWidth="max-w-md">
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Género</label>
-            <input type="text" class="w-full border rounded px-3 py-2" :value="itemToEdit?.genero" />
-        </div>
-    </x-admin.edit-modal>
-    
-    <x-admin.confirmation-modal modalName="isDeleteModalOpenGenero" itemToDelete="itemToDelete"
-        message="¿Estás seguro de que deseas eliminar este género?" />
+        </x-slot>
+
+        <x-slot name="cards">
+            <template x-if="loadingGeneros">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando géneros...
+                </div>
+            </template>
+            <template x-if="!loadingGeneros && generos.length === 0">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                    No hay géneros registrados
+                </div>
+            </template>
+            <template x-if="!loadingGeneros && filteredGeneros.length > 0">
+                <template x-for="genero in filteredGeneros" :key="genero.id_genero_pk">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold"
+                                x-text="genero.genero"></h3>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <button
+                                @click.prevent="isGeneroEditModalOpen = true; itemToEdit = {id_genero_pk: genero.id_genero_pk, genero: genero.genero}"
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button
+                                @click.prevent="isGeneroDeleteModalOpen = true; itemToDelete = {id_genero_pk: genero.id_genero_pk, nombre: genero.genero}"
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </x-slot>
+    </x-responsive-table>
+
+    <!-- Modales -->
+    <div>
+        <!-- Modal Nuevo Género -->
+        <x-admin.form-modal class="nunito-bold" modalName="isGeneroModalOpen" title="Nuevo Género"
+            submitLabel="Guardar Género" formId="formGenero" maxWidth="max-w-md">
+            <div>
+                <label for="genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                <input type="text" id="genero" x-model="genero" required
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            </div>
+        </x-admin.form-modal>
+
+        <!-- Modal Editar Género -->
+        <x-admin.edit-modal class="nunito-bold" modalName="isGeneroEditModalOpen" title="Editar Género"
+            itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditGenero">
+            <template x-if="itemToEdit">
+                <div>
+                    <label for="edit_genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                    <input type="text" id="edit_genero" x-model="itemToEdit.genero" required
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+            </template>
+        </x-admin.edit-modal>
+
+        <!-- Modal Confirmar Eliminación -->
+        <x-admin.confirmation-modal class="nunito-regular" modalName="isGeneroDeleteModalOpen"
+            itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este género?" />
+    </div>
 </div>
