@@ -1,21 +1,23 @@
-import { getToken } from "./auth.js";
-
 window.accionesRealizadasApiHandlers = {
-    getToken,
-    authHeaders() {
-        return {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        };
-    },
-
     async fetchAccionesRealizadas(component) {
         component.loadingAccionesRealizadas = true;
         try {
-            const response = await fetch("/api/acciones-realizadas", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroAccionRealizada) {
+                params.set("q", component.filtroAccionRealizada);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+
+            const response = await fetch(
+                `/api/acciones-realizadas?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
 
@@ -33,16 +35,14 @@ window.accionesRealizadasApiHandlers = {
         }
     },
 
+    // Crear nueva acción realizada
     async submitAccionRealizada(component) {
         const nombreTrim = String(component.nombre || "").trim();
         const descripcionTrim = String(component.descripcion || "").trim();
 
         if (!nombreTrim) {
             window.showToast &&
-                window.showToast(
-                    "El nombre de la acción es obligatorio",
-                    "error"
-                );
+                window.showToast("El nombre de la acción es obligatorio", "error");
             return;
         }
 
@@ -66,12 +66,13 @@ window.accionesRealizadasApiHandlers = {
             const response = await fetch("/api/acciones-realizadas", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Accept: "application/json",
+                    "Content-Type": "application/json",
                 },
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
                 if (data && data.errors) {
@@ -87,6 +88,7 @@ window.accionesRealizadasApiHandlers = {
                 }
                 throw data;
             }
+
             window.showToast &&
                 window.showToast("Acción creada exitosamente", "success");
 
@@ -101,6 +103,7 @@ window.accionesRealizadasApiHandlers = {
         }
     },
 
+    // Actualizar acción realizada
     async updateAccionRealizada(component) {
         if (
             !component.itemToEdit ||
@@ -109,16 +112,11 @@ window.accionesRealizadasApiHandlers = {
             return;
 
         const nombreTrim = String(component.itemToEdit.nombre || "").trim();
-        const descripcionTrim = String(
-            component.itemToEdit.descripcion || ""
-        ).trim();
+        const descripcionTrim = String(component.itemToEdit.descripcion || "").trim();
 
         if (!nombreTrim) {
             window.showToast &&
-                window.showToast(
-                    "El nombre de la acción es obligatorio",
-                    "error"
-                );
+                window.showToast("El nombre de la acción es obligatorio", "error");
             return;
         }
 
@@ -131,10 +129,7 @@ window.accionesRealizadasApiHandlers = {
             )
         ) {
             window.showToast &&
-                window.showToast(
-                    "Ya existe otra acción con ese nombre",
-                    "error"
-                );
+                window.showToast("Ya existe otra acción con ese nombre", "error");
             return;
         }
 
@@ -149,13 +144,14 @@ window.accionesRealizadasApiHandlers = {
                 {
                     method: "PUT",
                     headers: {
-                        "Content-Type": "application/json",
                         Accept: "application/json",
+                        "Content-Type": "application/json",
                     },
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
             );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
                 if (data && data.errors) {
@@ -169,13 +165,11 @@ window.accionesRealizadasApiHandlers = {
                     });
                 } else {
                     window.showToast &&
-                        window.showToast(
-                            "Error al actualizar la acción",
-                            "error"
-                        );
+                        window.showToast("Error al actualizar la acción", "error");
                 }
                 throw data;
             }
+
             window.showToast &&
                 window.showToast("Acción actualizada exitosamente", "success");
 
@@ -187,8 +181,8 @@ window.accionesRealizadasApiHandlers = {
         }
     },
 
+    // Eliminar acción realizada
     async deleteAccionRealizada(component) {
-        // CORREGIDO AQUÍ: Usando id_accion_realizada_pk
         if (
             !component.itemToDelete ||
             !component.itemToDelete.id_accion_realizada_pk
@@ -196,7 +190,6 @@ window.accionesRealizadasApiHandlers = {
             return;
 
         try {
-            // CORREGIDO AQUÍ: Usando id_accion_realizada_pk
             const response = await fetch(
                 `/api/acciones-realizadas/${component.itemToDelete.id_accion_realizada_pk}`,
                 {
@@ -205,8 +198,10 @@ window.accionesRealizadasApiHandlers = {
                     credentials: "same-origin",
                 }
             );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
+
             window.showToast &&
                 window.showToast("Acción eliminada exitosamente", "success");
 

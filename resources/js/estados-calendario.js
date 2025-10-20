@@ -1,25 +1,27 @@
-window.estadosCalendarioApiHandlers = {
-    authHeaders() {
-        return {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        };
-    },
-
-    /**
-     * Fetches the list of estados calendario from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+window.estadosCalendarioApiHandlers = { 
     async fetchEstadosCalendario(component) {
         component.loadingEstadosCalendario = true;
         try {
-            const response = await fetch("/api/estados-calendario", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroEstadoCalendario) {
+                params.set("q", component.filtroEstadoCalendario);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+            params.set("all", "true");
+
+            const response = await fetch(
+                `/api/estados-calendario?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // El controller retorna data dentro de 'data' key
+
             component.estadosCalendario = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -37,10 +39,6 @@ window.estadosCalendarioApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new estado calendario to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async submitEstadoCalendario(component) {
         const nombreTrim = String(component.nombre || "").trim();
         const codigoTrim = String(component.codigo || "").trim();
@@ -64,7 +62,6 @@ window.estadosCalendarioApiHandlers = {
             return;
         }
 
-        // Validar duplicados por nombre
         if (
             component.estadosCalendario.some(
                 (ec) => ec.nombre.toLowerCase() === nombreTrim.toLowerCase()
@@ -75,14 +72,12 @@ window.estadosCalendarioApiHandlers = {
             return;
         }
 
-        // Validar duplicados por código
         if (
             component.estadosCalendario.some(
                 (ec) => ec.codigo.toLowerCase() === codigoTrim.toLowerCase()
             )
         ) {
-            window.showToast &&
-                window.showToast("El código ya existe", "error");
+            window.showToast && window.showToast("El código ya existe", "error");
             return;
         }
 
@@ -98,15 +93,15 @@ window.estadosCalendarioApiHandlers = {
             const response = await fetch("/api/estados-calendario", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Accept: "application/json",
+                    "Content-Type": "application/json"
                 },
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -120,18 +115,21 @@ window.estadosCalendarioApiHandlers = {
                 }
                 throw data;
             }
+
             window.showToast &&
                 window.showToast(
                     "Estado de calendario creado exitosamente",
                     "success"
                 );
+
             component.codigo = "";
             component.nombre = "";
             component.descripcion = "";
             component.es_final = false;
             component.orden = "";
             component.isEstadoCalendarioModalOpen = false;
-            await this.fetchEstadosCalendario(component);
+
+            await window.estadosCalendarioApiHandlers.fetchEstadosCalendario(component);
         } catch (error) {
             console.error("Error creating estado calendario:", error);
             window.showToast &&
@@ -142,22 +140,13 @@ window.estadosCalendarioApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing estado calendario via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async updateEstadoCalendario(component) {
-        if (
-            !component.itemToEdit ||
-            !component.itemToEdit.id_estado_calendario_pk
-        )
+        if (!component.itemToEdit || !component.itemToEdit.id_estado_calendario_pk)
             return;
 
         const nombreTrim = String(component.itemToEdit.nombre || "").trim();
         const codigoTrim = String(component.itemToEdit.codigo || "").trim();
-        const descripcionTrim = String(
-            component.itemToEdit.descripcion || ""
-        ).trim();
+        const descripcionTrim = String(component.itemToEdit.descripcion || "").trim();
 
         if (!nombreTrim) {
             window.showToast &&
@@ -177,13 +166,11 @@ window.estadosCalendarioApiHandlers = {
             return;
         }
 
-        // Validar duplicados por nombre
         if (
             component.estadosCalendario.some(
                 (ec) =>
                     ec.nombre.toLowerCase() === nombreTrim.toLowerCase() &&
-                    ec.id_estado_calendario_pk !==
-                        component.itemToEdit.id_estado_calendario_pk
+                    ec.id_estado_calendario_pk !== component.itemToEdit.id_estado_calendario_pk
             )
         ) {
             window.showToast &&
@@ -194,13 +181,11 @@ window.estadosCalendarioApiHandlers = {
             return;
         }
 
-        // Validar duplicados por código
         if (
             component.estadosCalendario.some(
                 (ec) =>
                     ec.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
-                    ec.id_estado_calendario_pk !==
-                        component.itemToEdit.id_estado_calendario_pk
+                    ec.id_estado_calendario_pk !== component.itemToEdit.id_estado_calendario_pk
             )
         ) {
             window.showToast &&
@@ -225,16 +210,16 @@ window.estadosCalendarioApiHandlers = {
                 {
                     method: "PUT",
                     headers: {
-                        "Content-Type": "application/json",
                         Accept: "application/json",
+                        "Content-Type": "application/json"
                     },
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
             );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -253,28 +238,24 @@ window.estadosCalendarioApiHandlers = {
                 }
                 throw data;
             }
+
             window.showToast &&
                 window.showToast(
                     "Estado de calendario actualizado exitosamente",
                     "success"
                 );
+
             component.isEstadoCalendarioEditModalOpen = false;
             component.itemToEdit = null;
-            await this.fetchEstadosCalendario(component);
+
+            await window.estadosCalendarioApiHandlers.fetchEstadosCalendario(component);
         } catch (error) {
             console.error("Error updating estado calendario:", error);
         }
     },
 
-    /**
-     * Deletes an estado calendario via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async deleteEstadoCalendario(component) {
-        if (
-            !component.itemToDelete ||
-            !component.itemToDelete.id_estado_calendario_pk
-        )
+        if (!component.itemToDelete || !component.itemToDelete.id_estado_calendario_pk)
             return;
 
         try {
@@ -286,22 +267,24 @@ window.estadosCalendarioApiHandlers = {
                     credentials: "same-origin",
                 }
             );
+
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
+
             window.showToast &&
                 window.showToast(
                     "Estado de calendario eliminado exitosamente",
                     "success"
                 );
+
             component.isEstadoCalendarioDeleteModalOpen = false;
             component.itemToDelete = null;
-            await this.fetchEstadosCalendario(component);
+
+            await window.estadosCalendarioApiHandlers.fetchEstadosCalendario(component);
         } catch (error) {
             console.error("Error deleting estado calendario:", error);
             const errorMessage =
-                error?.message ||
-                error?.error ||
-                "Error al eliminar el estado de calendario";
+                error?.message || error?.error || "Error al eliminar el estado de calendario";
             window.showToast && window.showToast(errorMessage, "error");
         }
     },
