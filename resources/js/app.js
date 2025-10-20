@@ -1899,6 +1899,11 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
+                    // Client-side required validation before sending to API
+                    if (!this.validateForm()) {
+                        this.saving = false;
+                        return;
+                    }
                     const payload = this.buildPayload();
                     const response = await fetch("/api/ordenes-servicio", {
                         method: "POST",
@@ -1940,6 +1945,11 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
+                    // Client-side required validation before sending to API
+                    if (!this.validateForm()) {
+                        this.saving = false;
+                        return;
+                    }
                     const payload = this.buildPayload();
                     const response = await fetch(
                         "/api/ordenes-servicio/" + this.formOrden.id,
@@ -2019,6 +2029,27 @@ if (typeof window !== "undefined") {
             submitOrden() {
                 if (this.formOrden.id) this.updateOrden();
                 else this.createOrden();
+            },
+            validateForm() {
+                // Minimal required set according to UI: Solicitud, Técnico y Cotización
+                // Estado, fechas y textos se mantienen opcionales a menos que se pida explícitamente
+                const errs = {};
+                const requiredMsg = "Este campo es obligatorio.";
+                if (!this.formOrden.id_solicitud_servicio_fk) {
+                    errs.id_solicitud_servicio_fk = [requiredMsg];
+                }
+                if (!this.formOrden.id_tecnico_fk) {
+                    errs.id_tecnico_fk = [requiredMsg];
+                }
+                if (!this.formOrden.id_cotizacion_fk) {
+                    errs.id_cotizacion_fk = [requiredMsg];
+                }
+                this.errors = errs;
+                if (Object.keys(errs).length) {
+                    this.showToast("Por favor completa los campos requeridos.", "error");
+                    return false;
+                }
+                return true;
             },
             filteredOrdenes() {
                 const term = this.searchOrden.trim().toLowerCase();

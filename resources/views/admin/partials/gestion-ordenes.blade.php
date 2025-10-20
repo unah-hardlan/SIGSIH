@@ -186,7 +186,7 @@
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Seleccione...</option>
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
                     </template>
@@ -205,7 +205,7 @@
                 <select id="id_tecnico" name="id_tecnico" x-model="formOrden.id_tecnico_fk"
                     :disabled="loadingCatalogos.tecnicos"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Seleccione...</option>
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
                     </template>
@@ -302,7 +302,7 @@
                 <select id="id_cotizacion" name="id_cotizacion" x-model="formOrden.id_cotizacion_fk"
                     :disabled="loadingCatalogos.cotizaciones"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Seleccione...</option>
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
                     </template>
@@ -449,7 +449,7 @@
                 <select id="edit_id_cotizacion" name="edit_id_cotizacion" x-model="formOrden.id_cotizacion_fk"
                     :disabled="loadingCatalogos.cotizaciones"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-                    <option value="">Seleccione...</option>
+                    <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
                     </template>
