@@ -23,8 +23,8 @@ window.paisesApiHandlers = {
             component.paises = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching paises:", error);
             window.showToast &&
@@ -39,7 +39,8 @@ window.paisesApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitPais(component) {
-        const nombreTrim = String(component.selected_pais || "").trim();
+        // Use the same model name used in Blade (nombre_pais)
+        const nombreTrim = String(component.nombre_pais || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast("El nombre del país es obligatorio", "error");
@@ -70,7 +71,7 @@ window.paisesApiHandlers = {
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast("País creado exitosamente", "success");
-            component.selected_pais = "";
+            component.nombre_pais = "";
             component.isPaisModalOpen = false;
             await this.fetchPaises(component); // Use 'this' to call other methods within the same handler object
         } catch (error) {
@@ -178,8 +179,8 @@ window.paisesApiHandlers = {
             component.departamentos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching departamentos:", error);
             window.showToast &&
@@ -213,7 +214,7 @@ window.paisesApiHandlers = {
             component.departamentos.some(
                 (d) =>
                     d.nombre_departamento.toLowerCase() ===
-                        nombreTrim.toLowerCase() && d.id_pais_pk == paisId
+                    nombreTrim.toLowerCase() && d.id_pais_pk == paisId
             )
         ) {
             window.showToast &&
@@ -277,7 +278,7 @@ window.paisesApiHandlers = {
             component.departamentos.some(
                 (d) =>
                     d.nombre_departamento.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     d.id_pais_pk == paisId &&
                     d.id_departamento_pk !== component.itemToEdit.id
             )
@@ -375,8 +376,8 @@ window.paisesApiHandlers = {
             component.ciudades = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching ciudades:", error);
             window.showToast &&
@@ -410,7 +411,7 @@ window.paisesApiHandlers = {
             component.ciudades.some(
                 (c) =>
                     c.nombre_ciudad.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     c.id_departamento_fk == departamentoId
             )
         ) {
@@ -475,7 +476,7 @@ window.paisesApiHandlers = {
             component.ciudades.some(
                 (c) =>
                     c.nombre_ciudad.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     c.id_departamento_fk == departamentoId &&
                     c.id_ciudad_pk !== component.itemToEdit.id
             )
@@ -563,8 +564,8 @@ window.paisesApiHandlers = {
             component.direcciones = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching direcciones:", error);
             window.showToast &&
@@ -590,8 +591,8 @@ window.paisesApiHandlers = {
             component.agencias = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching agencias:", error);
             window.showToast &&
@@ -707,7 +708,7 @@ window.paisesApiHandlers = {
             component.codigo_postal = "";
             component.referencia = "";
             component.ciudad_direccion = "";
-            
+
             component.isDireccionModalOpen = false;
             await this.fetchDirecciones(component);
         } catch (error) {
@@ -880,8 +881,8 @@ window.paisesApiHandlers = {
             component.paisesPredefinidos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching paises predefinidos:", error);
             window.showToast &&
