@@ -81,70 +81,121 @@
   async fetchDirecciones() { await window.paisesApiHandlers.fetchDirecciones(this); },
 }"
 x-init="fetch(); fetchDirecciones(); $watch('searchAgencia', () => fetch()); $watch('ciudadFiltro', () => fetch()); $watch('ordenarPor', () => fetch());">
-  <div class="w-full">
-    <div class="overflow-x-auto w-full">
-      <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mt-6 w-full">
-        <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4 mb-4 border-b dark:border-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-          <h2 class="text-2xl text-gray-800 dark:text-white nunito-bold">Agencias</h2>
-          <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
-            @include('partials.filtros-generales', [
-              'searchModel' => 'searchAgencia',
-              'filtrosSelect' => [
-                'ciudadFiltro' => [
-                  'label' => 'Ciudades',
-                  'options' => ['Tegucigalpa', 'San Pedro Sula']
-                ]
-              ],
-              'ordenarOptions' => [
-                'nombre' => 'Nombre',
-                'ciudad' => 'Ciudad',
-                'departamento' => 'Departamento',
-                'pais' => 'País'
-              ]
-            ])
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Agencias</h1>
+  </div>
+
+  <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+    <x-slot name="filters">
+      @include('partials.filtros-generales', [
+        'searchModel' => 'searchAgencia',
+        'filtrosSelect' => [
+          'ciudadFiltro' => [
+            'label' => 'Ciudades',
+            'options' => ['Tegucigalpa', 'San Pedro Sula']
+          ]
+        ],
+        'ordenarOptions' => [
+          'nombre' => 'Nombre',
+          'ciudad' => 'Ciudad',
+          'departamento' => 'Departamento',
+          'pais' => 'País'
+        ]
+      ])
+    </x-slot>
+
+    <x-slot name="actions">
+      <button @click="formAgencia = { id:null, nombre: '', horario: '', direccion_id: '' }; dias.forEach(d=>d.sel=false); horaInicio='08:00'; horaFin='17:00'; composeHorario(); isAgenciaModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva agencia</button>
+      <a href="/admin/reportes-header?modulo=Agencias&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+         class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+        <i class="fas fa-file-alt"></i> Generar Reporte
+      </a>
+    </x-slot>
+
+    <x-slot name="table">
+      <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+        <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+          <tr class="border-0">
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">Nombre</th>
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Horario</th>
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Dirección</th>
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Ciudad</th>
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Departamento</th>
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">País</th>
+            <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-if="loading">
+            <tr>
+              <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
+                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando agencias...
+              </td>
+            </tr>
+          </template>
+          <template x-if="!loading && agencias.length === 0">
+            <tr>
+              <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
+                No hay agencias registradas
+              </td>
+            </tr>
+          </template>
+          <template x-if="!loading && agencias.length > 0">
+            <template x-for="(ag, index) in agencias" :key="ag.id_agencias_pk">
+              <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                  :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === agencias.length - 1 }">
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.nombre_agencia"></td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.horario_agencia"></td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="(ag.direccion && (ag.direccion.direccion_completa || [ag.direccion.calle, ag.direccion.numero, ag.direccion.colonia].filter(Boolean).join(' '))) || '-' "></td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.direccion?.ciudad?.nombre_ciudad || '-' "></td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.direccion?.ciudad?.departamento?.nombre_departamento || '-' "></td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.direccion?.ciudad?.departamento?.pais?.nombre_pais || '-' "></td>
+                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === agencias.length - 1 }">
+                  <a href="#" @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                  <a href="#" @click.prevent="isDeleteAgenciaModalOpen = true; agenciaToDelete = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                </td>
+              </tr>
+            </template>
+          </template>
+        </tbody>
+      </table>
+    </x-slot>
+
+    <x-slot name="cards">
+      <template x-if="loading">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+          <i class="fas fa-spinner fa-spin mr-2"></i> Cargando agencias...
+        </div>
+      </template>
+      <template x-if="!loading && agencias.length === 0">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+          No hay agencias registradas
+        </div>
+      </template>
+      <template x-if="!loading && agencias.length > 0">
+        <template x-for="ag in agencias" :key="ag.id_agencias_pk">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="ag.nombre_agencia"></h3>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Horario: ' + ag.horario_agencia"></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Dirección: ' + ((ag.direccion && (ag.direccion.direccion_completa || [ag.direccion.calle, ag.direccion.numero, ag.direccion.colonia].filter(Boolean).join(' '))) || 'No especificada')"></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Ciudad: ' + (ag.direccion?.ciudad?.nombre_ciudad || 'No especificada')"></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Departamento: ' + (ag.direccion?.ciudad?.departamento?.nombre_departamento || 'No especificado')"></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'País: ' + (ag.direccion?.ciudad?.departamento?.pais?.nombre_pais || 'No especificado')"></p>
+            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <button @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <button @click.prevent="isDeleteAgenciaModalOpen = true; agenciaToDelete = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </div>
           </div>
-          <button @click="formAgencia = { id:null, nombre: '', horario: '', direccion_id: '' }; dias.forEach(d=>d.sel=false); horaInicio='08:00'; horaFin='17:00'; composeHorario(); isAgenciaModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva agencia</button>
-          <a href="/admin/reportes-header?modulo=Agencias&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-             class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
-              <i class="fas fa-file-alt"></i> Generar Reporte
-          </a>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
-            <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
-              <tr class="border-0">
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 first:rounded-tl-lg border-0">Nombre</th>
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Horario</th>
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Dirección</th>
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Ciudad</th>
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">Departamento</th>
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 border-0">País</th>
-                <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300 last:rounded-tr-lg border-0">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template x-for="ag in agencias" :key="ag.id_agencias_pk">
-                <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular last:border-b-0">
-                  <td class="py-2 px-4 first:rounded-bl-lg" x-text="ag.nombre_agencia"></td>
-                  <td class="py-2 px-4" x-text="ag.horario_agencia"></td>
-                  <td class="py-2 px-4" x-text="(ag.direccion && (ag.direccion.direccion_completa || [ag.direccion.calle, ag.direccion.numero, ag.direccion.colonia].filter(Boolean).join(' '))) || '-' "></td>
-                  <td class="py-2 px-4" x-text="ag.direccion?.ciudad?.nombre_ciudad || '-' "></td>
-                  <td class="py-2 px-4" x-text="ag.direccion?.ciudad?.departamento?.nombre_departamento || '-' "></td>
-                  <td class="py-2 px-4" x-text="ag.direccion?.ciudad?.departamento?.pais?.nombre_pais || '-' "></td>
-                  <td class="py-2 px-4 flex gap-2 last:rounded-br-lg">
-                    <a href="#" @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                    <a href="#" @click.prevent="isDeleteAgenciaModalOpen = true; agenciaToDelete = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                  </td>
-                </tr>
-              </template>
-              <tr x-show="!loading && agencias.length === 0">
-                <td class="py-3 px-4 text-center text-gray-500" colspan="7">Sin resultados</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        </template>
+      </template>
+    </x-slot>
+  </x-responsive-table>
 
     <!-- Modal Nueva Agencia -->
     <x-admin.form-modal class="nunito-bold"

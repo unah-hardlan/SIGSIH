@@ -36,6 +36,11 @@
     }
 }"
 x-init="fetchEstadosCalendario()"
+{{-- AÑADIDO: Este bloque observa los cambios y llama a la API para actualizar los datos en tiempo real. --}}
+x-effect="
+    $watch('filtroEstadoCalendario', () => fetchEstadosCalendario());
+    $watch('ordenarPor', () => fetchEstadosCalendario());
+"
 @keydown.escape.window="
     isEstadoCalendarioModalOpen = false;
     isEstadoCalendarioEditModalOpen = false;
@@ -51,6 +56,7 @@ x-init="fetchEstadosCalendario()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoCalendario',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento a la variable 'ordenarPor'. --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'
@@ -105,7 +111,7 @@ x-init="fetchEstadosCalendario()"
                                 </td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoCalendario.orden"></td>
                                 <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === estadosCalendario.length - 1 }">
-                                    <a href="#" @click.prevent="isEstadoCalendarioEditModalOpen = true; itemToEdit = {id_estado_calendario_pk: estadoCalendario.id_estado_calendario_pk, codigo: estadoCalendario.codigo, nombre: estadoCalendario.nombre, descripcion: estadoCalendario.descripcion, es_final: estadoCalendario.es_final, orden: estadoCalendario.orden}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="isEstadoCalendarioEditModalOpen = true; itemToEdit = { ...estadoCalendario }" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isEstadoCalendarioDeleteModalOpen = true; itemToDelete = {id_estado_calendario_pk: estadoCalendario.id_estado_calendario_pk, nombre: estadoCalendario.nombre}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
