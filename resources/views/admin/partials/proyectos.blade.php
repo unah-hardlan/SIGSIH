@@ -277,7 +277,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     'searchModel' => 'filtroIngreso',
                     'ordenarModel' => 'ordenarPorIngreso',
                     'ordenarOptions' => [
-                        'nombre' => 'Nombre',
+                        'proyecto' => 'Proyecto',
                         'fecha' => 'Fecha',
                         'monto' => 'Monto'
                     ]
