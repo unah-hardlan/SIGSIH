@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use App\Models\Usuario;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+// Default Laravel example uses App.Models.User; adjust to our Usuario model
+Broadcast::channel('App.Models.Usuario.{id}', function (Usuario $user, $id) {
+    return (int) $user->id_usuario_pk === (int) $id;
+});
+
+// Back-compat channel name in case frontend expects `users.{id}`
+Broadcast::channel('users.{id}', function (Usuario $user, $id) {
+    return (int) $user->id_usuario_pk === (int) $id;
 });
