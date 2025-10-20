@@ -17,7 +17,7 @@ class FacturaController extends Controller
             $facturas = Factura::with([
                 'estadoFactura', 
                 'cai', 
-                'cliente.persona',
+                'cliente.personas',   // Usar 'personas' en lugar de 'persona'
                 'cliente.empresa'
             ])->get();
             
@@ -46,7 +46,7 @@ class FacturaController extends Controller
             $factura = Factura::create($validatedData);
             \Log::info('Factura created with ID:', ['id' => $factura->id_factura_pk]);
             
-            $factura->load(['estadoFactura', 'cai', 'cliente.persona', 'cliente.empresa']);
+            $factura->load(['estadoFactura', 'cai', 'cliente.personas', 'cliente.empresa']);
             
             return response()->json([
                 'success' => true,
@@ -65,14 +65,14 @@ class FacturaController extends Controller
 
     public function show(Factura $factura)
     {
-        $factura->load(['estadoFactura', 'cai', 'cliente.persona', 'cliente.empresa']);
+        $factura->load(['estadoFactura', 'cai', 'cliente.personas', 'cliente.empresa']);
         return new FacturaResource($factura);
     }
 
     public function update(UpdateFacturaRequest $request, Factura $factura)
     {
         $factura->update($request->validated());
-        $factura->load(['estadoFactura', 'cai', 'cliente.persona', 'cliente.empresa']);
+        $factura->load(['estadoFactura', 'cai', 'cliente.personas', 'cliente.empresa']);
         return new FacturaResource($factura);
     }
 
@@ -88,7 +88,7 @@ class FacturaController extends Controller
     public function getClientes()
     {
         try {
-            $clientes = Cliente::with(['empresa', 'persona'])->get();
+            $clientes = Cliente::with(['empresa', 'personas'])->get(); // Usar 'personas' en lugar de 'persona'
             
             // Filtrar solo clientes que tienen datos válidos
             $clientesValidos = $clientes->filter(function($cliente) {
@@ -96,8 +96,10 @@ class FacturaController extends Controller
                     return $cliente->empresa && 
                            ($cliente->empresa->nombre_comercial || $cliente->empresa->razon_social);
                 } elseif ($cliente->tipo_cliente === 'persona') {
-                    return $cliente->persona && 
-                           ($cliente->persona->primer_nombre || $cliente->persona->primer_apellido);
+                    // Obtener la primera persona de la colección
+                    $persona = $cliente->personas->first();
+                    return $persona && 
+                           ($persona->primer_nombre || $persona->primer_apellido);
                 }
                 return false;
             });
@@ -107,10 +109,14 @@ class FacturaController extends Controller
                 
                 if ($cliente->tipo_cliente === 'empresa' && $cliente->empresa) {
                     $nombre = $cliente->empresa->nombre_comercial ?? $cliente->empresa->razon_social ?? 'Empresa sin nombre';
-                } elseif ($cliente->tipo_cliente === 'persona' && $cliente->persona) {
-                    $nombre = trim(($cliente->persona->primer_nombre ?? '') . ' ' . ($cliente->persona->primer_apellido ?? ''));
-                    if (empty($nombre)) {
-                        $nombre = 'Persona sin nombre';
+                } elseif ($cliente->tipo_cliente === 'persona') {
+                    // Obtener la primera persona de la colección
+                    $persona = $cliente->personas->first();
+                    if ($persona) {
+                        $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
+                        if (empty($nombre)) {
+                            $nombre = 'Persona sin nombre';
+                        }
                     }
                 }
                 

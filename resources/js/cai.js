@@ -45,19 +45,33 @@ window.caiApiHandlers = {
      */
     async fetchEstadosCai(component) {
         try {
-            const response = await fetch("/api/estados-cai", {
-                headers: { Accept: "application/json" },
+            // Agregar timestamp único y forzar recarga completa
+            const timestamp = Date.now() + Math.random();
+            const response = await fetch(`/api/estados-cai?_t=${timestamp}&_bust=${Math.random()}`, {
+                method: 'GET',
+                headers: { 
+                    Accept: "application/json",
+                    "Cache-Control": "no-cache, no-store, must-revalidate",
+                    "Pragma": "no-cache",
+                    "Expires": "0"
+                },
                 credentials: "same-origin",
+                cache: 'no-store' // Forzar no usar caché
             });
             const data = await response.json().catch(() => ({}));
             
             if (!response.ok) throw data;
+            
+            console.log('Estados CAI fetched (fresh):', data);
+            console.log('Response headers:', [...response.headers.entries()]);
             
             component.estadosCai = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
                 ? data
                 : [];
+                
+            console.log('Estados CAI processed (should be fresh):', component.estadosCai);
         } catch (error) {
             console.error("❌ Error fetching Estados CAI:", error);
         }
