@@ -8,6 +8,38 @@
     loadingServiciosRealizados: false,
     nombre_servicio: '',
     descripcion_servicio: '',
+    // Filtros y ordenamiento
+    filtroServicioRealizado: '',
+    ordenarPor: 'nombre_servicio',
+    // Colección filtrada y ordenada (asc)
+    get filteredServiciosRealizados() {
+        const term = String(this.filtroServicioRealizado || '').toLowerCase().trim();
+        const sortKey = this.ordenarPor || 'nombre_servicio';
+        let items = Array.isArray(this.serviciosRealizados) ? [...this.serviciosRealizados] : [];
+
+        if (term) {
+            items = items.filter((s) => {
+                const parts = [
+                    s?.nombre_servicio,
+                    s?.descripcion_servicio,
+                    String(s?.id_servicio_realizado_pk)
+                ].map(v => String(v ?? '').toLowerCase());
+                return parts.some(p => p.includes(term));
+            });
+        }
+
+        items.sort((a,b) => {
+            let va = a?.[sortKey];
+            let vb = b?.[sortKey];
+            va = String(va ?? '').toLowerCase();
+            vb = String(vb ?? '').toLowerCase();
+            if (va < vb) return -1;
+            if (va > vb) return 1;
+            return 0;
+        });
+
+        return items;
+    },
     async fetchServiciosRealizados() {
         await window.serviciosRealizadosApiHandlers.fetchServiciosRealizados(this);
     },
@@ -29,33 +61,29 @@
             this.deleteServicioRealizado();
         }
     }
-}"
-x-init="fetchServiciosRealizados()"
-@keydown.escape.window="
+}" x-init="fetchServiciosRealizados()" @keydown.escape.window="
     isServicioRealizadoModalOpen = false;
     isServicioRealizadoEditModalOpen = false;
     isServicioRealizadoDeleteModalOpen = false;
-"
-@modal-submit.window="handleModalSubmit($event)"
-@confirm-delete.window="handleDelete()">
+" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Servicios Realizados</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Servicios Realizados
+        </h1>
     </div>
 
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             @include('partials.filtros-generales', [
-                'searchModel' => 'filtroServicioRealizado',
-                'ordenarOptions' => [
-                    'tipo' => 'Tipo de Servicio',
-                    'fecha' => 'Fecha'
-                ]
+            'searchModel' => 'filtroServicioRealizado',
+            'ordenarOptions' => [
+            'nombre_servicio' => 'Nombre del Servicio',
+            'descripcion_servicio' => 'Descripción'
+            ]
             ])
         </x-slot>
 
         <x-slot name="actions">
-            <button
-                @click="isServicioRealizadoModalOpen = true"
+            <button @click="isServicioRealizadoModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo servicio realizado
             </button>
@@ -65,9 +93,15 @@ x-init="fetchServiciosRealizados()"
             <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre del Servicio</th>
-                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
-                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
+                        <th
+                            class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
+                            Nombre del Servicio</th>
+                        <th
+                            class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
+                            Descripción</th>
+                        <th
+                            class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
+                            Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,15 +119,23 @@ x-init="fetchServiciosRealizados()"
                             </td>
                         </tr>
                     </template>
-                    <template x-if="!loadingServiciosRealizados && serviciosRealizados.length > 0">
-                        <template x-for="(servicioRealizado, index) in serviciosRealizados" :key="servicioRealizado.id_servicio_realizado_pk">
+                    <template x-if="!loadingServiciosRealizados && filteredServiciosRealizados.length > 0">
+                        <template x-for="(servicioRealizado, index) in filteredServiciosRealizados"
+                            :key="servicioRealizado.id_servicio_realizado_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === serviciosRealizados.length - 1 }">
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicioRealizado.nombre_servicio"></td>
-                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="servicioRealizado.descripcion_servicio"></td>
-                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === serviciosRealizados.length - 1 }">
-                                    <a href="#" @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                    <a href="#" @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === filteredServiciosRealizados.length - 1 }">
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
+                                    x-text="servicioRealizado.nombre_servicio"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
+                                    x-text="servicioRealizado.descripcion_servicio"></td>
+                                <td class="py-2 px-4 flex gap-2"
+                                    :class="{ 'last:rounded-br-lg': index === filteredServiciosRealizados.length - 1 }">
+                                    <a href="#"
+                                        @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}"
+                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#"
+                                        @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio}"
+                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
                         </template>
@@ -104,27 +146,37 @@ x-init="fetchServiciosRealizados()"
 
         <x-slot name="cards">
             <template x-if="loadingServiciosRealizados">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando servicios realizados...
                 </div>
             </template>
             <template x-if="!loadingServiciosRealizados && serviciosRealizados.length === 0">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
                     No hay servicios realizados registrados
                 </div>
             </template>
-            <template x-if="!loadingServiciosRealizados && serviciosRealizados.length > 0">
-                <template x-for="servicioRealizado in serviciosRealizados" :key="servicioRealizado.id_servicio_realizado_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+            <template x-if="!loadingServiciosRealizados && filteredServiciosRealizados.length > 0">
+                <template x-for="servicioRealizado in filteredServiciosRealizados"
+                    :key="servicioRealizado.id_servicio_realizado_pk">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="servicioRealizado.nombre_servicio"></h3>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold"
+                                x-text="servicioRealizado.nombre_servicio"></h3>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="servicioRealizado.descripcion_servicio"></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular"
+                            x-text="servicioRealizado.descripcion_servicio"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <button
+                                @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}"
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
-                            <button @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                            <button
+                                @click.prevent="isServicioRealizadoDeleteModalOpen = true; itemToDelete = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio}"
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
@@ -137,11 +189,13 @@ x-init="fetchServiciosRealizados()"
     <!-- Modales -->
     <div>
         <!-- Modal Nuevo Servicio Realizado -->
-        <x-admin.form-modal class="nunito-bold" modalName="isServicioRealizadoModalOpen" title="Nuevo Servicio Realizado"
-            submitLabel="Guardar Servicio Realizado" formId="formServicioRealizado" maxWidth="max-w-2xl">
+        <x-admin.form-modal class="nunito-bold" modalName="isServicioRealizadoModalOpen"
+            title="Nuevo Servicio Realizado" submitLabel="Guardar Servicio Realizado" formId="formServicioRealizado"
+            maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Servicio</label>
+                    <label for="nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del
+                        Servicio</label>
                     <input type="text" id="nombre_servicio" x-model="nombre_servicio" required
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
@@ -155,26 +209,29 @@ x-init="fetchServiciosRealizados()"
         </x-admin.form-modal>
 
         <!-- Modal Editar Servicio Realizado -->
-        <x-admin.edit-modal class="nunito-bold" modalName="isServicioRealizadoEditModalOpen" title="Editar Servicio Realizado" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditServicioRealizado">
+        <x-admin.edit-modal class="nunito-bold" modalName="isServicioRealizadoEditModalOpen"
+            title="Editar Servicio Realizado" itemToEdit="itemToEdit" maxWidth="max-w-2xl"
+            formId="formEditServicioRealizado">
             <template x-if="itemToEdit">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="edit_nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Servicio</label>
-                    <input type="text" id="edit_nombre_servicio" x-model="itemToEdit.nombre_servicio" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit_nombre_servicio"
+                            class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Servicio</label>
+                        <input type="text" id="edit_nombre_servicio" x-model="itemToEdit.nombre_servicio" required
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    </div>
+                    <div class="col-span-2">
+                        <label for="edit_descripcion_servicio"
+                            class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                        <textarea id="edit_descripcion_servicio" x-model="itemToEdit.descripcion_servicio" rows="2"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    </div>
                 </div>
-                <div class="col-span-2">
-                    <label for="edit_descripcion_servicio"
-                        class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="edit_descripcion_servicio" x-model="itemToEdit.descripcion_servicio" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
-                </div>
-            </div>
             </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->
-        <x-admin.confirmation-modal class="nunito-regular" modalName="isServicioRealizadoDeleteModalOpen" itemToDelete="itemToDelete"
-            message="¿Estás seguro de que quieres eliminar este servicio realizado?" />
+        <x-admin.confirmation-modal class="nunito-regular" modalName="isServicioRealizadoDeleteModalOpen"
+            itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este servicio realizado?" />
     </div>
 </div>

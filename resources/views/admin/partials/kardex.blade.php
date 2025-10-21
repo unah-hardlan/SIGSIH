@@ -25,7 +25,8 @@
     
     // --- Filtros ---
     filtroKardex: '',
-    ordenarPor: '',
+    ordenarPor: 'fecha_movimiento', // Default a fecha
+    ordenarDirection: 'desc', // AÑADIDO: 'asc' o 'desc'. Default a descendente para ver lo más nuevo primero.
 
     // --- Lógica de la API ---
     async fetchKardex() {
@@ -57,6 +58,12 @@
     }
 }"
 x-init="fetchKardex(); fetchCatalogos();"
+{{-- MODIFICADO: Se añade el watch para la dirección del ordenamiento --}}
+x-effect="
+    $watch('filtroKardex', () => fetchKardex());
+    $watch('ordenarPor', () => fetchKardex());
+    $watch('ordenarDirection', () => fetchKardex());
+"
 @keydown.escape.window="
     isKardexModalOpen = false;
     isKardexEditModalOpen = false;
@@ -73,6 +80,8 @@ x-init="fetchKardex(); fetchCatalogos();"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroKardex',
+                'ordenarModel' => 'ordenarPor',
+                'ordenarDirectionModel' => 'ordenarDirection', // {{-- AÑADIDO: Pasa el modelo de dirección --}}
                 'ordenarOptions' => [
                     'fecha_movimiento' => 'Fecha',
                     'cantidad' => 'Cantidad'

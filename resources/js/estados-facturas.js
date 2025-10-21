@@ -3,7 +3,14 @@ document.addEventListener('alpine:init', () => {
         isEstadoFacturaModalOpen: false,
         isEditEstadoFacturaModalOpen: false,
         isDeleteEstadoFacturaModalOpen: false,
-        itemToEdit: null,
+        itemToEdit: {
+            id_estado_factura_pk: null,
+            codigo: '',
+            nombre: '',
+            descripcion: '',
+            es_final: false,
+            orden: 0,
+        },
         itemToDelete: null,
         estadosFactura: [],
         loadingEstadosFactura: false,
@@ -232,7 +239,14 @@ document.addEventListener('alpine:init', () => {
                         "success"
                     );
                 this.isEditEstadoFacturaModalOpen = false;
-                this.itemToEdit = null;
+                this.itemToEdit = {
+                    id_estado_factura_pk: null,
+                    codigo: '',
+                    nombre: '',
+                    descripcion: '',
+                    es_final: false,
+                    orden: 0,
+                };
                 await this.fetchEstadosFactura();
             } catch (error) {
                 console.error("Error updating estado factura:", error);

@@ -5,13 +5,31 @@ window.productosApiHandlers = {
             Accept: "application/json",
         };
     },
+
+    /**
+     * MODIFICADO: Ahora construye una URL dinámica con los parámetros de filtro (q) y
+     * ordenamiento (sort) para enviarlos a la API.
+     */
     async fetchProductos(component) {
         component.loadingProductos = true;
         try {
-            const response = await fetch("/api/productos", {
-                headers: this.authHeaders(),
-                credentials: "include",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroProducto) {
+                params.set("q", component.filtroProducto);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+            // Para asegurar que obtenemos todos los resultados filtrados y no solo la primera página
+            params.set("all", "true");
+
+            const response = await fetch(
+                `/api/productos?${params.toString()}`,
+                {
+                    headers: this.authHeaders(),
+                    credentials: "include",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
 
@@ -48,7 +66,6 @@ window.productosApiHandlers = {
                 window.showToast("El SKU del producto es obligatorio", "error");
             return;
         }
-
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -57,7 +74,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (precioUnitario <= 0) {
             window.showToast &&
                 window.showToast(
@@ -66,7 +82,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (precioVenta <= 0) {
             window.showToast &&
                 window.showToast(
@@ -75,7 +90,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (stockMinimo < 0) {
             window.showToast &&
                 window.showToast(
@@ -84,7 +98,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (!tipoProducto) {
             window.showToast &&
                 window.showToast(
@@ -93,7 +106,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (
             component.productos.some(
                 (prod) => prod.sku.toLowerCase() === skuTrim.toLowerCase()
@@ -102,7 +114,6 @@ window.productosApiHandlers = {
             window.showToast && window.showToast("El SKU ya existe", "error");
             return;
         }
-
         if (
             component.productos.some(
                 (prod) =>
@@ -193,7 +204,6 @@ window.productosApiHandlers = {
                 window.showToast("El SKU del producto es obligatorio", "error");
             return;
         }
-
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -202,7 +212,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (precioUnitario <= 0) {
             window.showToast &&
                 window.showToast(
@@ -211,7 +220,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (precioVenta <= 0) {
             window.showToast &&
                 window.showToast(
@@ -220,7 +228,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (stockMinimo < 0) {
             window.showToast &&
                 window.showToast(
@@ -229,7 +236,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (!tipoProducto) {
             window.showToast &&
                 window.showToast(
@@ -238,7 +244,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (
             component.productos.some(
                 (prod) =>
@@ -253,7 +258,6 @@ window.productosApiHandlers = {
                 );
             return;
         }
-
         if (
             component.productos.some(
                 (prod) =>
@@ -353,6 +357,26 @@ window.productosApiHandlers = {
                 error?.error ||
                 "Error al eliminar el producto";
             window.showToast && window.showToast(errorMessage, "error");
+        }
+    },
+};
+
+// Este es el handler para el catálogo de 'Tipos de Producto', se mantiene igual.
+window.tipoProductosApiHandlers = window.tipoProductosApiHandlers || {
+    async fetchTipoProductos(component) {
+        if (component.loadingTipoProductos) return;
+        component.loadingTipoProductos = true;
+        try {
+            // Se usa ?all=true para asegurar que se obtienen todos los tipos para el select
+            const response = await fetch("/api/tipos-producto?all=true");
+            const data = await response.json();
+            component.tipoProductos = data.data || [];
+        } catch (e) {
+            console.error("Error fetching tipo de productos", e);
+            window.showToast &&
+                window.showToast("Error al cargar tipos de producto", "error");
+        } finally {
+            component.loadingTipoProductos = false;
         }
     },
 };
