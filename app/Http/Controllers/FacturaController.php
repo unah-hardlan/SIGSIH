@@ -107,10 +107,15 @@ class FacturaController extends Controller
                 
                 if ($cliente->tipo_cliente === 'empresa' && $cliente->empresa) {
                     $nombre = $cliente->empresa->nombre_comercial ?? $cliente->empresa->razon_social ?? 'Empresa sin nombre';
-                } elseif ($cliente->tipo_cliente === 'persona' && $cliente->persona) {
-                    $nombre = trim(($cliente->persona->primer_nombre ?? '') . ' ' . ($cliente->persona->primer_apellido ?? ''));
-                    if (empty($nombre)) {
-                        $nombre = 'Persona sin nombre';
+                } elseif ($cliente->type === 'persona' || $cliente->tipo_cliente === 'persona') {
+                    // cliente->persona puede ser una colección; tomar el primer elemento si es necesario
+                    $persona = $cliente->persona;
+                    if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                        $persona = $persona->first();
+                    }
+                    $nombre = 'Persona sin nombre';
+                    if ($persona) {
+                        $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')) ?: 'Persona sin nombre';
                     }
                 }
                 

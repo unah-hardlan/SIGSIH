@@ -46,10 +46,18 @@ class FacturaResource extends JsonResource
                 }
                 
                 // Si es cliente persona
-                if ($this->cliente->tipo_cliente === 'persona' && $this->cliente->persona) {
-                    $nombre = trim(($this->cliente->persona->primer_nombre ?? '') . ' ' . ($this->cliente->persona->primer_apellido ?? ''));
-                    return $nombre ?: 'Persona sin nombre';
-                }
+                    if ($this->cliente->tipo_cliente === 'persona' && $this->cliente->persona) {
+                        // Cliente->persona puede ser una Collection (belongsToMany) o un modelo único.
+                        $persona = $this->cliente->persona;
+                        if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                            $persona = $persona->first();
+                        }
+                        if ($persona) {
+                            $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
+                            return $nombre ?: 'Persona sin nombre';
+                        }
+                        return 'Persona sin nombre';
+                    }
                 
                 return 'Cliente sin datos';
             }),
