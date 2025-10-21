@@ -33,6 +33,11 @@
     }
 }"
 x-init="fetchTipoMovimientos()"
+{{-- AÑADIDO: Este bloque observa los cambios y llama a la API automáticamente --}}
+x-effect="
+    $watch('filtroTipoMovimiento', () => fetchTipoMovimientos());
+    $watch('ordenarPor', () => fetchTipoMovimientos());
+"
 @keydown.escape.window="
     isTipoMovimientoModalOpen = false;
     isTipoMovimientoEditModalOpen = false;
@@ -48,6 +53,7 @@ x-init="fetchTipoMovimientos()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroTipoMovimiento',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Tipo'
