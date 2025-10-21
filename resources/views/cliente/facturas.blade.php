@@ -1,7 +1,7 @@
 @extends('cliente.layouts.app')
 @section('title','Facturación - Cliente')
 @section('content')
-<div class="max-w-7xl mx-auto space-y-8" x-data="facturasCliente()">
+<div class="max-w-7xl mx-auto space-y-8 mt-12" x-data="facturasCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Facturación</h1>
         <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">

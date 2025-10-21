@@ -15,7 +15,6 @@
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Fecha Evento</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Usuario</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Objeto</th>
@@ -26,33 +25,36 @@
                     </thead>
                     <tbody>
                         @isset($items)
-                            @forelse($items as $b)
-                                <tr>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['id'] ?? $b->id_bitacora_pk ?? '' }}</td>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($b['fecha_evento'] ?? $b->fecha_evento)</td>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['usuario']['usuario'] ?? $b->usuario->usuario ?? '-' }}</td>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['objeto']['nombre_objeto'] ?? $b->objeto->nombre_objeto ?? '-' }}</td>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['accion'] ?? $b->accion }}</td>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['descripcion'] ?? $b->descripcion ?? '-' }}</td>
-                                    <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['creado_por'] ?? $b->creado_por ?? ($b['usuario']['usuario'] ?? $b->usuario->usuario ?? '-') }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="7" class="border border-gray-300 py-2 px-3 text-center text-gray-500 nunito-regular">Sin datos</td></tr>
-                            @endforelse
+                        @forelse($items as $b)
+                        <tr>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">@fecha($b['fecha_evento'] ?? $b->fecha_evento)</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['usuario']['usuario'] ?? $b->usuario->usuario ?? '-' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['objeto']['nombre_objeto'] ?? $b->objeto->nombre_objeto ?? '-' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['accion'] ?? $b->accion }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['descripcion'] ?? $b->descripcion ?? '-' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $b['creado_por'] ?? $b->creado_por ?? ($b['usuario']['usuario'] ?? $b->usuario->usuario ?? '-') }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="border border-gray-300 py-2 px-3 text-center text-gray-500 nunito-regular">Sin datos</td>
+                        </tr>
+                        @endforelse
                         @else
-                            <tr><td colspan="7" class="border border-gray-300 py-2 px-3 text-center text-gray-500 nunito-regular">Sin datos</td></tr>
+                        <tr>
+                            <td colspan="6" class="border border-gray-300 py-2 px-3 text-center text-gray-500 nunito-regular">Sin datos</td>
+                        </tr>
                         @endisset
                     </tbody>
                 </table>
             </div>
             <!-- Botones de acción -->
             <div class="mt-6 flex justify-center gap-4 no-print">
-                <button onclick="window.print()" 
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                <button onclick="window.print()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
                     <i class="fas fa-print mr-2"></i>Imprimir
                 </button>
-                <button onclick="window.close()" 
-                        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                <button onclick="window.close()"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
                     <i class="fas fa-times mr-2"></i>Cerrar
                 </button>
             </div>

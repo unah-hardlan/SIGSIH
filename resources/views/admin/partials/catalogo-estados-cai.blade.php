@@ -35,14 +35,14 @@
         }
     }
 }"
-x-init="fetchEstadosCai()"
-@keydown.escape.window="
+    x-init="fetchEstadosCai()"
+    @keydown.escape.window="
     isEstadoCaiModalOpen = false;
     isEditEstadoCaiModalOpen = false;
     isDeleteEstadoCaiModalOpen = false;
 "
-@modal-submit.window="handleModalSubmit($event)"
-@confirm-delete.window="handleDelete()">
+    @modal-submit.window="handleModalSubmit($event)"
+    @confirm-delete.window="handleDelete()">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Estados CAI</h1>
     </div>
@@ -50,11 +50,11 @@ x-init="fetchEstadosCai()"
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             @include('partials.filtros-generales', [
-                'searchModel' => 'filtroEstadoCai',
-                'ordenarOptions' => [
-                    'nombre_estado_cai' => 'Nombre',
-                    'id_estado_cai_pk' => 'ID Estado'
-                ]
+            'searchModel' => 'filtroEstadoCai',
+            'ordenarOptions' => [
+            'nombre_estado_cai' => 'Nombre',
+            'id_estado_cai_pk' => 'ID Estado'
+            ]
             ])
         </x-slot>
 
@@ -67,7 +67,7 @@ x-init="fetchEstadosCai()"
         </x-slot>
 
         <x-slot name="table">
-            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Código</th>
@@ -118,22 +118,31 @@ x-init="fetchEstadosCai()"
 
         <x-slot name="cards">
             <template x-if="loadingEstadosCai">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                <div class="p-8 text-center text-gray-500 nunito-regular">
                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando estados CAI...
                 </div>
             </template>
             <template x-if="!loadingEstadosCai && estadosCai.length === 0">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                <div class="p-8 text-center text-gray-500 nunito-regular">
                     No hay estados CAI registrados
                 </div>
             </template>
             <template x-if="!loadingEstadosCai && estadosCai.length > 0">
                 <template x-for="estadoCai in estadosCai" :key="estadoCai.id_estado_cai_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estadoCai.nombre_estado_cai"></h3>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estadoCai.nombre_estado_cai"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'Código: '+(estadoCai.codigo_estado_cai || '-')"></p>
+                            </div>
+                            <div>
+                                <span class="px-2 py-1 rounded text-xs" :class="estadoCai.es_final ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" x-text="estadoCai.es_final ? 'Final' : 'No final'"></span>
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="estadoCai.descripcion_estado_cai"></p>
+                        <div class="text-sm text-gray-700 dark:text-gray-300 grid grid-cols-2 gap-2">
+                            <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Orden:</span> <span x-text="estadoCai.orden || '0'"></span></div>
+                            <div class="col-span-2"><span class="nunito-bold text-gray-600 dark:text-gray-300">Descripción:</span> <span x-text="estadoCai.descripcion_estado_cai || '-' "></span></div>
+                        </div>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                             <button @click.prevent="isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar

@@ -1,4 +1,5 @@
 import "./bootstrap";
+import "./notifications";
 
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
@@ -22,12 +23,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         "Authorization"
                     ]; // ensure cleared
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 document.dispatchEvent(
                     new CustomEvent("auth:updated", { detail: { token: null } })
                 );
-            } catch (_) {}
+            } catch (_) { }
         }
 
         async function fetchSessionToken(force = false) {
@@ -75,7 +76,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return { Accept: "application/json" };
                 },
             };
-        } catch (_) {}
+        } catch (_) { }
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -130,8 +131,8 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const delay = isDashboard
                     ? Math.floor(Math.random() * 180) + 60
                     : isApi
-                    ? Math.floor(Math.random() * 80)
-                    : 0;
+                        ? Math.floor(Math.random() * 80)
+                        : 0;
 
                 if (!isApi) return origFetch(...args);
 
@@ -163,12 +164,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                                                 "warning",
                                                 { duration: 4000 }
                                             );
-                                    } catch (_) {}
+                                    } catch (_) { }
                                     try {
                                         window.appLogout && window.appLogout();
-                                    } catch (_) {}
+                                    } catch (_) { }
                                 }
-                            } catch (_) {}
+                            } catch (_) { }
                         }
                         return res;
                     };
@@ -193,6 +194,7 @@ import "./asignar-roles";
 import "./bitacora";
 import "./toast";
 import "./ubicaciones";
+import "./helpers/subdivisiones";
 import "./agencias";
 import "./tipo-visitas";
 import "./tipo-productos";
@@ -220,6 +222,7 @@ import "./tipo-mantenimiento";
 import "./reportes-visita";
 import "./calendario";
 import "./tickets";
+import "./empresas";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -313,6 +316,11 @@ import {
     faArrowDown,
     faBalanceScale,
     faInbox,
+    faSortDown,
+    faS,
+    faSort,
+    faSortUp,
+    faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -404,7 +412,10 @@ library.add(
     faArrowUp,
     faArrowDown,
     faBalanceScale,
-    faInbox
+    faInbox,
+    faSortDown,
+    faSortUp,
+    faIdCard
 );
 dom.watch();
 
@@ -417,7 +428,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) {}
+    } catch (_) { }
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -507,13 +518,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) {}
+            } catch (_) { }
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) {}
+            } catch (_) { }
 
             let sanitized = html;
             try {
@@ -521,30 +532,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) {}
+            } catch (_) { }
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) {}
+                    } catch (_) { }
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) {}
+                        } catch (_) { }
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -554,7 +565,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 if (
                     window.Livewire &&
@@ -562,10 +573,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) {}
+            } catch (_) { }
 
             this.restoreSidebarScrollPosition();
 
@@ -581,7 +592,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) {}
+            } catch (_) { }
         },
 
         saveSidebarScrollPosition() {
@@ -613,7 +624,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) {}
+            } catch (_) { }
             this.updateActiveLinks(url);
         },
 
@@ -700,7 +711,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) {}
+                } catch (_) { }
                 this.updateActiveLinks(path);
             }
         },
@@ -1004,17 +1015,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1042,7 +1053,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) {}
+    } catch (_) { }
     initializeDashboardChartsWithRetry();
 });
 
@@ -1051,7 +1062,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) {}
+    } catch (_) { }
 
     return { Accept: "application/json" };
 }
@@ -1133,7 +1144,7 @@ if (typeof window !== "undefined") {
                         this.adminPassword =
                             data.adminPassword || this.adminPassword;
                     }
-                } catch (_) {}
+                } catch (_) { }
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
@@ -1188,7 +1199,7 @@ if (typeof window !== "undefined") {
                         if (this.nombreSistema) {
                             document.title = this.nombreSistema;
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                     setTimeout(
                         () => (this.savedMessagePersonalizacion = ""),
                         2500
@@ -1446,8 +1457,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                  (o) => String(o.value) === String(estadoId)
-                              )
+                                (o) => String(o.value) === String(estadoId)
+                            )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1473,8 +1484,8 @@ if (typeof window !== "undefined") {
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                              .filter(Boolean)
-                              .join(" ")
+                            .filter(Boolean)
+                            .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -1592,7 +1603,9 @@ if (typeof window !== "undefined") {
                     const json = await response.json();
                     const opciones = (json.data || []).map((item) => ({
                         value: String(item.id_solicitud_pk),
-                        label: String(item.id_solicitud_pk),
+                        label:
+                            item.nombre_solicitud ||
+                            `Solicitud #${item.id_solicitud_pk}`,
                     }));
                     this.solicitudesOptions = opciones;
                     this.sortOptions("solicitudesOptions");
@@ -1613,21 +1626,18 @@ if (typeof window !== "undefined") {
                 if (this.authError) return;
                 this.loadingCatalogos.tecnicos = true;
                 try {
-                    const params = new URLSearchParams();
-                    params.set("all", "1");
-                    params.set("sort", "nombre");
-                    const response = await fetch(
-                        "/api/personas?" + params.toString(),
-                        { headers: this.apiHeaders() }
-                    );
+                    // Usar el mismo catálogo que Tickets: solo usuarios con rol Técnico (principal o secundario)
+                    const response = await fetch("/api/tecnicos", {
+                        headers: this.apiHeaders(),
+                    });
                     if (response.status === 401) {
                         this.handleUnauthorized();
                         return;
                     }
                     if (!response.ok)
-                        throw new Error("Error al cargar personas");
+                        throw new Error("Error al cargar técnicos");
                     const json = await response.json();
-                    const opciones = (json.data || []).map((item) => {
+                    const opciones = (json.data || json || []).map((item) => {
                         const nombres = [
                             item.primer_nombre,
                             item.segundo_nombre,
@@ -1649,10 +1659,7 @@ if (typeof window !== "undefined") {
                     );
                 } catch (error) {
                     console.error(error);
-                    this.showToast(
-                        "No se pudieron cargar las personas",
-                        "error"
-                    );
+                    this.showToast("No se pudieron cargar los técnicos", "error");
                 } finally {
                     this.loadingCatalogos.tecnicos = false;
                 }
@@ -1702,6 +1709,29 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
+                    // Server-side filtering params
+                    if (
+                        this.searchOrden &&
+                        String(this.searchOrden).trim() !== ""
+                    ) {
+                        params.set("q", String(this.searchOrden).trim());
+                    }
+                    if (
+                        this.tecnicoOrden &&
+                        String(this.tecnicoOrden).trim() !== ""
+                    ) {
+                        params.set(
+                            "id_tecnico_fk",
+                            String(this.tecnicoOrden).trim()
+                        );
+                    }
+                    if (
+                        this.ordenarPor &&
+                        String(this.ordenarPor).trim() !== ""
+                    ) {
+                        params.set("order_by", String(this.ordenarPor).trim());
+                    }
+
                     const response = await fetch(
                         "/api/ordenes-servicio?" + params.toString(),
                         { headers: this.apiHeaders() }
@@ -1871,6 +1901,11 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
+                    // Client-side required validation before sending to API
+                    if (!this.validateForm()) {
+                        this.saving = false;
+                        return;
+                    }
                     const payload = this.buildPayload();
                     const response = await fetch("/api/ordenes-servicio", {
                         method: "POST",
@@ -1912,6 +1947,11 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
+                    // Client-side required validation before sending to API
+                    if (!this.validateForm()) {
+                        this.saving = false;
+                        return;
+                    }
                     const payload = this.buildPayload();
                     const response = await fetch(
                         "/api/ordenes-servicio/" + this.formOrden.id,
@@ -1992,6 +2032,27 @@ if (typeof window !== "undefined") {
                 if (this.formOrden.id) this.updateOrden();
                 else this.createOrden();
             },
+            validateForm() {
+                // Minimal required set according to UI: Solicitud, Técnico y Cotización
+                // Estado, fechas y textos se mantienen opcionales a menos que se pida explícitamente
+                const errs = {};
+                const requiredMsg = "Este campo es obligatorio.";
+                if (!this.formOrden.id_solicitud_servicio_fk) {
+                    errs.id_solicitud_servicio_fk = [requiredMsg];
+                }
+                if (!this.formOrden.id_tecnico_fk) {
+                    errs.id_tecnico_fk = [requiredMsg];
+                }
+                if (!this.formOrden.id_cotizacion_fk) {
+                    errs.id_cotizacion_fk = [requiredMsg];
+                }
+                this.errors = errs;
+                if (Object.keys(errs).length) {
+                    this.showToast("Por favor completa los campos requeridos.", "error");
+                    return false;
+                }
+                return true;
+            },
             filteredOrdenes() {
                 const term = this.searchOrden.trim().toLowerCase();
                 return this.ordenes
@@ -2056,6 +2117,35 @@ if (typeof window !== "undefined") {
             },
             async init() {
                 if (!(await this.requireAuth())) return;
+                // Debounce helper (local)
+                const debounce = (fn, ms = 350) => {
+                    let h;
+                    return (...a) => {
+                        clearTimeout(h);
+                        h = setTimeout(() => fn(...a), ms);
+                    };
+                };
+
+                // Watch filters and refetch from server (debounced)
+                this.$watch(
+                    "searchOrden",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    })
+                );
+                this.$watch(
+                    "tecnicoOrden",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    }, 250)
+                );
+                this.$watch(
+                    "ordenarPor",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    }, 150)
+                );
+
                 await Promise.all([
                     this.fetchCatalogos(),
                     this.fetchEstadosOrden(),
@@ -2074,8 +2164,31 @@ if (typeof window !== "undefined") {
             tab: "solicitudes",
             searchSolicitud: "",
             estadoSolicitud: "",
-            ordenarPor: "id",
+            ordenarPor: "estado_solicitud",
             searchContacto: "",
+            ordenarPorContacto: "tipo_contacto",
+            reportUrl() {
+                const params = new URLSearchParams();
+                params.set("modulo", "Solicitudes");
+                if (this.searchSolicitud)
+                    params.set("search", this.searchSolicitud);
+                if (this.estadoSolicitud)
+                    params.set("estado_solicitud", this.estadoSolicitud);
+                if (this.ordenarPor) params.set("ordenar_por", this.ordenarPor);
+                const now = new Date();
+                try {
+                    const fechaStr = now.toLocaleDateString("es-HN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    });
+                    params.set("fecha", fechaStr);
+                } catch (_) {
+                    params.set("fecha", now.toISOString().slice(0, 10));
+                }
+                params.set("fecha_generacion", now.toISOString());
+                return "/admin/reportes-header?" + params.toString();
+            },
 
             // Modals state
             isModalOpen: false,
@@ -2087,7 +2200,14 @@ if (typeof window !== "undefined") {
             // Estados modals (not wired yet; reserved for future use)
             isEstadoModalOpen: false,
             isEditEstadoModalOpen: false,
-            estadoToEdit: null,
+            estadoToEdit: {
+                id: null,
+                nombre_estado: "",
+                descripcion_estado: "",
+                codigo: "",
+                es_final: 0,
+                orden: 0,
+            },
             isDeleteEstadoModalOpen: false,
             estadoToDelete: null,
 
@@ -2160,8 +2280,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                        ? "bg-yellow-600 text-white"
-                        : "bg-green-600 text-white");
+                            ? "bg-yellow-600 text-white"
+                            : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -2191,13 +2311,47 @@ if (typeof window !== "undefined") {
             mapSolicitud(item) {
                 const cliente = item.cliente || {};
                 const empresa = cliente.empresa || {};
+                const persona = cliente.persona || {};
                 const estado = item.estado_solicitud || {};
                 const contacto = item.contacto || {};
+                // Build a human-readable client name for both empresa and persona
+                let clienteNombre = "";
+                if (
+                    cliente.tipo ||
+                    empresa.nombre_comercial ||
+                    empresa.razon_social
+                ) {
+                    // Try empresa-style fields first
+                    clienteNombre =
+                        cliente.nombre ||
+                        cliente.nombre_comercial ||
+                        empresa.nombre_comercial ||
+                        empresa.razon_social ||
+                        "";
+                }
+                if (!clienteNombre || !String(clienteNombre).trim()) {
+                    // Try persona fields either at root or nested under cliente.persona
+                    const pn =
+                        cliente.primer_nombre || persona.primer_nombre || "";
+                    const sn =
+                        cliente.segundo_nombre || persona.segundo_nombre || "";
+                    const pa =
+                        cliente.primer_apellido ||
+                        persona.primer_apellido ||
+                        "";
+                    const sa =
+                        cliente.segundo_apellido ||
+                        persona.segundo_apellido ||
+                        "";
+                    clienteNombre = [pn, sn, pa, sa]
+                        .filter(Boolean)
+                        .join(" ")
+                        .trim();
+                }
                 return {
                     id: item.id_solicitud_pk,
                     id_cliente_fk: item.id_cliente_fk,
-                    cliente_nombre:
-                        empresa.nombre_comercial || empresa.razon_social || "",
+                    cliente_nombre: clienteNombre,
                     numero_solicitud_acf: item.numero_solicitud_acf,
                     numero_solicitud_cliente: item.numero_solicitud_cliente,
                     descripcion_problema: item.descripcion_problema,
@@ -2212,24 +2366,58 @@ if (typeof window !== "undefined") {
             async fetchClientes() {
                 this.loadingCatalogos.clientes = true;
                 try {
+                    // Reutilizar el mismo catálogo unificado que usa Calendario
                     const params = new URLSearchParams();
-                    params.set("per_page", "200");
+                    params.set("per_page", "500");
+                    params.set("all", "1");
                     const res = await fetch(
-                        "/api/empresas-cliente?" + params.toString(),
-                        { headers: this.apiHeaders() }
+                        "/api/clientes?" + params.toString(),
+                        {
+                            headers: this.apiHeaders(),
+                            credentials: "same-origin",
+                        }
                     );
                     if (!res.ok) throw new Error("Error clientes");
-                    const json = await res.json();
-                    const items = json.data || json?.data?.data || json; // resource wrapper or plain
-                    const options = (items.data || items).map((it) => ({
-                        value: String(it.id_cliente_fk ?? it.id),
-                        label:
-                            it.nombre_comercial ||
-                            it.razon_social ||
-                            `Cliente ${it.id_cliente_fk ?? it.id}`,
-                    }));
-                    this.clientesOptions = options;
-                    this.clientesOptions.sort((a, b) =>
+                    const data = await res.json();
+                    const raw = Array.isArray(data?.data)
+                        ? data.data
+                        : Array.isArray(data?.data?.data)
+                            ? data.data.data
+                            : Array.isArray(data)
+                                ? data
+                                : [];
+                    const mapped = (raw || [])
+                        .map((c) => {
+                            let nombre;
+                            if (c.tipo === "empresa") {
+                                nombre =
+                                    c.nombre ||
+                                    c.nombre_comercial ||
+                                    c.razon_social ||
+                                    "";
+                            } else {
+                                const parts = [
+                                    c.primer_nombre,
+                                    c.segundo_nombre,
+                                    c.primer_apellido,
+                                    c.segundo_apellido,
+                                ].filter(Boolean);
+                                nombre = parts.join(" ");
+                            }
+                            if (!nombre || !String(nombre).trim()) {
+                                nombre = `Cliente ${c.id}`;
+                            }
+                            const id = c.id;
+                            if (!id) return null;
+                            return { value: String(id), label: nombre };
+                        })
+                        .filter(Boolean);
+                    // De-duplicar por value
+                    const uniq = {};
+                    for (const it of mapped) {
+                        if (!uniq[it.value]) uniq[it.value] = it;
+                    }
+                    this.clientesOptions = Object.values(uniq).sort((a, b) =>
                         a.label.localeCompare(b.label, "es")
                     );
                 } catch (e) {
@@ -2247,15 +2435,19 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
+                    // Usar endpoint web-auth para permitir cookie HttpOnly
                     const res = await fetch(
-                        "/api/estados-solicitud?" + params.toString(),
+                        "/api-web/estados-solicitud?" + params.toString(),
                         { headers: this.apiHeaders() }
                     );
                     if (!res.ok) throw new Error("Error estados");
                     const json = await res.json();
                     const options = (json.data || []).map((it) => ({
-                        value: String(it.id),
-                        label: it.nombre_estado || `Estado ${it.id}`,
+                        value: String(it.id_estado_solicitud_pk || it.id),
+                        label:
+                            it.nombre ||
+                            it.nombre_estado ||
+                            `Estado ${it.id_estado_solicitud_pk || it.id}`,
                     }));
                     this.estadosOptions = options;
                     this.estadosOptions.sort((a, b) =>
@@ -2283,13 +2475,22 @@ if (typeof window !== "undefined") {
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     const items = json.data || [];
-                    this.contactosOptions = items.map((it) => ({
-                        value: String(it.id_contacto_pk || it.id),
-                        label: `${
-                            it.valor_contacto || it.tipo_contacto || "Contacto"
-                        } (ID ${it.id_contacto_pk || it.id})`,
-                        id_cliente_fk: String(it.id_cliente_fk || ""),
-                    }));
+                    // Map contacts with a user-friendly label and keep reference to cliente
+                    this.contactosOptions = items.map((it) => {
+                        const value = String(it.id_contacto_pk || it.id);
+                        const base =
+                            it.valor_contacto || it.tipo_contacto || "Contacto";
+                        const cliente =
+                            this.clienteLabelById(it.id_cliente_fk) || "";
+                        const label = cliente ? `${base} — ${cliente}` : base;
+                        return {
+                            value,
+                            label,
+                            id_cliente_fk: String(it.id_cliente_fk || ""),
+                        };
+                    });
+                    // Optional: sort by label for nicer UX
+                    this.contactosOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -2304,10 +2505,25 @@ if (typeof window !== "undefined") {
                 const idCliente = String(
                     this.formSolicitud.id_cliente_fk || ""
                 );
-                if (!idCliente) return this.contactosOptions;
+                // If no cliente selected, don't show any contacts yet
+                if (!idCliente) return [];
                 return this.contactosOptions.filter(
                     (c) => String(c.id_cliente_fk || "") === idCliente
                 );
+            },
+            // When cliente changes, clear selected contacto to avoid mismatches
+            onClienteChange() {
+                this.formSolicitud.id_contacto_fk = "";
+            },
+
+            // Lookup helper to get client label from unified catalog by id
+            clienteLabelById(id) {
+                if (!id) return "";
+                const sid = String(id);
+                const found = this.clientesOptions.find(
+                    (o) => String(o.value) === sid
+                );
+                return found ? found.label : "";
             },
 
             // CRUD Solicitudes
@@ -2388,7 +2604,14 @@ if (typeof window !== "undefined") {
                         this.errors = err.errors || {};
                         throw new Error("Validación");
                     }
-                    if (!res.ok) throw new Error("Error al crear la solicitud");
+                    if (!res.ok) {
+                        let msg = "Error al crear la solicitud";
+                        try {
+                            const errText = await res.text();
+                            if (errText) msg += `: ${errText.slice(0, 300)}`;
+                        } catch (_) { }
+                        throw new Error(msg);
+                    }
                     const json = await res.json();
                     if (json.data)
                         this.solicitudes.unshift(this.mapSolicitud(json.data));
@@ -2484,6 +2707,19 @@ if (typeof window !== "undefined") {
                 }
             },
             submitSolicitud() {
+                // quick client-side validation
+                this.errors = {};
+                const errs = {};
+                if (!this.formSolicitud.id_cliente_fk) errs.id_cliente_fk = ["Seleccione un cliente."];
+                if (!this.formSolicitud.descripcion_problema || String(this.formSolicitud.descripcion_problema).trim().length === 0)
+                    errs.descripcion_problema = ["La descripción es obligatoria."];
+                if (!this.formSolicitud.id_estado_solicitud_fk) errs.id_estado_solicitud_fk = ["Seleccione un estado."];
+                if (!this.formSolicitud.id_contacto_fk) errs.id_contacto_fk = ["Seleccione un contacto."];
+                if (Object.keys(errs).length) {
+                    this.errors = errs;
+                    this.showToast("Complete los campos requeridos", "warn");
+                    return;
+                }
                 if (this.formSolicitud.id) this.updateSolicitud();
                 else this.createSolicitud();
             },
@@ -2673,6 +2909,45 @@ if (typeof window !== "undefined") {
             },
 
             // Derived collections and filters
+            filteredContactos() {
+                const term = this.searchContacto.trim().toLowerCase();
+                const list = this.contactos
+                    .filter((c) => {
+                        if (!term) return true;
+                        const cliente =
+                            this.clienteLabelById(c.id_cliente_fk) || "";
+                        return [c.tipo_contacto, c.valor_contacto, cliente]
+                            .filter(Boolean)
+                            .some((f) =>
+                                f.toString().toLowerCase().includes(term)
+                            );
+                    })
+                    .sort((a, b) => {
+                        switch (this.ordenarPorContacto) {
+                            case "valor_contacto":
+                                return (a.valor_contacto || "").localeCompare(
+                                    b.valor_contacto || "",
+                                    "es"
+                                );
+                            case "cliente": {
+                                const na =
+                                    this.clienteLabelById(a.id_cliente_fk) ||
+                                    "";
+                                const nb =
+                                    this.clienteLabelById(b.id_cliente_fk) ||
+                                    "";
+                                return na.localeCompare(nb, "es");
+                            }
+                            case "tipo_contacto":
+                            default:
+                                return (a.tipo_contacto || "").localeCompare(
+                                    b.tipo_contacto || "",
+                                    "es"
+                                );
+                        }
+                    });
+                return list;
+            },
             filteredSolicitudes() {
                 const term = this.searchSolicitud.trim().toLowerCase();
                 const estadoSel = this.estadoSolicitud
@@ -2706,13 +2981,40 @@ if (typeof window !== "undefined") {
                     })
                     .sort((a, b) => {
                         switch (this.ordenarPor) {
-                            case "id":
-                                return Number(a.id) - Number(b.id);
                             case "estado":
                             case "estado_solicitud":
                                 return (a.estado_nombre || "").localeCompare(
                                     b.estado_nombre || "",
                                     "es"
+                                );
+                            case "cliente":
+                                return (
+                                    a.cliente_nombre ||
+                                    this.clienteLabelById(a.id_cliente_fk) ||
+                                    ""
+                                ).localeCompare(
+                                    b.cliente_nombre ||
+                                    this.clienteLabelById(
+                                        b.id_cliente_fk
+                                    ) ||
+                                    "",
+                                    "es"
+                                );
+                            case "solicitud_acf":
+                                return String(
+                                    a.numero_solicitud_acf || ""
+                                ).localeCompare(
+                                    String(b.numero_solicitud_acf || ""),
+                                    "es",
+                                    { numeric: true }
+                                );
+                            case "solicitud_cliente":
+                                return String(
+                                    a.numero_solicitud_cliente || ""
+                                ).localeCompare(
+                                    String(b.numero_solicitud_cliente || ""),
+                                    "es",
+                                    { numeric: true }
                                 );
                             case "fecha_creacion":
                                 // Campo no disponible: mantener orden estable

@@ -1,6 +1,3 @@
-// resources/js/cliente/perfil.js
-// Script extraído desde perfil.blade.php para manejar el modal y la lógica de edición de perfil
-
 function obtenerPersonaData() {
     try {
         const el = document.getElementById("persona-json");
@@ -56,7 +53,6 @@ window.perfilData = function (el) {
             };
         })(),
 
-        // Propiedades para 2FA (mismo patrón que admin)
         twoFAEnabled: false,
         show2FASetup: false,
         twoFASetup: {
@@ -67,7 +63,7 @@ window.perfilData = function (el) {
             error: "",
             confirming: false,
             recoveryCodes: [],
-            currentPassword: ""
+            currentPassword: "",
         },
         showPasswordModal: false,
         modalError: "",
@@ -75,9 +71,9 @@ window.perfilData = function (el) {
             title: "",
             description: "",
             password: "",
-            loading: false
+            loading: false,
         },
-        pendingAction: null, // 'start2fa' | 'disable2fa' | 'confirm2fa'
+        pendingAction: null,
 
         openEditModal() {
             this.showEditModal = true;
@@ -295,34 +291,35 @@ window.perfilData = function (el) {
             }
         },
 
-        // Métodos para 2FA (exactamente como el admin)
         async load2FAStatus() {
             try {
-                const response = await fetch('/cliente/2fa/status', {
-                    method: 'GET',
+                const response = await fetch("/cliente/2fa/status", {
+                    method: "GET",
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
                     },
-                    credentials: 'same-origin'
+                    credentials: "same-origin",
                 });
                 const result = await response.json();
                 if (result.success) {
                     this.twoFAEnabled = !!result.data?.is_enabled;
                 }
             } catch (error) {
-                console.error('Error loading 2FA status:', error);
+                console.error("Error loading 2FA status:", error);
             }
         },
 
-        // 2FA setup flow (igual que admin)
         async start2FA() {
             if (!this.twoFASetup.currentPassword) {
                 this.openPasswordModal({
-                    action: 'start2fa',
-                    title: 'Activar 2FA',
-                    description: 'Ingresa tu contraseña actual para activar 2FA.'
+                    action: "start2fa",
+                    title: "Activar 2FA",
+                    description:
+                        "Ingresa tu contraseña actual para activar 2FA.",
                 });
                 return;
             }
@@ -331,16 +328,26 @@ window.perfilData = function (el) {
                 this.twoFASetup.error = "";
                 const res = await fetch("/cliente/2fa/setup/start", {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
                     },
                     credentials: "same-origin",
-                    body: JSON.stringify({ current_password: this.twoFASetup.currentPassword })
+                    body: JSON.stringify({
+                        current_password: this.twoFASetup.currentPassword,
+                    }),
                 });
                 if (!res.ok) {
-                    const err = await res.json().catch(() => ({ message: 'No se pudo iniciar el setup 2FA' }));
-                    throw new Error(err.message || 'No se pudo iniciar el setup 2FA');
+                    const err = await res
+                        .json()
+                        .catch(() => ({
+                            message: "No se pudo iniciar el setup 2FA",
+                        }));
+                    throw new Error(
+                        err.message || "No se pudo iniciar el setup 2FA"
+                    );
                 }
                 const data = await res.json();
                 this.twoFASetup.otpauthUrl = data?.otpauth_url || "";
@@ -349,8 +356,8 @@ window.perfilData = function (el) {
                 this.show2FASetup = true;
                 this.lockScroll();
             } catch (e) {
-                this.modalError = e.message || 'Error al iniciar 2FA';
-                this.showPasswordModal = true; // keep modal visible to correct password
+                this.modalError = e.message || "Error al iniciar 2FA";
+                this.showPasswordModal = true;
                 return;
             } finally {
                 this.twoFASetup.loading = false;
@@ -360,9 +367,10 @@ window.perfilData = function (el) {
         async confirm2FA() {
             if (!this.twoFASetup.currentPassword) {
                 this.openPasswordModal({
-                    action: 'confirm2fa',
-                    title: 'Confirmar 2FA',
-                    description: 'Ingresa tu contraseña actual para confirmar 2FA.'
+                    action: "confirm2fa",
+                    title: "Confirmar 2FA",
+                    description:
+                        "Ingresa tu contraseña actual para confirmar 2FA.",
                 });
                 return;
             }
@@ -371,25 +379,34 @@ window.perfilData = function (el) {
                 this.twoFASetup.error = "";
                 const res = await fetch("/cliente/2fa/setup/confirm", {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
                     },
                     credentials: "same-origin",
-                    body: JSON.stringify({ code: this.twoFASetup.code, current_password: this.twoFASetup.currentPassword })
+                    body: JSON.stringify({
+                        code: this.twoFASetup.code,
+                        current_password: this.twoFASetup.currentPassword,
+                    }),
                 });
                 if (!res.ok) {
-                    const err = await res.json().catch(() => ({ message: "Error" }));
+                    const err = await res
+                        .json()
+                        .catch(() => ({ message: "Error" }));
                     this.twoFASetup.error = err.message || "Código inválido";
                     return;
                 }
                 const data = await res.json();
-                this.twoFASetup.recoveryCodes = Array.isArray(data?.recovery_codes) ? data.recovery_codes : [];
+                this.twoFASetup.recoveryCodes = Array.isArray(
+                    data?.recovery_codes
+                )
+                    ? data.recovery_codes
+                    : [];
                 this.twoFAEnabled = true;
                 this.twoFASetup.code = "";
                 this.twoFASetup.currentPassword = "";
-                // Mantener el setup visible para mostrar códigos de recuperación
-                // El usuario podrá cerrar manualmente con cancel2FA()
             } catch (e) {
                 this.twoFASetup.error = e.message || "Error al confirmar 2FA";
             } finally {
@@ -400,23 +417,22 @@ window.perfilData = function (el) {
         async disable2FA() {
             if (!this.twoFASetup.currentPassword) {
                 this.openPasswordModal({
-                    action: 'disable2fa',
-                    title: 'Desactivar 2FA',
-                    description: 'Confirma tu contraseña para desactivar 2FA.'
+                    action: "disable2fa",
+                    title: "Desactivar 2FA",
+                    description: "Confirma tu contraseña para desactivar 2FA.",
                 });
                 return;
             }
             await this._performDisable2FA();
         },
 
-        // Modal de contraseña (igual que admin)
         openPasswordModal(config) {
             this.pendingAction = config?.action || null;
-            this.passwordModal.title = config?.title || '';
-            this.passwordModal.description = config?.description || '';
-            this.passwordModal.password = '';
+            this.passwordModal.title = config?.title || "";
+            this.passwordModal.description = config?.description || "";
+            this.passwordModal.password = "";
             this.passwordModal.loading = false;
-            this.modalError = '';
+            this.modalError = "";
             this.showPasswordModal = true;
             this.lockScroll();
         },
@@ -424,7 +440,12 @@ window.perfilData = function (el) {
         closePasswordModal() {
             this.showPasswordModal = false;
             this.pendingAction = null;
-            this.passwordModal = { title: "", description: "", password: "", loading: false };
+            this.passwordModal = {
+                title: "",
+                description: "",
+                password: "",
+                loading: false,
+            };
             this.modalError = "";
             this.unlockScroll();
         },
@@ -439,22 +460,22 @@ window.perfilData = function (el) {
                     overflow: document.body.style.overflow,
                     height: document.body.style.height,
                 };
-                document.body.style.position = 'fixed';
+                document.body.style.position = "fixed";
                 document.body.style.top = `-${this._scrollY}px`;
-                document.body.style.width = '100%';
-                document.body.style.overflow = 'hidden';
-                document.body.style.height = '100vh';
+                document.body.style.width = "100%";
+                document.body.style.overflow = "hidden";
+                document.body.style.height = "100vh";
                 this._scrollLocked = true;
             }
         },
 
         unlockScroll() {
             if (this._scrollLocked) {
-                document.body.style.position = this._prev.position || '';
-                document.body.style.top = this._prev.top || '';
-                document.body.style.width = this._prev.width || '';
-                document.body.style.overflow = this._prev.overflow || '';
-                document.body.style.height = this._prev.height || '';
+                document.body.style.position = this._prev.position || "";
+                document.body.style.top = this._prev.top || "";
+                document.body.style.width = this._prev.width || "";
+                document.body.style.overflow = this._prev.overflow || "";
+                document.body.style.height = this._prev.height || "";
                 window.scrollTo(0, this._scrollY || 0);
                 this._scrollLocked = false;
             }
@@ -463,18 +484,18 @@ window.perfilData = function (el) {
         async submitPasswordModal() {
             if (!this.passwordModal.password.trim()) return;
             this.passwordModal.loading = true;
-            this.modalError = '';
-            
+            this.modalError = "";
+
             this.twoFASetup.currentPassword = this.passwordModal.password;
-            
+
             const action = this.pendingAction;
             this.closePasswordModal();
-            
-            if (action === 'start2fa') {
+
+            if (action === "start2fa") {
                 await this.start2FA();
-            } else if (action === 'disable2fa') {
+            } else if (action === "disable2fa") {
                 await this._performDisable2FA();
-            } else if (action === 'confirm2fa') {
+            } else if (action === "confirm2fa") {
                 await this.confirm2FA();
             }
         },
@@ -483,30 +504,60 @@ window.perfilData = function (el) {
             try {
                 const res = await fetch("/cliente/2fa/disable", {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
                     },
                     credentials: "same-origin",
-                    body: JSON.stringify({ current_password: this.twoFASetup.currentPassword })
+                    body: JSON.stringify({
+                        current_password: this.twoFASetup.currentPassword,
+                    }),
                 });
                 if (!res.ok) {
-                    const err = await res.json().catch(() => ({ message: 'No se pudo desactivar 2FA' }));
-                    throw new Error(err.message || 'No se pudo desactivar 2FA');
+                    const err = await res
+                        .json()
+                        .catch(() => ({
+                            message: "No se pudo desactivar 2FA",
+                        }));
+                    throw new Error(err.message || "No se pudo desactivar 2FA");
                 }
                 this.twoFAEnabled = false;
                 this.show2FASetup = false;
-                this.twoFASetup = { loading: false, otpauthUrl: "", qrUrl: "", code: "", error: "", confirming: false, recoveryCodes: [], currentPassword: "" };
+                this.twoFASetup = {
+                    loading: false,
+                    otpauthUrl: "",
+                    qrUrl: "",
+                    code: "",
+                    error: "",
+                    confirming: false,
+                    recoveryCodes: [],
+                    currentPassword: "",
+                };
                 this.unlockScroll();
             } catch (e) {
-                this.modalError = e.message || 'Error al desactivar 2FA';
-                this.openPasswordModal({ action: 'disable2fa', title: 'Desactivar 2FA', description: 'Confirma tu contraseña para desactivar 2FA.' });
+                this.modalError = e.message || "Error al desactivar 2FA";
+                this.openPasswordModal({
+                    action: "disable2fa",
+                    title: "Desactivar 2FA",
+                    description: "Confirma tu contraseña para desactivar 2FA.",
+                });
             }
         },
 
         cancel2FA() {
             this.show2FASetup = false;
-            this.twoFASetup = { loading: false, otpauthUrl: "", qrUrl: "", code: "", error: "", confirming: false, recoveryCodes: [], currentPassword: "" };
+            this.twoFASetup = {
+                loading: false,
+                otpauthUrl: "",
+                qrUrl: "",
+                code: "",
+                error: "",
+                confirming: false,
+                recoveryCodes: [],
+                currentPassword: "",
+            };
             this.unlockScroll();
         },
 
@@ -524,32 +575,36 @@ window.perfilData = function (el) {
         async generateRecoveryCodes() {
             try {
                 this.loading = true;
-                const response = await fetch('/cliente/2fa/recovery-codes', {
-                    method: 'POST',
+                const response = await fetch("/cliente/2fa/recovery-codes", {
+                    method: "POST",
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
                     },
-                    credentials: 'same-origin'
+                    credentials: "same-origin",
                 });
                 const result = await response.json();
                 if (result.success) {
                     this.twoFASetup.recoveryCodes = result.data.recovery_codes;
                 } else {
-                    alert(result.message || 'Error al generar códigos de recuperación');
+                    alert(
+                        result.message ||
+                            "Error al generar códigos de recuperación"
+                    );
                 }
             } catch (error) {
-                console.error('Error generating recovery codes:', error);
-                alert('Error al generar códigos de recuperación');
+                console.error("Error generating recovery codes:", error);
+                alert("Error al generar códigos de recuperación");
             } finally {
                 this.loading = false;
             }
         },
 
-        // Inicializar al cargar el componente
         init() {
             this.load2FAStatus();
-        }
+        },
     };
 };

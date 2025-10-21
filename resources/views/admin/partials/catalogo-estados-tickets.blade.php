@@ -36,6 +36,11 @@
     }
 }"
 x-init="fetchEstadosTickets()"
+{{-- AÑADIDO: Este bloque observa los cambios en los filtros y llama a la API automáticamente. --}}
+x-effect="
+    $watch('filtroEstadoTicket', () => fetchEstadosTickets());
+    $watch('ordenarPor', () => fetchEstadosTickets());
+"
 @keydown.escape.window="
     isEstadoTicketModalOpen = false;
     isEstadoTicketEditModalOpen = false;
@@ -51,6 +56,7 @@ x-init="fetchEstadosTickets()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoTicket',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento a la variable 'ordenarPor'. --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'
@@ -182,6 +188,7 @@ x-init="fetchEstadosTickets()"
 
         <!-- Modal Editar Estado de Ticket -->
         <x-admin.edit-modal class="nunito-bold" modalName="isEstadoTicketEditModalOpen" title="Editar Estado de Ticket" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditEstadoTicket">
+            <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_codigo" class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
@@ -210,6 +217,7 @@ x-init="fetchEstadosTickets()"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

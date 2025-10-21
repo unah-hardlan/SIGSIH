@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
-    <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900">
+    <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900" data-user-id="{{ Auth::user()->id_usuario_pk ?? 0 }}">
     <!-- Botón colapsar sidebar -->
     <button @click="sidebarOpen = !sidebarOpen"
     class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 focus:ring-transparent md:hidden">
@@ -34,29 +34,38 @@
             <span class="slider"></span>
         </label>
         <!-- Notificaciones -->
-        <div x-data="{ openNotif: false }" class="relative">
-            <button @click="openNotif = !openNotif" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600">
+        <div x-data="notificationsDropdown()" x-init="init()" class="relative">
+            <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600">
                 <i class="fas fa-bell text-base sm:text-lg"></i>
-                <span class="absolute top-0 right-0 inline-block w-2 h-2 bg-red-600 rounded-full"></span>
+                <template x-if="unread > 0">
+                    <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-4 px-1 bg-red-600 text-white text-[10px] rounded-full" x-text="unread"></span>
+                </template>
             </button>
-            <div x-show="openNotif" x-cloak @click.away="openNotif = false"
-                class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md">
-                <div class="px-4 py-2 border-b text-gray-700 dark:text-gray-300 serif-bold text-sm">Notificaciones</div>
+            <div x-show="open" x-cloak @click.away="open = false"
+                class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2 border-b text-gray-700 dark:text-gray-300 serif-bold text-sm">
+                    <span>Notificaciones</span>
+                    <button class="text-xs text-blue-600 hover:underline" @click="markAll()" x-show="unread>0">Marcar todas</button>
+                </div>
                 <ul>
-                    <li class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
-                        Nuevo reporte recibido
-                        <span class="block text-xs nunito-regular text-gray-500 dark:text-gray-400">Hace 5 minutos</span>
-                    </li>
-                    <li class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
-                        Actualización de perfil completada
-                        <span class="block text-xs nunito-regular text-gray-500 dark:text-gray-400">Hace 1 hora</span>
-                    </li>
-                    <li class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
-                        Mensaje de soporte técnico
-                        <span class="block text-xs nunito-regular text-gray-500 dark:text-gray-400">Ayer</span>
-                    </li>
+                    <template x-if="items.length === 0">
+                        <li class="px-4 py-3 text-sm text-gray-500">Sin notificaciones</li>
+                    </template>
+                    <template x-for="n in items" :key="n.id">
+                        <li @click="go(n)" class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
+                            <div class="flex gap-2">
+                                <i :class="['fas', n.icon || 'fa-bell', 'mt-0.5', n.severity==='critical'?'text-red-600':(n.severity==='warn'?'text-yellow-500':'text-blue-500')]"></i>
+                                <div class="flex-1">
+                                    <div class="serif-bold" x-text="n.title"></div>
+                                    <div class="text-xs text-gray-600 dark:text-gray-400" x-text="n.body"></div>
+                                    <div class="text-[10px] text-gray-400" x-text="formatTime(n.created_at)"></div>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-blue-500 mt-1" x-show="!n.read_at"></span>
+                            </div>
+                        </li>
+                    </template>
                 </ul>
-                <div class="px-4 py-2 text-xs nunito-regular text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Ver todas</div>
+                <div class="px-4 py-2 text-xs nunito-regular text-blue-600 dark:text-blue-400 hover:underline cursor-pointer" @click="$dispatch('navigate', {url:'/admin/notificaciones', viewName:'notificaciones'})">Ver todas</div>
             </div>
         </div>
 

@@ -34,15 +34,15 @@
                     <tbody>
                         @foreach(($rows ?? []) as $p)
                         <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_persona_pk ?? $p['id'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_nombre ?? $p['primer_nombre'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_nombre ?? $p['segundo_nombre'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_apellido ?? $p['primer_apellido'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_apellido ?? $p['segundo_apellido'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->dni ?? $p['dni'] ?? '' }}</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->genero->genero ?? null) ?? ($p['genero']['genero'] ?? '') }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_persona_pk ?? $p['id'] ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_nombre ?? $p['primer_nombre'] ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_nombre ?? $p['segundo_nombre'] ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->primer_apellido ?? $p['primer_apellido'] ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->segundo_apellido ?? $p['segundo_apellido'] ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->dni ?? $p['dni'] ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->genero->genero ?? null) ?? ($p['genero']['genero'] ?? '—') }}</td>
                             
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->id_usuario_fk ?? $p['id_usuario_fk'] ?? '' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ ($p->usuario->usuario ?? null) ?? ($p['usuario']['usuario'] ?? ($p->id_usuario_fk ?? $p['id_usuario_fk'] ?? '—')) }}</td>
                         </tr>
                         @endforeach
                         @if(empty($rows))

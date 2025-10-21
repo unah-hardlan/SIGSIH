@@ -23,8 +23,8 @@ window.paisesApiHandlers = {
             component.paises = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching paises:", error);
             window.showToast &&
@@ -39,7 +39,8 @@ window.paisesApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitPais(component) {
-        const nombreTrim = String(component.selected_pais || "").trim();
+        // Use the same model name used in Blade (nombre_pais)
+        const nombreTrim = String(component.nombre_pais || "").trim();
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast("El nombre del país es obligatorio", "error");
@@ -70,7 +71,7 @@ window.paisesApiHandlers = {
             if (!response.ok) throw data;
             window.showToast &&
                 window.showToast("País creado exitosamente", "success");
-            component.selected_pais = "";
+            component.nombre_pais = "";
             component.isPaisModalOpen = false;
             await this.fetchPaises(component); // Use 'this' to call other methods within the same handler object
         } catch (error) {
@@ -178,8 +179,8 @@ window.paisesApiHandlers = {
             component.departamentos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching departamentos:", error);
             window.showToast &&
@@ -213,7 +214,7 @@ window.paisesApiHandlers = {
             component.departamentos.some(
                 (d) =>
                     d.nombre_departamento.toLowerCase() ===
-                        nombreTrim.toLowerCase() && d.id_pais_pk == paisId
+                    nombreTrim.toLowerCase() && d.id_pais_pk == paisId
             )
         ) {
             window.showToast &&
@@ -277,7 +278,7 @@ window.paisesApiHandlers = {
             component.departamentos.some(
                 (d) =>
                     d.nombre_departamento.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     d.id_pais_pk == paisId &&
                     d.id_departamento_pk !== component.itemToEdit.id
             )
@@ -375,8 +376,8 @@ window.paisesApiHandlers = {
             component.ciudades = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching ciudades:", error);
             window.showToast &&
@@ -410,7 +411,7 @@ window.paisesApiHandlers = {
             component.ciudades.some(
                 (c) =>
                     c.nombre_ciudad.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     c.id_departamento_fk == departamentoId
             )
         ) {
@@ -475,7 +476,7 @@ window.paisesApiHandlers = {
             component.ciudades.some(
                 (c) =>
                     c.nombre_ciudad.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     c.id_departamento_fk == departamentoId &&
                     c.id_ciudad_pk !== component.itemToEdit.id
             )
@@ -563,8 +564,8 @@ window.paisesApiHandlers = {
             component.direcciones = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching direcciones:", error);
             window.showToast &&
@@ -590,8 +591,8 @@ window.paisesApiHandlers = {
             component.agencias = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching agencias:", error);
             window.showToast &&
@@ -608,6 +609,7 @@ window.paisesApiHandlers = {
     async submitDireccion(component) {
         const calleTrim = String(component.direccion || "").trim();
         const ciudadId = component.ciudad_direccion;
+        const cp = String(component.codigo_postal || "").trim();
         if (!calleTrim) {
             window.showToast &&
                 window.showToast("La calle es obligatoria", "error");
@@ -616,6 +618,49 @@ window.paisesApiHandlers = {
         if (!ciudadId) {
             window.showToast &&
                 window.showToast("Debe seleccionar una ciudad", "error");
+            return;
+        }
+        // Validación de Código Postal según país (Centroamérica)
+        const normalize = (s) => (s || "").toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        const getPaisNombreByCiudadId = (cid) => {
+            try {
+                const city = (component.ciudades || []).find(c => String(c.id_ciudad_pk) === String(cid));
+                if (!city) return '';
+                const dep = (component.departamentos || []).find(d => String(d.id_departamento_pk) === String(city.id_departamento_fk));
+                if (!dep) return '';
+                const pais = (component.paises || []).find(p => String(p.id_pais_pk) === String(dep.id_pais_pk));
+                return pais ? pais.nombre_pais : '';
+            } catch (_) { return ''; }
+        };
+        const paisNombre = getPaisNombreByCiudadId(ciudadId);
+        const nPais = normalize(paisNombre);
+        const rules = {
+            'honduras': [/^\d{5}$/],
+            'guatemala': [/^\d{5}$/],
+            'costa rica': [/^\d{5}$/],
+            'el salvador': [/^\d{4}$/],
+            'nicaragua': [/^\d{5}$/],
+            'panama': [/^\d{6}$/],
+            'panamá': [/^\d{6}$/],
+            'belice': [/^[A-Z0-9\-\s]{3,10}$/i],
+            'belize': [/^[A-Z0-9\-\s]{3,10}$/i],
+        };
+        const patterns = rules[nPais] || [];
+        const okCP = patterns.length === 0 ? /^(?=.{3,10}$)[A-Za-z0-9\-\s]+$/.test(cp) : patterns.some(rx => rx.test(cp));
+        if (!okCP) {
+            const msgByPais = {
+                'honduras': '5 dígitos (ej. 11101)',
+                'guatemala': '5 dígitos (ej. 01001)',
+                'costa rica': '5 dígitos (ej. 10101)',
+                'el salvador': '4 dígitos (ej. 1101)',
+                'nicaragua': '5 dígitos',
+                'panama': '6 dígitos',
+                'panamá': '6 dígitos',
+                'belice': '3-10 caracteres alfanuméricos',
+                'belize': '3-10 caracteres alfanuméricos',
+            };
+            const hint = msgByPais[nPais] || '3-10 caracteres alfanuméricos';
+            window.showToast && window.showToast(`Código postal inválido para ${paisNombre || 'el país seleccionado'}. Formato esperado: ${hint}.`, 'error');
             return;
         }
         // TODO: Add duplicate validation if needed
@@ -640,10 +685,9 @@ window.paisesApiHandlers = {
                 calle: component.direccion.trim(),
                 numero: component.numero.trim(),
                 colonia: component.colonia.trim(),
-                codigo_postal: component.codigo_postal.trim(),
+                codigo_postal: cp,
                 referencia: component.referencia.trim(),
                 id_ciudad_fk: ciudadId,
-                agencia_id: component.agencia_direccion || null,
             };
             const response = await fetch("/api/direcciones", {
                 method: "POST",
@@ -664,7 +708,7 @@ window.paisesApiHandlers = {
             component.codigo_postal = "";
             component.referencia = "";
             component.ciudad_direccion = "";
-            component.agencia_direccion = "";
+
             component.isDireccionModalOpen = false;
             await this.fetchDirecciones(component);
         } catch (error) {
@@ -682,6 +726,7 @@ window.paisesApiHandlers = {
         if (!component.itemToEdit || !component.itemToEdit.id) return;
         const calleTrim = String(component.itemToEdit.calle || "").trim();
         const ciudadId = component.itemToEdit.ciudad;
+        const cp = String(component.itemToEdit.codigo_postal || "").trim();
         if (!calleTrim) {
             window.showToast &&
                 window.showToast("La calle es obligatoria", "error");
@@ -690,6 +735,49 @@ window.paisesApiHandlers = {
         if (!ciudadId) {
             window.showToast &&
                 window.showToast("Debe seleccionar una ciudad", "error");
+            return;
+        }
+        // Validación de Código Postal según país (Centroamérica)
+        const normalize = (s) => (s || "").toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        const getPaisNombreByCiudadId = (cid) => {
+            try {
+                const city = (component.ciudades || []).find(c => String(c.id_ciudad_pk) === String(cid));
+                if (!city) return '';
+                const dep = (component.departamentos || []).find(d => String(d.id_departamento_pk) === String(city.id_departamento_fk));
+                if (!dep) return '';
+                const pais = (component.paises || []).find(p => String(p.id_pais_pk) === String(dep.id_pais_pk));
+                return pais ? pais.nombre_pais : '';
+            } catch (_) { return ''; }
+        };
+        const paisNombre = getPaisNombreByCiudadId(ciudadId);
+        const nPais = normalize(paisNombre);
+        const rules = {
+            'honduras': [/^\d{5}$/],
+            'guatemala': [/^\d{5}$/],
+            'costa rica': [/^\d{5}$/],
+            'el salvador': [/^\d{4}$/],
+            'nicaragua': [/^\d{5}$/],
+            'panama': [/^\d{6}$/],
+            'panamá': [/^\d{6}$/],
+            'belice': [/^[A-Z0-9\-\s]{3,10}$/i],
+            'belize': [/^[A-Z0-9\-\s]{3,10}$/i],
+        };
+        const patterns = rules[nPais] || [];
+        const okCP = patterns.length === 0 ? /^(?=.{3,10}$)[A-Za-z0-9\-\s]+$/.test(cp) : patterns.some(rx => rx.test(cp));
+        if (!okCP) {
+            const msgByPais = {
+                'honduras': '5 dígitos (ej. 11101)',
+                'guatemala': '5 dígitos (ej. 01001)',
+                'costa rica': '5 dígitos (ej. 10101)',
+                'el salvador': '4 dígitos (ej. 1101)',
+                'nicaragua': '5 dígitos',
+                'panama': '6 dígitos',
+                'panamá': '6 dígitos',
+                'belice': '3-10 caracteres alfanuméricos',
+                'belize': '3-10 caracteres alfanuméricos',
+            };
+            const hint = msgByPais[nPais] || '3-10 caracteres alfanuméricos';
+            window.showToast && window.showToast(`Código postal inválido para ${paisNombre || 'el país seleccionado'}. Formato esperado: ${hint}.`, 'error');
             return;
         }
         // TODO: Add duplicate validation if needed
@@ -715,10 +803,9 @@ window.paisesApiHandlers = {
                 calle: component.itemToEdit.calle.trim(),
                 numero: component.itemToEdit.numero.trim(),
                 colonia: component.itemToEdit.colonia.trim(),
-                codigo_postal: component.itemToEdit.codigo_postal.trim(),
+                codigo_postal: cp,
                 referencia: component.itemToEdit.referencia.trim(),
                 id_ciudad_fk: ciudadId,
-                agencia_id: component.itemToEdit.agencia_id || null,
             };
             const response = await fetch(
                 `/api/direcciones/${component.itemToEdit.id}`,
@@ -794,8 +881,8 @@ window.paisesApiHandlers = {
             component.paisesPredefinidos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching paises predefinidos:", error);
             window.showToast &&

@@ -17,6 +17,7 @@ class SolicitudResource extends JsonResource
         return [
             'id_solicitud_pk' => $this->id_solicitud_pk,
             'id_cliente_fk' => $this->id_cliente_fk,
+            'nombre_solicitud' => $this->nombre_solicitud,
             'numero_solicitud_acf' => $this->numero_solicitud_acf,
             'numero_solicitud_cliente' => $this->numero_solicitud_cliente,
             'descripcion_problema' => $this->descripcion_problema,

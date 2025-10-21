@@ -2,10 +2,17 @@ window.categoriasApiHandlers = {
     async fetchCategorias(component) {
         component.loadingCategorias = true;
         try {
-            const response = await fetch("/api/categorias", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroCategoria)
+                params.set("q", component.filtroCategoria);
+            if (component.ordenarPor) params.set("sort", component.ordenarPor);
+            const response = await fetch(
+                `/api/categorias?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
 

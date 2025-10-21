@@ -158,6 +158,7 @@ x-init="fetchTipoMovimientos()"
 
         <!-- Modal Editar Tipo de Movimiento -->
         <x-admin.edit-modal class="nunito-bold" modalName="isTipoMovimientoEditModalOpen" title="Editar Tipo de Movimiento" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditTipoMovimiento">
+            <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_nombre_tipo_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
@@ -171,6 +172,7 @@ x-init="fetchTipoMovimientos()"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

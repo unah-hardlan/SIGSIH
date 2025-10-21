@@ -13,7 +13,6 @@
         'resources/css/theme.css'
     ])
 
-    <!-- Script de tema -->
     <script>
         (function() {
             try {
@@ -32,17 +31,14 @@
             font-family: 'Inter', sans-serif;
         }
         
-        /* Mejoras para el tema oscuro */
         .dark {
             color-scheme: dark;
         }
         
-        /* Animaciones suaves - removiendo transición global que causaba conflictos */
         .smooth-transition {
             transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
         
-        /* Transiciones específicas para inputs - evitar parpadeo */
         input, select, textarea {
             transition: border-color 0.2s ease-in-out !important;
         }
@@ -51,23 +47,19 @@
             transition: border-color 0.15s ease-in-out !important;
         }
         
-        /* Efectos de hover mejorados */
         .hover-scale:hover {
             transform: scale(1.02);
         }
         
-        /* Backdrop blur personalizado */
         .backdrop-blur-lg {
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
         }
         
-        /* Eliminación de box-shadow conflictivo en focus */
         input:focus, select:focus, textarea:focus {
             box-shadow: none !important;
         }
         
-        /* Estilos para el botón sticky de tema */
         .theme-toggle {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -80,7 +72,6 @@
             transform: scale(0.95);
         }
         
-        /* Animación suave para el cambio de iconos */
         .theme-toggle svg {
             transition: opacity 0.2s ease-in-out;
         }
@@ -92,16 +83,13 @@
         @yield('content')
     </div>
 
-    <!-- Scripts para funcionalidad de avatar -->
     <script>
-        // Preview de imagen con validación de tipo
         function previewImage(input) {
             const preview = document.getElementById('avatar-preview');
             const placeholder = document.getElementById('avatar-placeholder');
             const file = input.files[0];
             
             if (file) {
-                // Validar tipo de archivo
                 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
                 
                 if (!allowedTypes.includes(file.type)) {
@@ -112,7 +100,6 @@
                     return;
                 }
                 
-                // Validar tamaño (2MB = 2097152 bytes)
                 if (file.size > 2097152) {
                     alert('La imagen no puede ser mayor a 2MB.');
                     input.value = '';
@@ -134,7 +121,6 @@
             }
         }
 
-        // Drag and drop
         function setupDragAndDrop() {
             const dropZone = document.getElementById('avatar-drop-zone');
             const fileInput = document.getElementById('avatar');

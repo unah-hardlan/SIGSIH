@@ -1,25 +1,30 @@
 window.tipoVisitasApiHandlers = {
-    authHeaders() {
-        return {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        };
-    },
-
     /**
-     * Fetches the list of tipo visitas from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
+    
+     * @param {object} component 
      */
     async fetchTipoVisitas(component) {
         component.loadingTipoVisitas = true;
         try {
-            const response = await fetch("/api/tipos-visita", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroTipoVisita) {
+                params.set("q", component.filtroTipoVisita);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+            params.set("all", "true");
+
+            const response = await fetch(
+                `/api/tipos-visita?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.tipoVisitas = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -35,7 +40,6 @@ window.tipoVisitasApiHandlers = {
     },
 
     /**
-     * Submits a new tipo visita to the API.
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitTipoVisita(component) {
@@ -69,10 +73,7 @@ window.tipoVisitasApiHandlers = {
             };
             const response = await fetch("/api/tipos-visita", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
+                headers: this.authHeaders(),
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
@@ -95,18 +96,19 @@ window.tipoVisitasApiHandlers = {
     },
 
     /**
-     * Updates an existing tipo visita via the API.
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async updateTipoVisita(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_tipo_visita_pk)
             return;
+
         const nombreTrim = String(
-            component.edit_nombre_tipo_visita ?? component.itemToEdit.nombre_tipo_visita ?? ""
+            component.edit_nombre_tipo_visita || ""
         ).trim();
         const descripcionTrim = String(
-            component.edit_descripcion_tipo_visita ?? component.itemToEdit.descripcion_tipo_visita ?? ""
+            component.edit_descripcion_tipo_visita || ""
         ).trim();
+
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -136,26 +138,11 @@ window.tipoVisitasApiHandlers = {
                 nombre_tipo_visita: nombreTrim,
                 descripcion_tipo_visita: descripcionTrim,
             };
-            // Evitar request si no hay cambios
-            if (
-                nombreTrim === (component.itemToEdit.nombre_tipo_visita || "") &&
-                descripcionTrim === (component.itemToEdit.descripcion_tipo_visita || "")
-            ) {
-                window.showToast && window.showToast("No hay cambios para guardar", "warning");
-                component.isTipoVisitaEditModalOpen = false;
-                component.itemToEdit = null;
-                component.edit_nombre_tipo_visita = "";
-                component.edit_descripcion_tipo_visita = "";
-                return;
-            }
             const response = await fetch(
                 `/api/tipos-visita/${component.itemToEdit.id_tipo_visita_pk}`,
                 {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
+                    method: "PUT", // Usar PUT para reemplazo completo, o PATCH si la API lo soporta para cambios parciales
+                    headers: this.authHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
@@ -169,8 +156,6 @@ window.tipoVisitasApiHandlers = {
                 );
             component.isTipoVisitaEditModalOpen = false;
             component.itemToEdit = null;
-            component.edit_nombre_tipo_visita = "";
-            component.edit_descripcion_tipo_visita = "";
             await this.fetchTipoVisitas(component);
         } catch (error) {
             console.error("Error updating tipo visita:", error);

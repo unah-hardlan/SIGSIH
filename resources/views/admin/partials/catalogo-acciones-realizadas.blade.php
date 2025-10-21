@@ -33,6 +33,11 @@
     }
 }"
 x-init="fetchAccionesRealizadas()"
+{{-- AÑADIDO: Este bloque observa los cambios en los filtros y llama a la API automáticamente --}}
+x-effect="
+    $watch('filtroAccionRealizada', () => fetchAccionesRealizadas());
+    $watch('ordenarPor', () => fetchAccionesRealizadas());
+"
 @keydown.escape.window="
     isAccionRealizadaModalOpen = false;
     isAccionRealizadaEditModalOpen = false;
@@ -49,9 +54,10 @@ x-init="fetchAccionesRealizadas()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroAccionRealizada',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de orden a la variable de Alpine --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
-                    'id_accion_realizada_pk' => 'ID' // Corregido
+                    'id_accion_realizada_pk' => 'ID'
                 ]
             ])
         </x-slot>
@@ -155,8 +161,9 @@ x-init="fetchAccionesRealizadas()"
         </x-admin.form-modal>
 
         <!-- Modal Editar Acción -->
-        <x-admin.edit-modal class="nunito-bold" modalName="isAccionRealizadaEditModalOpen" title="Editar Acción Realizada" 
+        <x-admin.edit-modal class="nunito-bold" modalName="isAccionRealizadaEditModalOpen" title="Editar Acción Realizada"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditAccionRealizada">
+            <template x-if="itemToEdit">
             <div class="space-y-4">
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
@@ -169,6 +176,7 @@ x-init="fetchAccionesRealizadas()"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
                 </div>
             </div>
+            </template>
         </x-admin.edit-modal>
 
         <!-- Modal Confirmar Eliminación -->

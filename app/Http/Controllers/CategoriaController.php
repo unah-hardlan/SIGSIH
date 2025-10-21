@@ -14,27 +14,33 @@ class CategoriaController extends Controller
     {
         $query = Categoria::query();
 
-        if ($q = $request->input('q')) {
-            $query->where('nombre_categoria', 'like', "%$q%")
-                  ->orWhere('descripcion_categoria', 'like', "%$q%")
-                  ->orWhere('tipo_categoria', 'like', "%$q%");
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_categoria', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_categoria', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('tipo_categoria', 'like', '%' . $searchTerm . '%');
+            });
         }
 
-        $sortable = [
-            'nombre_categoria' => 'nombre_categoria',
-            'id_categoria_pk'     => 'id_categoria_pk',
-            'tipo_categoria' => 'tipo_categoria',
-        ];
-
-        $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
-
-        if ($sort && isset($sortable[$sort])) {
-            $query->orderBy($sortable[$sort], $direction);
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre_categoria':
+                    $query->orderBy('nombre_categoria');
+                    break;
+                case 'id_categoria_pk':
+                    $query->orderBy('id_categoria_pk');
+                    break;
+                default:
+                    $query->orderBy('nombre_categoria', 'asc');
+            }
         } else {
             $query->orderBy('nombre_categoria', 'asc');
         }
-        
+
         $categorias = $query->get();
 
         return response()->json([
