@@ -8,6 +8,9 @@
     loadingTipoProductos: false,
     nombre_tipo_producto: '',
     descripcion_tipo_producto: '',
+    // AÑADIDO: Variables para el filtro y ordenamiento
+    filtroTipoProducto: '',
+    ordenarPor: '',
     async fetchTipoProductos() {
         await window.tipoProductosApiHandlers.fetchTipoProductos(this);
     },
@@ -31,6 +34,11 @@
     }
 }"
 x-init="fetchTipoProductos()"
+{{-- AÑADIDO: Este bloque observa los cambios y llama a la API automáticamente --}}
+x-effect="
+    $watch('filtroTipoProducto', () => fetchTipoProductos());
+    $watch('ordenarPor', () => fetchTipoProductos());
+"
 @keydown.escape.window="
     isTipoProductoModalOpen = false;
     isTipoProductoEditModalOpen = false;
@@ -46,6 +54,7 @@ x-init="fetchTipoProductos()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroTipoProducto',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Tipo'

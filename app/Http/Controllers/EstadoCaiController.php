@@ -10,14 +10,22 @@ use Illuminate\Http\Request;
 
 class EstadoCaiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
+            // Agregar headers anti-caché para datos siempre frescos
+            $headers = [
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ];
+            
             $estados = EstadoCai::all(); // Usar all() en lugar de paginate() para simplificar
             return response()->json([
                 'success' => true,
-                'data' => EstadoCaiResource::collection($estados)
-            ], 200);
+                'data' => EstadoCaiResource::collection($estados),
+                'timestamp' => now()->toISOString() // Para debugging
+            ], 200, $headers);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

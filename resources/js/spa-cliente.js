@@ -273,29 +273,113 @@ class ClienteSPA {
     }
 
     updateActiveLink(path) {
-        // Remover clase activa de todos los links
-        const links = document.querySelectorAll("aside nav a");
-        links.forEach((link) => {
-            link.classList.remove("text-white", "bg-blue-600", "shadow-sm");
-            link.classList.add(
-                "text-gray-300",
-                "hover:bg-gray-700",
-                "hover:text-white"
-            );
-        });
-
-        // Agregar clase activa al link actual
-        const activeLink = document.querySelector(
-            `aside nav a[href="${path}"]`
-        );
-        if (activeLink) {
-            activeLink.classList.remove(
-                "text-gray-300",
-                "hover:bg-gray-700",
-                "hover:text-white"
-            );
-            activeLink.classList.add("text-white", "bg-blue-600", "shadow-sm");
+        // Normalizar path
+        let targetPath = path || window.location.pathname;
+        try {
+            targetPath = new URL(targetPath, window.location.origin).pathname;
+        } catch (e) {
+            // keep original if URL parsing fails
         }
+
+        const links = document.querySelectorAll("aside nav a");
+
+        // Clases activas
+        const activeClasses = [
+            "text-white",
+            "bg-blue-600",
+            "shadow-md",
+            "font-bold",
+        ];
+
+        // Clases inactivas - SIN HOVER
+        const inactiveClasses = ["text-gray-800", "dark:text-gray-200"];
+
+        // Colores de iconos
+        const iconActive = ["text-white", "dark:text-white"];
+        const iconInactive = ["text-gray-600", "dark:text-gray-400"];
+
+        // Colores de texto
+        const textActive = ["text-white"];
+        const textInactive = ["text-gray-800", "dark:text-gray-200"];
+
+        links.forEach((link) => {
+            // Limpiar todas las clases posibles
+            link.classList.remove(...activeClasses, ...inactiveClasses);
+
+            let href = link.getAttribute("href") || "";
+            try {
+                href = new URL(href, window.location.origin).pathname;
+            } catch (e) {
+                // ignore
+            }
+
+            const isActive = href === targetPath;
+
+            if (isActive) {
+                link.classList.add(...activeClasses);
+
+                // Icon: rebuild classes keeping non-color base classes
+                const icon = link.querySelector("i");
+                if (icon) {
+                    const base = Array.from(icon.classList).filter(
+                        (c) =>
+                            !c.startsWith("text-") &&
+                            !c.startsWith("dark:") &&
+                            !c.startsWith("group-hover:")
+                    );
+                    icon.className =
+                        base.join(" ") + " " + iconActive.join(" ");
+                    try {
+                        icon.style.removeProperty("color");
+                    } catch (e) {}
+                }
+
+                // Span/text: rebuild classes keeping base except color utilities
+                const span = link.querySelector("span");
+                if (span) {
+                    const baseSpan = Array.from(span.classList).filter(
+                        (c) =>
+                            !c.startsWith("text-") &&
+                            !c.startsWith("dark:") &&
+                            !c.startsWith("group-hover:")
+                    );
+                    span.className =
+                        baseSpan.join(" ") + " " + textActive.join(" ");
+                }
+            } else {
+                // INACTIVO - SIN HOVER
+                link.classList.add(...inactiveClasses);
+
+                const icon = link.querySelector("i");
+                if (icon) {
+                    const base = Array.from(icon.classList).filter(
+                        (c) =>
+                            !c.startsWith("text-") &&
+                            !c.startsWith("dark:") &&
+                            !c.startsWith("group-hover:") &&
+                            !c.startsWith("hover:")
+                    );
+                    icon.className =
+                        base.join(" ") + " " + iconInactive.join(" ");
+                    try {
+                        icon.style.removeProperty("color");
+                    } catch (e) {}
+                }
+
+                const span = link.querySelector("span");
+                if (span) {
+                    const baseSpan = Array.from(span.classList).filter(
+                        (c) =>
+                            !c.startsWith("text-") &&
+                            !c.startsWith("dark:") &&
+                            !c.startsWith("group-hover:") &&
+                            !c.startsWith("hover:")
+                    );
+                    span.className =
+                        baseSpan.join(" ") + " " + textInactive.join(" ");
+                }
+            }
+        });
     }
 
     showLoading() {
