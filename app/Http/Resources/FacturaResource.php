@@ -45,10 +45,13 @@ class FacturaResource extends JsonResource
                     return $this->cliente->empresa->nombre_comercial ?? $this->cliente->empresa->razon_social ?? 'Empresa sin nombre';
                 }
                 
-                // Si es cliente persona
-                if ($this->cliente->tipo_cliente === 'persona' && $this->cliente->persona) {
-                    $nombre = trim(($this->cliente->persona->primer_nombre ?? '') . ' ' . ($this->cliente->persona->primer_apellido ?? ''));
-                    return $nombre ?: 'Persona sin nombre';
+                // Si es cliente persona - obtener la primera persona de la colección
+                if ($this->cliente->tipo_cliente === 'persona' && $this->cliente->personas) {
+                    $persona = $this->cliente->personas->first();
+                    if ($persona) {
+                        $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
+                        return $nombre ?: 'Persona sin nombre';
+                    }
                 }
                 
                 return 'Cliente sin datos';

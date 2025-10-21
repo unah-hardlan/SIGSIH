@@ -206,6 +206,7 @@ import "./estados-cai";
 import "./cai";
 import "./facturas";
 import "./servicios-factura";
+import "./detalle-factura";
 import "./proyectos";
 import "./estados-calendario";
 import "./estados-tickets";

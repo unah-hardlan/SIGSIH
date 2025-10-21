@@ -1,4 +1,188 @@
-<div x-data="facturasCrud()" @include('partials.persist-tab', ['tabKey' => 'admin-facturas-tab']) class="p-6">
+<div x-data="{
+    // Tab state
+    tab: 'facturas',
+    
+    // Modal states para facturas
+    isFacturaModalOpen: false,
+    isEditFacturaModalOpen: false,
+    isDeleteFacturaModalOpen: false,
+    itemToEdit: null,
+    itemToDelete: null,
+    
+    // Modal states para detalle factura
+    isDetalleModalOpen: false,
+    isEditDetalleModalOpen: false,
+    isDeleteDetalleModalOpen: false,
+    detalleToEdit: null,
+    detalleToDelete: null,
+    
+    // Data arrays
+    facturas: [],
+    estadosFactura: [],
+    clientes: [],
+    cais: [],
+    detallesFactura: [],
+    servicios: [],
+     
+    // Loading states
+    loadingFacturas: false,
+    loadingEstadosFactura: false,
+    loadingDetalles: false,
+    loadingServicios: false,
+    
+    // Filtros para facturas
+    searchFacturas: '',
+    estadoFacturaFiltro: '',
+    clienteFacturaFiltro: '',
+    
+    // Filtros para detalle factura
+    searchDetalleFactura: '',
+    servicioDetalleFiltro: '',
+    facturaDetalleFiltro: '',
+    
+    async init() {
+        console.log('Inicializando componente facturas...');
+        await this.fetchFacturas();
+        await this.fetchEstadosFactura();
+        await this.fetchClientes();
+        await this.fetchCais();
+        await this.fetchDetallesFactura();
+        await this.fetchServicios();
+    },
+    
+    async fetchFacturas() {
+        this.loadingFacturas = true;
+        try {
+            const response = await fetch('/api/facturas', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            
+            if (data.success && data.data) {
+                this.facturas = data.data;
+            } else if (Array.isArray(data)) {
+                this.facturas = data;
+            } else {
+                this.facturas = [];
+            }
+        } catch (error) {
+            console.error('Error fetching facturas:', error);
+            this.facturas = [];
+        } finally {
+            this.loadingFacturas = false;
+        }
+    },
+
+    async fetchEstadosFactura() {
+        this.loadingEstadosFactura = true;
+        try {
+            const response = await fetch('/api/estados-factura?all=true', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            
+            this.estadosFactura = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching estados factura:', error);
+            this.estadosFactura = [];
+        } finally {
+            this.loadingEstadosFactura = false;
+        }
+    },
+
+    async fetchClientes() {
+        try {
+            const response = await fetch('/api/facturas-clientes', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            
+            this.clientes = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+        } catch (error) {
+            console.error('Error fetching clientes:', error);
+            this.clientes = [];
+        }
+    },
+
+    async fetchCais() {
+        try {
+            const response = await fetch('/api/cai', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw data;
+            
+            this.cais = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching CAIs:', error);
+            this.cais = [];
+        }
+    },
+    
+    async fetchDetallesFactura() {
+        this.loadingDetalles = true;
+        try {
+            console.log('Cargando detalles factura...');
+            const response = await fetch('/api/detalles-factura?all=true', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+            const data = await response.json();
+            console.log('API Response:', data);
+            
+            this.detallesFactura = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+            console.log('Detalles cargados:', this.detallesFactura.length, 'items');
+        } catch (error) {
+            console.error('Error al cargar detalles:', error);
+            this.detallesFactura = [];
+        } finally {
+            this.loadingDetalles = false;
+        }
+    },
+
+    async fetchServicios() {
+        this.loadingServicios = true;
+        try {
+            const response = await fetch('/api/servicios', {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+            const data = await response.json();
+            
+            this.servicios = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+            console.log('Servicios cargados:', this.servicios.length, 'items');
+        } catch (error) {
+            console.error('Error al cargar servicios:', error);
+            this.servicios = [];
+        } finally {
+            this.loadingServicios = false;
+        }
+    },
+    
+    openCreateModal() {
+        console.log('Abriendo modal crear');
+        this.isDetalleModalOpen = true;
+    },
+    
+    openEditModal(detalle) {
+        console.log('Abriendo modal editar:', detalle);
+        this.detalleToEdit = detalle;
+        this.isEditDetalleModalOpen = true;
+    },
+    
+    openDeleteModal(detalle) {
+        console.log('Abriendo modal eliminar:', detalle);
+        this.detalleToDelete = detalle;
+        this.isDeleteDetalleModalOpen = true;
+    }
+}" @include('partials.persist-tab', ['tabKey' => 'admin-facturas-tab']) class="p-6">
 
     <div class="mb-6">
         <ul class="flex border-b nunito-bold">
@@ -272,23 +456,24 @@
                     'filtrosSelect' => [
                         'servicioDetalleFiltro' => [
                             'label' => 'Servicio',
-                            'options' => ['SVC-01', 'SVC-02']
+                            'options' => ['Mantenimiento', 'Consultoría']
                         ],
                         'facturaDetalleFiltro' => [
                             'label' => 'Factura',
-                            'options' => ['0001', '0002']
+                            'options' => ['FAC-001', 'FAC-002']
                         ]
                     ],
                     'ordenarOptions' => [
                         'fecha_servicio' => 'Fecha Servicio',
-                        'horas' => 'Horas',
-                        'descuento' => 'Descuento'
+                        'precio_unitario' => 'Precio Unitario',
+                        'cantidad' => 'Cantidad',
+                        'total_linea' => 'Total Línea'
                     ]
                 ])
             </x-slot>
             <x-slot name="boton">
                 <div class="w-full flex justify-center">
-                    <button @click="isDetalleModalOpen = true"
+                    <button @click="openCreateModal()" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap w-11/12 sm:w-48">Nuevo
                         Detalle</button>
                 </div>
@@ -297,32 +482,58 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Detalle</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Factura</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID Servicio</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">ID</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Factura</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Servicio</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descripción</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Precio Unit.</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Cantidad</th>
+                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Total Línea</th>
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha Servicio</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Horas</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Descuento</th>
                             <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-b nunito-regular bg-white dark:bg-gray-900">
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">1</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0001</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">SVC-01</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">2025-07-26</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">8</td>
-                            <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">0</td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#"
-                                    @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = {id_detalle: 1, id_factura: '0001', id_servicio: 'SVC-01', fecha_servicio: '2025-07-26', horas: 8, descuento: 0}"
-                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular"><i class="fas fa-edit"></i></a>
-                                <a href="#"
-                                    @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
-                                    class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
+                        <template x-if="loadingDetalles">
+                            <tr>
+                                <td colspan="9" class="py-4 px-4 text-center nunito-regular text-gray-500">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>Cargando detalles...
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="!loadingDetalles && detallesFactura.length === 0">
+                            <tr>
+                                <td colspan="9" class="py-4 px-4 text-center nunito-regular text-gray-500">
+                                    No hay detalles de factura registrados
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-for="(detalle, index) in detallesFactura" :key="'detalle-' + (detalle.id || detalle.id_detalle_pk || index)">
+                            <tr class="border-b nunito-regular bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="detalle.id || detalle.id_detalle_pk || (index + 1)"></td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="detalle.factura_numero || 'Sin factura'"></td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="detalle.servicio_nombre || 'Sin servicio'"></td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white">
+                                    <span x-text="detalle.descripcion || 'Sin descripción'" class="truncate max-w-xs inline-block"></span>
+                                </td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="detalle.precio_unitario ? 'L. ' + parseFloat(detalle.precio_unitario).toFixed(2) : 'L. 0.00'"></td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="detalle.cantidad || '0'"></td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white font-semibold" x-text="detalle.total_linea ? 'L. ' + parseFloat(detalle.total_linea).toFixed(2) : 'L. 0.00'"></td>
+                                <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white" x-text="detalle.fecha_servicio || 'Sin fecha'"></td>
+                                <td class="py-2 px-4 flex gap-2">
+                                    <a href="#"
+                                        @click.prevent="openEditModal(detalle)"
+                                        class="text-blue-500 hover:text-blue-700 dark:text-blue-300 nunito-regular">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#"
+                                        @click.prevent="openDeleteModal(detalle)"
+                                        class="text-red-500 hover:text-red-700 dark:text-red-400 nunito-regular">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -331,57 +542,172 @@
 
     <!-- Modal Nuevo Detalle Factura -->
     <x-admin.form-modal class="nunito-bold" modalName="isDetalleModalOpen" title="Nuevo Detalle Factura" submitLabel="Guardar Detalle"
-        maxWidth="max-w-xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="id_factura" class="block text-sm font-medium text-gray-700 nunito-bold">ID Factura</label>
-                <input type="text" id="id_factura" name="id_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+        maxWidth="max-w-4xl" formId="formDetalle">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_factura_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Factura *</label>
+                    <select id="id_factura_fk" name="id_factura_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        <option value="" class="nunito-regular">Seleccione una factura</option>
+                        <template x-if="loadingFacturas">
+                            <option disabled class="nunito-regular">Cargando facturas...</option>
+                        </template>
+                        <template x-for="factura in facturas" :key="factura.id || factura.id_factura_pk">
+                            <option :value="factura.id || factura.id_factura_pk" x-text="factura.numero" class="nunito-regular"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label for="id_servicio_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Servicio *</label>
+                    <select id="id_servicio_fk" name="id_servicio_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                        @change="
+                            const selectedOption = $event.target.selectedOptions[0];
+                            if (selectedOption && selectedOption.value) {
+                                const servicios = $data.servicios || [];
+                                const selectedServicio = servicios.find(s => (s.id || s.id_servicio_pk) == $event.target.value);
+                                if (selectedServicio) {
+                                    document.getElementById('precio_unitario').value = selectedServicio.tarifa || '';
+                                    // Recalcular total
+                                    const precio = parseFloat(document.getElementById('precio_unitario').value || 0);
+                                    const cantidad = parseFloat(document.getElementById('cantidad').value || 1);
+                                    const impuesto = parseFloat(document.getElementById('impuesto').value || 0);
+                                    const descuento = parseFloat(document.getElementById('descuento').value || 0);
+                                    const total = (precio * cantidad) + impuesto - descuento;
+                                    document.getElementById('total_preview').textContent = 'L. ' + total.toFixed(2);
+                                }
+                            }
+                        ">
+                        <option value="" class="nunito-regular">Seleccione un servicio</option>
+                        <template x-if="loadingServicios">
+                            <option disabled class="nunito-regular">Cargando servicios...</option>
+                        </template>
+                        <template x-for="servicio in servicios" :key="servicio.id || servicio.id_servicio_pk">
+                            <option :value="servicio.id || servicio.id_servicio_pk" x-text="`${servicio.nombre} - L. ${(servicio.tarifa || 0).toFixed(2)}`" class="nunito-regular"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Descripción del servicio..."></textarea>
+                </div>
+                <div>
+                    <label for="precio_unitario" class="block text-sm font-medium text-gray-700 nunito-bold">Precio Unitario *</label>
+                    <input type="number" id="precio_unitario" name="precio_unitario" step="0.01" min="0" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                        @input="
+                            const precio = parseFloat($event.target.value || 0);
+                            const cantidad = parseFloat(document.getElementById('cantidad').value || 1);
+                            const impuesto = parseFloat(document.getElementById('impuesto').value || 0);
+                            const descuento = parseFloat(document.getElementById('descuento').value || 0);
+                            const total = (precio * cantidad) + impuesto - descuento;
+                            document.getElementById('total_preview').textContent = 'L. ' + total.toFixed(2);
+                        ">
+                </div>
+                <div>
+                    <label for="cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad *</label>
+                    <input type="number" id="cantidad" name="cantidad" step="0.01" min="0.01" value="1" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                        @input="
+                            const precio = parseFloat(document.getElementById('precio_unitario').value || 0);
+                            const cantidad = parseFloat($event.target.value || 1);
+                            const impuesto = parseFloat(document.getElementById('impuesto').value || 0);
+                            const descuento = parseFloat(document.getElementById('descuento').value || 0);
+                            const total = (precio * cantidad) + impuesto - descuento;
+                            document.getElementById('total_preview').textContent = 'L. ' + total.toFixed(2);
+                        ">
+                </div>
+                <div>
+                    <label for="impuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Impuesto</label>
+                    <input type="number" id="impuesto" name="impuesto" step="0.01" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                        @input="
+                            const precio = parseFloat(document.getElementById('precio_unitario').value || 0);
+                            const cantidad = parseFloat(document.getElementById('cantidad').value || 1);
+                            const impuesto = parseFloat($event.target.value || 0);
+                            const descuento = parseFloat(document.getElementById('descuento').value || 0);
+                            const total = (precio * cantidad) + impuesto - descuento;
+                            document.getElementById('total_preview').textContent = 'L. ' + total.toFixed(2);
+                        ">
+                </div>
+                <div>
+                    <label for="descuento" class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
+                    <input type="number" id="descuento" name="descuento" step="0.01" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                        @input="
+                            const precio = parseFloat(document.getElementById('precio_unitario').value || 0);
+                            const cantidad = parseFloat(document.getElementById('cantidad').value || 1);
+                            const impuesto = parseFloat(document.getElementById('impuesto').value || 0);
+                            const descuento = parseFloat($event.target.value || 0);
+                            const total = (precio * cantidad) + impuesto - descuento;
+                            document.getElementById('total_preview').textContent = 'L. ' + total.toFixed(2);
+                        ">
+                </div>
+                <div>
+                    <label for="fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Servicio *</label>
+                    <input type="date" id="fecha_servicio" name="fecha_servicio" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
+                    <input type="number" id="horas" name="horas" step="0.25" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div class="md:col-span-2 bg-gray-50 p-3 rounded-lg">
+                    <div class="text-lg font-semibold text-gray-700 nunito-bold">
+                        Total Línea: <span id="total_preview" class="text-green-600">L. 0.00</span>
+                    </div>
+                    <div class="text-sm text-gray-500 nunito-regular mt-1">
+                        Se calculará automáticamente: (Precio × Cantidad) + Impuesto - Descuento
+                    </div>
+                </div>
             </div>
-            <div>
-                <label for="id_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">ID Servicio</label>
-                <input type="text" id="id_servicio" name="id_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" @click="isDetalleModalOpen = false" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg nunito-bold transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg nunito-bold transition">
+                    Guardar Detalle
+                </button>
             </div>
-            <div>
-                <label for="fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Servicio</label>
-                <input type="date" id="fecha_servicio" name="fecha_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
-                <input type="number" id="horas" name="horas" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="descuento" class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
-                <input type="number" id="descuento" name="descuento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-        </div>
+        </form>
     </x-admin.form-modal>
 
     <!-- Modal Editar Detalle Factura -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditDetalleModalOpen" title="Editar Detalle Factura" itemToEdit="detalleToEdit"
-        maxWidth="max-w-xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="edit_id_factura" class="block text-sm font-medium text-gray-700 nunito-bold">ID Factura</label>
-                <input type="text" id="edit_id_factura" name="edit_id_factura" :value="detalleToEdit.id_factura" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+    <x-admin.form-modal class="nunito-bold" modalName="isEditDetalleModalOpen" title="Editar Detalle Factura" submitLabel="Actualizar Detalle"
+        maxWidth="max-w-xl" formId="formEditDetalle">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit_id_factura_fk" class="block text-sm font-medium text-gray-700 nunito-bold">ID Factura</label>
+                    <input type="number" id="edit_id_factura_fk" name="edit_id_factura_fk" :value="detalleToEdit.id_factura_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_id_servicio_fk" class="block text-sm font-medium text-gray-700 nunito-bold">ID Servicio</label>
+                    <input type="number" id="edit_id_servicio_fk" name="edit_id_servicio_fk" :value="detalleToEdit.id_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                    <input type="text" id="edit_descripcion" name="edit_descripcion" :value="detalleToEdit.descripcion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_precio_unitario" class="block text-sm font-medium text-gray-700 nunito-bold">Precio Unitario</label>
+                    <input type="number" step="0.01" id="edit_precio_unitario" name="edit_precio_unitario" :value="detalleToEdit.precio_unitario" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
+                    <input type="number" step="0.01" id="edit_cantidad" name="edit_cantidad" :value="detalleToEdit.cantidad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Servicio</label>
+                    <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio" :value="detalleToEdit.fecha_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
+                    <input type="number" step="0.01" id="edit_horas" name="edit_horas" :value="detalleToEdit.horas" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_impuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Impuesto</label>
+                    <input type="number" step="0.01" id="edit_impuesto" name="edit_impuesto" :value="detalleToEdit.impuesto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div>
+                    <label for="edit_descuento" class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
+                    <input type="number" step="0.01" id="edit_descuento" name="edit_descuento" :value="detalleToEdit.descuento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
             </div>
-            <div>
-                <label for="edit_id_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">ID Servicio</label>
-                <input type="text" id="edit_id_servicio" name="edit_id_servicio" :value="detalleToEdit.id_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Servicio</label>
-                <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio" :value="detalleToEdit.fecha_servicio" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
-                <input type="number" id="edit_horas" name="edit_horas" :value="detalleToEdit.horas" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-            <div>
-                <label for="edit_descuento" class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
-                <input type="number" id="edit_descuento" name="edit_descuento" :value="detalleToEdit.descuento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
-            </div>
-        </div>
-    </x-admin.edit-modal>
+        </form>
+    </x-admin.form-modal>
 
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteDetalleModalOpen" itemToDelete="detalleToDelete"
         message="¿Estás seguro de que quieres eliminar el detalle de factura?" />
