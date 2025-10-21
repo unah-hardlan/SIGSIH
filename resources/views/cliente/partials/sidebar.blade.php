@@ -1,60 +1,65 @@
 <aside x-data="{}" x-init="$store.clienteLogout = $store.clienteLogout || { modalOpen: false }" x-show="sidebarOpen" :class="{
+        // COMPORTAMIENTO MÓVIL (Fixed, cubre altura)
         'fixed inset-y-0 left-0 w-72 min-w-[18rem] h-full': isMobile,
-        'w-72 min-w-[18rem]': !isMobile && sidebarOpen,
-        'w-20 min-w-[5rem]': !isMobile && !sidebarOpen,
+        
+        // COMPORTAMIENTO DESKTOP: hacer el sidebar sticky (pegado) mientras el main se desplaza
+        'sticky top-4 w-72 min-w-[18rem] max-h-[92vh] ml-4': !isMobile && sidebarOpen,
+        'sticky top-4 w-20 min-w-[5rem] max-h-[92vh] ml-4': !isMobile && !sidebarOpen,
+
         'brightness-50 pointer-events-none': $store.clienteLogout?.modalOpen,
         'brightness-100 pointer-events-auto': !$store.clienteLogout?.modalOpen,
     }"
-    class="bg-gray-900 dark:bg-gray-800 text-gray-200 dark:text-gray-100 flex flex-col flex-shrink-0 p-4 shadow-lg transition-all duration-300 ease-in-out overflow-y-auto md:sticky md:top-0 md:h-screen"
-    style="scrollbar-width: thin; scrollbar-color: #4B5563 #1F2937; -webkit-overflow-scrolling: touch; z-index: 9999;">
+    class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white flex flex-col flex-shrink-0 p-4 shadow-lg border border-gray-300 dark:border-gray-700 rounded-xl transition-all duration-300 ease-in-out overflow-y-auto"
+    style="scrollbar-width: thin; scrollbar-color: #D1D5DB #FFFFFF; -webkit-overflow-scrolling: touch; z-index: 9999;">
 
     @php
-        /** @var \App\Models\Usuario|null $u */
-        $u = Auth::user();
+        $navItems = [
+            ['route' => 'cliente.perfil', 'icon' => 'fas fa-user', 'label' => 'Perfil'],
+            ['route' => 'cliente.solicitudes', 'icon' => 'fas fa-clipboard-question', 'label' => 'Solicitudes'],
+            ['route' => 'cliente.cotizaciones', 'icon' => 'fas fa-file-invoice', 'label' => 'Cotizaciones'],
+            ['route' => 'cliente.ordenes', 'icon' => 'fas fa-clipboard-list', 'label' => 'Órdenes de Servicio'],
+            ['route' => 'cliente.facturas', 'icon' => 'fas fa-file-invoice-dollar', 'label' => 'Facturación'],
+        ];
+        
+        // Enlaces con forma de píldora - SIN clases de hover
+        $linkBase = 'flex items-center gap-3 rounded-full transition-colors duration-200 group relative';
+        
+        // Clases activas
+        $activeClasses = 'text-white bg-blue-600 shadow-md font-bold';
+        
+        // Clases inactivas - SIN hover states
+        $inactiveClasses = 'text-gray-800 dark:text-gray-200';
     @endphp
 
     <nav class="flex-1 flex flex-col py-4 pr-3">
-        <ul class="space-y-2 flex-1 pl-2">
-            @php
-                $linkBase = 'flex items-center gap-3 rounded-md transition-colors group relative';
-                $activeClasses = 'text-white bg-blue-600 shadow-sm';
-                $inactiveClasses = 'text-gray-300 hover:bg-gray-700 hover:text-white';
-            @endphp
+        <ul class="font-sans space-y-3 flex-1 pl-2 pb-6">
+            @foreach($navItems as $item)
             <li>
-                <a href="{{ route('cliente.perfil') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.perfil') ? $activeClasses : $inactiveClasses }}">
-                    <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
-                    <i class="fas fa-user w-5 text-center"></i>
-                    <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Perfil</span>
+                <a href="{{ route($item['route']) }}" 
+                   data-spa-link 
+                   class="{{$linkBase}} px-4 py-3 {{ request()->routeIs($item['route']) ? $activeClasses : $inactiveClasses }}">
+                    
+                    {{-- Lógica para colores de ícono/texto - SIN hover states --}}
+                    @php
+                        $iconColor = request()->routeIs($item['route']) 
+                            ? 'text-white dark:text-white' 
+                            : 'text-gray-600 dark:text-gray-400';
+                            
+                        $textColor = request()->routeIs($item['route']) 
+                            ? 'text-white' 
+                            : 'text-gray-800 dark:text-gray-200';
+                    @endphp
+
+                    <i class="{{ $item['icon'] }} {{ $iconColor }} w-5 text-center"></i>
+                    <span :class="!sidebarOpen && 'hidden'" class="font-medium {{ $textColor }}">{{ $item['label'] }}</span>
                 </a>
             </li>
-            <li>
-    <a href="{{ route('cliente.solicitudes') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.solicitudes') ? $activeClasses : $inactiveClasses }}">
-        <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
-        <i class="fas fa-clipboard-question w-5 text-center"></i>
-        <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Solicitudes</span>
-    </a>
-</li>
-            <li>
-                <a href="{{ route('cliente.cotizaciones') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.cotizaciones') ? $activeClasses : $inactiveClasses }}">
-                    <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
-                    <i class="fas fa-file-invoice w-5 text-center"></i>
-                    <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Cotizaciones</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('cliente.ordenes') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.ordenes') ? $activeClasses : $inactiveClasses }}">
-                    <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
-                    <i class="fas fa-clipboard-list w-5 text-center"></i>
-                    <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Órdenes de Servicio</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('cliente.facturas') }}" data-spa-link class="{{$linkBase}} px-4 py-2 {{ request()->routeIs('cliente.facturas') ? $activeClasses : $inactiveClasses }}">
-                    <span class="absolute left-0 top-0 h-full w-1 rounded-r bg-blue-400 opacity-0 group-[.bg-blue-600]:opacity-100 transition-opacity"></span>
-                    <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
-                    <span :class="!sidebarOpen && 'hidden'" class="nunito-bold">Facturación</span>
-                </a>
-            </li>
+            @endforeach
         </ul>
     </nav>
+
+    {{-- Footer: copyright (solo año dinámico) --}}
+    <div class="sticky bottom-0 px-4 py-3 border-t border-gray-100 dark:border-gray-700 z-10">
+        <div class="text-xs text-gray-500 dark:text-gray-400 text-center">© {{ date('Y') }} Hardlan</div>
+    </div>
 </aside>

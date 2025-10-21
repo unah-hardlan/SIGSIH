@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" class="overflow-y-scroll">
+<html lang="es" class="overflow-y-scroll bg-gray-50 dark:bg-gray-900">
 
 <head>
     <meta charset="utf-8">
@@ -18,7 +18,7 @@
     'resources/css/global.css',
     'resources/css/theme.css',
     'resources/js/cliente.js',
-    'resources/js/sidebar.js',
+    'resources/js/sidebar-cliente.js',
     'resources/js/session.js',
     'resources/js/toast.js',
     'resources/js/tabla-responsive.js',
@@ -73,7 +73,7 @@
     x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}"
     x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile"
     @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
-    <div class="flex min-h-screen relative">
+    <div class="flex min-h-screen relative bg-gray-50 dark:bg-gray-900">
         <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
