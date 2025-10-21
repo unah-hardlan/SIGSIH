@@ -23,12 +23,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         "Authorization"
                     ]; // ensure cleared
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 document.dispatchEvent(
                     new CustomEvent("auth:updated", { detail: { token: null } })
                 );
-            } catch (_) { }
+            } catch (_) {}
         }
 
         async function fetchSessionToken(force = false) {
@@ -76,7 +76,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return { Accept: "application/json" };
                 },
             };
-        } catch (_) { }
+        } catch (_) {}
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -131,8 +131,8 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const delay = isDashboard
                     ? Math.floor(Math.random() * 180) + 60
                     : isApi
-                        ? Math.floor(Math.random() * 80)
-                        : 0;
+                    ? Math.floor(Math.random() * 80)
+                    : 0;
 
                 if (!isApi) return origFetch(...args);
 
@@ -164,12 +164,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                                                 "warning",
                                                 { duration: 4000 }
                                             );
-                                    } catch (_) { }
+                                    } catch (_) {}
                                     try {
                                         window.appLogout && window.appLogout();
-                                    } catch (_) { }
+                                    } catch (_) {}
                                 }
-                            } catch (_) { }
+                            } catch (_) {}
                         }
                         return res;
                     };
@@ -321,6 +321,7 @@ import {
     faSort,
     faSortUp,
     faIdCard,
+    faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -415,7 +416,8 @@ library.add(
     faInbox,
     faSortDown,
     faSortUp,
-    faIdCard
+    faIdCard,
+    faFolderOpen
 );
 dom.watch();
 
@@ -428,7 +430,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) { }
+    } catch (_) {}
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -518,13 +520,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) { }
+            } catch (_) {}
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) { }
+            } catch (_) {}
 
             let sanitized = html;
             try {
@@ -532,30 +534,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) { }
+            } catch (_) {}
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) { }
+                    } catch (_) {}
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) { }
+                        } catch (_) {}
                     }
                 }
-            } catch (_) { }
+            } catch (_) {}
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -565,7 +567,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 if (
                     window.Livewire &&
@@ -573,10 +575,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) { }
+            } catch (_) {}
 
             this.restoreSidebarScrollPosition();
 
@@ -592,7 +594,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) { }
+            } catch (_) {}
         },
 
         saveSidebarScrollPosition() {
@@ -624,7 +626,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) { }
+            } catch (_) {}
             this.updateActiveLinks(url);
         },
 
@@ -711,7 +713,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) { }
+                } catch (_) {}
                 this.updateActiveLinks(path);
             }
         },
@@ -1015,17 +1017,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1053,7 +1055,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) { }
+    } catch (_) {}
     initializeDashboardChartsWithRetry();
 });
 
@@ -1062,7 +1064,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) { }
+    } catch (_) {}
 
     return { Accept: "application/json" };
 }
@@ -1144,7 +1146,7 @@ if (typeof window !== "undefined") {
                         this.adminPassword =
                             data.adminPassword || this.adminPassword;
                     }
-                } catch (_) { }
+                } catch (_) {}
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
@@ -1199,7 +1201,7 @@ if (typeof window !== "undefined") {
                         if (this.nombreSistema) {
                             document.title = this.nombreSistema;
                         }
-                    } catch (_) { }
+                    } catch (_) {}
                     setTimeout(
                         () => (this.savedMessagePersonalizacion = ""),
                         2500
@@ -1457,8 +1459,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                (o) => String(o.value) === String(estadoId)
-                            )
+                                  (o) => String(o.value) === String(estadoId)
+                              )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1484,8 +1486,8 @@ if (typeof window !== "undefined") {
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                            .filter(Boolean)
-                            .join(" ")
+                              .filter(Boolean)
+                              .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -1659,7 +1661,10 @@ if (typeof window !== "undefined") {
                     );
                 } catch (error) {
                     console.error(error);
-                    this.showToast("No se pudieron cargar los técnicos", "error");
+                    this.showToast(
+                        "No se pudieron cargar los técnicos",
+                        "error"
+                    );
                 } finally {
                     this.loadingCatalogos.tecnicos = false;
                 }
@@ -2048,7 +2053,10 @@ if (typeof window !== "undefined") {
                 }
                 this.errors = errs;
                 if (Object.keys(errs).length) {
-                    this.showToast("Por favor completa los campos requeridos.", "error");
+                    this.showToast(
+                        "Por favor completa los campos requeridos.",
+                        "error"
+                    );
                     return false;
                 }
                 return true;
@@ -2280,8 +2288,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                            ? "bg-yellow-600 text-white"
-                            : "bg-green-600 text-white");
+                        ? "bg-yellow-600 text-white"
+                        : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -2382,10 +2390,10 @@ if (typeof window !== "undefined") {
                     const raw = Array.isArray(data?.data)
                         ? data.data
                         : Array.isArray(data?.data?.data)
-                            ? data.data.data
-                            : Array.isArray(data)
-                                ? data
-                                : [];
+                        ? data.data.data
+                        : Array.isArray(data)
+                        ? data
+                        : [];
                     const mapped = (raw || [])
                         .map((c) => {
                             let nombre;
@@ -2490,7 +2498,9 @@ if (typeof window !== "undefined") {
                         };
                     });
                     // Optional: sort by label for nicer UX
-                    this.contactosOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
+                    this.contactosOptions.sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                    );
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -2609,7 +2619,7 @@ if (typeof window !== "undefined") {
                         try {
                             const errText = await res.text();
                             if (errText) msg += `: ${errText.slice(0, 300)}`;
-                        } catch (_) { }
+                        } catch (_) {}
                         throw new Error(msg);
                     }
                     const json = await res.json();
@@ -2710,11 +2720,20 @@ if (typeof window !== "undefined") {
                 // quick client-side validation
                 this.errors = {};
                 const errs = {};
-                if (!this.formSolicitud.id_cliente_fk) errs.id_cliente_fk = ["Seleccione un cliente."];
-                if (!this.formSolicitud.descripcion_problema || String(this.formSolicitud.descripcion_problema).trim().length === 0)
-                    errs.descripcion_problema = ["La descripción es obligatoria."];
-                if (!this.formSolicitud.id_estado_solicitud_fk) errs.id_estado_solicitud_fk = ["Seleccione un estado."];
-                if (!this.formSolicitud.id_contacto_fk) errs.id_contacto_fk = ["Seleccione un contacto."];
+                if (!this.formSolicitud.id_cliente_fk)
+                    errs.id_cliente_fk = ["Seleccione un cliente."];
+                if (
+                    !this.formSolicitud.descripcion_problema ||
+                    String(this.formSolicitud.descripcion_problema).trim()
+                        .length === 0
+                )
+                    errs.descripcion_problema = [
+                        "La descripción es obligatoria.",
+                    ];
+                if (!this.formSolicitud.id_estado_solicitud_fk)
+                    errs.id_estado_solicitud_fk = ["Seleccione un estado."];
+                if (!this.formSolicitud.id_contacto_fk)
+                    errs.id_contacto_fk = ["Seleccione un contacto."];
                 if (Object.keys(errs).length) {
                     this.errors = errs;
                     this.showToast("Complete los campos requeridos", "warn");
@@ -2994,10 +3013,10 @@ if (typeof window !== "undefined") {
                                     ""
                                 ).localeCompare(
                                     b.cliente_nombre ||
-                                    this.clienteLabelById(
-                                        b.id_cliente_fk
-                                    ) ||
-                                    "",
+                                        this.clienteLabelById(
+                                            b.id_cliente_fk
+                                        ) ||
+                                        "",
                                     "es"
                                 );
                             case "solicitud_acf":
