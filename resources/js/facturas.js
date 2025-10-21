@@ -2,26 +2,70 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('facturasCrud', () => ({
         // Tab state
         tab: 'facturas',
-        
+
         // Modal states para facturas
         isFacturaModalOpen: false,
         isEditFacturaModalOpen: false,
         isDeleteFacturaModalOpen: false,
         itemToEdit: null,
         itemToDelete: null,
-        
-    // Data arrays
-    facturas: [],
-    detalles: [],
-    estadosFactura: [],
-    clientes: [],
-    cais: [],
-        
-    // Loading states
-    loadingFacturas: false,
-    loadingDetalles: false,
-    loadingEstadosFactura: false,
-        
+
+        // Data arrays
+        facturas: [],
+        detalles: [],
+        estadosFactura: [],
+        clientes: [],
+        cais: [],
+
+        // Computed: facturas filtradas
+        get filteredFacturas() {
+            let result = this.facturas;
+            // Filtro búsqueda
+            if (this.searchFacturas && this.searchFacturas.trim() !== '') {
+                const q = this.searchFacturas.trim().toLowerCase();
+                result = result.filter(f => {
+                    return (
+                        (f.numero && f.numero.toLowerCase().includes(q)) ||
+                        (f.cliente_nombre && f.cliente_nombre.toLowerCase().includes(q)) ||
+                        (f.cai && String(f.cai).toLowerCase().includes(q)) ||
+                        (f.total_letras && f.total_letras.toLowerCase().includes(q)) ||
+                        (f.oc && String(f.oc).toLowerCase().includes(q)) ||
+                        (f.estado_factura && f.estado_factura.toLowerCase().includes(q)) ||
+                        (f.total && String(f.total).toLowerCase().includes(q))
+                    );
+                });
+            }
+            // Filtro estado
+            if (this.estadoFacturaFiltro && this.estadoFacturaFiltro !== '') {
+                result = result.filter(f => (f.estado_factura === this.estadoFacturaFiltro));
+            }
+            // Filtro cliente
+            if (this.clienteFacturaFiltro && this.clienteFacturaFiltro !== '') {
+                result = result.filter(f => (f.cliente_nombre === this.clienteFacturaFiltro));
+            }
+            // Ordenamiento
+            if (this.ordenarPor && this.ordenarPor !== '') {
+                result = [...result].sort((a, b) => {
+                    if (this.ordenarPor === 'fecha') {
+                        return String(a.fecha).localeCompare(String(b.fecha));
+                    }
+                    if (this.ordenarPor === 'total') {
+                        return (parseFloat(a.total) || 0) - (parseFloat(b.total) || 0);
+                    }
+                    if (this.ordenarPor === 'estado_factura') {
+                        return String(a.estado_factura).localeCompare(String(b.estado_factura));
+                    }
+                    return 0;
+                });
+            }
+            return result;
+        },
+
+        // Loading states
+        loadingFacturas: false,
+        loadingDetalles: false,
+        loadingEstadosFactura: false,
+
         // Form fields para crear factura
         numero: '',
         fecha: '',
@@ -29,29 +73,29 @@ document.addEventListener('alpine:init', () => {
         subtotal: 0,
         total: 0,
         total_letras: '',
-    id_estado_factura_fk: '',
-    id_cai_fk: '',
-    id_cliente_fk: '',
+        id_estado_factura_fk: '',
+        id_cai_fk: '',
+        id_cliente_fk: '',
 
-    // Detalle modal states y modelo
-    isDetalleModalOpen: false,
-    isEditDetalleModalOpen: false,
-    isDeleteDetalleModalOpen: false,
-    detalleToEdit: null,
-    detalleToDelete: null,
+        // Detalle modal states y modelo
+        isDetalleModalOpen: false,
+        isEditDetalleModalOpen: false,
+        isDeleteDetalleModalOpen: false,
+        detalleToEdit: null,
+        detalleToDelete: null,
 
-    // Filtros
-    filtroFactura: '',
-    ordenarPor: '',
-    // Modelos usados por partial filtros-generales
-    searchFacturas: '',
-    estadoFacturaFiltro: '',
-    clienteFacturaFiltro: '',
+        // Filtros
+        filtroFactura: '',
+        ordenarPor: '',
+        // Modelos usados por partial filtros-generales
+        searchFacturas: '',
+        estadoFacturaFiltro: '',
+        clienteFacturaFiltro: '',
 
-    // Filtros para detalle
-    searchDetalleFactura: '',
-    servicioDetalleFiltro: '',
-    facturaDetalleFiltro: '',
+        // Filtros para detalle
+        searchDetalleFactura: '',
+        servicioDetalleFiltro: '',
+        facturaDetalleFiltro: '',
 
         async init() {
             await this.fetchFacturas();
@@ -69,9 +113,9 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
-                
+
                 console.log('Response structure:', data);
-                
+
                 // Usar estructura de respuesta igual que CAI
                 if (data.success && data.data) {
                     this.facturas = data.data;
@@ -84,7 +128,7 @@ document.addEventListener('alpine:init', () => {
                     console.error('Invalid response structure:', data);
                     this.facturas = [];
                 }
-                
+
                 if (this.facturas.length > 0) {
                     console.log('Sample factura data:', this.facturas[0]);
                 }
@@ -107,7 +151,7 @@ document.addEventListener('alpine:init', () => {
                 const timestamp = Date.now() + Math.random();
                 const response = await fetch(`/api/estados-factura?all=true&_t=${timestamp}&_bust=${Math.random()}`, {
                     method: 'GET',
-                    headers: { 
+                    headers: {
                         Accept: "application/json",
                         "Cache-Control": "no-cache, no-store, must-revalidate",
                         "Pragma": "no-cache",
@@ -118,16 +162,16 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
-                
+
                 console.log('Estados fetched (fresh):', data);
                 console.log('Response headers:', [...response.headers.entries()]);
-                
+
                 this.estadosFactura = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                    ? data
-                    : [];
-                    
+                        ? data
+                        : [];
+
                 console.log('Estados processed (should be fresh):', this.estadosFactura);
             } catch (error) {
                 console.error("Error fetching estados factura:", error);
@@ -154,10 +198,10 @@ document.addEventListener('alpine:init', () => {
                 const raw = Array.isArray(payload?.data)
                     ? payload.data
                     : Array.isArray(payload?.data?.data)
-                    ? payload.data.data
-                    : Array.isArray(payload)
-                    ? payload
-                    : [];
+                        ? payload.data.data
+                        : Array.isArray(payload)
+                            ? payload
+                            : [];
 
                 // Mapear igual que en gestionSolicitudes: id y nombre legible
                 this.clientes = (raw || []).map((c) => {
@@ -189,12 +233,12 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
-                
+
                 this.cais = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                    ? data
-                    : [];
+                        ? data
+                        : [];
             } catch (error) {
                 console.error("Error fetching CAIs:", error);
             }
@@ -216,10 +260,10 @@ document.addEventListener('alpine:init', () => {
             const clienteId = parseInt(document.getElementById('cliente_id')?.value) || null;
 
             console.log('Form data:', {
-                numeroTrim, fechaTrim, ocTrim, subtotal, total, totalLetrasTrim, 
+                numeroTrim, fechaTrim, ocTrim, subtotal, total, totalLetrasTrim,
                 estadoFacturaId, caiId, clienteId
             });
-            
+
             console.log('Estado field element:', document.getElementById('estado_factura_id'));
             console.log('Estado field value:', document.getElementById('estado_factura_id')?.value);
             console.log('Estado parsed:', estadoFacturaId);
@@ -287,16 +331,16 @@ document.addEventListener('alpine:init', () => {
 
                 console.log('Response status:', response.status);
                 console.log('Response ok:', response.ok);
-                
+
                 const data = await response.json().catch((err) => {
                     console.error('Error parsing JSON:', err);
                     return {};
                 });
-                
+
                 console.log('Response data:', data);
                 console.log('Response data.data:', data?.data);
                 console.log('Response data.success:', data?.success);
-                
+
                 if (!response.ok) {
                     if (data && data.errors) {
                         Object.values(data.errors).forEach((errArr) => {
@@ -474,11 +518,11 @@ document.addEventListener('alpine:init', () => {
 
         handleModalSubmit(event) {
             console.log('Modal submit triggered:', event.detail);
-            if(event.detail.formId === 'formFactura') {
+            if (event.detail.formId === 'formFactura') {
                 console.log('Calling submitFactura');
                 this.submitFactura();
             }
-            if(event.detail.formId === 'formEditFactura') {
+            if (event.detail.formId === 'formEditFactura') {
                 console.log('Calling updateFactura');
                 this.updateFactura();
             }
@@ -493,7 +537,7 @@ document.addEventListener('alpine:init', () => {
 });
 
 // Event listeners para manejar envíos de modales
-window.addEventListener('modal-submit', function(event) {
+window.addEventListener('modal-submit', function (event) {
     try {
         const el = document.querySelector('[x-data*="facturasCrud"]');
         const facturasCrudComponent = el ? Alpine.$data(el) : null;
@@ -503,7 +547,7 @@ window.addEventListener('modal-submit', function(event) {
     } catch (_) { /* ignore if component not present */ }
 });
 
-window.addEventListener('confirm-delete', function(event) {
+window.addEventListener('confirm-delete', function (event) {
     try {
         const el = document.querySelector('[x-data*="facturasCrud"]');
         const facturasCrudComponent = el ? Alpine.$data(el) : null;

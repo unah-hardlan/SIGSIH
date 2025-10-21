@@ -580,25 +580,25 @@
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-2 mb-6">
+            <div class="flex flex-col gap-2 mb-6">
                 <input type="text" x-model="searchEventos" placeholder="Buscar..."
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-60 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
+                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
                 <select x-model="estadoEventoFiltro"
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                     <option value="">Todos los estados</option>
                     <template x-for="e in catalogEstados" :key="e.id_estado_calendario_pk">
                         <option :value="e.nombre || e.codigo" x-text="e.nombre || e.codigo"></option>
                     </template>
                 </select>
                 <select x-model="agenciaEventoFiltro"
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                     <option value="">Todas las agencias</option>
                     <template x-for="a in catalogAgencias" :key="a.id_agencias_pk">
                         <option :value="a.nombre_agencia" x-text="a.nombre_agencia"></option>
                     </template>
                 </select>
                 <select x-model="ordenarPor"
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                     <option value="fecha">Ordenar por Fecha</option>
                     <option value="estado">Ordenar por Estado</option>
                     <option value="cliente">Ordenar por Cliente</option>

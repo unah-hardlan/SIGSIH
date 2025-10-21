@@ -16,44 +16,50 @@
     <div x-show="tab==='facturas'" class="overflow-x-auto">
         <x-responsive-table title="Facturas" class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
-                @include('partials.filtros-generales', [
-                'searchModel' => 'searchFacturas',
-                'filtrosSelect' => [
-                'estadoFacturaFiltro' => [ 'label' => 'Estado', 'options' => ['Pagada','Pendiente','Cancelada'] ],
-                'clienteFacturaFiltro' => [ 'label' => 'Cliente', 'options' => ['BAC Credomatic','Bancafe'] ]
-                ],
-                'ordenarOptions' => [ 'fecha' => 'Fecha', 'total' => 'Total', 'estado_factura' => 'Estado']
-                ])
+                <div class="flex flex-col gap-2 w-full">
+                    <div class="flex flex-col sm:flex-row gap-2 w-full">
+                        @include('partials.filtros-generales', [
+                        'searchModel' => 'searchFacturas',
+                        'filtrosSelect' => [
+                        'estadoFacturaFiltro' => [ 'label' => 'Estado', 'options' => ['Pagada','Pendiente','Cancelada']
+                        ],
+                        'clienteFacturaFiltro' => [ 'label' => 'Cliente', 'options' => ['BAC Credomatic','Bancafe'] ]
+                        ],
+                        'ordenarOptions' => [ 'fecha' => 'Fecha', 'total' => 'Total', 'estado_factura' => 'Estado']
+                        ])
+                    </div>
+                </div>
             </x-slot>
             <x-slot name="actions">
-                <div class="flex flex-col sm:flex-row items-center gap-2">
+                <div class="flex flex-col gap-2 w-full">
                     <button @click="isFacturaModalOpen = true"
-                        class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm">
+                        class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm">
                         Nueva Factura
                     </button>
                     <a href="/admin/reportes-header?modulo=Facturas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
+                        class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>
                 </div>
             </x-slot>
             <x-slot name="table">
-                <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
-                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                <table
+                    class="min-w-full text-[10px] bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse break-words">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold text-[10px]">
                         <tr>
-                            <th class="py-2 px-4 text-left border-0">ID</th>
-                            <th class="py-2 px-4 text-left border-0">Número</th>
-                            <th class="py-2 px-4 text-left border-0">Fecha</th>
-                            <th class="py-2 px-4 text-left border-0">OC</th>
-                            <th class="py-2 px-4 text-left border-0">Subtotal</th>
-                            <th class="py-2 px-4 text-left border-0">Impuesto</th>
-                            <th class="py-2 px-4 text-left border-0">Descuento</th>
-                            <th class="py-2 px-4 text-left border-0">Total</th>
-                            <th class="py-2 px-4 text-left border-0">Total Letras</th>
-                            <th class="py-2 px-4 text-left border-0">Estado</th>
-                            <th class="py-2 px-4 text-left border-0">CAI</th>
-                            <th class="py-2 px-4 text-left border-0">Cliente</th>
-                            <th class="py-2 px-4 text-left border-0">Acciones</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">ID</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Número</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Fecha</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">OC</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Subtotal</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Impuesto</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Descuento</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Total</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Total Letras</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Estado</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">CAI</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Cliente</th>
+                            <th class="py-2 px-4 text-left border-0 text-[10px]">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,18 +75,20 @@
                                 </td>
                             </tr>
                         </template>
-                        <template x-for="factura in facturas" :key="factura.id || factura.id_factura_pk">
-                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                                <td class="py-2 px-4" x-text="factura.id || factura.id_factura_pk"></td>
-                                <td class="py-2 px-4" x-text="factura.numero"></td>
-                                <td class="py-2 px-4" x-text="factura.fecha"></td>
-                                <td class="py-2 px-4" x-text="factura.oc || '-' "></td>
-                                <td class="py-2 px-4" x-text="factura.subtotal"></td>
-                                <td class="py-2 px-4" x-text="factura.impuesto || '0.00'"></td>
-                                <td class="py-2 px-4" x-text="factura.descuento || '0.00'"></td>
-                                <td class="py-2 px-4" x-text="factura.total"></td>
-                                <td class="py-2 px-4" x-text="factura.total_letras || '-' "></td>
-                                <td class="py-2 px-4">
+                        <template x-for="factura in filteredFacturas" :key="factura.id || factura.id_factura_pk">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular text-[10px]">
+                                <td class="py-2 px-4 text-[10px] break-words"
+                                    x-text="factura.id || factura.id_factura_pk"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.numero"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.fecha"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.oc || '-' "></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.subtotal"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.impuesto || '0.00'"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.descuento || '0.00'"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.total"></td>
+                                <td class="py-2 px-4 text-[10px] break-words" x-text="factura.total_letras || '-' ">
+                                </td>
+                                <td class="py-2 px-4 text-[10px] break-words">
                                     <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
                                               'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': factura.estado_factura === 'Pagada',
                                               'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': ['Pendiente','Emitida','Pendiente de Pago'].includes(factura.estado_factura),
@@ -396,7 +404,8 @@
                             <td class="py-2 px-4">100.00</td>
                             <td class="py-2 px-4">1</td>
                             <td class="py-2 px-4">15.00</td>
-                            <td class="py-2 px-4">115.00</td>
+                            <td class="py-2 px-4 text-[10px] max-w-[120px] whitespace-normal break-words truncate"
+                                x-text="factura.total_letras || '-' "></td>
                             <td class="py-2 px-4">0</td>
                             <td class="py-2 px-4 flex gap-2">
                                 <button
@@ -406,8 +415,10 @@
                                     @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
                                     class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
                             </td>
-                        </tr>
-                    </tbody>
+                            <td class="py-2 px-4 text-[10px] max-w-[80px] whitespace-normal break-words truncate"
+                                x-text="factura.cai || 'Sin CAI'"></td>
+                            <td class="py-2 px-4 text-[10px] max-w-[100px] whitespace-normal break-words truncate"
+                                x-text="factura.cliente_nombre || 'Sin cliente'"></td>
                 </table>
             </x-slot>
 

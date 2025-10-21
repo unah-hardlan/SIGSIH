@@ -191,20 +191,27 @@
 
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
-            @include('partials.filtros-generales', [
-                'searchModel' => 'filters.search',
-                'ordenarOptions' => [
+            <div class="flex flex-col gap-2 w-full">
+                <div class="w-full">
+                    @include('partials.filtros-generales', [
+                    'searchModel' => 'filters.search',
+                    'ordenarOptions' => [
                     'fecha' => 'Fecha',
                     'total' => 'Total',
                     'id' => 'ID Cotización'
-                ]
-            ])
-            <select x-model="filters.cliente" class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200 sm:ml-0">
-                <option value="">Todos los clientes</option>
-                <template x-for="cl in clientes" :key="cl.id">
-                    <option :value="cl.id" x-text="cl.nombre"></option>
-                </template>
-            </select>
+                    ]
+                    ])
+                </div>
+                <div class="w-full">
+                    <select x-model="filters.cliente"
+                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                        <option value="">Todos los clientes</option>
+                        <template x-for="cl in clientes" :key="cl.id">
+                            <option :value="cl.id" x-text="cl.nombre"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
         </x-slot>
 
         <x-slot name="actions">
@@ -216,25 +223,31 @@
 
         <x-slot name="table">
             <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="nunito-bold">
+                <table class="min-w-full text-xs">
+                    <thead class="nunito-bold text-[10px]">
                         <tr>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Cliente</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Fecha
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Cliente</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Fecha
                                 Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Válida
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Válida
                                 Hasta</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
                                 Imponible</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
                                 Impuesto</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Total
                                 Imp.</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Otros
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Otros
                                 Cargos</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
                                 Anticipo</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">Total
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Total
                             </th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
                                 Acciones</th>
@@ -242,33 +255,38 @@
                     </thead>
                     <tbody class="nunito-regular">
                         <template x-for="c in cotizaciones" :key="c.id">
-                            <tr>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.cliente_nombre || 'Sin cliente'"></td>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.fecha"></td>
-                                <td class="px-4 py-3 border-t border-gray-200" x-text="c.valido_hasta"></td>
-                                <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
-                                <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
-                                <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
-                                <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
-                                <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
-                                <td class="px-4 py-3 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
-                                <td class="px-4 py-3 border-t border-gray-200 flex items-center gap-2">
+                            <tr class="text-[10px]">
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="c.cliente_nombre || 'Sin cliente'"></td>
+                                <td class="px-4 py-2 border-t border-gray-200" x-text="c.fecha"></td>
+                                <td class="px-4 py-2 border-t border-gray-200" x-text="c.valido_hasta"></td>
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                                </td>
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                                </td>
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                                </td>
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                                </td>
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                                </td>
+                                <td class="px-4 py-2 border-t border-gray-200"
+                                    x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                                </td>
+                                <td class="px-4 py-2 border-t border-gray-200 flex items-center gap-2">
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
-                                        class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
-                                        <i class='fas fa-eye mr-1'></i> Ver
-                                    </a>
+                                        class="inline-flex items-center justify-center text-[10px] px-2 h-6 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"><i
+                                            class='fas fa-eye mr-1'></i> Ver</a>
                                     <a href="#" @click.prevent="openItems(c)"
-                                        class="inline-flex items-center justify-center text-xs px-3 h-8 rounded bg-indigo-600 text-white hover:bg-indigo-700 duration-300 nunito-regular">
-                                        <i class="fas fa-database mr-1"></i> Items
-                                    </a>
-                                    <a href="#" @click.prevent="openEdit(c)" class="text-blue-500 hover:text-blue-700"><i
-                                            class="fas fa-edit"></i></a>
+                                        class="inline-flex items-center justify-center text-[10px] px-2 h-6 rounded bg-indigo-600 text-white hover:bg-indigo-700 duration-300 nunito-regular"><i
+                                            class="fas fa-database mr-1"></i> Items</a>
+                                    <a href="#" @click.prevent="openEdit(c)"
+                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
@@ -285,44 +303,59 @@
             </div>
         </x-slot>
 
-          <x-slot name="cards">
-    <div class="space-y-4">
-        <template x-if="loading"><div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando cotizaciones...</div></template>
-        <template x-if="!loading && cotizaciones.length === 0"><div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div></template>
-        <template x-for="c in cotizaciones" :key="c.id">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id"></h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
+        <x-slot name="cards">
+            <div class="space-y-4">
+                <template x-if="loading">
+                    <div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando
+                        cotizaciones...</div>
+                </template>
+                <template x-if="!loading && cotizaciones.length === 0">
+                    <div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div>
+                </template>
+                <template x-for="c in cotizaciones" :key="c.id">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white" x-text="'Cotización #' + c.id">
+                                </h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400"
+                                    x-text="c.cliente_nombre || 'Cliente sin nombre'"></p>
+                            </div>
+                            <p class="text-lg font-bold text-gray-800 dark:text-white"
+                                x-text="'L. ' + (Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
+                            </p>
+                        </div>
+                        <p class="text-xs text-gray-400">
+                            Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
+                        </p>
+                        <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
+                            <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
+                                class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                                <i class='fas fa-eye'></i> Ver
+                            </a>
+                            <button @click.prevent="openItems(c)"
+                                class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
+                                <i class="fas fa-database"></i> Items
+                            </button>
+                            <button @click.prevent="openEdit(c)"
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button @click.prevent="deleteModal=true; selectedItem=c.id"
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
                     </div>
-                    <p class="text-lg font-bold text-gray-800 dark:text-white" x-text="'L. ' + (Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></p>
-                </div>
-                <p class="text-xs text-gray-400">
-                    Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
-                </p>
-                <div class="flex justify-end flex-wrap gap-2 pt-3 border-t dark:border-gray-700">
-                    <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
-                        <i class='fas fa-eye'></i> Ver
-                    </a>
-                     <button @click.prevent="openItems(c)" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
-                        <i class="fas fa-database"></i> Items
-                    </button>
-                     <button @click.prevent="openEdit(c)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                     <button @click.prevent="deleteModal=true; selectedItem=c.id" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                </div>
+                </template>
             </div>
-        </template>
-    </div>
-</x-slot>
+        </x-slot>
 
     </x-responsive-table>
 
-    <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la Cotización" submitLabel="Guardar" formId="items-manager" maxWidth="max-w-5xl">
+    <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la Cotización" submitLabel="Guardar"
+        formId="items-manager" maxWidth="max-w-5xl">
         <div class="space-y-4 p-4">
             <!-- Search and Action Bar -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -333,12 +366,12 @@
                     <input type="text" placeholder="Buscar descripción..." x-model="itemsSearch"
                         class="w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
                     <button type="button" @click="openNewItem()"
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
                         <i class="fas fa-plus mr-1"></i> Nuevo
                     </button>
                     <template x-if="itemMode!=='list'">
                         <button type="button" @click="cancelItemEdit()"
-                                class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
+                            class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
                             Cancelar
                         </button>
                     </template>
@@ -347,10 +380,12 @@
 
             <!-- Item Form -->
             <template x-if="itemMode!=='list'">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
                     <div class="space-y-4 sm:col-span-2">
                         <div>
-                            <label for="item_descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</label>
+                            <label for="item_descripcion"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</label>
                             <input type="text" id="item_descripcion" x-model="itemForm.descripcion"
                                 class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
                             <template x-if="itemErrors.descripcion">
@@ -359,15 +394,19 @@
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label for="item_precio" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Precio Unit.</label>
-                                <input type="number" step="0.01" id="item_precio" x-model.number="itemForm.precio_unitario"
+                                <label for="item_precio"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Precio
+                                    Unit.</label>
+                                <input type="number" step="0.01" id="item_precio"
+                                    x-model.number="itemForm.precio_unitario"
                                     class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right" />
                                 <template x-if="itemErrors.precio_unitario">
                                     <p class="text-xs text-red-500 mt-1" x-text="itemErrors.precio_unitario[0]"></p>
                                 </template>
                             </div>
                             <div>
-                                <label for="item_cantidad" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Cantidad</label>
+                                <label for="item_cantidad"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Cantidad</label>
                                 <input type="number" step="0.01" id="item_cantidad" x-model.number="itemForm.cantidad"
                                     class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right" />
                                 <template x-if="itemErrors.cantidad">
@@ -375,7 +414,8 @@
                                 </template>
                             </div>
                             <div>
-                                <label for="item_impuesto" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Impuesto</label>
+                                <label for="item_impuesto"
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Impuesto</label>
                                 <input type="number" step="0.01" id="item_impuesto" x-model.number="itemForm.impuesto"
                                     class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right" />
                                 <template x-if="itemErrors.impuesto">
@@ -384,54 +424,72 @@
                             </div>
                         </div>
                         <div>
-                            <label for="item_total" class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Total</label>
+                            <label for="item_total"
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Total</label>
                             <input type="number" id="item_total" :value="calcItemTotal(itemForm)" disabled
                                 class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 nunito-regular text-right" />
                         </div>
                         <div class="text-right">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular"
-                                    x-text="itemMode === 'create' ? 'Guardar Item' : 'Actualizar Item'"></button>
+                            <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular"
+                                x-text="itemMode === 'create' ? 'Guardar Item' : 'Actualizar Item'"></button>
                         </div>
                     </div>
                 </div>
             </template>
 
             <!-- Responsive Items Table -->
-            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+            <div
+                class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
                 <div class="block md:hidden space-y-3 p-4">
                     <!-- Mobile: Card Layout -->
                     <template x-if="itemsLoading">
-                        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                        <div
+                            class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center text-gray-500 dark:text-gray-300 nunito-regular">
                             <i class="fas fa-spinner fa-spin mr-2"></i> Cargando...
                         </div>
                     </template>
                     <template x-if="!itemsLoading && items.length === 0">
-                        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                        <div
+                            class="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center text-gray-500 dark:text-gray-300 nunito-regular">
                             Sin items
                         </div>
                     </template>
                     <template x-for="it in items" :key="it.id">
-                        <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800">
+                        <div
+                            class="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800">
                             <div class="space-y-2">
                                 <div class="flex justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular breack text-end" x-text="it.descripcion"></span>
+                                    <span
+                                        class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</span>
+                                    <span
+                                        class="text-sm text-gray-600 dark:text-gray-300 nunito-regular breack text-end"
+                                        x-text="it.descripcion"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Precio Unit.</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.precio_unitario)"></span>
+                                    <span
+                                        class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Precio
+                                        Unit.</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.precio_unitario)"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Cantidad</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="Number(it.cantidad).toFixed(2)"></span>
+                                    <span
+                                        class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Cantidad</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="Number(it.cantidad).toFixed(2)"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Impuesto</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.impuesto)"></span>
+                                    <span
+                                        class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Impuesto</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.impuesto)"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Total</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)"></span>
+                                    <span
+                                        class="text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Total</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)"></span>
                                 </div>
                                 <div class="flex justify-end gap-2 pt-2">
                                     <button @click.prevent="openEditItem(it)" class="text-blue-500 hover:text-blue-600">
@@ -447,7 +505,7 @@
                 </div>
                 <div class="hidden md:block overflow-x-auto">
                     <!-- Desktop: Table Layout -->
-                    <table class="min-w-full text-sm bg-white dark:bg-gray-800">
+                    <table class="min-w-full text-xs bg-white dark:bg-gray-800">
                         <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                             <tr>
                                 <th class="py-2 px-4 text-left text-gray-700 dark:text-gray-200">Descripción</th>
@@ -461,31 +519,44 @@
                         <tbody>
                             <template x-if="itemsLoading">
                                 <tr>
-                                    <td colspan="6" class="py-4 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                                    <td colspan="6"
+                                        class="py-4 text-center text-gray-500 dark:text-gray-300 nunito-regular">
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Cargando...
                                     </td>
                                 </tr>
                             </template>
                             <template x-if="!itemsLoading && items.length === 0">
                                 <tr>
-                                    <td colspan="6" class="py-4 text-center text-gray-500 dark:text-gray-300 nunito-regular">
+                                    <td colspan="6"
+                                        class="py-4 text-center text-gray-500 dark:text-gray-300 nunito-regular">
                                         Sin items
                                     </td>
                                 </tr>
                             </template>
                             <template x-for="it in items" :key="it.id">
-                                <tr class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="py-2 px-4 text-gray-600 dark:text-gray-300 nunito-regular" x-text="it.descripcion"></td>
-                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.precio_unitario)"></td>
-                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="Number(it.cantidad).toFixed(2)"></td>
-                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.impuesto)"></td>
-                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)"></td>
+                                <tr
+                                    class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td class="py-2 px-4 text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="it.descripcion"></td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.precio_unitario)">
+                                    </td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="Number(it.cantidad).toFixed(2)"></td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.impuesto)">
+                                    </td>
+                                    <td class="py-2 px-4 text-right text-gray-600 dark:text-gray-300 nunito-regular"
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)">
+                                    </td>
                                     <td class="py-2 px-4 text-center">
                                         <div class="flex justify-center gap-2">
-                                            <button @click.prevent="openEditItem(it)" class="text-blue-500 hover:text-blue-600">
+                                            <button @click.prevent="openEditItem(it)"
+                                                class="text-blue-500 hover:text-blue-600">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button @click.prevent="deleteItem(it)" class="text-red-500 hover:text-red-600">
+                                            <button @click.prevent="deleteItem(it)"
+                                                class="text-red-500 hover:text-red-600">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
@@ -635,149 +706,152 @@
     <x-admin.edit-modal class="nunito-bold" modalName="editModal" title="Editar Cotización" submitLabel="Actualizar"
         itemToEdit="editForm" maxWidth="max-w-4xl" formId="editCotizacionForm">
         <template x-if="editForm">
-        <div class="space-y-4">
-            <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 gap-4"> {{-- Contenedor principal para organizar en filas --}}
 
-                <!-- ID del Cliente -->
-                <div>
-                    <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del
-                        Cliente</label>
-                    <select id="editClienteId" name="clienteId" x-model="editForm.id_cliente_fk"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
-                        <option value="">Seleccione un cliente</option>
-                        <template x-for="cl in clientes" :key="cl.id">
-                            <option :value="cl.id" x-text="cl.nombre"></option>
-                        </template>
-                    </select>
-                </div>
-
-                <!-- Fecha de Cotización -->
-                <div>
-                    <label for="editFechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
-                        de
-                        Cotización</label>
-                    <input type="date" id="editFechaCotizacion" name="fechaCotizacion" disabled
-                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                        x-model="editForm.fecha">
-                </div>
-
-                <!-- Válido Hasta -->
-                <div>
-                    <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
-                        Hasta</label>
-                        Hasta</label>
-                    <input type="date" id="editValidoHasta" name="validoHasta"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                        x-model="editForm.valido_hasta">
-                </div>
-
-                <!-- Descripción dinámica -->
-                <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
-                    <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <!-- Encabezados de columnas -->
-                    <div
-                        class="hidden sm:grid grid-cols-12 gap-2 mt-2 text-xs text-gray-600 dark:text-gray-300 nunito-bold">
-                        <div class="col-span-3">Descripción</div>
-                        <div class="col-span-2 text-right">Precio Unit.</div>
-                        <div class="col-span-2 text-right">Cantidad</div>
-                        <div class="col-span-2 text-right">Impuesto</div>
-                        <div class="col-span-2 text-right">Total</div>
-                        <div class="col-span-1"></div>
-                    </div>
-                    <div class="max-h-48 overflow-y-auto pr-2">
-                        <template x-for="(descripcion, index) in (editForm.items || [])" :key="index">
-                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
-                                <div class="col-span-1 sm:col-span-3">
-                                    <input type="text" x-model="descripcion.descripcion" placeholder="Descripción"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                        x-model="descripcion.descripcion">
-                                </div>
-                                <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" step="0.01" x-model="descripcion.precio_unitario"
-                                        @input="calcTotals(editForm)" placeholder="Precio Unitario"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                        x-model="descripcion.precio">
-                                </div>
-                                <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" step="0.01" x-model="descripcion.cantidad"
-                                        @input="calcTotals(editForm)" placeholder="Cantidad"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                        x-model="descripcion.cantidad">
-                                </div>
-                                <div class="col-span-1 sm:col-span-2">
-                                    <input type="number" step="0.01" x-model="descripcion.impuesto"
-                                        @input="calcTotals(editForm)" placeholder="Impuesto"
-                                        class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                        x-model="descripcion.impuesto">
-                                </div>
-                                <div class="col-span-1 sm:col-span-2">
-                                    <input type="number"
-                                        :value="(Number(descripcion.precio_unitario||0)*Number(descripcion.cantidad||0)+Number(descripcion.impuesto||0)).toFixed(2)"
-                                        placeholder="Total" disabled
-                                        class="w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1">
-                                </div>
-                                <div class="col-span-1 sm:col-span-1 text-right">
-                                    <button type="button"
-                                        @click="editForm.items.splice(index, 1); calcTotals(editForm);"
-                                        class="text-red-500 hover:text-red-700" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                    <div class="flex gap-2 mt-2">
-                        <button type="button"
-                            @click="editForm.items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); calcTotals(editForm);"
-                            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
-                            <i class="fas fa-plus"></i> Añadir Descripción
-                        </button>
-                        <button type="button" @click="openCatalog('editForm')"
-                            class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm nunito-regular">
-                            <i class="fas fa-list"></i> Seleccionar del catálogo
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Imponible -->
+                    <!-- ID del Cliente -->
                     <div>
-                        <label for="editImponible"
-                            class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                        <input type="number" id="editImponible" name="imponible" readonly
+                        <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">ID del
+                            Cliente</label>
+                        <select id="editClienteId" name="clienteId" x-model="editForm.id_cliente_fk"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            <option value="">Seleccione un cliente</option>
+                            <template x-for="cl in clientes" :key="cl.id">
+                                <option :value="cl.id" x-text="cl.nombre"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Fecha de Cotización -->
+                    <div>
+                        <label for="editFechaCotizacion"
+                            class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
+                            de
+                            Cotización</label>
+                        <input type="date" id="editFechaCotizacion" name="fechaCotizacion" disabled
                             class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                            x-model="editForm.imponible">
+                            x-model="editForm.fecha">
                     </div>
 
-                    <!-- Total impuesto -->
+                    <!-- Válido Hasta -->
                     <div>
-                        <label for="editTotalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
-                            Impuesto</label>
-                        <input type="number" id="editTotalImpuesto" name="totalImpuesto" readonly
-                            class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                            x-model="editForm.total_impuesto">
-                    </div>
-
-                    <!-- Otros cargos -->
-                    <div>
-                        <label for="editOtrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
-                            Cargos</label>
-                        <input type="number" id="editOtrosCargos" name="otrosCargos"
+                        <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
+                            Hasta</label>
+                        Hasta</label>
+                        <input type="date" id="editValidoHasta" name="validoHasta"
                             class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                            x-model="editForm.otros_cargos" @input="calcTotals(editForm)">
+                            x-model="editForm.valido_hasta">
                     </div>
-                </div>
 
-                <!-- Total -->
-                <div> {{-- Este div ahora ocupa todo el ancho --}}
-                    <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                    <input type="number" id="editTotal" name="total" readonly
-                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                        x-model="editForm.total">
+                    <!-- Descripción dinámica -->
+                    <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
+                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                        <!-- Encabezados de columnas -->
+                        <div
+                            class="hidden sm:grid grid-cols-12 gap-2 mt-2 text-xs text-gray-600 dark:text-gray-300 nunito-bold">
+                            <div class="col-span-3">Descripción</div>
+                            <div class="col-span-2 text-right">Precio Unit.</div>
+                            <div class="col-span-2 text-right">Cantidad</div>
+                            <div class="col-span-2 text-right">Impuesto</div>
+                            <div class="col-span-2 text-right">Total</div>
+                            <div class="col-span-1"></div>
+                        </div>
+                        <div class="max-h-48 overflow-y-auto pr-2">
+                            <template x-for="(descripcion, index) in (editForm.items || [])" :key="index">
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mt-2 items-center">
+                                    <div class="col-span-1 sm:col-span-3">
+                                        <input type="text" x-model="descripcion.descripcion" placeholder="Descripción"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.descripcion">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" step="0.01" x-model="descripcion.precio_unitario"
+                                            @input="calcTotals(editForm)" placeholder="Precio Unitario"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.precio">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" step="0.01" x-model="descripcion.cantidad"
+                                            @input="calcTotals(editForm)" placeholder="Cantidad"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.cantidad">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number" step="0.01" x-model="descripcion.impuesto"
+                                            @input="calcTotals(editForm)" placeholder="Impuesto"
+                                            class="w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                            x-model="descripcion.impuesto">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <input type="number"
+                                            :value="(Number(descripcion.precio_unitario||0)*Number(descripcion.cantidad||0)+Number(descripcion.impuesto||0)).toFixed(2)"
+                                            placeholder="Total" disabled
+                                            class="w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1">
+                                    </div>
+                                    <div class="col-span-1 sm:col-span-1 text-right">
+                                        <button type="button"
+                                            @click="editForm.items.splice(index, 1); calcTotals(editForm);"
+                                            class="text-red-500 hover:text-red-700" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button type="button"
+                                @click="editForm.items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); calcTotals(editForm);"
+                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
+                                <i class="fas fa-plus"></i> Añadir Descripción
+                            </button>
+                            <button type="button" @click="openCatalog('editForm')"
+                                class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm nunito-regular">
+                                <i class="fas fa-list"></i> Seleccionar del catálogo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fila para Imponible, Total Impuesto, Otros Cargos -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Imponible -->
+                        <div>
+                            <label for="editImponible"
+                                class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                            <input type="number" id="editImponible" name="imponible" readonly
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                                x-model="editForm.imponible">
+                        </div>
+
+                        <!-- Total impuesto -->
+                        <div>
+                            <label for="editTotalImpuesto"
+                                class="block text-sm font-medium text-gray-700 nunito-bold">Total
+                                Impuesto</label>
+                            <input type="number" id="editTotalImpuesto" name="totalImpuesto" readonly
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                                x-model="editForm.total_impuesto">
+                        </div>
+
+                        <!-- Otros cargos -->
+                        <div>
+                            <label for="editOtrosCargos"
+                                class="block text-sm font-medium text-gray-700 nunito-bold">Otros
+                                Cargos</label>
+                            <input type="number" id="editOtrosCargos" name="otrosCargos"
+                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
+                                x-model="editForm.otros_cargos" @input="calcTotals(editForm)">
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div> {{-- Este div ahora ocupa todo el ancho --}}
+                        <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                        <input type="number" id="editTotal" name="total" readonly
+                            class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
+                            x-model="editForm.total">
+                    </div>
                 </div>
             </div>
-        </div>
         </template>
     </x-admin.edit-modal>
 
@@ -791,7 +865,7 @@
             </div>
             <div
                 class="overflow-x-auto max-h-[420px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded">
-                <table class="min-w-full text-sm">
+                <table class="min-w-full text-xs">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
                             <th class="py-2 px-3"><input type="checkbox" @change="toggleSelectAll($event)"
@@ -841,9 +915,10 @@
 </div>
 
 <style>
-    /* Slightly smaller table typography for headers and data */
-    table thead th,
-    table tbody td {
-        font-size: 0.8125rem; /* ~13px */
-    }
+/* Slightly smaller table typography for headers and data */
+table thead th,
+table tbody td {
+    font-size: 0.8125rem;
+    /* ~13px */
+}
 </style>
