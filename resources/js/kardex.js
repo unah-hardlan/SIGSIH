@@ -2,7 +2,12 @@ window.kardexApiHandlers = {
     async fetchKardex(component) {
         component.loadingKardex = true;
         try {
-            const response = await fetch("/api/kardex", {
+            // Construir query string con filtros y ordenamiento
+            const params = new URLSearchParams();
+            if (component.filtroKardex) params.append('filtroKardex', component.filtroKardex);
+            if (component.ordenarPor) params.append('ordenarPor', component.ordenarPor);
+            if (component.ordenarDirection) params.append('ordenarDirection', component.ordenarDirection);
+            const response = await fetch(`/api/kardex?${params.toString()}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
@@ -11,8 +16,8 @@ window.kardexApiHandlers = {
             component.kardex = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching kardex:", error);
             window.showToast &&
@@ -252,8 +257,8 @@ window.catalogosKardexHandlers = {
             component.catalogoProductos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching productos:", error);
         }
@@ -270,8 +275,8 @@ window.catalogosKardexHandlers = {
             component.catalogoTiposMovimiento = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching tipos movimiento:", error);
         }
@@ -288,8 +293,8 @@ window.catalogosKardexHandlers = {
             component.catalogoOrigenes = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching origenes:", error);
         }
