@@ -6,20 +6,29 @@ window.tipoMovimientosApiHandlers = {
         };
     },
 
-    /**
-     * Fetches the list of tipo movimientos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
     async fetchTipoMovimientos(component) {
         component.loadingTipoMovimientos = true;
         try {
-            const response = await fetch("/api/tipos-movimiento", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroTipoMovimiento) {
+                params.set("q", component.filtroTipoMovimiento);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+            // Para asegurar que obtenemos todos los resultados para el frontend
+            params.set("all", "true");
+
+            const response = await fetch(
+                `/api/tipos-movimiento?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.tipoMovimientos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -39,7 +48,6 @@ window.tipoMovimientosApiHandlers = {
 
     /**
      * Submits a new tipo movimiento to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitTipoMovimiento(component) {
         const nombreTrim = String(
@@ -74,10 +82,7 @@ window.tipoMovimientosApiHandlers = {
             };
             const response = await fetch("/api/tipos-movimiento", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
+                headers: this.authHeaders(),
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
@@ -104,7 +109,6 @@ window.tipoMovimientosApiHandlers = {
 
     /**
      * Updates an existing tipo movimiento via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
      */
     async updateTipoMovimiento(component) {
         if (
@@ -112,6 +116,7 @@ window.tipoMovimientosApiHandlers = {
             !component.itemToEdit.id_tipo_movimiento_pk
         )
             return;
+
         const nombreTrim = String(
             component.itemToEdit.nombre_tipo_movimiento || ""
         ).trim();
@@ -151,17 +156,13 @@ window.tipoMovimientosApiHandlers = {
                 `/api/tipos-movimiento/${component.itemToEdit.id_tipo_movimiento_pk}`,
                 {
                     method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
+                    headers: this.authHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -195,7 +196,6 @@ window.tipoMovimientosApiHandlers = {
 
     /**
      * Deletes a tipo movimiento via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
      */
     async deleteTipoMovimiento(component) {
         if (
@@ -224,9 +224,12 @@ window.tipoMovimientosApiHandlers = {
             await this.fetchTipoMovimientos(component);
         } catch (error) {
             console.error("Error deleting tipo movimiento:", error);
-            const errorMessage =
-                error?.error || "Error al eliminar el tipo de movimiento";
-            window.showToast && window.showToast(errorMessage, "error");
+            window.showToast &&
+                window.showToast(
+                    "Error al eliminar el tipo de movimiento",
+                    "error"
+                );
         }
     },
 };
+

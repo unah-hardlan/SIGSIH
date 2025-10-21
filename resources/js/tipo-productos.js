@@ -7,19 +7,31 @@ window.tipoProductosApiHandlers = {
     },
 
     /**
-     * Fetches the list of tipo productos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
+     * MODIFICADO: Ahora construye una URL dinámica con los parámetros de filtro (q) y ordenamiento (sort).
      */
     async fetchTipoProductos(component) {
         component.loadingTipoProductos = true;
         try {
-            const response = await fetch("/api/tipos-producto", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const params = new URLSearchParams();
+            if (component.filtroTipoProducto) {
+                params.set("q", component.filtroTipoProducto);
+            }
+            if (component.ordenarPor) {
+                params.set("sort", component.ordenarPor);
+            }
+            // Para asegurar que obtenemos todos los resultados para el frontend
+            params.set("all", "true");
+
+            const response = await fetch(
+                `/api/tipos-producto?${params.toString()}`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.tipoProductos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -36,7 +48,6 @@ window.tipoProductosApiHandlers = {
 
     /**
      * Submits a new tipo producto to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitTipoProducto(component) {
         const nombreTrim = String(component.nombre_tipo_producto || "").trim();
@@ -69,10 +80,7 @@ window.tipoProductosApiHandlers = {
             };
             const response = await fetch("/api/tipos-producto", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
+                headers: this.authHeaders(),
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
@@ -96,11 +104,11 @@ window.tipoProductosApiHandlers = {
 
     /**
      * Updates an existing tipo producto via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
      */
     async updateTipoProducto(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_tipo_producto_pk)
             return;
+
         const nombreTrim = String(
             component.itemToEdit.nombre_tipo_producto || ""
         ).trim();
@@ -140,17 +148,13 @@ window.tipoProductosApiHandlers = {
                 `/api/tipos-producto/${component.itemToEdit.id_tipo_producto_pk}`,
                 {
                     method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
+                    headers: this.authHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -184,7 +188,6 @@ window.tipoProductosApiHandlers = {
 
     /**
      * Deletes a tipo producto via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
      */
     async deleteTipoProducto(component) {
         if (

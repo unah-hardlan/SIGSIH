@@ -6,9 +6,8 @@
     itemToDelete: null,
     productos: [],
     loadingProductos: false,
-    tipoProductos: [], // Catálogo para el <select>
+    tipoProductos: [],
     loadingTipoProductos: false,
-    // Campos para el formulario de NUEVO producto
     sku: '',
     nombre_producto: '',
     descripcion_producto: '',
@@ -17,7 +16,6 @@
     precio_venta: '',
     stock_minimo: '',
     id_tipo_producto_fk: '',
-    // Filtros
     filtroProducto: '',
     ordenarPor: '',
     async fetchProductos() { await window.productosApiHandlers.fetchProductos(this); },
@@ -34,6 +32,11 @@
     }
 }"
 x-init="fetchProductos(); fetchTipoProductos()"
+{{-- AÑADIDO: Este bloque observa los cambios y llama a la API para actualizar los datos en tiempo real. --}}
+x-effect="
+    $watch('filtroProducto', () => fetchProductos());
+    $watch('ordenarPor', () => fetchProductos());
+"
 @keydown.escape.window="isProductoModalOpen = false; isProductoEditModalOpen = false; isProductoDeleteModalOpen = false;"
 @modal-submit.window="handleModalSubmit($event)"
 @confirm-delete.window="handleDelete()">
@@ -46,6 +49,7 @@ x-init="fetchProductos(); fetchTipoProductos()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroProducto',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento. --}}
                 'ordenarOptions' => [ 'nombre_producto' => 'Nombre', 'precio_venta' => 'Precio Venta', 'id_producto_pk' => 'ID' ]
             ])
         </x-slot>
