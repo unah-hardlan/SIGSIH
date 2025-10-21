@@ -10,15 +10,17 @@ document.addEventListener('alpine:init', () => {
         itemToEdit: null,
         itemToDelete: null,
         
-        // Data arrays
-        facturas: [],
-        estadosFactura: [],
-        clientes: [],
-        cais: [],
-         
-        // Loading states
-        loadingFacturas: false,
-        loadingEstadosFactura: false,
+    // Data arrays
+    facturas: [],
+    detalles: [],
+    estadosFactura: [],
+    clientes: [],
+    cais: [],
+        
+    // Loading states
+    loadingFacturas: false,
+    loadingDetalles: false,
+    loadingEstadosFactura: false,
         
         // Form fields para crear factura
         numero: '',
@@ -27,13 +29,29 @@ document.addEventListener('alpine:init', () => {
         subtotal: 0,
         total: 0,
         total_letras: '',
-        id_estado_factura_fk: '',
-        id_cai_fk: '',
-        id_cliente_fk: '',
-        
-        // Filtros
-        filtroFactura: '',
-        ordenarPor: '',
+    id_estado_factura_fk: '',
+    id_cai_fk: '',
+    id_cliente_fk: '',
+
+    // Detalle modal states y modelo
+    isDetalleModalOpen: false,
+    isEditDetalleModalOpen: false,
+    isDeleteDetalleModalOpen: false,
+    detalleToEdit: null,
+    detalleToDelete: null,
+
+    // Filtros
+    filtroFactura: '',
+    ordenarPor: '',
+    // Modelos usados por partial filtros-generales
+    searchFacturas: '',
+    estadoFacturaFiltro: '',
+    clienteFacturaFiltro: '',
+
+    // Filtros para detalle
+    searchDetalleFactura: '',
+    servicioDetalleFiltro: '',
+    facturaDetalleFiltro: '',
 
         async init() {
             await this.fetchFacturas();
@@ -120,30 +138,46 @@ document.addEventListener('alpine:init', () => {
 
         async fetchClientes() {
             try {
-                // Agregar timestamp para evitar caché
-                const timestamp = new Date().getTime();
-                const response = await fetch(`/api/facturas-clientes?_t=${timestamp}`, {
-                    headers: { 
-                        Accept: "application/json",
-                        "Cache-Control": "no-cache",
-                        "Pragma": "no-cache"
-                    },
-                    credentials: "same-origin",
+                // Usar el mismo endpoint que gestión de solicitudes para catálogo unificado
+                const params = new URLSearchParams();
+                params.set('per_page', '500');
+                params.set('all', '1');
+
+                const res = await fetch('/api/clientes?' + params.toString(), {
+                    headers: { Accept: 'application/json' },
+                    credentials: 'same-origin'
                 });
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok) throw data;
-                
-                console.log('Clientes fetched:', data);
-                
-                this.clientes = Array.isArray(data)
-                    ? data
-                    : Array.isArray(data?.data)
-                    ? data.data
+
+                if (!res.ok) throw new Error('Error fetching clientes');
+
+                const payload = await res.json();
+                const raw = Array.isArray(payload?.data)
+                    ? payload.data
+                    : Array.isArray(payload?.data?.data)
+                    ? payload.data.data
+                    : Array.isArray(payload)
+                    ? payload
                     : [];
-                    
-                console.log('Clientes processed:', this.clientes);
+
+                // Mapear igual que en gestionSolicitudes: id y nombre legible
+                this.clientes = (raw || []).map((c) => {
+                    let nombre = '';
+                    if ((c.tipo || c.tipo_cliente) === 'empresa') {
+                        nombre = c.nombre || c.nombre_comercial || c.razon_social || `Cliente #${c.id_cliente_fk || c.id}`;
+                    } else {
+                        // persona
+                        const persona = Array.isArray(c.persona) ? c.persona[0] : c.persona || {};
+                        nombre = [persona.primer_nombre, persona.segundo_nombre, persona.primer_apellido, persona.segundo_apellido]
+                            .filter(Boolean)
+                            .join(' ')
+                            .trim();
+                        if (!nombre) nombre = c.nombre || `Cliente #${c.id_cliente_fk || c.id}`;
+                    }
+                    return { id: c.id_cliente_fk || c.id, nombre };
+                });
             } catch (error) {
-                console.error("Error fetching clientes:", error);
+                console.error('Error fetching clientes:', error);
+                this.clientes = [];
             }
         },
 
@@ -460,15 +494,21 @@ document.addEventListener('alpine:init', () => {
 
 // Event listeners para manejar envíos de modales
 window.addEventListener('modal-submit', function(event) {
-    const facturasCrudComponent = Alpine.$data(document.querySelector('[x-data*="facturasCrud"]'));
-    if (facturasCrudComponent && facturasCrudComponent.handleModalSubmit) {
-        facturasCrudComponent.handleModalSubmit(event);
-    }
+    try {
+        const el = document.querySelector('[x-data*="facturasCrud"]');
+        const facturasCrudComponent = el ? Alpine.$data(el) : null;
+        if (facturasCrudComponent && facturasCrudComponent.handleModalSubmit) {
+            facturasCrudComponent.handleModalSubmit(event);
+        }
+    } catch (_) { /* ignore if component not present */ }
 });
 
 window.addEventListener('confirm-delete', function(event) {
-    const facturasCrudComponent = Alpine.$data(document.querySelector('[x-data*="facturasCrud"]'));
-    if (facturasCrudComponent && facturasCrudComponent.handleDelete) {
-        facturasCrudComponent.handleDelete();
-    }
+    try {
+        const el = document.querySelector('[x-data*="facturasCrud"]');
+        const facturasCrudComponent = el ? Alpine.$data(el) : null;
+        if (facturasCrudComponent && facturasCrudComponent.handleDelete) {
+            facturasCrudComponent.handleDelete();
+        }
+    } catch (_) { /* ignore if component not present */ }
 });
