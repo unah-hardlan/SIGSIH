@@ -33,16 +33,25 @@ document.addEventListener('alpine:init', () => {
         ordenarPor: '',
 
         async init() {
-            await this.fetchDetallesFactura();
-            await this.fetchServicios();
             await this.fetchFacturas();
+            await this.fetchServicios();
+            // Cargar detalles solo de la primera factura si existe
+            if (this.facturas.length > 0) {
+                const firstFacturaId = this.facturas[0].id || this.facturas[0].id_factura_pk;
+                await this.fetchDetallesFactura(firstFacturaId);
+            }
         },
 
         async fetchDetallesFactura() {
             this.loadingDetalles = true;
             try {
+                let url = '/api/detalles-factura?';
+                if (arguments.length > 0 && arguments[0]) {
+                    url += `factura=${arguments[0]}&`;
+                }
                 const timestamp = Date.now() + Math.random();
-                const response = await fetch(`/api/detalles-factura?all=true&_t=${timestamp}`, {
+                url += `all=true&_t=${timestamp}`;
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: { 
                         Accept: "application/json",
@@ -52,13 +61,11 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
-                
                 this.detallesFactura = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
                     ? data
                     : [];
-                    
                 console.log('Detalles loaded:', this.detallesFactura);
             } catch (error) {
                 console.error("Error fetching detalles factura:", error);

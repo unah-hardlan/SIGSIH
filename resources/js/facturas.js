@@ -2,6 +2,14 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('facturasCrud', () => ({
         // Tab state
         tab: 'facturas',
+        // Al cambiar a la pestaña 'detalle', cargar detalles de la primera factura
+        async setTab(tabName) {
+            this.tab = tabName;
+            if (tabName === 'detalle' && this.facturas.length > 0) {
+                const firstFacturaId = this.facturas[0].id || this.facturas[0].id_factura_pk;
+                await this.fetchDetallesFactura(firstFacturaId);
+            }
+        },
 
         // Modal states para facturas
         isFacturaModalOpen: false,
@@ -243,6 +251,33 @@ document.addEventListener('alpine:init', () => {
                 console.error("Error fetching CAIs:", error);
             }
         },
+
+            async fetchDetallesFactura(facturaId) {
+                this.loadingDetalles = true;
+                try {
+                    if (!facturaId) {
+                        this.detalles = [];
+                        return;
+                    }
+                    const response = await fetch(`/api/detalles-factura?factura=${facturaId}`, {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin"
+                    });
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) throw data;
+                    this.detalles = Array.isArray(data?.data)
+                        ? data.data
+                        : Array.isArray(data)
+                            ? data
+                            : [];
+                    console.log('Detalles de factura loaded:', this.detalles);
+                } catch (error) {
+                    console.error("Error fetching detalles de factura:", error);
+                    this.detalles = [];
+                } finally {
+                    this.loadingDetalles = false;
+                }
+            },
 
         async submitFactura() {
             console.log('submitFactura called');

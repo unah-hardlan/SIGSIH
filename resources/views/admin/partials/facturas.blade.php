@@ -3,10 +3,10 @@
 
     <div class="mb-6">
         <ul class="flex border-b nunito-bold">
-            <li @click="tab='facturas'"
+            <li @click="setTab('facturas')"
                 :class="tab==='facturas' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
                 class="mr-6 pb-2 nunito-bold">Facturas</li>
-            <li @click="tab='detalle'"
+            <li @click="setTab('detalle')"
                 :class="tab==='detalle' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
                 class="pb-2 nunito-bold">Detalle de Factura</li>
         </ul>
@@ -357,15 +357,7 @@
     <div x-show="tab==='detalle'" class="overflow-x-auto">
         <x-responsive-table title="Detalle Factura" class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
-                @include('partials.filtros-generales', [
-                'searchModel' => 'searchDetalleFactura',
-                'filtrosSelect' => [
-                'servicioDetalleFiltro' => [ 'label' => 'Servicio', 'options' => ['SVC-01','SVC-02'] ],
-                'facturaDetalleFiltro' => [ 'label' => 'Factura', 'options' => ['0001','0002'] ]
-                ],
-                'ordenarOptions' => [ 'fecha_servicio' => 'Fecha Servicio', 'horas' => 'Horas', 'descuento' =>
-                'Descuento']
-                ])
+                <!-- Sin filtro de selección, los detalles se muestran automáticamente para la primera factura -->
             </x-slot>
             <x-slot name="actions">
                 <div class="w-full sm:w-auto flex justify-center">
@@ -393,32 +385,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Placeholder item as in original (replace later with real data source) -->
-                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                            <td class="py-2 px-4">1</td>
-                            <td class="py-2 px-4">0001</td>
-                            <td class="py-2 px-4">SVC-01</td>
-                            <td class="py-2 px-4">2025-07-26</td>
-                            <td class="py-2 px-4">8</td>
-                            <td class="py-2 px-4">Descripción ejemplo</td>
-                            <td class="py-2 px-4">100.00</td>
-                            <td class="py-2 px-4">1</td>
-                            <td class="py-2 px-4">15.00</td>
-                            <td class="py-2 px-4 text-[10px] max-w-[120px] whitespace-normal break-words truncate"
-                                x-text="factura.total_letras || '-' "></td>
-                            <td class="py-2 px-4">0</td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <button
-                                    @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = {id_detalle: 1, id_factura: '0001', id_servicio: 'SVC-01', fecha_servicio: '2025-07-26', horas: 8, descripcion: 'Descripción ejemplo', precio_unitario: 100.00, cantidad: 1, impuesto: 15.00, total_linea: 115.00, descuento: 0}"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
-                                <button
-                                    @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = {id_detalle: 1}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
-                            </td>
-                            <td class="py-2 px-4 text-[10px] max-w-[80px] whitespace-normal break-words truncate"
-                                x-text="factura.cai || 'Sin CAI'"></td>
-                            <td class="py-2 px-4 text-[10px] max-w-[100px] whitespace-normal break-words truncate"
-                                x-text="factura.cliente_nombre || 'Sin cliente'"></td>
+                        <template x-if="loadingDetalles">
+                            <tr>
+                                <td colspan="12" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando detalles...</td>
+                            </tr>
+                        </template>
+                        <template x-if="!loadingDetalles && detalles.length === 0">
+                            <tr>
+                                <td colspan="12" class="py-8 text-center text-gray-500 nunito-regular">Sin detalles para esta factura</td>
+                            </tr>
+                        </template>
+                        <template x-for="detalle in detalles" :key="detalle.id || detalle.id_detalle_factura_pk">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4" x-text="detalle.id || detalle.id_detalle_factura_pk"></td>
+                                <td class="py-2 px-4" x-text="detalle.id_factura_fk"></td>
+                                <td class="py-2 px-4" x-text="detalle.id_servicio_fk"></td>
+                                <td class="py-2 px-4" x-text="detalle.fecha_servicio"></td>
+                                <td class="py-2 px-4" x-text="detalle.horas"></td>
+                                <td class="py-2 px-4" x-text="detalle.descripcion"></td>
+                                <td class="py-2 px-4" x-text="detalle.precio_unitario"></td>
+                                <td class="py-2 px-4" x-text="detalle.cantidad"></td>
+                                <td class="py-2 px-4" x-text="detalle.impuesto"></td>
+                                <td class="py-2 px-4" x-text="detalle.total_linea"></td>
+                                <td class="py-2 px-4" x-text="detalle.descuento"></td>
+                                <td class="py-2 px-4 flex gap-2">
+                                    <button @click.prevent="isEditDetalleModalOpen = true; detalleToEdit = detalle" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                    <button @click.prevent="isDeleteDetalleModalOpen = true; detalleToDelete = detalle" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
                 </table>
             </x-slot>
 
