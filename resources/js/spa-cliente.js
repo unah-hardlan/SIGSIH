@@ -273,15 +273,17 @@ class ClienteSPA {
     }
 
     updateActiveLink(path) {
-        // Usar el mismo conjunto de clases que el blade/sidebar-cliente
+        // Normalizar path
         let targetPath = path || window.location.pathname;
         try {
             targetPath = new URL(targetPath, window.location.origin).pathname;
         } catch (e) {
             // keep original if URL parsing fails
         }
+
         const links = document.querySelectorAll("aside nav a");
 
+        // Clases activas
         const activeClasses = [
             "text-white",
             "bg-blue-600",
@@ -289,33 +291,19 @@ class ClienteSPA {
             "font-bold",
         ];
 
-        // Inactive classes: include dark-mode variants so SPA matches Blade output
-        const inactiveClasses = [
-            "text-gray-800",
-            "dark:text-gray-200",
-            "hover:bg-gray-200",
-            "dark:hover:bg-gray-700",
-            "hover:text-gray-900",
-            "dark:hover:text-white",
-        ];
+        // Clases inactivas - SIN HOVER
+        const inactiveClasses = ["text-gray-800", "dark:text-gray-200"];
 
+        // Colores de iconos
         const iconActive = ["text-white", "dark:text-white"];
-        const iconInactive = [
-            "text-gray-600",
-            "dark:text-gray-400",
-            "group-hover:text-gray-700",
-            "dark:group-hover:text-gray-300",
-        ];
+        const iconInactive = ["text-gray-600", "dark:text-gray-400"];
 
+        // Colores de texto
         const textActive = ["text-white"];
-        const textInactive = [
-            "text-gray-800",
-            "group-hover:text-gray-900",
-            "dark:text-gray-200",
-            "dark:group-hover:text-white",
-        ];
+        const textInactive = ["text-gray-800", "dark:text-gray-200"];
 
         links.forEach((link) => {
+            // Limpiar todas las clases posibles
             link.classList.remove(...activeClasses, ...inactiveClasses);
 
             let href = link.getAttribute("href") || "";
@@ -359,6 +347,7 @@ class ClienteSPA {
                         baseSpan.join(" ") + " " + textActive.join(" ");
                 }
             } else {
+                // INACTIVO - SIN HOVER
                 link.classList.add(...inactiveClasses);
 
                 const icon = link.querySelector("i");
@@ -367,7 +356,8 @@ class ClienteSPA {
                         (c) =>
                             !c.startsWith("text-") &&
                             !c.startsWith("dark:") &&
-                            !c.startsWith("group-hover:")
+                            !c.startsWith("group-hover:") &&
+                            !c.startsWith("hover:")
                     );
                     icon.className =
                         base.join(" ") + " " + iconInactive.join(" ");
@@ -382,7 +372,8 @@ class ClienteSPA {
                         (c) =>
                             !c.startsWith("text-") &&
                             !c.startsWith("dark:") &&
-                            !c.startsWith("group-hover:")
+                            !c.startsWith("group-hover:") &&
+                            !c.startsWith("hover:")
                     );
                     span.className =
                         baseSpan.join(" ") + " " + textInactive.join(" ");

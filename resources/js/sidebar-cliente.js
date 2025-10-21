@@ -114,7 +114,7 @@ document.addEventListener("spa:loaded", (e) => {
                 const links = document.querySelectorAll("aside nav a");
 
                 links.forEach((link) => {
-                    // Clases definidas en Blade
+                    // Clases definidas en Blade - SIN HOVER
                     const activeClasses = [
                         "text-white",
                         "bg-blue-600",
@@ -123,20 +123,19 @@ document.addEventListener("spa:loaded", (e) => {
                     ];
                     const inactiveClasses = [
                         "text-gray-800",
-                        "hover:bg-gray-200",
-                        "hover:text-gray-900",
+                        "dark:text-gray-200",
                     ];
 
-                    // Icon/text color classes
-                    const iconActive = ["text-white"];
+                    // Icon/text color classes - SIN HOVER
+                    const iconActive = ["text-white", "dark:text-white"];
                     const iconInactive = [
                         "text-gray-600",
-                        "group-hover:text-gray-700",
+                        "dark:text-gray-400",
                     ];
                     const textActive = ["text-white"];
                     const textInactive = [
                         "text-gray-800",
-                        "group-hover:text-gray-900",
+                        "dark:text-gray-200",
                     ];
 
                     // Remove all possible active/inactive classes to avoid duplicates
@@ -157,10 +156,17 @@ document.addEventListener("spa:loaded", (e) => {
                         // icon
                         const icon = link.querySelector("i");
                         if (icon) {
-                            icon.classList.remove(
-                                ...iconInactive,
-                                ...iconActive
+                            // Remover todas las clases de color y hover
+                            const iconClassesToRemove = Array.from(
+                                icon.classList
+                            ).filter(
+                                (c) =>
+                                    c.startsWith("text-") ||
+                                    c.startsWith("dark:") ||
+                                    c.startsWith("group-hover:") ||
+                                    c.startsWith("hover:")
                             );
+                            icon.classList.remove(...iconClassesToRemove);
                             icon.classList.add(...iconActive);
                             // Quitar color inline para que herede el color del link activo
                             try {
@@ -170,20 +176,33 @@ document.addEventListener("spa:loaded", (e) => {
                         // span
                         const span = link.querySelector("span");
                         if (span) {
-                            span.classList.remove(
-                                ...textInactive,
-                                ...textActive
+                            const spanClassesToRemove = Array.from(
+                                span.classList
+                            ).filter(
+                                (c) =>
+                                    c.startsWith("text-") ||
+                                    c.startsWith("dark:") ||
+                                    c.startsWith("group-hover:") ||
+                                    c.startsWith("hover:")
                             );
+                            span.classList.remove(...spanClassesToRemove);
                             span.classList.add(...textActive);
                         }
                     } else {
                         link.classList.add(...inactiveClasses);
                         const icon = link.querySelector("i");
                         if (icon) {
-                            icon.classList.remove(
-                                ...iconInactive,
-                                ...iconActive
+                            // Remover todas las clases de color y hover
+                            const iconClassesToRemove = Array.from(
+                                icon.classList
+                            ).filter(
+                                (c) =>
+                                    c.startsWith("text-") ||
+                                    c.startsWith("dark:") ||
+                                    c.startsWith("group-hover:") ||
+                                    c.startsWith("hover:")
                             );
+                            icon.classList.remove(...iconClassesToRemove);
                             icon.classList.add(...iconInactive);
                             // Asegurar que no hay color inline que fuerce otro color
                             try {
@@ -192,10 +211,16 @@ document.addEventListener("spa:loaded", (e) => {
                         }
                         const span = link.querySelector("span");
                         if (span) {
-                            span.classList.remove(
-                                ...textInactive,
-                                ...textActive
+                            const spanClassesToRemove = Array.from(
+                                span.classList
+                            ).filter(
+                                (c) =>
+                                    c.startsWith("text-") ||
+                                    c.startsWith("dark:") ||
+                                    c.startsWith("group-hover:") ||
+                                    c.startsWith("hover:")
                             );
+                            span.classList.remove(...spanClassesToRemove);
                             span.classList.add(...textInactive);
                         }
                     }
