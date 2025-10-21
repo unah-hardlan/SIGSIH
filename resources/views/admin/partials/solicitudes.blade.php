@@ -29,23 +29,29 @@
     <div x-show="tab==='solicitudes'">
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
-                <div class="flex flex-col sm:flex-row gap-3 items-stretch w-full">
-                    <input type="text" x-model="searchSolicitud" placeholder="Buscar..."
-                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-48 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
-                    <select x-model="estadoSolicitud"
-                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                        <option value="">Todos los estados</option>
-                        <template x-for="opt in estadosOptions" :key="opt.value">
-                            <option :value="opt.value" x-text="opt.label"></option>
-                        </template>
-                    </select>
-                    <select x-model="ordenarPor"
-                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                        <option value="estado_solicitud">Ordenar por Estado</option>
-                        <option value="cliente">Ordenar por Cliente</option>
-                        <option value="solicitud_acf">Ordenar por Solicitud ACF</option>
-                        <option value="solicitud_cliente">Ordenar por Solicitud Cliente</option>
-                    </select>
+                <div class="flex flex-col gap-2 w-full">
+                    <div class="flex flex-col gap-2 w-full">
+                        <input type="text" x-model="searchSolicitud" placeholder="Buscar..."
+                            class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
+                    </div>
+                    <div class="flex flex-col gap-2 w-full">
+                        <select x-model="estadoSolicitud"
+                            class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                            <option value="">Todos los estados</option>
+                            <template x-for="opt in estadosOptions" :key="opt.value">
+                                <option :value="opt.value" x-text="opt.label"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-2 w-full">
+                        <select x-model="ordenarPor"
+                            class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                            <option value="estado_solicitud">Ordenar por Estado</option>
+                            <option value="cliente">Ordenar por Cliente</option>
+                            <option value="solicitud_acf">Ordenar por Solicitud ACF</option>
+                            <option value="solicitud_cliente">Ordenar por Solicitud Cliente</option>
+                        </select>
+                    </div>
                 </div>
             </x-slot>
             <x-slot name="actions">
