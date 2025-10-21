@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Gasto;
-use App\Http\Resources\GastoResource;
+use App\Models\Gastos;
+use App\Http\Resources\GastosResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -14,7 +14,7 @@ class GastosController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Gasto::with(['proyecto', 'categoria']);
+        $query = Gastos::with(['proyecto', 'categoria']);
 
         // Filtros opcionales
         if ($request->has('id_proyecto_fk')) {
@@ -41,29 +41,53 @@ class GastosController extends Controller
             $query->where('monto_gasto', '<=', $request->monto_max);
         }
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre_gasto', 'LIKE', "%{$search}%")
-                  ->orWhere('descripcion_gasto', 'LIKE', "%{$search}%");
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_gasto', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_gasto', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('proyecto', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_proyecto', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('categoria', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_categoria', 'like', '%' . $searchTerm . '%');
+                  });
             });
         }
 
-        $gastos = $query->orderBy('fecha_gasto', 'desc')
-                       ->paginate($request->get('per_page', 15));
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre_gasto');
+                    break;
+                case 'fecha':
+                    $query->orderBy('fecha_gasto');
+                    break;
+                case 'monto':
+                    $query->orderBy('monto_gasto');
+                    break;
+                default:
+                    $query->orderBy('id_gasto_pk', 'desc');
+            }
+        } else {
+            $query->orderBy('fecha_gasto', 'desc');
+        }
+
+        $gastos = $query->paginate(15);
 
         return response()->json([
             'success' => true,
-            'data' => GastoResource::collection($gastos->items()),
+            'data' => GastosResource::collection($gastos->items()),
             'pagination' => [
                 'current_page' => $gastos->currentPage(),
+                'last_page' => $gastos->lastPage(),
                 'per_page' => $gastos->perPage(),
                 'total' => $gastos->total(),
-                'last_page' => $gastos->lastPage(),
-                'from' => $gastos->firstItem(),
-                'to' => $gastos->lastItem()
             ]
-        ]);
+        ], 200);
     }
 
     /**
@@ -72,30 +96,40 @@ class GastosController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'nombre_gasto' => 'required|string|max:255',
-            'fecha_gasto' => 'required|date',
-            'monto_gasto' => 'required|numeric|min:0',
-            'descripcion_gasto' => 'nullable|string',
+            'nombre' => 'required|string|max:255',
+            'fecha' => 'required|date',
+            'monto' => 'required|numeric|min:0',
+            'descripcion' => 'nullable|string',
             'id_proyecto_fk' => 'required|exists:tbl_proyectos,id_proyecto_pk',
             'id_categoria_fk' => 'required|exists:tbl_categorias,id_categoria_pk'
         ]);
 
-        $gasto = Gasto::create($validated);
+        // Mapear los campos al formato de la base de datos
+        $data = [
+            'nombre_gasto' => $validated['nombre'],
+            'fecha_gasto' => $validated['fecha'],
+            'monto_gasto' => $validated['monto'],
+            'descripcion_gasto' => $validated['descripcion'] ?? null,
+            'id_proyecto_fk' => $validated['id_proyecto_fk'],
+            'id_categoria_fk' => $validated['id_categoria_fk']
+        ];
+
+        $gasto = Gastos::create($data);
         $gasto->load(['proyecto', 'categoria']);
 
         return response()->json([
             'success' => true,
             'message' => 'Gasto creado exitosamente',
-            'data' => new GastoResource($gasto)
+            'data' => new GastosResource($gasto)
         ], 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id): JsonResponse
+    public function show($id): JsonResponse
     {
-        $gasto = Gasto::with(['proyecto', 'categoria'])->find($id);
+        $gasto = Gastos::with(['proyecto', 'categoria'])->find($id);
 
         if (!$gasto) {
             return response()->json([
@@ -106,16 +140,17 @@ class GastosController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new GastoResource($gasto)
-        ]);
+            'message' => 'Gasto encontrado',
+            'data' => new GastosResource($gasto)
+        ], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, $id): JsonResponse
     {
-        $gasto = Gasto::find($id);
+        $gasto = Gastos::find($id);
 
         if (!$gasto) {
             return response()->json([
@@ -125,30 +160,39 @@ class GastosController extends Controller
         }
 
         $validated = $request->validate([
-            'nombre_gasto' => 'sometimes|required|string|max:255',
-            'fecha_gasto' => 'sometimes|required|date',
-            'monto_gasto' => 'sometimes|required|numeric|min:0',
-            'descripcion_gasto' => 'nullable|string',
+            'nombre' => 'sometimes|required|string|max:255',
+            'fecha' => 'sometimes|required|date',
+            'monto' => 'sometimes|required|numeric|min:0',
+            'descripcion' => 'nullable|string',
             'id_proyecto_fk' => 'sometimes|required|exists:tbl_proyectos,id_proyecto_pk',
             'id_categoria_fk' => 'sometimes|required|exists:tbl_categorias,id_categoria_pk'
         ]);
 
-        $gasto->update($validated);
+        // Mapear los campos al formato de la base de datos
+        $data = [];
+        if (isset($validated['nombre'])) $data['nombre_gasto'] = $validated['nombre'];
+        if (isset($validated['fecha'])) $data['fecha_gasto'] = $validated['fecha'];
+        if (isset($validated['monto'])) $data['monto_gasto'] = $validated['monto'];
+        if (array_key_exists('descripcion', $validated)) $data['descripcion_gasto'] = $validated['descripcion'];
+        if (isset($validated['id_proyecto_fk'])) $data['id_proyecto_fk'] = $validated['id_proyecto_fk'];
+        if (isset($validated['id_categoria_fk'])) $data['id_categoria_fk'] = $validated['id_categoria_fk'];
+
+        $gasto->update($data);
         $gasto->load(['proyecto', 'categoria']);
 
         return response()->json([
             'success' => true,
             'message' => 'Gasto actualizado exitosamente',
-            'data' => new GastoResource($gasto)
+            'data' => new GastosResource($gasto)
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy($id): JsonResponse
     {
-        $gasto = Gasto::find($id);
+        $gasto = Gastos::find($id);
 
         if (!$gasto) {
             return response()->json([
@@ -162,6 +206,6 @@ class GastosController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Gasto eliminado exitosamente'
-        ]);
+        ], 200);
     }
 }

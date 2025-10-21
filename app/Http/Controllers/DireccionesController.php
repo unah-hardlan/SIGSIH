@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Direccion;
+use App\Models\Ciudad;
 use App\Http\Resources\DireccionResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -10,11 +11,82 @@ use Illuminate\Http\JsonResponse;
 class DireccionesController extends Controller
 {
     /**
+     * Normaliza un nombre (quita tildes y pasa a minúsculas)
+     */
+    protected function normalize(string $value): string
+    {
+        $v = trim($value);
+        // Quitar diacríticos comunes sin depender de ext-intl
+        $replacements = [
+            'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N',
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+        ];
+        $v = strtr($v, $replacements);
+        return mb_strtolower($v, 'UTF-8');
+    }
+
+    /**
+     * Obtiene el nombre del país a partir del id de ciudad
+     */
+    protected function getPaisNombreByCiudadId(?int $ciudadId): ?string
+    {
+        if (!$ciudadId) return null;
+        $ciudad = Ciudad::with('departamento.pais')->find($ciudadId);
+        return $ciudad?->departamento?->pais?->nombre_pais;
+    }
+
+    /**
+     * Valida el código postal según el país (reglas para Centroamérica)
+     * Devuelve [esValido(bool), hint(string)]
+     */
+    protected function validarCodigoPostalPorPais(string $codigoPostal, ?string $paisNombre): array
+    {
+        $cp = trim($codigoPostal);
+        if ($cp === '') {
+            return [true, '']; // vacío es permitido por ser nullable
+        }
+
+        $paisNorm = $paisNombre ? $this->normalize($paisNombre) : '';
+
+        // Mapa de regex por país
+        $map = [
+            'honduras'    => '/^\d{5}$/',
+            'guatemala'   => '/^\d{5}$/',
+            'costa rica'  => '/^\d{5}$/',
+            'el salvador' => '/^\d{4}$/',
+            'nicaragua'   => '/^\d{5}$/',
+            'panama'      => '/^\d{6}$/',
+            'panamá'      => '/^\d{6}$/',
+            'belice'      => '/^[A-Za-z0-9\-\s]{3,10}$/i',
+            'belize'      => '/^[A-Za-z0-9\-\s]{3,10}$/i',
+        ];
+
+        // Hint legible por país
+        $hints = [
+            'honduras'    => '5 dígitos (ej. 11101)',
+            'guatemala'   => '5 dígitos (ej. 01001)',
+            'costa rica'  => '5 dígitos (ej. 10101)',
+            'el salvador' => '4 dígitos (ej. 1101)',
+            'nicaragua'   => '5 dígitos',
+            'panama'      => '6 dígitos',
+            'panamá'      => '6 dígitos',
+            'belice'      => '3-10 caracteres alfanuméricos',
+            'belize'      => '3-10 caracteres alfanuméricos',
+        ];
+
+        // Si no hay regla específica, usar fallback permisivo (3-10 alfanuméricos)
+        $pattern = $map[$paisNorm] ?? '/^(?=.{3,10}$)[A-Za-z0-9\-\s]+$/';
+        $hint = $hints[$paisNorm] ?? '3-10 caracteres alfanuméricos';
+
+        $valido = (bool) preg_match($pattern, $cp);
+        return [$valido, $hint];
+    }
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Direccion::with(['ciudad.departamento.pais']);
+        $query = Direccion::with(['ciudad.departamento.pais', 'agencia']);
 
         // Filtro por ciudad
         if ($request->has('id_ciudad_fk')) {
@@ -44,11 +116,33 @@ class DireccionesController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'id_ciudad_fk' => 'required|exists:tbl_ciudad,id_ciudad_pk'
+            'id_ciudad_fk' => 'required|exists:tbl_ciudad,id_ciudad_pk',
+            'calle' => 'required|string|max:100',
+            'numero' => 'required|string|max:20',
+            'colonia' => 'required|string|max:100',
+            'codigo_postal' => 'nullable|string|max:10',
+            'referencia' => 'nullable|string',
+            'agencia_id' => 'nullable|exists:tbl_agencias,id_agencias_pk'
         ]);
 
+        // Validación adicional de código postal según país
+        if (array_key_exists('codigo_postal', $validated) && $validated['codigo_postal'] !== null) {
+            $paisNombre = $this->getPaisNombreByCiudadId((int) $validated['id_ciudad_fk']);
+            [$ok, $hint] = $this->validarCodigoPostalPorPais((string) $validated['codigo_postal'], $paisNombre);
+            if (!$ok) {
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => [
+                        'codigo_postal' => [
+                            'Código postal inválido para ' . ($paisNombre ?: 'el país seleccionado') . '. Formato esperado: ' . $hint . '.'
+                        ]
+                    ]
+                ], 422);
+            }
+        }
+
         $direccion = Direccion::create($validated);
-        $direccion->load(['ciudad.departamento.pais']);
+    $direccion->load(['ciudad.departamento.pais', 'agencia']);
 
         return response()->json([
             'success' => true,
@@ -62,7 +156,7 @@ class DireccionesController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $direccion = Direccion::with(['ciudad.departamento.pais'])->find($id);
+        $direccion = Direccion::with(['ciudad.departamento.pais', 'agencia'])->find($id);
 
         if (!$direccion) {
             return response()->json([
@@ -92,11 +186,40 @@ class DireccionesController extends Controller
         }
 
         $validated = $request->validate([
-            'id_ciudad_fk' => 'sometimes|required|exists:tbl_ciudad,id_ciudad_pk'
+            'id_ciudad_fk' => 'sometimes|required|exists:tbl_ciudad,id_ciudad_pk',
+            'calle' => 'sometimes|required|string|max:100',
+            'numero' => 'sometimes|required|string|max:20',
+            'colonia' => 'sometimes|required|string|max:100',
+            'codigo_postal' => 'nullable|string|max:10',
+            'referencia' => 'nullable|string',
+            'agencia_id' => 'nullable|exists:tbl_agencias,id_agencias_pk'
         ]);
 
+        // Determinar ciudad efectiva para validar CP
+        $ciudadId = array_key_exists('id_ciudad_fk', $validated)
+            ? (int) $validated['id_ciudad_fk']
+            : (int) $direccion->id_ciudad_fk;
+
+        if ($request->has('codigo_postal')) {
+            $cp = $request->input('codigo_postal');
+            if ($cp !== null) {
+                $paisNombre = $this->getPaisNombreByCiudadId($ciudadId);
+                [$ok, $hint] = $this->validarCodigoPostalPorPais((string) $cp, $paisNombre);
+                if (!$ok) {
+                    return response()->json([
+                        'message' => 'The given data was invalid.',
+                        'errors' => [
+                            'codigo_postal' => [
+                                'Código postal inválido para ' . ($paisNombre ?: 'el país seleccionado') . '. Formato esperado: ' . $hint . '.'
+                            ]
+                        ]
+                    ], 422);
+                }
+            }
+        }
+
         $direccion->update($validated);
-        $direccion->load(['ciudad.departamento.pais']);
+    $direccion->load(['ciudad.departamento.pais', 'agencia']);
 
         return response()->json([
             'success' => true,

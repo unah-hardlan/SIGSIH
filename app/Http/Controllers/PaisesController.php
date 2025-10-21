@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pais;
 use App\Http\Resources\PaisResource;
+use App\Http\Requests\StorePaisRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -42,11 +43,9 @@ class PaisesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StorePaisRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nombre_pais' => 'required|string|max:100|unique:tbl_pais,nombre_pais'
-        ]);
+        $validated = $request->validated();
 
         $pais = Pais::create($validated);
 
@@ -73,33 +72,6 @@ class PaisesController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new PaisResource($pais)
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id): JsonResponse
-    {
-        $pais = Pais::find($id);
-
-        if (!$pais) {
-            return response()->json([
-                'success' => false,
-                'message' => 'País no encontrado'
-            ], 404);
-        }
-
-        $validated = $request->validate([
-            'nombre_pais' => 'sometimes|required|string|max:100|unique:tbl_pais,nombre_pais,' . $id . ',id_pais_pk'
-        ]);
-
-        $pais->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'País actualizado exitosamente',
             'data' => new PaisResource($pais)
         ]);
     }

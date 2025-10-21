@@ -18,15 +18,16 @@ class Persona extends Model
         'primer_apellido',
         'segundo_apellido',
         'dni',
-        'cargo',
-        'id_tipo_persona_fk',
+    'avatar_path',
         'id_genero_fk',
-        'id_perfil_fk',
         'id_usuario_fk',
     ];
 
-    public function tipoPersona(){ return $this->belongsTo(TipoPersona::class,'id_tipo_persona_fk','id_tipo_persona_pk'); }
     public function genero(){ return $this->belongsTo(Genero::class,'id_genero_fk','id_genero_pk'); }
-    public function perfil(){ return $this->belongsTo(Perfil::class,'id_perfil_fk','id_perfil_pk'); }
     public function usuario(){ return $this->belongsTo(Usuario::class,'id_usuario_fk','id_usuario_pk'); }
+
+    public function contactos()
+    {
+        return $this->hasMany(Contacto::class, 'id_persona_fk', 'id_persona_pk');
+    }
 }

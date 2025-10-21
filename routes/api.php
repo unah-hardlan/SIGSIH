@@ -33,13 +33,19 @@ use App\Http\Controllers\DetalleFacturaController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\DetalleOrdenProductoController;
 use App\Http\Controllers\ObjetoController;
+use App\Http\Controllers\TipoObjetoController;
 use App\Http\Controllers\ParametroController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Models\EstadoOrdenServicio;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,25 +62,53 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Público: login y logout (logout borra cookie aunque el token haya expirado)
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('email/resend', [AuthController::class, 'resendVerification']);
+Route::get('verify-email', [AuthController::class, 'verifyEmail']);
+// 2FA verify (public, tied to challenge cookie)
+Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
-// Protegidas con JWT (Authorization: Bearer <token>)
-Route::middleware('jwt.auth')->group(function () {
+// Get de genero para cliente
+Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', function () {
+    $items = \App\Models\Genero::select('id_genero_pk as id', 'genero')->orderBy('genero')->get();
+    return response()->json([
+        'data' => $items,
+        'meta' => ['count' => $items->count()]
+    ]);
+});
+
+
+// Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
+Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
+    // 2FA setup (authenticated)
+    Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
+    Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
+    Route::post('2fa/disable', [TwoFactorController::class, 'disable']);
+    // Perfil del usuario autenticado
+    Route::get('me', [ProfileController::class, 'me']);
+    Route::post('perfil/persona', [ProfileController::class, 'savePersona']);
+    Route::post('perfil/avatar', [ProfileController::class, 'uploadAvatar']);
+    Route::delete('perfil/avatar', [ProfileController::class, 'deleteAvatar']);
+    Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
+    // Multi-rol: sincronización de roles
+    Route::put('usuarios/{id}/roles', [UsuarioController::class, 'syncRoles']);
+    Route::get('usuarios/{id}/roles', [UsuarioController::class, 'getRoles']);
     Route::apiResource('roles', RolController::class);
+    // Upsert permisos por combinación rol-objeto (debe ir antes del apiResource para evitar colisiones)
+    Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
     Route::apiResource('permisos', PermisoController::class);
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
-  
-    // MODULO DE PERSONAS
-    Route::apiResource('tipos-persona', \App\Http\Controllers\TipoPersonaController::class);
-    Route::apiResource('perfiles', \App\Http\Controllers\PerfilController::class);
-    Route::apiResource('generos', \App\Http\Controllers\GeneroController::class);
+    Route::apiResource('tipos-objeto', TipoObjetoController::class);
+
+    // MODULO DE PERSONAS (sin tipos-persona ni perfiles)
+    // CRUD de géneros solo para admin (cliente usa únicamente GET /api/catalogos/generos)
+    Route::middleware('block.client')->apiResource('generos', \App\Http\Controllers\GeneroController::class);
     Route::apiResource('personas', \App\Http\Controllers\PersonaController::class);
-    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('productos', \App\Http\Controllers\ProductoController::class);
     Route::apiResource('agencias', AgenciasController::class);
     Route::apiResource('categorias', CategoriaController::class);
@@ -85,6 +119,7 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('departamentos', DepartamentosController::class);
     Route::apiResource('ciudades', CiudadesController::class);
     Route::apiResource('direcciones', DireccionesController::class);
+    Route::apiResource('origenes', \App\Http\Controllers\OrigenController::class);
     Route::apiResource('cotizaciones', \App\Http\Controllers\CotizacionController::class);
     Route::apiResource('acciones-realizadas', \App\Http\Controllers\AccionRealizadaController::class);
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
@@ -93,11 +128,14 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('servicios-realizados', \App\Http\Controllers\ServicioRealizadoController::class);
     Route::apiResource('calificacion_servicio', CalificacionServicioController::class);
     Route::apiResource('tipos-visita', \App\Http\Controllers\TipoVisitaController::class);
+    Route::apiResource('tipos-producto', \App\Http\Controllers\TipoProductoController::class);
     Route::apiResource('reportes-visita', \App\Http\Controllers\ReporteVisitaController::class);
 
     Route::apiResource('contactos', ContactoController::class);
-    Route::apiResource('estados-solicitud', EstadoSolicitudController::class);
-    Route::apiResource('estados-proyecto', EstadoProyectoController::class);
+    Route::apiResource('estados-solicitud', EstadoSolicitudController::class)
+        ->parameters(['estados-solicitud' => 'estadoSolicitud']);
+    Route::apiResource('estados-proyecto', EstadoProyectoController::class)
+        ->parameters(['estados-proyecto' => 'estadoProyecto']);
     Route::apiResource('proyectos', ProyectoController::class);
     Route::apiResource('gastos', GastosController::class);
     Route::apiResource('ingresos', IngresosController::class);
@@ -113,9 +151,41 @@ Route::middleware('jwt.auth')->group(function () {
     Route::apiResource('estados-cai', EstadoCaiController::class);
     Route::apiResource('cai', CaiController::class);
     Route::apiResource('facturas', FacturaController::class);
+    Route::get('facturas-clientes', [FacturaController::class, 'getClientes']);
     Route::apiResource('detalles-factura', DetalleFacturaController::class);
     Route::apiResource('servicios', ServicioController::class);
     Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
+
+    // Notificaciones in-app
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+    // Gestión DB
+    // Respaldos (MySQL)
+    Route::post('db/backup', [\App\Http\Controllers\GestionDbController::class, 'backup']);
+    Route::get('db/backup/download', [\App\Http\Controllers\GestionDbController::class, 'download'])->name('db.backup.download');
+
+    // Catálogo unificado de clientes (personas + empresas) para selectores
+    // Se expone sin 'auto.permiso' para uso general en selectores autenticados
+    Route::get('clientes', [\App\Http\Controllers\ClienteCatalogController::class, 'index'])
+        ->withoutMiddleware('auto.permiso');
+
+    // Catálogo: Estados de Orden de Servicio
+    Route::get('estados-orden-servicio', function () {
+        $items = EstadoOrdenServicio::select(
+            'id_estado_orden_servicio_pk as id',
+            'nombre',
+            'codigo'
+        )
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get();
+        return response()->json([
+            'data' => $items,
+            'meta' => ['count' => $items->count()],
+        ]);
+    });
 
     // Rol único del usuario (FK directa)
     Route::get('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'rol']);
@@ -123,4 +193,43 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Usuarios por rol
     Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
+
+    // Catálogo de Técnicos: personas vinculadas a usuarios con rol Técnico (rol principal o en tabla pivot)
+    Route::get('tecnicos', function () {
+        // Buscar rol técnico (match por 'tecn' case/acento-insensible en la medida posible)
+        $roles = \App\Models\Rol::query()
+            ->where('rol', 'like', '%tecn%')
+            ->get(['id_rol_pk','rol']);
+        if ($roles->isEmpty()) {
+            return response()->json([ 'data' => [], 'meta' => ['count' => 0] ]);
+        }
+        $roleIds = $roles->pluck('id_rol_pk')->all();
+        // Usuarios con rol principal técnico
+        $userIdsPrimary = \App\Models\Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+        // Usuarios con rol técnico en pivot N:M
+        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+            ->whereIn('id_rol_fk', $roleIds)
+            ->pluck('id_usuario_fk')->all();
+        $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+        if (empty($userIds)) {
+            return response()->json([ 'data' => [], 'meta' => ['count' => 0] ]);
+        }
+        $personas = \App\Models\Persona::whereIn('id_usuario_fk', $userIds)
+            ->orderBy('primer_nombre')
+            ->orderBy('primer_apellido')
+            ->get(['id_persona_pk as id', 'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido', 'id_usuario_fk']);
+        return response()->json([
+            'data' => $personas,
+            'meta' => ['count' => $personas->count()],
+        ]);
+    })->withoutMiddleware('auto.permiso');
+
+    // Dashboard datasets
+    Route::get('dashboard/indicadores', [DashboardController::class, 'indicators']);
+    Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);
+    Route::get('dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes']);
+    Route::get('dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado']);
+    Route::get('dashboard/actividades-recientes', [DashboardController::class, 'actividadesRecientes']);
+    // KPIs específicos de proyectos (opcional, por si el front los llama por separado)
+    // Mantener sólo si el front los requiere; de lo contrario se usan los de 'indicadores'
 });

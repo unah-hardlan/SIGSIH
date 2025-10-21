@@ -10,21 +10,60 @@ use App\Http\Requests\UpdateUsuarioRequest;
 use App\Http\Resources\UsuarioResource;
 use App\Http\Resources\RolResource;
 use App\Models\Rol;
+use App\Services\BitacoraService;
+use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
 {
-    public function __construct()
+    public function __construct(private BitacoraService $bitacora)
     {
-    // DB-backed permisos por objeto/acción
-    $this->middleware('permiso:usuarios,consultar')->only(['index','show']);
-    $this->middleware('permiso:usuarios,insercion')->only(['store']);
-    $this->middleware('permiso:usuarios,actualizacion')->only(['update','setRol']);
-    $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
-    $this->middleware('permiso:usuarios,consultar')->only(['rol']);
+        // DB-backed permisos por objeto/acción
+        $this->middleware('permiso:usuarios,consultar')->only(['index', 'show']);
+        $this->middleware('permiso:usuarios,insercion')->only(['store']);
+        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles']);
+        $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
+        $this->middleware('permiso:usuarios,consultar')->only(['rol', 'getRoles']);
+    }
+
+    /**
+     * Determina si un usuario autenticado es administrador (rol principal o en roles N:M).
+     */
+    private function isUserAdmin(?Usuario $user): bool
+    {
+        if (!$user) return false;
+        static $adminRoleId = null;
+        if ($adminRoleId === null) {
+            $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        }
+        if (!$adminRoleId) return false;
+        if ((int)$user->id_rol_fk === (int)$adminRoleId) return true;
+        if ($user->relationLoaded('roles')) {
+            return $user->roles->pluck('id_rol_pk')->contains((int)$adminRoleId);
+        }
+        return $user->roles()->where('id_rol_pk', $adminRoleId)->exists();
+    }
+
+    /**
+     * Cuenta administradores restantes excluyendo uno dado.
+     */
+    private function remainingAdminsCountExcluding(int $excludeUserId): int
+    {
+        $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        if (!$adminRoleId) return 0;
+        return Usuario::where('id_usuario_pk', '!=', $excludeUserId)
+            ->where(function($q) use ($adminRoleId) {
+                $q->where('id_rol_fk', $adminRoleId)
+                  ->orWhereHas('roles', function($r) use ($adminRoleId){ $r->where('id_rol_pk',$adminRoleId); });
+            })->count();
+    }
+
+    private function logBlockedAttempt(string $accion, string $descripcion, ?int $idUsuario = null): void
+    {
+        try { $this->bitacora->logFor('Usuarios', $accion, $descripcion, $idUsuario); } catch (\Throwable $e) {}
     }
     public function index()
     {
-        $query = Usuario::query();
+        $query = Usuario::with('rol');
 
         // Si no se especifica estado ni ?all=1, sólo activos
         if (!request()->has('estado') && request('all') != 1) {
@@ -35,10 +74,10 @@ class UsuarioController extends Controller
             $query->where('estado_usuario', $estado);
         }
         if ($q = request('q')) {
-            $query->where(function($sub) use ($q) {
+            $query->where(function ($sub) use ($q) {
                 $sub->where('usuario', 'like', "%$q%")
                     ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%" );
+                    ->orWhere('correo_electronico', 'like', "%$q%");
             });
         }
 
@@ -51,7 +90,7 @@ class UsuarioController extends Controller
             'creado' => 'fecha_creacion',
         ];
         $sort = request('sort');
-        $direction = strtolower(request('direction','asc')) === 'desc' ? 'desc' : 'asc';
+        $direction = strtolower(request('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($sort && isset($sortable[$sort])) {
             $query->orderBy($sortable[$sort], $direction);
         } else {
@@ -60,7 +99,7 @@ class UsuarioController extends Controller
         }
 
         $perPage = (int) request('per_page', 15);
-        $usuarios = $query->paginate($perPage);
+        $usuarios = $query->with('rol')->paginate($perPage);
 
         return UsuarioResource::collection($usuarios)->additional([
             'meta' => [
@@ -77,8 +116,15 @@ class UsuarioController extends Controller
     public function store(StoreUsuarioRequest $request)
     {
         $data = $request->validated();
-        $data['contrasena'] = Hash::make($data['contrasena']);
-        $usuario = Usuario::create($data);
+        $usuario = Usuario::create($data); // mutator hash contrasena
+        try {
+            $this->bitacora->logFor('Usuarios', 'Insertar', 'Creación de usuario ' . $usuario->usuario, null, [
+                'tabla' => 'tbl_ms_usuario',
+                'id_registro' => $usuario->id_usuario_pk,
+                'despues' => $usuario->getAttributes(),
+            ]);
+        } catch (\Throwable $e) {
+        }
         return (new UsuarioResource($usuario))->response()->setStatusCode(201);
     }
 
@@ -100,10 +146,18 @@ class UsuarioController extends Controller
             return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
         $data = $request->validated();
-        if (isset($data['contrasena'])) {
-            $data['contrasena'] = Hash::make($data['contrasena']);
+        $antes = $usuario->getOriginal();
+        $usuario->update($data); // mutator hash contrasena si viene
+        $usuario->refresh();
+        try {
+            $this->bitacora->logFor('Usuarios', 'Actualizar', 'Actualización de usuario ' . $usuario->usuario, null, [
+                'tabla' => 'tbl_ms_usuario',
+                'id_registro' => $usuario->id_usuario_pk,
+                'antes' => $antes,
+                'despues' => $usuario->getAttributes(),
+            ]);
+        } catch (\Throwable $e) {
         }
-        $usuario->update($data);
         return (new UsuarioResource($usuario))->response();
     }
 
@@ -118,6 +172,10 @@ class UsuarioController extends Controller
         }
         $usuario->estado_usuario = 'INACTIVO';
         $usuario->save();
+        try {
+            $this->bitacora->logFor('Usuarios', 'Eliminar', 'Inactivación de usuario ' . $usuario->usuario);
+        } catch (\Throwable $e) {
+        }
         return response()->json(['message' => 'Usuario inactivado'], 200);
     }
 
@@ -137,9 +195,129 @@ class UsuarioController extends Controller
         $validated = $request->validate([
             'id_rol_fk' => 'required|integer|exists:tbl_ms_rol,id_rol_pk',
         ]);
+        $authUser = auth()->user();
+        if (!$this->isUserAdmin($authUser)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento no autorizado de asignar rol por usuario '.$authUser?->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No autorizado para asignar roles'], 403);
+        }
+        // Estado previo
+        $beforePrimary = (int) $usuario->id_rol_fk;
+        $beforePivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        $oldIsAdmin = $this->isUserAdmin($usuario);
+        $newIsAdmin = ((int)$validated['id_rol_fk'] === (int)$adminRoleId);
+        if ($oldIsAdmin && !$newIsAdmin) {
+            $remaining = $this->remainingAdminsCountExcluding($usuario->id_usuario_pk);
+            if ($remaining === 0) {
+                $this->logBlockedAttempt('Bloquear', 'Intento de dejar al sistema sin administradores al cambiar rol de usuario '.$usuario->id_usuario_pk, $usuario->id_usuario_pk);
+                return response()->json(['error' => 'No se puede remover el último administrador'], 422);
+            }
+        }
         $usuario->id_rol_fk = $validated['id_rol_fk'];
         $usuario->save();
-        return response()->json(['message' => 'Rol asignado']);
+        try {
+            $rolNombre = \App\Models\Rol::where('id_rol_pk', $validated['id_rol_fk'])->value('rol');
+            $this->bitacora->logFor('Usuarios', 'Actualizar', 'Asignación de rol a usuario ' . $usuario->usuario . ' -> ' . $rolNombre, $usuario->id_usuario_pk);
+        } catch (\Throwable $e) {}
+        // Comparar cambios y invalidar sesiones si hubo modificación real
+        $afterPrimary = (int) $usuario->id_rol_fk;
+        // pivot puede no cambiar aquí, pero lo capturamos por consistencia
+        $afterPivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $changed = ($beforePrimary !== $afterPrimary) || (implode(',', $beforePivot) !== implode(',', $afterPivot));
+        $reauth = false;
+        if ($changed) {
+            try {
+                cache()->forget('user_sessions:' . $usuario->getKey());
+                $this->bitacora->logFor('Usuarios', 'Seguridad', 'Invalidación de sesiones por cambio de rol', $usuario->id_usuario_pk, [
+                    'antes' => [ 'principal' => $beforePrimary, 'pivot' => $beforePivot ],
+                    'despues' => [ 'principal' => $afterPrimary, 'pivot' => $afterPivot ],
+                ]);
+                $reauth = true;
+            } catch (\Throwable $e) {}
+        }
+        return response()->json([
+            'message' => 'Rol asignado',
+            'reauth_required' => $reauth,
+        ]);
+    }
+
+    // Sincronizar múltiples roles (N:M). Mantiene id_rol_fk como rol principal por compatibilidad
+    public function syncRoles(Request $request, $id)
+    {
+        $usuario = Usuario::find($id);
+        if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        $validated = $request->validate([
+            'roles' => 'array',
+            'roles.*' => 'integer|exists:tbl_ms_rol,id_rol_pk',
+            'rol_principal' => 'nullable|integer|exists:tbl_ms_rol,id_rol_pk',
+        ]);
+        $roles = $validated['roles'] ?? [];
+        $principal = $validated['rol_principal'] ?? (count($roles) ? $roles[0] : null);
+        $authUser = auth()->user();
+        if (!$this->isUserAdmin($authUser)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento no autorizado de sincronizar roles por usuario '.$authUser?->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No autorizado para sincronizar roles'], 403);
+        }
+        // Estado previo
+        $beforePrimary = (int) $usuario->id_rol_fk;
+        $beforePivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
+        $oldIsAdmin = $this->isUserAdmin($usuario);
+        $newIsAdmin = false;
+        if ($adminRoleId) {
+            $idsInt = array_map('intval', $roles);
+            $newIsAdmin = in_array((int)$adminRoleId, $idsInt, true) || ((int)$principal === (int)$adminRoleId);
+        }
+        if ($oldIsAdmin && !$newIsAdmin) {
+            $remaining = $this->remainingAdminsCountExcluding($usuario->id_usuario_pk);
+            if ($remaining === 0) {
+                $this->logBlockedAttempt('Bloquear', 'Intento de dejar al sistema sin administradores al sincronizar roles de usuario '.$usuario->id_usuario_pk, $usuario->id_usuario_pk);
+                return response()->json(['error' => 'No se puede remover el último administrador'], 422);
+            }
+        }
+        DB::transaction(function () use ($usuario, $roles, $principal) {
+            try { $usuario->roles()->sync($roles); } catch (\Throwable $e) {}
+            $usuario->id_rol_fk = $principal;
+            $usuario->save();
+        });
+        try {
+            $this->bitacora->logFor('Usuarios', 'Actualizar', 'Sincronización de roles', $usuario->id_usuario_pk, [
+                'tabla' => 'tbl_usuario_rol',
+                'id_registro' => $usuario->id_usuario_pk,
+                'despues' => ['roles' => $roles, 'rol_principal' => $principal],
+            ]);
+        } catch (\Throwable $e) {}
+        // Estado después
+        $afterPrimary = (int) $usuario->id_rol_fk;
+        $afterPivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
+        $changed = ($beforePrimary !== $afterPrimary) || (implode(',', $beforePivot) !== implode(',', $afterPivot));
+        $reauth = false;
+        if ($changed) {
+            try {
+                cache()->forget('user_sessions:' . $usuario->getKey());
+                $this->bitacora->logFor('Usuarios', 'Seguridad', 'Invalidación de sesiones por cambio de roles', $usuario->id_usuario_pk, [
+                    'antes' => [ 'principal' => $beforePrimary, 'pivot' => $beforePivot ],
+                    'despues' => [ 'principal' => $afterPrimary, 'pivot' => $afterPivot ],
+                ]);
+                $reauth = true;
+            } catch (\Throwable $e) {}
+        }
+        return response()->json([
+            'message' => 'Roles sincronizados',
+            'roles' => $roles,
+            'rol_principal' => $principal,
+            'reauth_required' => $reauth,
+        ]);
+    }
+
+    // Obtener roles asignados y rol principal para precargar el modal
+    public function getRoles($id)
+    {
+        $usuario = Usuario::with('roles')->find($id);
+        if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        $roles = ($usuario->roles ?? collect())->pluck('id_rol_pk')->map(fn($v) => (int) $v)->values()->all();
+        $principal = $usuario->id_rol_fk ? (int) $usuario->id_rol_fk : (count($roles) ? (int) $roles[0] : null);
+        return response()->json(['roles' => $roles, 'rol_principal' => $principal]);
     }
 
     // Reporte web (HTML) dinámico
@@ -154,10 +332,10 @@ class UsuarioController extends Controller
             $query->where('estado_usuario', $estado);
         }
         if ($q = $request->input('q')) {
-            $query->where(function($sub) use ($q) {
+            $query->where(function ($sub) use ($q) {
                 $sub->where('usuario', 'like', "%$q%")
                     ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%" );
+                    ->orWhere('correo_electronico', 'like', "%$q%");
             });
         }
         // Orden
@@ -169,7 +347,7 @@ class UsuarioController extends Controller
             'creado' => 'fecha_creacion',
         ];
         $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction','asc')) === 'desc' ? 'desc' : 'asc';
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($sort && isset($sortable[$sort])) {
             $query->orderBy($sortable[$sort], $direction);
         } else {
@@ -178,12 +356,13 @@ class UsuarioController extends Controller
 
         $usuarios = $query->get();
         $total = $usuarios->count();
-        $activos = $usuarios->where('estado_usuario','ACTIVO')->count();
-        $inactivos = $usuarios->where('estado_usuario','INACTIVO')->count();
+        $activos = $usuarios->where('estado_usuario', 'ACTIVO')->count();
+        $inactivos = $usuarios->where('estado_usuario', 'INACTIVO')->count();
+        $bloqueados = $usuarios->where('estado_usuario', 'BLOQUEADO')->count();
 
         $fecha = now()->format('d/m/Y');
         $modulo = 'usuarios';
 
-        return view('admin.reporte-usuarios', compact('usuarios','total','activos','inactivos','fecha','modulo','sort','direction'));
+        return view('admin.reporte-usuarios', compact('usuarios', 'total', 'activos', 'inactivos', 'bloqueados', 'fecha', 'modulo', 'sort', 'direction'));
     }
 }

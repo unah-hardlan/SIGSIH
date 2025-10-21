@@ -14,7 +14,7 @@ class ProyectoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Proyecto::with(['ordenServicio', 'estadoProyecto']);
+        $query = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         // Filtros opcionales
         if ($request->has('id_orden_servicio_fk')) {
@@ -27,6 +27,44 @@ class ProyectoController extends Controller
 
         if ($request->has('nombre_proyecto')) {
             $query->where('nombre_proyecto', 'like', '%' . $request->nombre_proyecto . '%');
+        }
+
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_proyecto', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_proyecto', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('ordenServicio', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('numero_orden_servicio', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('estadoProyecto', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre', 'like', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre_proyecto');
+                    break;
+                case 'fecha_inicio':
+                    $query->orderBy('fecha_inicio_proyecto');
+                    break;
+                case 'fecha_estimada':
+                    $query->orderBy('fecha_estimada_fin_proyecto');
+                    break;
+                case 'fecha_fin':
+                    $query->orderBy('fecha_finalizacion_proyecto');
+                    break;
+                default:
+                    $query->orderBy('id_proyecto_pk', 'desc');
+            }
+        } else {
+            $query->orderBy('id_proyecto_pk', 'desc');
         }
 
         $proyectos = $query->paginate(15);
@@ -45,13 +83,12 @@ class ProyectoController extends Controller
             'fecha_estimada_fin_proyecto' => 'nullable|date',
             'fecha_finalizacion_proyecto' => 'nullable|date',
             'descripcion_proyecto' => 'nullable|string|max:500',
-            'actividades_proyecto' => 'nullable|string|max:500',
             'id_orden_servicio_fk' => 'required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_estado_proyecto_fk' => 'required|integer|exists:tbl_estado_proyecto,id_estado_proyecto_pk'
         ]);
 
         $proyecto = Proyecto::create($validatedData);
-        $proyecto->load(['ordenServicio', 'estadoProyecto']);
+        $proyecto->load(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         return new ProyectoResource($proyecto);
     }
@@ -61,7 +98,7 @@ class ProyectoController extends Controller
      */
     public function show($id)
     {
-        $proyecto = Proyecto::with(['ordenServicio', 'estadoProyecto'])->findOrFail($id);
+        $proyecto = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto'])->findOrFail($id);
         return new ProyectoResource($proyecto);
     }
 
@@ -78,13 +115,12 @@ class ProyectoController extends Controller
             'fecha_estimada_fin_proyecto' => 'nullable|date',
             'fecha_finalizacion_proyecto' => 'nullable|date',
             'descripcion_proyecto' => 'nullable|string|max:500',
-            'actividades_proyecto' => 'nullable|string|max:500',
             'id_orden_servicio_fk' => 'sometimes|required|integer|exists:tbl_orden_servicio,id_orden_servicio_pk',
             'id_estado_proyecto_fk' => 'sometimes|required|integer|exists:tbl_estado_proyecto,id_estado_proyecto_pk'
         ]);
 
         $proyecto->update($validatedData);
-        $proyecto->load(['ordenServicio', 'estadoProyecto']);
+        $proyecto->load(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
         return new ProyectoResource($proyecto);
     }

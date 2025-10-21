@@ -25,17 +25,71 @@ class IngresosController extends Controller
             $query->where('id_categoria_fk', $request->id_categoria_fk);
         }
 
-        if ($request->has('fecha_ingreso')) {
-            $query->whereDate('fecha_ingreso', $request->fecha_ingreso);
+        if ($request->has('fecha_desde')) {
+            $query->where('fecha_ingreso', '>=', $request->fecha_desde);
         }
 
-        if ($request->has('nombre_ingreso')) {
-            $query->where('nombre_ingreso', 'like', '%' . $request->nombre_ingreso . '%');
+        if ($request->has('fecha_hasta')) {
+            $query->where('fecha_ingreso', '<=', $request->fecha_hasta);
         }
 
-        $ingresos = $query->paginate(15);
+        if ($request->has('monto_min')) {
+            $query->where('monto_ingreso', '>=', $request->monto_min);
+        }
 
-        return IngresosResource::collection($ingresos);
+        if ($request->has('monto_max')) {
+            $query->where('monto_ingreso', '<=', $request->monto_max);
+        }
+
+        // Búsqueda general (q)
+        if ($request->has('q') && !empty($request->q)) {
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nombre_ingreso', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('descripcion_ingreso', 'like', '%' . $searchTerm . '%')
+                  ->orWhereHas('proyecto', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_proyecto', 'like', '%' . $searchTerm . '%');
+                  })
+                  ->orWhereHas('categoria', function($subQuery) use ($searchTerm) {
+                      $subQuery->where('nombre_categoria', 'like', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        // Ordenamiento
+        if ($request->has('sort') && !empty($request->sort)) {
+            $sortField = $request->sort;
+            switch ($sortField) {
+                case 'nombre':
+                    $query->orderBy('nombre_ingreso');
+                    break;
+                case 'fecha':
+                    $query->orderBy('fecha_ingreso');
+                    break;
+                case 'monto':
+                    $query->orderBy('monto_ingreso');
+                    break;
+                default:
+                    $query->orderBy('id_ingresos_pk', 'desc');
+            }
+        } else {
+            $query->orderBy('fecha_ingreso', 'desc');
+        }
+
+        $ingresos = $query->paginate($request->get('per_page', 15));
+
+        return response()->json([
+            'success' => true,
+            'data' => IngresosResource::collection($ingresos->items()),
+            'pagination' => [
+                'current_page' => $ingresos->currentPage(),
+                'per_page' => $ingresos->perPage(),
+                'total' => $ingresos->total(),
+                'last_page' => $ingresos->lastPage(),
+                'from' => $ingresos->firstItem(),
+                'to' => $ingresos->lastItem()
+            ]
+        ]);
     }
 
     /**
@@ -43,19 +97,23 @@ class IngresosController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nombre_ingreso' => 'required|string|max:255',
+        $validated = $request->validate([
+            'nombre_ingreso' => 'required|string|max:100',
             'fecha_ingreso' => 'required|date',
             'monto_ingreso' => 'required|numeric|min:0',
             'descripcion_ingreso' => 'nullable|string|max:500',
-            'id_proyecto_fk' => 'required|integer|exists:tbl_proyectos,id_proyecto_pk',
-            'id_categoria_fk' => 'required|integer|exists:tbl_categorias,id_categoria_pk'
+            'id_proyecto_fk' => 'required|exists:tbl_proyectos,id_proyecto_pk',
+            'id_categoria_fk' => 'required|exists:tbl_categorias,id_categoria_pk'
         ]);
 
-        $ingreso = Ingresos::create($validatedData);
+        $ingreso = Ingresos::create($validated);
         $ingreso->load(['proyecto', 'categoria']);
 
-        return new IngresosResource($ingreso);
+        return response()->json([
+            'success' => true,
+            'message' => 'Ingreso creado exitosamente',
+            'data' => new IngresosResource($ingreso)
+        ], 201);
     }
 
     /**
@@ -63,8 +121,20 @@ class IngresosController extends Controller
      */
     public function show($id)
     {
-        $ingreso = Ingresos::with(['proyecto', 'categoria'])->findOrFail($id);
-        return new IngresosResource($ingreso);
+        $ingreso = Ingresos::with(['proyecto', 'categoria'])->find($id);
+
+        if (!$ingreso) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ingreso no encontrado'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ingreso encontrado',
+            'data' => new IngresosResource($ingreso)
+        ], 200);
     }
 
     /**
@@ -74,19 +144,23 @@ class IngresosController extends Controller
     {
         $ingreso = Ingresos::findOrFail($id);
 
-        $validatedData = $request->validate([
-            'nombre_ingreso' => 'sometimes|required|string|max:255',
+        $validated = $request->validate([
+            'nombre_ingreso' => 'sometimes|required|string|max:100',
             'fecha_ingreso' => 'sometimes|required|date',
             'monto_ingreso' => 'sometimes|required|numeric|min:0',
             'descripcion_ingreso' => 'nullable|string|max:500',
-            'id_proyecto_fk' => 'sometimes|required|integer|exists:tbl_proyectos,id_proyecto_pk',
-            'id_categoria_fk' => 'sometimes|required|integer|exists:tbl_categorias,id_categoria_pk'
+            'id_proyecto_fk' => 'sometimes|required|exists:tbl_proyectos,id_proyecto_pk',
+            'id_categoria_fk' => 'sometimes|required|exists:tbl_categorias,id_categoria_pk'
         ]);
 
-        $ingreso->update($validatedData);
+        $ingreso->update($validated);
         $ingreso->load(['proyecto', 'categoria']);
 
-        return new IngresosResource($ingreso);
+        return response()->json([
+            'success' => true,
+            'message' => 'Ingreso actualizado exitosamente',
+            'data' => new IngresosResource($ingreso)
+        ]);
     }
 
     /**
@@ -94,11 +168,20 @@ class IngresosController extends Controller
      */
     public function destroy($id)
     {
-        $ingreso = Ingresos::findOrFail($id);
+        $ingreso = Ingresos::find($id);
+
+        if (!$ingreso) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ingreso no encontrado'
+            ], 404);
+        }
+
         $ingreso->delete();
 
         return response()->json([
-            'message' => 'Ingreso eliminado correctamente'
-        ], Response::HTTP_OK);
+            'success' => true,
+            'message' => 'Ingreso eliminado exitosamente'
+        ], 200);
     }
 }

@@ -2,8 +2,10 @@
 /vendor
 /node_modules
 /public/storage
+/public/build/assets
 /storage/*.key
 .env
+hardlan.sql
 .env.*.backup
 .phpunit.result.cache
 Homestead.yaml

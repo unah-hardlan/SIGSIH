@@ -15,8 +15,9 @@ class UpdateServicioRequest extends FormRequest
 
     public function rules(): array
     {
+        $servicioId = $this->route('id') ?? $this->route('servicio');
         return [
-            'nombre_servicio' => 'sometimes|required|string|max:100|unique:tbl_servicio,nombre_servicio,' . $this->route('servicio'),
+            'nombre_servicio' => 'sometimes|required|string|max:100|unique:tbl_servicio,nombre_servicio,' . $servicioId . ',id_servicio_pk',
             'tarifa' => 'sometimes|required|numeric|min:0'
         ];
     }

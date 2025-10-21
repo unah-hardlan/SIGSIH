@@ -16,18 +16,22 @@ class StoreEstadoFacturaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_estado' => 'required|string|max:50|unique:tbl_estado_factura,nombre_estado',
-            'descripcion_estado_factura' => 'nullable|string|max:255'
+            'nombre' => 'required|string|max:50|unique:tbl_estado_factura,nombre',
+            'descripcion' => 'nullable|string|max:255',
+            'codigo' => 'nullable|string|max:10',
+            'es_final' => 'boolean',
+            'orden' => 'integer|min:0'
         ];
     }
 
     public function messages(): array
     {
         return [
-            'nombre_estado.required' => 'El nombre del estado es obligatorio',
-            'nombre_estado.unique' => 'Ya existe un estado con ese nombre',
-            'nombre_estado.max' => 'El nombre no puede exceder 50 caracteres',
-            'descripcion_estado_factura.max' => 'La descripción no puede exceder 255 caracteres'
+            'nombre.required' => 'El nombre del estado es obligatorio',
+            'nombre.unique' => 'Ya existe un estado con ese nombre',
+            'nombre.max' => 'El nombre no puede exceder 50 caracteres',
+            'descripcion.max' => 'La descripción no puede exceder 255 caracteres',
+            'codigo.max' => 'El código no puede exceder 10 caracteres'
         ];
     }
 

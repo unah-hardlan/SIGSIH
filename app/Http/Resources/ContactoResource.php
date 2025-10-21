@@ -18,13 +18,20 @@ class ContactoResource extends JsonResource
             'id' => $this->id_contacto_pk,
             'tipo_contacto' => $this->tipo_contacto,
             'valor_contacto' => $this->valor_contacto,
-            'id_persona' => $this->id_persona_fk,
-            'persona' => $this->whenLoaded('persona', function () {
-                return $this->persona ? [
-                    'id' => $this->persona->id_persona_pk,
-                    'nombre' => $this->persona->nombre_persona ?? 'N/A',
-                    'apellido' => $this->persona->apellido_persona ?? 'N/A',
-                    'nombre_completo' => ($this->persona->nombre_persona ?? '') . ' ' . ($this->persona->apellido_persona ?? ''),
+            'id_cliente_fk' => $this->id_cliente_fk,
+            'cliente' => $this->whenLoaded('cliente', function () {
+                return $this->cliente ? [
+                    'id_cliente_pk' => $this->cliente->id_cliente_pk,
+                    'tipo_cliente' => $this->cliente->tipo_cliente,
+                    'estado_cliente' => $this->cliente->estado_cliente,
+                    'fecha_registro' => optional($this->cliente->fecha_registro)->toDateTimeString(),
+                    'empresa' => $this->cliente->relationLoaded('empresa') && $this->cliente->empresa
+                        ? [
+                            'nombre_comercial' => $this->cliente->empresa->nombre_comercial,
+                            'razon_social' => $this->cliente->empresa->razon_social,
+                            'rtn' => $this->cliente->empresa->rtn,
+                        ]
+                        : null,
                 ] : null;
             }),
         ];

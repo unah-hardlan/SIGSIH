@@ -1,122 +1,230 @@
 <div x-data="{
     tab: 'tipos',
-    tipos: [
-        {nombre: 'General', descripcion: 'Pantallas de resumen y navegación principal'},
-        {nombre: 'Operativa', descripcion: 'Pantallas para gestión de procesos y tickets'},
-        {nombre: 'Analítica', descripcion: 'Pantallas para reportes y análisis de datos'},
-        {nombre: 'Financiera', descripcion: 'Pantallas para facturación y pagos'}
-    ],
+    tipos: [],
     isTipoModalOpen: false,
     isTipoEditModalOpen: false,
     isTipoDeleteModalOpen: false,
     tipoToEdit: {nombre: '', descripcion: ''},
-    tipoToDelete: {nombre: '', descripcion: ''}
-    , searchTipos: '', ordenarPor: ''
-}">
+    tipoToDelete: {nombre: '', descripcion: ''},
+    ordenarPor: 'nombre',
+    loadingTipos: false,
+    searchTipos: '', // Para el filtro de búsqueda
+    // Si agregas más filtros select, defínelos aquí. Ejemplo:
+    // filtroEstado: '', filtroCategoria: '',
+    async fetchTipoObjetos() {
+        await window.tipoObjetosApiHandlers.fetchTipoObjetos(this);
+    },
+    async storeTipoObjeto() {
+        await window.tipoObjetosApiHandlers.storeTipoObjeto(this);
+    },
+    async updateTipoObjeto() {
+        await window.tipoObjetosApiHandlers.updateTipoObjeto(this);
+    },
+    async deleteTipoObjeto() {
+        await window.tipoObjetosApiHandlers.deleteTipoObjeto(this);
+    },
+    handleModalSubmit(e){
+        if(e.detail.formId === 'form-agregar-tipo-objeto') this.storeTipoObjeto();
+        if(e.detail.formId === 'form-editar-tipo-objeto') this.updateTipoObjeto();
+    },
+    handleDelete(){ if(this.isTipoDeleteModalOpen) this.deleteTipoObjeto(); },
+    getFilteredTipos(){
+        let list = Array.isArray(this.tipos) ? [...this.tipos] : [];
+        const q = (this.searchTipos || '').toString().toLowerCase().trim();
+        if (q) {
+            list = list.filter(t =>
+                (t.nombre || '').toString().toLowerCase().includes(q) ||
+                (t.descripcion || '').toString().toLowerCase().includes(q)
+            );
+        }
+        const field = this.ordenarPor || 'nombre';
+        list.sort((a,b)=>{
+            const av = (a?.[field] ?? '').toString().toLowerCase();
+            const bv = (b?.[field] ?? '').toString().toLowerCase();
+            if (av < bv) return -1; if (av > bv) return 1; return 0;
+        });
+        return list;
+    }
+}"
+x-init="fetchTipoObjetos()"
+@keydown.escape.window="isTipoModalOpen=false; isTipoEditModalOpen=false; isTipoDeleteModalOpen=false;"
+@modal-submit.window="handleModalSubmit($event)"
+@confirm-delete.window="handleDelete()">
     <div x-show="tab === 'tipos'">
-        <x-admin.tabla-crud :titulo="'Tipos de Objetos'">
-            <x-slot name="filtros">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-4">Catálogo de Tipos de Objeto</h1>
+        </div>
+
+        <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+            <x-slot name="filters">
                 @include('partials.filtros-generales', [
-                'searchModel' => 'searchTipos',
-                'ordenarOptions' => [
-                'nombre' => 'Nombre',
-                'descripcion' => 'Descripción'
-                ]
+                    'searchModel' => 'searchTipos',
+                    'ordenarOptions' => [
+                        'nombre' => 'Nombre',
+                        'descripcion' => 'Descripción'
+                    ]
                 ])
             </x-slot>
-            <x-slot name="boton">
+
+            <x-slot name="actions">
                 <div class="w-full flex justify-center sm:justify-end">
                     <button @click="isTipoModalOpen = true"
-                        class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center justify-center">
+                        class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                         Agregar tipo
                     </button>
                 </div>
             </x-slot>
-            <table class="min-w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="py-2 px-4 text-left">Nombre</th>
-                        <th class="py-2 px-4 text-left">Descripción</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="tipo in tipos" :key="tipo.nombre">
-                        <tr>
-                            <td class="py-2 px-4" x-text="tipo.nombre"></td>
-                            <td class="py-2 px-4" x-text="tipo.descripcion"></td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = tipo"
-                                    class="text-blue-600 hover:text-blue-800"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = tipo"
-                                    class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></a>
-                            </td>
-                        </tr>
+
+            <x-slot name="table">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                        <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                            <tr>
+                                <th class="py-2 px-4 text-left">Nombre</th>
+                                <th class="py-2 px-4 text-left">Descripción</th>
+                                <th class="py-2 px-4 text-left">Creado Por</th>
+                                <th class="py-2 px-4 text-left">Fecha Creación</th>
+                                <th class="py-2 px-4 text-left">Modificado Por</th>
+                                <th class="py-2 px-4 text-left">Fecha Modificación</th>
+                                <th class="py-2 px-4 text-left">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-if="loadingTipos">
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de objeto...
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-if="!loadingTipos && tipos.length === 0">
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
+                                        No hay tipos de objeto registrados
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-if="!loadingTipos && getFilteredTipos().length > 0">
+                                <template x-for="tipo in getFilteredTipos()" :key="tipo.id || tipo.nombre">
+                                    <tr class="border-b dark:border-gray-700 nunito-regular">
+                                        <td class="py-2 px-4" x-text="tipo.nombre"></td>
+                                        <td class="py-2 px-4" x-text="tipo.descripcion"></td>
+                                        <td class="py-2 px-4" x-text="tipo.creado_por"></td>
+                                        <td class="py-2 px-4" x-text="new Date(tipo.fecha_creacion).toLocaleDateString()"></td>
+                                        <td class="py-2 px-4" x-text="tipo.modificado_por || '-'"></td>
+                                        <td class="py-2 px-4" x-text="tipo.fecha_modificacion ? new Date(tipo.fecha_modificacion).toLocaleDateString() : '-'"></td>
+                                        <td class="py-2 px-4 flex gap-2">
+                                            <button @click="tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
+                                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                            <button @click="tipoToDelete = {id: tipo.id, nombre: tipo.nombre}; isTipoDeleteModalOpen = true"
+                                                class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </x-slot>
+
+            <x-slot name="cards">
+                <template x-if="loadingTipos">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 nunito-regular">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de objeto...
+                    </div>
+                </template>
+                <template x-if="!loadingTipos && tipos.length === 0">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 nunito-regular">
+                        No hay tipos de objeto registrados
+                    </div>
+                </template>
+                <template x-if="!loadingTipos && getFilteredTipos().length > 0">
+                    <template x-for="tipo in getFilteredTipos()" :key="tipo.id || tipo.nombre">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="tipo.nombre"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-1 text-sm">
+                                <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Descripción:</span>
+                                    <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipo.descripcion"></span></div>
+                                <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Creado por:</span>
+                                    <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipo.creado_por"></span></div>
+                                <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha creación:</span>
+                                    <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="new Date(tipo.fecha_creacion).toLocaleDateString()"></span></div>
+                                <template x-if="tipo.modificado_por">
+                                    <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Modificado por:</span>
+                                        <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipo.modificado_por"></span></div>
+                                </template>
+                                <template x-if="tipo.fecha_modificacion">
+                                    <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Fecha modificación:</span>
+                                        <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="new Date(tipo.fecha_modificacion).toLocaleDateString()"></span></div>
+                                </template>
+                            </div>
+                            <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <button @click="tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
+                                    class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button @click="tipoToDelete = {id: tipo.id, nombre: tipo.nombre}; isTipoDeleteModalOpen = true"
+                                    class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
                     </template>
-                </tbody>
-            </table>
-        </x-admin.tabla-crud>
+                </template>
+            </x-slot>
+
+        </x-responsive-table>
+
+
         <!-- Modal Agregar Tipo de Objeto -->
-        <div x-show="isTipoModalOpen"
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-                <h2 class="text-xl font-bold mb-4">Agregar Tipo de Objeto</h2>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2"
-                        placeholder="Ej: Analítica">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2"
-                        placeholder="Describe el tipo..."></textarea>
-                </div>
-                <div class="flex justify-end gap-2 mt-6">
-                    <button @click="isTipoModalOpen = false; tipoToEdit = {nombre:'', descripcion:''}"
-                        class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                    <button @click="
-                    if(tipoToEdit.nombre && tipoToEdit.descripcion){
-                        tipos.push({nombre: tipoToEdit.nombre, descripcion: tipoToEdit.descripcion});
-                        isTipoModalOpen = false;
-                        tipoToEdit = {nombre:'', descripcion:''};
-                    }
-                " class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Guardar Tipo</button>
-                </div>
-                <button @click="isTipoModalOpen = false"
-                    class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
+        <x-admin.edit-modal 
+            modalName="isTipoModalOpen"
+            title="Agregar Tipo de Objeto"
+            submitLabel="Guardar Tipo"
+            :itemToEdit="'tipoToEdit'"
+            maxWidth="max-w-2xl"
+            formId="form-agregar-tipo-objeto">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Analítica">
             </div>
-        </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el tipo..."></textarea>
+            </div>
+        </x-admin.edit-modal>
 
         <!-- Modal Editar Tipo de Objeto -->
-        <div x-show="isTipoEditModalOpen"
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
-                <h2 class="text-xl font-bold mb-4">Editar Tipo de Objeto</h2>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2"></textarea>
-                </div>
-                <div class="flex justify-end gap-2 mt-6">
-                    <button @click="isTipoEditModalOpen = false" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                    <button @click="
-                    let i = tipos.findIndex(t => t.nombre === tipoToEdit.nombre);
-                    if(i !== -1){
-                        tipos[i].descripcion = tipoToEdit.descripcion;
-                    }
-                    isTipoEditModalOpen = false;
-                " class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar Cambios</button>
-                </div>
-                <button @click="isTipoEditModalOpen = false"
-                    class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
+        <x-admin.edit-modal 
+            modalName="isTipoEditModalOpen"
+            title="Editar Tipo de Objeto"
+            submitLabel="Guardar Cambios"
+            :itemToEdit="'tipoToEdit'"
+            maxWidth="max-w-2xl"
+            formId="form-editar-tipo-objeto">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
+                <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular">
             </div>
-        </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
+                <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
+            </div>
+        </x-admin.edit-modal>
 
+        <!-- Modal Eliminar Tipo de Objeto -->
+        <x-admin.confirmation-modal 
+            modalName="isTipoDeleteModalOpen"
+            title="Confirmar Eliminación"
+            :itemToDelete="'tipoToDelete'"
+            itemNameProperty="nombre"
+            message="¿Estás seguro de que deseas eliminar el tipo de objeto" />
 
     </div>
-    <x-admin.confirmation-modal modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
-        message="¿Estás seguro de que deseas eliminar este tipo de objeto?" />
 </div>

@@ -12,7 +12,7 @@ class ReporteVisitaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ReporteVisita::query()->with(['tipoVisita','servicioRealizado','accionRealizada']);
+    $query = ReporteVisita::query()->with(['tipoVisita','servicioRealizado','accionRealizada','ordenServicio']);
         if($tipo = $request->input('id_tipo_visita_fk')){ $query->where('id_tipo_visita_fk',$tipo); }
         if($serv = $request->input('id_servicio_realizado_fk')){ $query->where('id_servicio_realizado_fk',$serv); }
         if($acc = $request->input('id_accion_realizada_fk')){ $query->where('id_accion_realizada_fk',$acc); }
@@ -41,14 +41,14 @@ class ReporteVisitaController extends Controller
 
     public function store(StoreReporteVisitaRequest $request)
     {
-        $rep = ReporteVisita::create($request->validated());
-        $rep->load(['tipoVisita','servicioRealizado','accionRealizada']);
+    $rep = ReporteVisita::create($request->validated());
+    $rep->load(['tipoVisita','servicioRealizado','accionRealizada','ordenServicio']);
         return (new ReporteVisitaResource($rep))->response()->setStatusCode(201);
     }
 
     public function show($id)
     {
-        $rep = ReporteVisita::with(['tipoVisita','servicioRealizado','accionRealizada'])->find($id);
+    $rep = ReporteVisita::with(['tipoVisita','servicioRealizado','accionRealizada','ordenServicio'])->find($id);
         if(!$rep) return response()->json(['error'=>'Reporte no encontrado'],404);
         return (new ReporteVisitaResource($rep))->response();
     }
@@ -57,8 +57,8 @@ class ReporteVisitaController extends Controller
     {
         $rep = ReporteVisita::find($id);
         if(!$rep) return response()->json(['error'=>'Reporte no encontrado'],404);
-        $rep->update($request->validated());
-        $rep->load(['tipoVisita','servicioRealizado','accionRealizada']);
+    $rep->update($request->validated());
+    $rep->load(['tipoVisita','servicioRealizado','accionRealizada','ordenServicio']);
         return (new ReporteVisitaResource($rep))->response();
     }
 

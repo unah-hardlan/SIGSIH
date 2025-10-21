@@ -7,7 +7,12 @@ export default {
     ],
     darkMode: "class",
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                sans: ["Nunito", "sans-serif"],
+                serif: ["PT Serif", "serif"],
+            },
+        },
     },
     variants: {
         extend: {},
@@ -16,4 +21,14 @@ export default {
     corePlugins: {
         preflight: true,
     },
+    safelist: [
+        "border-2",
+        "border-l-4",
+        "border-blue-500",
+        "border-green-500",
+        "border-purple-500",
+        "border-indigo-500",
+        "border-orange-500",
+        "border-pink-500",
+    ],
 };

@@ -15,16 +15,16 @@ class EmpresaClienteResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id_empresa_cliente_pk' => $this->id_empresa_cliente_pk,
-            'fecha_registro' => $this->fecha_registro,
-            'id_nombre_empresa_fk' => $this->id_nombre_empresa_fk,
-            'id_direccion_fk' => $this->id_direccion_fk,
-            'id_oficina_fk' => $this->id_oficina_fk,
-            
-            // Relaciones
-            'nombre_empresa' => $this->whenLoaded('nombreEmpresa'),
-            'direccion' => $this->whenLoaded('direccion'),
-            'oficina' => $this->whenLoaded('oficina')
+            'id_cliente_fk' => $this->id_cliente_fk,
+            'nombre_comercial' => $this->nombre_comercial,
+            'razon_social' => $this->razon_social,
+            'rtn' => $this->rtn,
+            'descripcion_empresa' => $this->descripcion_empresa,
+            'horario_atencion' => $this->horario_atencion,
+            'fecha_registro' => $this->cliente?->fecha_registro?->toDateTimeString(),
+            'estado_cliente' => $this->cliente?->estado_cliente,
+            'tipo_cliente' => $this->cliente?->tipo_cliente,
+            'contactos' => ContactoResource::collection($this->whenLoaded('contactos')),
         ];
     }
 }

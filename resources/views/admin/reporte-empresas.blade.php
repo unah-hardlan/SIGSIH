@@ -9,84 +9,96 @@
             <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="EMPRESAS" :logoSize="96" />
 
-            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Empresas Cliente</h2>
+            <h2 class="text-xl nunito-bold text-gray-800 mb-2 text-center">Listado de Empresas</h2>
+            @php
+            // Normalizar colección si no se pasa
+            $empresas = $empresas ?? collect();
+            @endphp
 
-            <!-- Tabla de Empresas Cliente -->
-            <div class="overflow-x-auto mb-8">
-                <table class="min-w-full border-collapse border border-gray-300">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Fecha Registro</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Nombre Empresa</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Dirección</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Oficina</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2025-08-03</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Empresa Ejemplo</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Av. Principal 123</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Oficina Central</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Resumen de filtros -->
+            @php
+            $ordenLabelMap = [
+            'nombre_empresa' => 'nombre (comercial)',
+            'estado_empresa' => 'estado',
+            'fecha_registro' => 'fecha_registro (desc por defecto)'
+            ];
+            $ordenKey = (isset($ordenarPor) && is_string($ordenarPor) && $ordenarPor !== '') ? $ordenarPor : null;
+            $ordenLabel = $ordenKey ? ($ordenLabelMap[$ordenKey] ?? str_replace('_',' ', $ordenKey)) : 'fecha_registro
+            (desc)';
+            @endphp
+            <div class="text-xs text-gray-600 mb-4 space-y-1 nunito-regular">
+                <div><span class="font-semibold">Búsqueda:</span> {{ $search ? e($search) : '—' }}</div>
+                <div><span class="font-semibold">Estado:</span> {{ $estadoEmpresa ? ucfirst($estadoEmpresa) : 'Todos' }}
+                </div>
+                <div><span class="font-semibold">Ordenar por:</span> {{ $ordenLabel }}</div>
+                <div><span class="font-semibold">Generado:</span>
+                    {{ $fechaGeneracion ? e($fechaGeneracion) : now()->toDateTimeString() }}
+                </div>
             </div>
 
-            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Empresas Registradas</h2>
+            <!-- Tabla de Empresas Cliente (adaptada a datos reales) -->
             <div class="overflow-x-auto mb-8">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Nombre Empresa</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Descripción</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Nombre
+                                Comercial</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Razón
+                                Social</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">RTN</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Descripción
+                            </th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Fecha
+                                Registro</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Horario
+                            </th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($empresas as $e)
                         <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Empresa Registrada 1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Desc 1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Activo</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">
+                                {{ $e->nombre_comercial ?? '—' }}
+                            </td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $e->razon_social ?? '—' }}
+                            </td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $e->rtn ?? '—' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">
+                                {{ $e->descripcion_empresa ?? '' }}
+                            </td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">
+                                {{ $e->fecha_registro ? \Illuminate\Support\Carbon::parse($e->fecha_registro)->format('Y-m-d') : '\u2014' }}
+                            </td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $e->horario_atencion ?? '' }}
+                            </td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">
+                                {{ strtolower((string) $e->estado_cliente)==='activo' ? 'Activo' : 'Inactivo' }}
+                            </td>
                         </tr>
+                        @empty
                         <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Empresa Registrada 2</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Desc 2</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Inactivo</td>
+                            <td colspan="7"
+                                class="border border-gray-300 py-4 px-3 text-center text-gray-500 italic nunito-regular">
+                                Sin resultados</td>
                         </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Oficinas de Empresa</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full border-collapse border border-gray-300">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID Oficina</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Nombre Oficina</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Oficina Central</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Sucursal Norte</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">3</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Sucursal Sur</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+
+            <!-- Botones de acción -->
+            <div class="mt-6 flex justify-center gap-4 no-print">
+                <button onclick="window.print()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    <i class="fas fa-print mr-2"></i>Imprimir
+                </button>
+                <button onclick="window.close()"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    <i class="fas fa-times mr-2"></i>Cerrar
+                </button>
             </div>
         </div>
     </div>

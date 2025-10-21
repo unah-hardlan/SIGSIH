@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\Objeto;
 use App\Models\Permiso;
 use App\Models\Usuario;
+use App\Services\PermissionService;
 
 class PermissionMiddleware
 {
@@ -17,6 +18,10 @@ class PermissionMiddleware
      */
     public function handle(Request $request, Closure $next, string $objetoKey, string $accion): Response
     {
+        // Allow CORS preflight
+        if (strtoupper($request->method()) === 'OPTIONS') {
+            return $next($request);
+        }
         $user = auth()->user();
         if (!$user) {
             return response()->json(['error' => 'No autenticado'], 401);
@@ -35,6 +40,16 @@ class PermissionMiddleware
         $objeto = Objeto::whereRaw('LOWER(nombre_objeto) = ?', [mb_strtolower($objetoKey)])->first();
         if (!$objeto) {
             return response()->json(['error' => 'Objeto no configurado', 'objeto' => $objetoKey], 403);
+        }
+
+        // Si accion=auto, derivar por método HTTP
+        if ($accion === 'auto') {
+            $accion = match (strtoupper($request->method())) {
+                'POST' => 'insercion',
+                'PUT', 'PATCH' => 'actualizacion',
+                'DELETE' => 'eliminacion',
+                default => 'consultar',
+            };
         }
 
         // Mapear acción => columna
@@ -61,6 +76,15 @@ class PermissionMiddleware
             ->exists();
 
         if (!$allowed) {
+            // Permitir acceso a Usuarios si el rol posee Configuración de accesos con la misma acción
+            if (mb_strtolower($objetoKey) === 'usuarios') {
+                $permService = app(PermissionService::class);
+                $altKeys = ['Configuración de accesos', 'Configuracion de accesos', 'Permisos'];
+                if ($permService->can($user, $altKeys, $accion)) {
+                    return $next($request);
+                }
+            }
+
             return response()->json(['error' => 'Permiso denegado', 'objeto' => $objetoKey, 'accion' => $accion], 403);
         }
 

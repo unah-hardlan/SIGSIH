@@ -127,6 +127,14 @@ class CiudadesController extends Controller
             ], 404);
         }
 
+        // Verificar si la ciudad tiene direcciones asociadas
+        if ($ciudad->direcciones()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar la ciudad porque tiene direcciones asociadas'
+            ], 400);
+        }
+
         $ciudad->delete();
 
         return response()->json([

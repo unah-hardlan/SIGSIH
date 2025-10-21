@@ -9,36 +9,30 @@ class EmpresaCliente extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_empresa_cliente';
-    protected $primaryKey = 'id_empresa_cliente_pk';
+    protected $table = 'tbl_cliente_empresa';
+    protected $primaryKey = 'id_cliente_fk';
     public $timestamps = false;
+    public $incrementing = false;
 
     protected $fillable = [
-        'fecha_registro',
-        'id_nombre_empresa_fk',
-        'id_direccion_fk',
-        'id_oficina_fk'
+        'id_cliente_fk',
+        'nombre_comercial',
+        'razon_social',
+        'rtn',
+        'descripcion_empresa',
+        'horario_atencion'
     ];
 
-    protected $casts = [
-        'fecha_registro' => 'datetime'
-    ];
-
-    // Relación con Nombre Empresa
-    public function nombreEmpresa()
+    /**
+     * Relación con Cliente
+     */
+    public function cliente()
     {
-        return $this->belongsTo(NombreEmpresa::class, 'id_nombre_empresa_fk', 'id_nombre_empresa_pk');
+        return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
-    // Relación con Dirección
-    public function direccion()
+    public function contactos()
     {
-        return $this->belongsTo(Direccion::class, 'id_direccion_fk', 'id_direccion_pk');
-    }
-
-    // Relación con Oficina Empresa
-    public function oficina()
-    {
-        return $this->belongsTo(OficinaEmpresa::class, 'id_oficina_fk', 'id_oficina_empresa_pk');
+        return $this->hasMany(Contacto::class, 'id_cliente_fk', 'id_cliente_fk');
     }
 }

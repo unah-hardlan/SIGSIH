@@ -1,9 +1,11 @@
 <!doctype html>
-<html>
+<html class="is-admin">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ $appName ?? 'SIGSIH' }}</title>
 
     {{-- SPA Meta Tags --}}
     @if(request()->header('X-SPA-Page'))
@@ -11,17 +13,85 @@
     <meta name="spa-view" content="{{ request()->header('X-SPA-View') }}">
     @endif
 
-    @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/css/theme.css', 'resources/js/app.js', 'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/auth-guard.js', 'resources/js/toast.js', 'resources/js/tabla-responsive.js'])
+    @php
+    $adminModulesDataset = \App\Support\AdminModuleRegistry::modulesForFrontend();
+    @endphp
+
+    @vite(['resources/css/app.css', 'resources/css/global.css', 'resources/css/theme.css', 'resources/js/app.js',
+    'resources/js/sidebar.js', 'resources/js/session.js', 'resources/js/idle-logout.js', 'resources/js/toast.js',
+    'resources/js/tabla-responsive.js'])
+
+    <script type="application/json" id="admin-modules-dataset">
+        @json($adminModulesDataset)
+    </script>
+    <script>
+        (function() {
+            try {
+                const el = document.getElementById('admin-modules-dataset');
+                window.__ADMIN_MODULES__ = el && el.textContent ? JSON.parse(el.textContent) : [];
+            } catch (err) {
+                window.__ADMIN_MODULES__ = [];
+            }
+        })();
+    </script>
+
+    <!-- Theme script inline para evitar problemas de Vite -->
+    <script>
+        // Pre-render theme script adicional para admin
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
 
     <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
         rel="stylesheet">
 
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('theme');
+                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
+
+    <script type="application/json" id="auth-bootstrap">
+        @json(['firstTime' => $authFirstTime ?? false, 'user' => $authUser ?? null, 'persona' => $authPersona ?? null])
+    </script>
     <script defer>
         document.addEventListener('alpine:init', () => {
-            Alpine.store('perfil', {
+            let initial = {
                 firstTime: false,
+                user: null,
+                persona: null
+            };
+            try {
+                const el = document.getElementById('auth-bootstrap');
+                if (el && el.textContent) initial = JSON.parse(el.textContent);
+            } catch (_) {
+                /* noop */
+            }
+            Alpine.store('perfil', {
+                firstTime: !!initial.firstTime,
+                user: initial.user || null,
+                persona: initial.persona || null,
             });
         });
     </script>
@@ -31,37 +101,48 @@
     @livewireStyles
 </head>
 
-<body class="bg-gray-900 min-h-screen flex flex-col" 
-      x-data="{ 
+@php
+use Illuminate\Support\Str;
+$currentPartial = $partialView ?? null;
+$initialViewName = $currentPartial ? Str::after($currentPartial, 'admin.partials.') : trim($__env->yieldContent('page-view-name', 'dashboard'));
+if ($initialViewName === '') {
+$initialViewName = 'dashboard';
+}
+$permissionService = app(\App\Services\PermissionService::class);
+$authUser = auth()->user();
+$canConfigAcceso = $permissionService->can($authUser, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar');
+$canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consultar');
+@endphp
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col" x-data="{ 
           sidebarOpen: false, 
           isMobile: window.innerWidth < 768 
-      }" 
-      x-init="initResponsiveSidebar($data)">
-    <div class="flex h-screen min-h-0 relative">
+      }" x-init="initResponsiveSidebar($data); sidebarOpen = !isMobile;"
+    @closemobilesidebar.window="if (isMobile) { sidebarOpen = false }">
+    <div class="flex min-h-screen relative">
         <!-- Overlay para móviles SOLO -->
-        <div x-show="sidebarOpen && isMobile" 
-             x-transition:enter="transition-opacity ease-linear duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity ease-linear duration-300"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             @click="sidebarOpen = false"
-             class="fixed inset-0 bg-black bg-opacity-50"
-             style="z-index: 9998;">
+        <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50"
+            style="z-index: 9998; pointer-events: auto;">
         </div>
 
         @include('partials.admin-sidebar')
 
-        <main class="flex-1 p-3 sm:p-6 overflow-y-auto h-screen bg-white text-gray-900">
+        <main
+            class="flex-1 min-h-screen p-3 sm:p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            data-current-view="{{ $initialViewName }}"
+            data-can-configuracion-acceso="{{ $canConfigAcceso ? '1' : '0' }}"
+            data-can-gestion-usuarios="{{ $canGestionUsuarios ? '1' : '0' }}">
             @include('partials.admin-header')
             @hasSection('page-header')
-            <div class="bg-white p-4 rounded shadow mb-6">
+            <div class="bg-white dark:bg-gray-900 p-4 rounded mb-6">
                 @yield('page-header')
             </div>
             @endif
 
-            <div class="bg-white p-3 sm:p-6 rounded-lg shadow">
+            <div class="bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-lg">
                 @if(isset($partialView))
                 @include($partialView)
                 @else
@@ -70,6 +151,61 @@
             </div>
         </main>
     </div>
+
+    {{-- Idle logout config: minutes = SESSION_LIFETIME, warnSeconds customizable via env PARAM WARN_BEFORE_LOGOUT_SECONDS (optional) --}}
+    @php
+    $idleMinutes = (int) config('session.lifetime', 120);
+    $warnSeconds = (int) (env('WARN_BEFORE_LOGOUT_SECONDS', 30));
+    @endphp
+    <script type="application/json" id="idle-logout-config">
+        @json(['minutes' => $idleMinutes, 'warnSeconds' => $warnSeconds])
+    </script>
+
+    <script>
+        (function() {
+            const html = document.documentElement;
+
+            function applyThemeFromStorage() {
+                // Leer el estado actual del DOM en lugar de recalcular
+                const isDark = html.classList.contains('dark');
+                // Solo aplicar si hay discrepancia (por seguridad)
+                html.classList.toggle('dark', isDark);
+                const sw = document.getElementById('theme-switch');
+                if (sw) sw.checked = isDark;
+            }
+
+            function onToggle(e) {
+                const isDark = !!e.target.checked;
+                html.classList.toggle('dark', isDark);
+                try {
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                } catch (_) {}
+            }
+
+            function bindSwitch() {
+                const sw = document.getElementById('theme-switch');
+                if (!sw) return;
+                // Evitar múltiples bindings al reinsertar el header
+                if (sw.__themeBound) return;
+                sw.addEventListener('change', onToggle);
+                sw.__themeBound = true;
+            }
+
+            function initTheme() {
+                applyThemeFromStorage();
+                bindSwitch();
+            }
+
+            document.addEventListener('DOMContentLoaded', initTheme);
+            // Re-vincular después de navegación SPA
+            document.addEventListener('app:view-loaded', initTheme);
+            // Sincronizar entre pestañas
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'theme') applyThemeFromStorage();
+            });
+        })();
+    </script>
+
     @livewireScripts
 </body>
 

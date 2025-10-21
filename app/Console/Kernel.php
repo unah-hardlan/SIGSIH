@@ -12,7 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Programar recordatorios de calendario
+        $schedule->command('calendario:programar-recordatorios')->hourly();
+        // Prune usuarios no verificados diariamente a las 03:00
+        $schedule->command('users:prune-unverified')->dailyAt('03:00');
+        // Podar tabla de bitácora cada 24h (mantener 100 registros)
+        $schedule->command('bitacora:prune --keep=100')->daily();
     }
 
     /**
@@ -20,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

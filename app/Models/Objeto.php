@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TipoObjeto;
+use App\Models\Bitacora;
 
 class Objeto extends Model
 {
@@ -49,5 +51,10 @@ class Objeto extends Model
     public function bitacoras()
     {
         return $this->hasMany(Bitacora::class, 'id_objetos_fk');
+    }
+
+    public function tipoObjeto()
+    {
+        return $this->belongsTo(TipoObjeto::class, 'id_tipo_objetos_fk', 'id_tipo_objeto_pk');
     }
 }

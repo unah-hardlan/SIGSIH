@@ -16,8 +16,11 @@ class EstadoTicketResource extends JsonResource
     {
         return [
             'id_estado_ticket_pk' => $this->id_estado_ticket_pk,
-            'nombre_estado' => $this->nombre_estado,
-            'descripcion_estado_ticket' => $this->descripcion_estado_ticket,
+            'codigo' => $this->codigo,
+            'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
+            'es_final' => $this->es_final,
+            'orden' => $this->orden,
         ];
     }
 }

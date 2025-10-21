@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Solicitud;
+use Illuminate\Validation\Rule;
 use App\Http\Resources\SolicitudResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -14,26 +15,38 @@ class SolicitudController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Solicitud::with(['cliente', 'estadoSolicitud', 'contacto']);
+    $query = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto']);
 
         // Filtros opcionales
-        if ($request->has('id_cliente_fk')) {
+        if ($request->filled('id_cliente_fk')) {
             $query->where('id_cliente_fk', $request->id_cliente_fk);
         }
 
-        if ($request->has('id_estado_solicitud_fk')) {
+        if ($request->filled('id_estado_solicitud_fk')) {
             $query->where('id_estado_solicitud_fk', $request->id_estado_solicitud_fk);
         }
 
-        if ($request->has('numero_solicitud_acf')) {
-            $query->where('numero_solicitud_acf', 'like', '%' . $request->numero_solicitud_acf . '%');
+        if ($request->filled('numero_solicitud_acf')) {
+            $query->where('numero_solicitud_acf', (int) $request->numero_solicitud_acf);
         }
 
-        if ($request->has('numero_solicitud_cliente')) {
-            $query->where('numero_solicitud_cliente', 'like', '%' . $request->numero_solicitud_cliente . '%');
+        if ($request->filled('numero_solicitud_cliente')) {
+            $query->where('numero_solicitud_cliente', (int) $request->numero_solicitud_cliente);
         }
 
-        $solicitudes = $query->paginate(15);
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($sub) use ($search) {
+                $sub->where('descripcion_problema', 'like', "%{$search}%")
+                    ->orWhereHas('cliente.empresa', function ($empresaQuery) use ($search) {
+                        $empresaQuery->where('nombre_comercial', 'like', "%{$search}%")
+                                     ->orWhere('razon_social', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 15);
+        $solicitudes = $query->paginate(max(1, $perPage));
 
         return SolicitudResource::collection($solicitudes);
     }
@@ -43,19 +56,61 @@ class SolicitudController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'id_cliente_fk' => 'required|integer|exists:tbl_ms_usuario,id_usuario_pk',
-            'numero_solicitud_acf' => 'required|integer|unique:tbl_solicitud,numero_solicitud_acf',
-            'numero_solicitud_cliente' => 'nullable|integer',
+        $validated = $request->validate([
+            'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
             'descripcion_problema' => 'required|string|max:500',
             'id_estado_solicitud_fk' => 'required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
-            'id_contacto_fk' => 'required|integer|exists:tbl_contacto,id_contacto_pk'
+            'id_contacto_fk' => [
+                'required',
+                'integer',
+                Rule::exists('tbl_contacto', 'id_contacto_pk')->where(function ($q) use ($request) {
+                    return $q->where('id_cliente_fk', $request->input('id_cliente_fk'));
+                }),
+            ],
         ]);
 
-        $solicitud = Solicitud::create($validatedData);
-        $solicitud->load(['cliente', 'estadoSolicitud', 'contacto']);
+        // Usar transacción para evitar condiciones de carrera al calcular correlativos por cliente
+        $solicitud = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            // Calcular correlativo global ACF con mínimo 1000, bloqueando la última fila para reducir condiciones de carrera
+            $lastAcfRow = \Illuminate\Support\Facades\DB::table('tbl_solicitud')
+                ->select('numero_solicitud_acf')
+                ->orderByDesc('numero_solicitud_acf')
+                ->lockForUpdate()
+                ->first();
 
-        return new SolicitudResource($solicitud);
+            $maxAcf = $lastAcfRow?->numero_solicitud_acf;
+            if ($maxAcf === null) {
+                $nextAcf = 1000;
+            } else {
+                $maxAcf = (int) $maxAcf;
+                $nextAcf = $maxAcf < 1000 ? 1000 : ($maxAcf + 1);
+            }
+
+            // Bloquear el conjunto de filas de este cliente para calcular el correlativo del cliente de forma segura
+            $lockRow = \Illuminate\Support\Facades\DB::table('tbl_solicitud')
+                ->where('id_cliente_fk', $validated['id_cliente_fk'])
+                ->lockForUpdate()
+                ->selectRaw('MAX(numero_solicitud_cliente) as max_cli')
+                ->first();
+
+            $maxCli = $lockRow?->max_cli;
+            if ($maxCli === null) {
+                $nextCli = 1000;
+            } else {
+                $maxCli = (int) $maxCli;
+                $nextCli = $maxCli < 1000 ? 1000 : ($maxCli + 1);
+            }
+
+            $sol = new \App\Models\Solicitud();
+            $sol->fill($validated);
+            $sol->numero_solicitud_acf = $nextAcf;
+            $sol->numero_solicitud_cliente = $nextCli;
+            $sol->save();
+
+            return $sol;
+        });
+
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
     }
 
     /**
@@ -63,7 +118,7 @@ class SolicitudController extends Controller
      */
     public function show($id)
     {
-        $solicitud = Solicitud::with(['cliente', 'estadoSolicitud', 'contacto'])->findOrFail($id);
+    $solicitud = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto'])->findOrFail($id);
         return new SolicitudResource($solicitud);
     }
 
@@ -72,21 +127,24 @@ class SolicitudController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $solicitud = Solicitud::findOrFail($id);
+        $solicitud = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto'])->findOrFail($id);
 
         $validatedData = $request->validate([
-            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_ms_usuario,id_usuario_pk',
-            'numero_solicitud_acf' => 'sometimes|required|integer|unique:tbl_solicitud,numero_solicitud_acf,' . $id . ',id_solicitud_pk',
-            'numero_solicitud_cliente' => 'nullable|integer',
+            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
             'descripcion_problema' => 'sometimes|required|string|max:500',
             'id_estado_solicitud_fk' => 'sometimes|required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
-            'id_contacto_fk' => 'sometimes|required|integer|exists:tbl_contacto,id_contacto_pk'
+            'id_contacto_fk' => [
+                'sometimes', 'required', 'integer',
+                Rule::exists('tbl_contacto', 'id_contacto_pk')->where(function ($q) use ($request) {
+                    $clienteId = $request->input('id_cliente_fk');
+                    if ($clienteId === null) return $q; // if cliente not provided in this update, skip client filter
+                    return $q->where('id_cliente_fk', $clienteId);
+                }),
+            ],
         ]);
 
         $solicitud->update($validatedData);
-        $solicitud->load(['cliente', 'estadoSolicitud', 'contacto']);
-
-        return new SolicitudResource($solicitud);
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
     }
 
     /**

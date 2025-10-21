@@ -18,7 +18,35 @@ class Bitacora extends Model
         'id_objetos_fk',
         'accion',
         'descripcion',
+        'creado_por',
+        'fecha_creacion',
+        // nuevos campos de auditoría
+        'tabla',
+        'id_registro',
+        'antes',
+        'despues',
+        'ip',
+        'user_agent',
     ];
+
+    protected $casts = [
+        'fecha_evento' => 'datetime',
+        'fecha_creacion' => 'datetime',
+        'antes' => 'array',
+        'despues' => 'array',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $now = now();
+            if (!$model->fecha_evento) $model->fecha_evento = $now;
+            if (!$model->fecha_creacion) $model->fecha_creacion = $now;
+            if (!$model->creado_por) $model->creado_por = auth()->user()->usuario ?? 'system';
+            if (!$model->id_usuario_fk) $model->id_usuario_fk = auth()->user()->id_usuario_pk ?? null;
+        });
+    }
 
     public function usuario()
     {

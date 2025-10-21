@@ -2,8 +2,15 @@
 
 use App\Http\Controllers\Admin\ViewLoaderController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SessionTokenController;
+use App\Http\Controllers\ProfileController;
+// use App\Notifications\SystemNotification;
+use App\Services\PermissionService;
+use App\Support\AdminModuleRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,63 +26,193 @@ use Illuminate\Http\Request;
 // Auth routes (públicas)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+// Página bonita de verificación de correo (ES) y alias en EN para compatibilidad
+Route::get('/verificar-correo', [AuthController::class, 'verifyEmailPage'])->name('verify.email.page');
+Route::get('/verify-email', function (\Illuminate\Http\Request $request) {
+    return redirect()->route('verify.email.page', [
+        'token' => $request->query('token'),
+        'email' => $request->query('email'),
+    ]);
+});
 
-// Redirect root to admin dashboard
-Route::redirect('/', '/admin/dashboard');
+// Logout (protegido) usado por portal admin y cliente
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware(['auth.jwt.web','jwt.refresh'])
+    ->name('logout');
+
+// Intercambia la sesión web autenticada por un JWT para el SPA
+Route::get('/session/token', [SessionTokenController::class, 'issue'])
+    ->middleware(['auth.jwt.web','jwt.refresh'])
+    ->name('session.token');
+
+
+
+Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
+Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset.form');
+Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
+
+// Redirección dinámica según rol autenticado
+Route::get('/', function () {
+    // Si no está autenticado todavía, mostrar login
+    $user = auth()->user();
+    if (!$user) {
+        return redirect()->route('login');
+    }
+    $rolNombre = strtolower($user->rol->rol ?? '');
+    if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+        // Verificar si el cliente necesita configurar su perfil
+        $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+        
+        if (!$persona || 
+            empty($persona->primer_nombre) || 
+            empty($persona->primer_apellido) || 
+            empty($persona->dni) || 
+            empty($persona->id_genero_fk)) {
+            return redirect()->route('cliente.configurar-perfil');
+        }
+        
+        return redirect()->route('cliente.perfil');
+    }
+    // Por defecto admin
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth.jwt.web','jwt.refresh'])->name('home.redirect');
+
+// Ruta explícita reutilizable para redirecciones después de login via frontend
+Route::get('/post-auth-redirect', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return redirect()->route('login');
+    }
+    $rolNombre = strtolower($user->rol->rol ?? '');
+    if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+        // Verificar si el cliente necesita configurar su perfil
+        $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+        
+        if (!$persona || 
+            empty($persona->primer_nombre) || 
+            empty($persona->primer_apellido) || 
+            empty($persona->dni) || 
+            empty($persona->id_genero_fk)) {
+            return redirect()->route('cliente.configurar-perfil');
+        }
+        
+        return redirect()->route('cliente.perfil');
+    }
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth.jwt.web','jwt.refresh'])->name('post-auth.redirect');
+
+// API-like fallbacks (cookie-based auth) for SPA when Bearer token is missing/expirado
+Route::get('/api-web/dashboard/indicadores', [DashboardController::class, 'indicators'])
+    ->middleware(['auth.jwt.web','admin.only'])
+    ->name('dashboard.indicators.web');
+Route::get('/api-web/dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado'])
+    ->middleware(['auth.jwt.web','admin.only'])
+    ->name('dashboard.ordenes.estado.web');
+Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes'])
+    ->middleware(['auth.jwt.web','admin.only'])
+    ->name('dashboard.cotizaciones.mes.web');
+Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
+    ->middleware(['auth.jwt.web','admin.only'])
+    ->name('dashboard.proyectos.estado.web');
+
+// Catálogo de Estados de Solicitud (cookie-auth para SPA admin)
+Route::get('/api-web/estados-solicitud', function (\Illuminate\Http\Request $request) {
+    $items = DB::table('tbl_estado_solicitud')
+        ->select([
+            'id_estado_solicitud_pk as id',
+            'codigo',
+            'nombre as nombre_estado',
+            'descripcion as descripcion_estado',
+            'es_final',
+            'orden',
+        ])
+        ->orderBy('orden')
+        ->orderBy('nombre')
+        ->get();
+    return response()->json([
+        'data' => $items,
+        'meta' => ['count' => $items->count()],
+    ]);
+})->middleware(['auth.jwt.web','admin.only'])->name('api.web.estados.solicitud');
+
+// API-like fallback para cambiar contraseña del perfil (cookie-based auth)
+Route::post('/api-web/me/password', [ProfileController::class, 'changePassword'])
+    ->middleware(['auth.jwt.web'])
+    ->name('perfil.password.web');
+
+// API-like para configuración del sistema (parámetros generales)
+Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show'])
+    ->middleware(['auth.jwt.web','admin.only'])
+    ->name('system.settings.show.web');
+Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update'])
+    ->middleware(['auth.jwt.web','admin.only'])
+    ->name('system.settings.update.web');
+
+// API-like fallbacks para Reportes (cookie-based auth)
+Route::middleware(['auth.jwt.web','admin.only'])->group(function () {
+    // Reportes de visita CRUD básico
+    Route::get('/api-web/reportes-visita', [\App\Http\Controllers\ReporteVisitaController::class, 'index']);
+    Route::get('/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'show']);
+    Route::post('/api-web/reportes-visita', [\App\Http\Controllers\ReporteVisitaController::class, 'store']);
+    Route::match(['put', 'patch'], '/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'update']);
+    Route::delete('/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'destroy']);
+
+    // Catálogos necesarios (solo index)
+    Route::get('/api-web/tipos-visita', [\App\Http\Controllers\TipoVisitaController::class, 'index']);
+    Route::get('/api-web/servicios-realizados', [\App\Http\Controllers\ServicioRealizadoController::class, 'index']);
+    Route::get('/api-web/acciones-realizadas', [\App\Http\Controllers\AccionRealizadaController::class, 'index']);
+    Route::get('/api-web/ordenes-servicio', [\App\Http\Controllers\OrdenServicioController::class, 'index']);
+});
 
 // Partial view loading for SPA (protegido)
 Route::get('/load-view', [ViewLoaderController::class, 'load'])
     ->name('load-view')
-    ->middleware('auth.jwt.web');
+    ->middleware(['auth.jwt.web', 'force.profile']);
 
 // Admin routes group - SPA Entry Point (PROTEGIDO)
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh'])
+    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh', 'force.profile', 'block.client'])
     ->group(function () {
 
         // Dashboard
         Route::get('dashboard', fn() => view('layouts.admin')->with('partialView', 'admin.partials.dashboard'))->name('dashboard');
 
-        // Seguridad
-        Route::get('gestion-usuarios', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-usuarios'))->name('gestion-usuarios');
-        Route::get('parametros', fn() => view('layouts.admin')->with('partialView', 'admin.partials.parametros'))->name('parametros');
-        Route::get('configuracion-acceso', fn() => view('layouts.admin')->with('partialView', 'admin.partials.configuracion-acceso'))->name('configuracion-acceso');
+        // Vistas parciales administradas por registro
+        foreach (AdminModuleRegistry::views() as $viewKey => $definition) {
+            if ($viewKey === 'dashboard') {
+                continue; // ya definido
+            }
+            if (($definition['type'] ?? 'partial') !== 'partial') {
+                continue; // se manejan más abajo (p.ej., reportes completos)
+            }
 
-        // Clientes
-        Route::get('gestion-empresas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-empresas'))->name('gestion-empresas');
-        Route::get('cotizaciones', fn() => view('layouts.admin')->with('partialView', 'admin.partials.cotizaciones'))->name('cotizaciones');
+            Route::get($viewKey, function () use ($viewKey, $definition) {
+                $user = auth()->user();
+                $candidates = AdminModuleRegistry::permissionCandidates($viewKey);
+                if (!empty($candidates)) {
+                    $perm = app(PermissionService::class);
+                    if (!$perm->can($user, $candidates, 'consultar')) {
+                        abort(403, 'Permiso denegado');
+                    }
+                }
 
-        // Solicitudes
-        Route::get('solicitudes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.solicitudes'))->name('solicitudes');
+                $partialBlade = $definition['blade'] ?? "admin.partials.{$viewKey}";
 
-        // Órdenes de Servicio
-        Route::get('gestion-ordenes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-ordenes'))->name('gestion-ordenes');
-        Route::get('calificaciones-servicio', fn() => view('layouts.admin')->with('partialView', 'admin.partials.calificaciones-servicio'))->name('calificaciones-servicio');
-
-        // Proyectos
-        Route::get('vista-proyectos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.vista-proyectos'))->name('vista-proyectos');
-        Route::get('proyectos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.proyectos'))->name('proyectos');
-
-        // Tickets
-        Route::get('tickets', fn() => view('layouts.admin')->with('partialView', 'admin.partials.tickets'))->name('tickets');
-
-        // Agencias y Calendario
-        Route::get('agencias', fn() => view('layouts.admin')->with('partialView', 'admin.partials.agencias'))->name('agencias');
-        Route::get('calendario', fn() => view('layouts.admin')->with('partialView', 'admin.partials.calendario'))->name('calendario');
-
-        // Facturas y CAI
-        Route::get('facturas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.facturas'))->name('facturas');
-        Route::get('cai', fn() => view('layouts.admin')->with('partialView', 'admin.partials.cai'))->name('cai');
-
-        // Reportes
-        Route::get('reportes', fn() => view('layouts.admin')->with('partialView', 'admin.partials.reportes'))->name('reportes');
+                return view('layouts.admin')->with('partialView', $partialBlade);
+            })->name($viewKey);
+        }
 
         // Reportes Header (con mapeo completo)
         Route::get('reportes-header', function (Request $request) {
             $modulo = $request->query('modulo', '');
             $fecha = $request->query('fecha', now()->format('d-M-Y'));
             $moduloLower = strtolower($modulo);
+            $ordenarPor = $request->query('ordenar_por');
+            $search = $request->query('search');
+            $estadoEmpresa = $request->query('estado_empresa');
+            $fechaGeneracion = $request->query('fecha_generacion');
 
             if ($moduloLower === 'usuarios') {
                 return app(\App\Http\Controllers\UsuarioController::class)->reporte($request);
@@ -85,7 +222,7 @@ Route::prefix('admin')
             }
 
             $view = match ($moduloLower) {
-                'configuracion de accesos', 'configuracion-acceso' => 'admin.reporte-configuracion-accesos',
+                'configuracion de accesos', 'configuracion-acceso' => null,
                 'empresas' => 'admin.reporte-empresas',
                 'solicitudes' => 'admin.reporte-solicitudes',
                 'tickets' => 'admin.reporte-tickets',
@@ -94,54 +231,223 @@ Route::prefix('admin')
                 'facturas' => 'admin.reporte-facturas',
                 'cai' => 'admin.reporte-cai',
                 'bitacora' => 'admin.reporte-bitacora',
-                'gestion de personas' => 'admin.reporte-gestion-personas',
                 'productos' => 'admin.reporte-productos',
                 'kardex' => 'admin.reporte-kardex',
                 'proyectos' => 'admin.reporte-proyectos',
                 default => 'admin.reporte-generico',
             };
+            if ($moduloLower === 'configuracion de accesos' || $moduloLower === 'configuracion-acceso') {
+                return app(\App\Http\Controllers\ConfiguracionAccesoReporteController::class)->reporte($request);
+            }
+            if ($moduloLower === 'gestion de personas') {
+                return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
+            }
+            // Capa dinámica específica para Empresas (según esquema actual)
+            if ($moduloLower === 'empresas') {
+                $query = \App\Models\Cliente::query()
+                    ->where('tipo_cliente', 'empresa')
+                    ->join('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'tbl_cliente.id_cliente_pk')
+                    ->select([
+                        'tbl_cliente.id_cliente_pk',
+                        'tbl_cliente.fecha_registro',
+                        'tbl_cliente.estado_cliente',
+                        'ce.nombre_comercial',
+                        'ce.razon_social',
+                        'ce.rtn',
+                        'ce.descripcion_empresa',
+                        'ce.horario_atencion',
+                    ]);
 
+                if (!empty($search)) {
+                    $s = "%" . $search . "%";
+                    $query->where(function ($q) use ($s) {
+                        $q->where('ce.nombre_comercial', 'like', $s)
+                          ->orWhere('ce.razon_social', 'like', $s)
+                          ->orWhere('ce.rtn', 'like', $s);
+                    });
+                }
+
+                if ($estadoEmpresa && in_array(strtolower($estadoEmpresa), ['activo', 'inactivo'])) {
+                    $query->where('tbl_cliente.estado_cliente', strtolower($estadoEmpresa));
+                }
+
+                $allowedOrden = [
+                    'nombre_empresa' => 'ce.nombre_comercial',
+                    'estado_empresa' => 'tbl_cliente.estado_cliente',
+                    'fecha_registro' => 'tbl_cliente.fecha_registro',
+                ];
+                if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
+                    $query->orderBy($allowedOrden[$ordenarPor], 'asc');
+                } else {
+                    $query->orderBy('tbl_cliente.fecha_registro', 'desc');
+                }
+
+                $empresas = $query->get();
+
+                // Catálogos opcionales; si no existen las tablas, devolver colecciones vacías para no romper el reporte
+                try {
+                    $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')
+                        ->orderBy('nombre_empresa')
+                        ->get();
+                } catch (\Throwable $e) { $nombresEmpresa = collect(); }
+                try {
+                    $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')
+                        ->orderBy('nombre_oficina')
+                        ->get();
+                } catch (\Throwable $e) { $oficinasEmpresa = collect(); }
+
+                return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
+            }
+            // Capa dinámica específica para Solicitudes (según filtros del UI)
+            if ($moduloLower === 'solicitudes') {
+                $ordenarPor = $request->query('ordenar_por');
+                $search = $request->query('search');
+                $estadoSolicitud = $request->query('estado_solicitud');
+
+                $clienteNombreExpr = "COALESCE(ce.nombre_comercial, ce.razon_social, CONCAT_WS(' ', p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido))";
+
+                $query = DB::table('tbl_solicitud as s')
+                    ->join('tbl_cliente as c', 'c.id_cliente_pk', '=', 's.id_cliente_fk')
+                    ->leftJoin('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'c.id_cliente_pk')
+                    ->leftJoin('tbl_cliente_persona as cp', 'cp.id_cliente_fk', '=', 'c.id_cliente_pk')
+                    ->leftJoin('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                    ->leftJoin('tbl_estado_solicitud as es', 'es.id_estado_solicitud_pk', '=', 's.id_estado_solicitud_fk')
+                    ->leftJoin('tbl_contacto as co', 'co.id_contacto_pk', '=', 's.id_contacto_fk')
+                    ->select([
+                        's.id_solicitud_pk as id',
+                        's.numero_solicitud_acf',
+                        's.numero_solicitud_cliente',
+                        's.descripcion_problema',
+                        's.id_estado_solicitud_fk',
+                        's.id_cliente_fk',
+                        'es.nombre as estado_nombre',
+                        'co.valor_contacto',
+                        DB::raw($clienteNombreExpr . ' as cliente_nombre'),
+                    ]);
+
+                if (!empty($estadoSolicitud)) {
+                    // Si viene un id numérico, filtra por FK. Si viene texto, intenta por nombre/código
+                    if (is_numeric($estadoSolicitud)) {
+                        $query->where('s.id_estado_solicitud_fk', (int) $estadoSolicitud);
+                    } else {
+                        $query->where(function ($q) use ($estadoSolicitud) {
+                            $q->where('es.nombre', 'like', '%' . $estadoSolicitud . '%')
+                              ->orWhere('es.codigo', 'like', '%' . $estadoSolicitud . '%');
+                        });
+                    }
+                }
+
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $query->where(function ($q) use ($s, $clienteNombreExpr) {
+                        $q->where('s.numero_solicitud_acf', 'like', $s)
+                          ->orWhere('s.numero_solicitud_cliente', 'like', $s)
+                          ->orWhere('s.descripcion_problema', 'like', $s)
+                          ->orWhere('es.nombre', 'like', $s)
+                          ->orWhere('es.codigo', 'like', $s)
+                          ->orWhere(DB::raw($clienteNombreExpr), 'like', $s);
+                    });
+                }
+
+                // Map de orden permitido
+                $allowedOrden = [
+                    'estado_solicitud' => 'es.nombre',
+                    'cliente' => DB::raw($clienteNombreExpr),
+                    'solicitud_acf' => 's.numero_solicitud_acf',
+                    'solicitud_cliente' => 's.numero_solicitud_cliente',
+                ];
+                if ($ordenarPor && isset($allowedOrden[$ordenarPor])) {
+                    $orderColumn = $allowedOrden[$ordenarPor];
+                    // orderColumn puede ser raw expression o string
+                    $query->orderBy($orderColumn, 'asc');
+                } else {
+                    $query->orderBy('es.nombre', 'asc')
+                          ->orderBy('s.id_solicitud_pk', 'asc');
+                }
+
+                // Evitar duplicados por join con personas
+                $solicitudes = $query->distinct()->get();
+
+                return view($view, compact('fecha', 'modulo', 'solicitudes', 'ordenarPor', 'search', 'estadoSolicitud', 'fechaGeneracion'));
+            }
+            // Capa dinámica específica para Bitácora (según filtros del UI)
+            if ($moduloLower === 'bitacora') {
+                $search = $request->query('search');
+                $accion = $request->query('accion');
+                $usuario = $request->query('usuario');
+                $objeto = $request->query('objeto');
+                $desde = $request->query('desde');
+                $hasta = $request->query('hasta');
+                $sort = $request->query('sort', 'fecha_evento');
+                $direction = strtolower($request->query('direction','desc')) === 'asc' ? 'asc' : 'desc';
+
+                $q = DB::table('tbl_ms_bitacora as b')
+                    ->leftJoin('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'b.id_usuario_fk')
+                    ->leftJoin('tbl_objetos as o', 'o.id_objetos_pk', '=', 'b.id_objetos_fk')
+                    ->select([
+                        'b.id_bitacora_pk as id',
+                        'b.fecha_evento',
+                        'b.accion',
+                        'b.descripcion',
+                        'b.creado_por',
+                        'b.fecha_creacion',
+                        'u.usuario as usuario_nombre',
+                        'o.nombre_objeto as objeto_nombre',
+                    ]);
+
+                if (!empty($accion)) {
+                    $q->where('b.accion', $accion);
+                }
+                if (!empty($usuario)) {
+                    $uLike = '%' . $usuario . '%';
+                    $q->where('u.usuario', 'like', $uLike);
+                }
+                if (!empty($objeto)) {
+                    $oLike = '%' . $objeto . '%';
+                    $q->where('o.nombre_objeto', 'like', $oLike);
+                }
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $q->where(function ($w) use ($s) {
+                        $w->where('b.accion', 'like', $s)
+                          ->orWhere('b.descripcion', 'like', $s);
+                    });
+                }
+                if (!empty($desde)) {
+                    $q->whereDate('b.fecha_evento', '>=', $desde);
+                }
+                if (!empty($hasta)) {
+                    $q->whereDate('b.fecha_evento', '<=', $hasta);
+                }
+
+                $allowedSort = [
+                    'fecha_evento' => 'b.fecha_evento',
+                    'usuario' => 'u.usuario',
+                    'objeto' => 'o.nombre_objeto',
+                    'accion' => 'b.accion',
+                    'fecha_creacion' => 'b.fecha_creacion',
+                ];
+                $q->orderBy($allowedSort[$sort] ?? 'b.fecha_evento', $direction);
+
+                $rows = $q->get();
+                // Mapear a estructura esperada por la vista (con claves anidadas usuario/objeto)
+                $items = $rows->map(function ($r) {
+                    return [
+                        'id' => $r->id,
+                        'fecha_evento' => $r->fecha_evento,
+                        'accion' => $r->accion,
+                        'descripcion' => $r->descripcion,
+                        'creado_por' => $r->creado_por,
+                        'fecha_creacion' => $r->fecha_creacion,
+                        'usuario' => ['usuario' => $r->usuario_nombre],
+                        'objeto' => ['nombre_objeto' => $r->objeto_nombre],
+                    ];
+                });
+
+                return view($view, compact('fecha', 'modulo', 'items', 'search', 'accion', 'usuario', 'objeto', 'desde', 'hasta', 'sort', 'direction'));
+            }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
-
-        // Inventario
-        Route::get('productos', fn() => view('layouts.admin')->with('partialView', 'admin.partials.productos'))->name('productos');
-        Route::get('kardex', fn() => view('layouts.admin')->with('partialView', 'admin.partials.kardex'))->name('kardex');
-
-        // Catálogo
-        $catalogos = [
-            'genero',
-            'estados-solicitud',
-            'categorias-ingresos-gastos',
-            'estados-proyecto',
-            'estados-tickets',
-            'ubicaciones',
-            'estados-calendario',
-            'admin-facturas',
-            'estados-cai',
-            'tipo-visita',
-            'tipo-persona',
-            'perfil',
-            'tipo-producto',
-            'tipo-movimiento',
-            'servicios-realizados',
-            'acciones-realizadas',
-            'servicios-factura',
-            'tipo-objeto'
-        ];
-
-        foreach ($catalogos as $cat) {
-            Route::get("catalogo-$cat", fn() => view('layouts.admin')->with('partialView', "admin.partials.catalogo-$cat"))->name("catalogo-$cat");
-        }
-
-        // Administración
-        Route::get('gestion-personas', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-personas'))->name('gestion-personas');
-        Route::get('perfil', fn() => view('layouts.admin')->with('partialView', 'admin.partials.perfil'))->name('perfil');
-        Route::get('bitacora', fn() => view('layouts.admin')->with('partialView', 'admin.partials.bitacora'))->name('bitacora');
-        Route::get('gestion-db', fn() => view('layouts.admin')->with('partialView', 'admin.partials.gestion-db'))->name('gestion-db');
-
-        // Mantenimiento
-        Route::get('mantenimiento-general', fn() => view('layouts.admin')->with('partialView', 'admin.partials.mantenimiento-general'))->name('mantenimiento-general');
 
         // Vistas PDF o externas
         Route::get('detalle-cotizacion', fn() => view('admin.detalle-cotizacion'))->name('detalle-cotizacion');
@@ -153,3 +459,39 @@ Route::prefix('admin')
 
 // Login view (pública)
 Route::get('/login', fn() => view('auth.login'))->name('login');
+
+// Redirección rápida para raíz de cliente
+Route::redirect('/cliente', '/cliente/perfil');
+
+// Grupo de rutas Cliente (Portal Cliente) - con middleware propio
+// Usa autenticación JWT web + refresh + validación de rol cliente
+Route::prefix('cliente')
+    ->name('cliente.')
+    ->middleware(['auth.jwt.web','jwt.refresh','client.only'])
+    ->group(function () {
+        // Rutas para configuración inicial del perfil (sin middleware de verificación de perfil)
+        Route::get('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfil'])->name('configurar-perfil');
+        Route::post('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfilStore'])->name('configurar-perfil.store');
+        
+        // Rutas para configuración de empresa
+        Route::get('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresa'])->name('configurar-empresa');
+        Route::post('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresaStore'])->name('configurar-empresa.store');
+        
+        // Rutas que requieren perfil completo
+        Route::middleware(['check.cliente.perfil'])->group(function () {
+            Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
+            Route::put('perfil', [\App\Http\Controllers\ClienteController::class, 'perfilUpdate'])->name('perfil.update');
+            Route::put('empresa', [\App\Http\Controllers\ClienteController::class, 'empresaUpdate'])->name('empresa.update');
+            Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
+            Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
+            Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
+            Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
+            
+            // Rutas de 2FA para clientes (mismo patrón que admin)
+            Route::get('2fa/status', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'status'])->name('2fa.status');
+            Route::post('2fa/setup/start', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'startSetup'])->name('2fa.setup.start');
+            Route::post('2fa/setup/confirm', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'confirmSetup'])->name('2fa.setup.confirm');
+            Route::post('2fa/disable', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'disable'])->name('2fa.disable');
+            Route::post('2fa/recovery-codes', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'recoveryCodes'])->name('2fa.recovery-codes');
+        });
+    });

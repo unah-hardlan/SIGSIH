@@ -16,9 +16,10 @@ class UpdateCaiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'codigo' => 'sometimes|required|string|max:50|unique:tbl_cai,codigo,' . $this->route('cai'),
+            'codigo' => 'sometimes|required|string|max:50|unique:tbl_cai,codigo,' . $this->route('cai') . ',id_cai_pk',
             'rango_inicio' => 'sometimes|required|string|max:20',
             'rango_fin' => 'sometimes|required|string|max:20',
+            'consecutivo_actual' => 'sometimes|required|integer|min:0',
             'fecha_limite' => 'sometimes|required|date',
             'id_estado_cai_fk' => 'sometimes|required|integer|exists:tbl_estado_cai,id_estado_cai_pk'
         ];

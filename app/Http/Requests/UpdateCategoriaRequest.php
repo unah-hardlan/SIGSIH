@@ -3,20 +3,34 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCategoriaRequest extends FormRequest
 {
-    public function authorize(): bool 
-    { 
-        return true; 
+    public function authorize(): bool
+    {
+        return true;
     }
 
     public function rules(): array
     {
-        $id = $this->route('categoria') ?? $this->route('id');
+        $categoriaId = $this->route('categoria')->id_categoria_pk;
+
         return [
-            'nombre_categoria' => 'sometimes|required|string|max:100|unique:tbl_categorias,nombre_categoria,' . $id . ',id_categoria_pk',
-            'descripcion_categoria' => 'sometimes|nullable|string|max:255'
+            'nombre_categoria' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('tbl_categorias', 'nombre_categoria')->ignore($categoriaId, 'id_categoria_pk'),
+            ],
+            'descripcion_categoria' => 'sometimes|nullable|string|max:255',
+            'tipo_categoria' => [
+                'sometimes',
+                'required',
+                'string',
+                Rule::in(['ingreso', 'gasto'])
+            ],
         ];
     }
 }

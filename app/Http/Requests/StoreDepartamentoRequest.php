@@ -15,7 +15,7 @@ class StoreDepartamentoRequest extends FormRequest
     {
         return [
             'nombre_departamento' => 'required|string|max:100',
-            'id_pais_fk' => 'required|exists:tbl_pais,id_pais_pk'
+            'id_pais_pk' => 'required|exists:tbl_pais,id_pais_pk'
         ];
     }
 }

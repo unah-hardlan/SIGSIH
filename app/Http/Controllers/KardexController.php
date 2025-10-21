@@ -12,62 +12,39 @@ class KardexController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kardex::query()->with(['producto','tipoMovimiento','tecnico']);
-        if($prod = $request->input('id_producto_fk')){ $query->where('id_producto_fk',$prod); }
-        if($tipo = $request->input('id_tipo_movimiento_fk')){ $query->where('id_tipo_movimiento_fk',$tipo); }
-        if($tec = $request->input('id_tecnico_fk')){ $query->where('id_tecnico_fk',$tec); }
-        if($desde = $request->input('desde')){ $query->whereDate('fecha_movimiento','>=',$desde); }
-        if($hasta = $request->input('hasta')){ $query->whereDate('fecha_movimiento','<=',$hasta); }
+        // Esta línea es crucial: carga todas las relaciones necesarias
+        $query = Kardex::query()->with(['producto', 'tipoMovimiento', 'origen']);
+        
+        $query->orderBy('fecha_movimiento', 'desc');
+        
+        $kardexItems = $query->get();
 
-        $sortable = [
-            'fecha' => 'fecha_movimiento',
-            'cantidad' => 'cantidad',
-        ];
-        $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction','desc'))==='asc'?'asc':'desc';
-        $query->orderBy($sortable[$sort] ?? 'id_kardex_pk',$direction);
-
-        if($request->boolean('all')){ return KardexResource::collection($query->get()); }
-        $perPage = (int)$request->input('per_page',15);
-        $items = $query->paginate($perPage);
-        return KardexResource::collection($items)->additional([
-            'meta'=>[
-                'page'=>$items->currentPage(),
-                'per_page'=>$items->perPage(),
-                'total'=>$items->total(),
-                'last_page'=>$items->lastPage(),
-            ]
-        ]);
+        return KardexResource::collection($kardexItems);
     }
 
     public function store(StoreKardexRequest $request)
     {
         $kardex = Kardex::create($request->validated());
-        $kardex->load(['producto','tipoMovimiento','tecnico']);
+        $kardex->load(['producto', 'tipoMovimiento', 'origen']); 
         return (new KardexResource($kardex))->response()->setStatusCode(201);
     }
 
-    public function show($id)
+    public function show(Kardex $kardex)
     {
-        $kardex = Kardex::with(['producto','tipoMovimiento','tecnico'])->find($id);
-        if(!$kardex) return response()->json(['error'=>'Kardex no encontrado'],404);
-        return (new KardexResource($kardex))->response();
+        $kardex->load(['producto', 'tipoMovimiento']);
+        return new KardexResource($kardex);
     }
 
-    public function update(UpdateKardexRequest $request, $id)
+    public function update(UpdateKardexRequest $request, Kardex $kardex)
     {
-        $kardex = Kardex::find($id);
-        if(!$kardex) return response()->json(['error'=>'Kardex no encontrado'],404);
         $kardex->update($request->validated());
-        $kardex->load(['producto','tipoMovimiento','tecnico']);
-        return (new KardexResource($kardex))->response();
+        $kardex->load(['producto', 'tipoMovimiento']);
+        return new KardexResource($kardex);
     }
 
-    public function destroy($id)
+    public function destroy(Kardex $kardex)
     {
-        $kardex = Kardex::find($id);
-        if(!$kardex) return response()->json(['error'=>'Kardex no encontrado'],404);
         $kardex->delete();
-        return response()->json(['message'=>'Kardex eliminado']);
+        return response()->json(null, 204);
     }
 }

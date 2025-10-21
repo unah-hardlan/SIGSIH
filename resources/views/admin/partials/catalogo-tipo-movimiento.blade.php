@@ -1,84 +1,182 @@
 <div x-data="{
-        isTipoModalOpen: false,
-        isTipoEditModalOpen: false,
-        tipoToEdit: {id_tipo_movimiento_pk: '', nombre_tipo_movimiento: '', descipcion_tipo_movimiento: ''},
-        isTipoDeleteModalOpen: false,
-        tipoToDelete: {id_tipo_movimiento_pk: '', nombre_tipo_movimiento: ''},
-        filtroNombre: ''
-    }">
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex flex-col sm:flex-row sm:justify-between items-center gap-2 mb-4">
-            <h2 class="text-2xl text-gray-800 nunito-bold">Tipo de Movimiento</h2>
-            <button @click="isTipoModalOpen = true"
-                class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold flex items-center justify-center">Nuevo tipo
+    isTipoMovimientoModalOpen: false,
+    isTipoMovimientoEditModalOpen: false,
+    isTipoMovimientoDeleteModalOpen: false,
+    itemToEdit: null,
+    itemToDelete: null,
+    tipoMovimientos: [],
+    loadingTipoMovimientos: false,
+    nombre_tipo_movimiento: '',
+    descripcion_tipo_movimiento: '',
+    filtroTipoMovimiento: '',
+    ordenarPor: '',
+    async fetchTipoMovimientos() {
+        await window.tipoMovimientosApiHandlers.fetchTipoMovimientos(this);
+    },
+    async submitTipoMovimiento() {
+        await window.tipoMovimientosApiHandlers.submitTipoMovimiento(this);
+    },
+    async updateTipoMovimiento() {
+        await window.tipoMovimientosApiHandlers.updateTipoMovimiento(this);
+    },
+    async deleteTipoMovimiento() {
+        await window.tipoMovimientosApiHandlers.deleteTipoMovimiento(this);
+    },
+    handleModalSubmit(event) {
+        if(event.detail.formId === 'formTipoMovimiento') this.submitTipoMovimiento();
+        if(event.detail.formId === 'formEditTipoMovimiento') this.updateTipoMovimiento();
+    },
+    handleDelete() {
+        if (this.isTipoMovimientoDeleteModalOpen) {
+            this.deleteTipoMovimiento();
+        }
+    }
+}"
+x-init="fetchTipoMovimientos()"
+@keydown.escape.window="
+    isTipoMovimientoModalOpen = false;
+    isTipoMovimientoEditModalOpen = false;
+    isTipoMovimientoDeleteModalOpen = false;
+"
+@modal-submit.window="handleModalSubmit($event)"
+@confirm-delete.window="handleDelete()">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Tipos de Movimiento</h1>
+    </div>
+
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
+            @include('partials.filtros-generales', [
+                'searchModel' => 'filtroTipoMovimiento',
+                'ordenarOptions' => [
+                    'nombre' => 'Nombre',
+                    'id' => 'ID Tipo'
+                ]
+            ])
+        </x-slot>
+
+        <x-slot name="actions">
+            <button
+                @click="isTipoMovimientoModalOpen = true"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+                Nuevo tipo de movimiento
             </button>
-        </div>
-        <div class="flex flex-wrap gap-2 items-center mb-4">
-            <input type="text" x-model="filtroNombre" placeholder="Buscar por nombre..."
-                class="border rounded px-3 py-2 text-sm w-full sm:w-48" />
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 nunito-bold">
+        </x-slot>
+
+        <x-slot name="table">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
-                        <th class="py-2 px-4 text-left">ID Tipo Movimiento</th>
-                        <th class="py-2 px-4 text-left">Nombre</th>
-                        <th class="py-2 px-4 text-left">Descripción</th>
-                        <th class="py-2 px-4 text-left">Acciones</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="tipo in [
-                        {id_tipo_movimiento_pk: 1, nombre_tipo_movimiento: 'Entrada', descipcion_tipo_movimiento: 'Movimiento de ingreso de productos'},
-                        {id_tipo_movimiento_pk: 2, nombre_tipo_movimiento: 'Salida', descipcion_tipo_movimiento: 'Movimiento de egreso de productos'}
-                        ]" :key="tipo.id_tipo_movimiento_pk">
-                        <tr class="border-b nunito-regular"
-                            x-show="!filtroNombre || tipo.nombre_tipo_movimiento.toLowerCase().includes(filtroNombre.toLowerCase())">
-                            <td class="py-2 px-4" x-text="tipo.id_tipo_movimiento_pk"></td>
-                            <td class="py-2 px-4" x-text="tipo.nombre_tipo_movimiento"></td>
-                            <td class="py-2 px-4" x-text="tipo.descipcion_tipo_movimiento"></td>
-                            <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click="isTipoEditModalOpen = true; tipoToEdit = {...tipo}"
-                                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click="isTipoDeleteModalOpen = true; tipoToDelete = {...tipo}"
-                                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                    <template x-if="loadingTipoMovimientos">
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de movimiento...
                             </td>
                         </tr>
                     </template>
+                    <template x-if="!loadingTipoMovimientos && tipoMovimientos.length === 0">
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-gray-500 nunito-regular">
+                                No hay tipos de movimiento registrados
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingTipoMovimientos && tipoMovimientos.length > 0">
+                        <template x-for="(tipoMovimiento, index) in tipoMovimientos" :key="tipoMovimiento.id_tipo_movimiento_pk">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === tipoMovimientos.length - 1 }">
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoMovimiento.nombre_tipo_movimiento"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoMovimiento.descripcion_tipo_movimiento"></td>
+                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === tipoMovimientos.length - 1 }">
+                                    <a href="#" @click.prevent="isTipoMovimientoEditModalOpen = true; itemToEdit = {id_tipo_movimiento_pk: tipoMovimiento.id_tipo_movimiento_pk, nombre_tipo_movimiento: tipoMovimiento.nombre_tipo_movimiento, descripcion_tipo_movimiento: tipoMovimiento.descripcion_tipo_movimiento}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="isTipoMovimientoDeleteModalOpen = true; itemToDelete = {id_tipo_movimiento_pk: tipoMovimiento.id_tipo_movimiento_pk, nombre: tipoMovimiento.nombre_tipo_movimiento}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
                 </tbody>
             </table>
-        </div>
+        </x-slot>
 
+        <x-slot name="cards">
+            <template x-if="loadingTipoMovimientos">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando tipos de movimiento...
+                </div>
+            </template>
+            <template x-if="!loadingTipoMovimientos && tipoMovimientos.length === 0">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-8 text-center text-gray-500 nunito-regular">
+                    No hay tipos de movimiento registrados
+                </div>
+            </template>
+            <template x-if="!loadingTipoMovimientos && tipoMovimientos.length > 0">
+                <template x-for="tipoMovimiento in tipoMovimientos" :key="tipoMovimiento.id_tipo_movimiento_pk">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="tipoMovimiento.nombre_tipo_movimiento"></h3>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="tipoMovimiento.descripcion_tipo_movimiento"></p>
+                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <button @click.prevent="isTipoMovimientoEditModalOpen = true; itemToEdit = {id_tipo_movimiento_pk: tipoMovimiento.id_tipo_movimiento_pk, nombre_tipo_movimiento: tipoMovimiento.nombre_tipo_movimiento, descripcion_tipo_movimiento: tipoMovimiento.descripcion_tipo_movimiento}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button @click.prevent="isTipoMovimientoDeleteModalOpen = true; itemToDelete = {id_tipo_movimiento_pk: tipoMovimiento.id_tipo_movimiento_pk, nombre: tipoMovimiento.nombre_tipo_movimiento}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </x-slot>
+    </x-responsive-table>
+
+    <!-- Modales -->
+    <div>
         <!-- Modal Nuevo Tipo de Movimiento -->
-        <x-admin.form-modal modalName="isTipoModalOpen" title="Nuevo Tipo de Movimiento" submitLabel="Guardar"
-            maxWidth="max-w-md">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" class="w-full border rounded px-3 py-2" placeholder="Nombre del tipo" />
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea class="w-full border rounded px-3 py-2" placeholder="Descripción"></textarea>
+        <x-admin.form-modal class="nunito-bold" modalName="isTipoMovimientoModalOpen" title="Nuevo Tipo de Movimiento"
+            submitLabel="Guardar Tipo de Movimiento" formId="formTipoMovimiento" maxWidth="max-w-2xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="nombre_tipo_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                    <input type="text" id="nombre_tipo_movimiento" x-model="nombre_tipo_movimiento" required
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div class="col-span-2">
+                    <label for="descripcion_tipo_movimiento"
+                        class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                    <textarea id="descripcion_tipo_movimiento" x-model="descripcion_tipo_movimiento" rows="2"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                </div>
             </div>
         </x-admin.form-modal>
 
         <!-- Modal Editar Tipo de Movimiento -->
-        <x-admin.edit-modal modalName="isTipoEditModalOpen" title="Editar Tipo de Movimiento" itemToEdit="tipoToEdit"
-            maxWidth="max-w-md">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Nombre</label>
-                <input type="text" x-model="tipoToEdit.nombre_tipo_movimiento"
-                    class="w-full border rounded px-3 py-2" />
+        <x-admin.edit-modal class="nunito-bold" modalName="isTipoMovimientoEditModalOpen" title="Editar Tipo de Movimiento" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditTipoMovimiento">
+            <template x-if="itemToEdit">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit_nombre_tipo_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                    <input type="text" id="edit_nombre_tipo_movimiento" x-model="itemToEdit.nombre_tipo_movimiento" required
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                </div>
+                <div class="col-span-2">
+                    <label for="edit_descripcion_tipo_movimiento"
+                        class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                    <textarea id="edit_descripcion_tipo_movimiento" x-model="itemToEdit.descripcion_tipo_movimiento" rows="2"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                </div>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Descripción</label>
-                <textarea x-model="tipoToEdit.descipcion_tipo_movimiento"
-                    class="w-full border rounded px-3 py-2"></textarea>
-            </div>
+            </template>
         </x-admin.edit-modal>
 
-        <!-- Modal Eliminar Tipo de Movimiento -->
-        <x-admin.confirmation-modal modalName="isTipoDeleteModalOpen" itemToDelete="tipoToDelete"
-            message="¿Seguro que deseas eliminar este tipo de movimiento?" />
+        <!-- Modal Confirmar Eliminación -->
+        <x-admin.confirmation-modal class="nunito-regular" modalName="isTipoMovimientoDeleteModalOpen" itemToDelete="itemToDelete"
+            message="¿Estás seguro de que quieres eliminar este tipo de movimiento?" />
     </div>
 </div>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EstadoProyecto extends Model
 {
@@ -15,15 +16,12 @@ class EstadoProyecto extends Model
     protected $primaryKey = 'id_estado_proyecto_pk';
 
     protected $fillable = [
-        'nombre_estado',
-        'descripcion_estado_proyecto'
+        'codigo', 'nombre', 'descripcion', 'es_final', 'orden'
     ];
 
-    /**
-     * Relación con proyectos (si existe tabla de proyectos)
-     */
-    // public function proyectos()
-    // {
-    //     return $this->hasMany(Proyecto::class, 'id_estado_proyecto_fk', 'id_estado_proyecto_pk');
-    // }
+  
+    public function proyectos(): HasMany
+    {
+        return $this->hasMany(Proyecto::class, 'id_estado_proyecto_fk', 'id_estado_proyecto_pk');
+    }
 }

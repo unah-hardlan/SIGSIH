@@ -1,6 +1,227 @@
 import "./bootstrap";
+import "./notifications";
+
+if (!window.__FETCH_LIMITER_INSTALLED__) {
+    window.__FETCH_LIMITER_INSTALLED__ = true;
+
+    (function installFetchLimiter() {
+        const origFetch = window.fetch.bind(window);
+        const maxConcurrent = 6; // allow a handful in flight
+        let inFlight = 0;
+        const queue = [];
+
+        let tokenPromise = null;
+
+        // We no longer store or use a JS-accessible token; rely on HttpOnly cookie only
+        function getToken() {
+            return null;
+        }
+        function setToken(_) {
+            try {
+                if (window.axios && window.axios.defaults?.headers?.common) {
+                    delete window.axios.defaults.headers.common[
+                        "Authorization"
+                    ]; // ensure cleared
+                }
+            } catch (_) { }
+            try {
+                document.dispatchEvent(
+                    new CustomEvent("auth:updated", { detail: { token: null } })
+                );
+            } catch (_) { }
+        }
+
+        async function fetchSessionToken(force = false) {
+            // Do not attempt to mint or persist a token in the client; cookie drives auth
+            if (!force) return null;
+
+            if (!tokenPromise) {
+                tokenPromise = (async () => {
+                    try {
+                        const res = await origFetch("/session/token", {
+                            method: "GET",
+                            headers: {
+                                Accept: "application/json",
+                                "X-Requested-With": "XMLHttpRequest",
+                            },
+                            credentials: "same-origin",
+                        });
+                        if (res.status === 401 || res.status === 419) {
+                            setToken(null);
+                            return null;
+                        }
+                        if (!res.ok) return null;
+                        // Ignore body; we don't keep token client-side
+                        await res.json().catch(() => null);
+                        return null;
+                    } catch (_) {
+                        return null;
+                    } finally {
+                        setTimeout(() => {
+                            tokenPromise = null;
+                        }, 0);
+                    }
+                })();
+            }
+            return tokenPromise;
+        }
+
+        try {
+            window.__AUTH = {
+                getToken,
+                setToken,
+                ensureToken: (force = false) => fetchSessionToken(force),
+                headers() {
+                    // No Authorization header; rely on same-origin cookie
+                    return { Accept: "application/json" };
+                },
+            };
+        } catch (_) { }
+
+        function withAuthToApi(input, init) {
+            const t = getToken();
+            const merged = init ? { ...init } : {};
+            merged.headers = new Headers(
+                init && init.headers ? init.headers : {}
+            );
+            merged.headers.set("X-Requested-With", "XMLHttpRequest");
+            if (!merged.headers.has("Accept"))
+                merged.headers.set("Accept", "application/json");
+            // No Authorization header; rely on auth cookie
+            return [input, merged];
+        }
+
+        function runNext() {
+            if (inFlight >= maxConcurrent) return;
+            const next = queue.shift();
+            if (!next) return;
+            inFlight++;
+
+            if (next.run) {
+                const { run, resolve, reject, delay } = next;
+                const doFetch = () =>
+                    run()
+                        .then(resolve, reject)
+                        .finally(() => {
+                            inFlight--;
+                            runNext();
+                        });
+                if (delay) setTimeout(doFetch, delay);
+                else doFetch();
+            } else {
+                const { args, resolve, reject, delay } = next;
+                const doFetch = () =>
+                    origFetch(...args)
+                        .then(resolve, reject)
+                        .finally(() => {
+                            inFlight--;
+                            runNext();
+                        });
+                if (delay) setTimeout(doFetch, delay);
+                else doFetch();
+            }
+        }
+
+        // 🔹 Se mantiene dentro del IIFE, con acceso a todas las variables
+        window.fetch = function limitedFetch(...args) {
+            try {
+                const url = (args && args[0] ? args[0].toString() : "") || "";
+                const isApi = url.includes("/api/");
+                const isDashboard = url.includes("/api/dashboard/");
+                const delay = isDashboard
+                    ? Math.floor(Math.random() * 180) + 60
+                    : isApi
+                        ? Math.floor(Math.random() * 80)
+                        : 0;
+
+                if (!isApi) return origFetch(...args);
+
+                return new Promise((resolve, reject) => {
+                    const run = async () => {
+                        // No token handling; cookie will be sent automatically
+                        let [input, init] = withAuthToApi(args[0], args[1]);
+                        let res = await origFetch(input, init);
+                        if (res.status === 401) {
+                            // Retry once in case of transient conditions
+                            [input, init] = withAuthToApi(args[0], args[1]);
+                            res = await origFetch(input, init);
+                        }
+                        // Si sigue 401, intentar detectar límite de sesiones para cerrar con mensaje claro
+                        if (res.status === 401) {
+                            try {
+                                const clone = res.clone();
+                                const data = await clone
+                                    .json()
+                                    .catch(() => null);
+                                if (
+                                    data &&
+                                    data.code === "SESSION_REMOVED_LIMIT"
+                                ) {
+                                    try {
+                                        window.showToast &&
+                                            window.showToast(
+                                                "Se superó el límite de sesiones. Esta sesión se cerró para respetar el máximo permitido.",
+                                                "warning",
+                                                { duration: 4000 }
+                                            );
+                                    } catch (_) { }
+                                    try {
+                                        window.appLogout && window.appLogout();
+                                    } catch (_) { }
+                                }
+                            } catch (_) { }
+                        }
+                        return res;
+                    };
+                    queue.push({ run, resolve, reject, delay });
+                    runNext();
+                });
+            } catch (_) {
+                return origFetch(...args);
+            }
+        };
+    })();
+}
+
 import "./usuarios";
 import "./parametros";
+import "./perfil";
+import "./dashboard";
+import "./seguridad";
+import "./objetos";
+import "./roles";
+import "./asignar-roles";
+import "./bitacora";
+import "./toast";
+import "./ubicaciones";
+import "./helpers/subdivisiones";
+import "./agencias";
+import "./tipo-visitas";
+import "./tipo-productos";
+import "./tipo-objetos";
+import "./tipo-movimientos";
+import "./servicios-realizados";
+import "./estados-facturas";
+import "./estados-cai";
+import "./cai";
+import "./facturas";
+import "./servicios-factura";
+import "./proyectos";
+import "./estados-calendario";
+import "./estados-tickets";
+import "./generos";
+import "./estados-solicitud";
+import "./estados-proyecto";
+import "./categorias";
+import "./acciones-realizadas";
+import "./productos";
+import "./kardex";
+import "./origen-kardex";
+import "./tipo-mantenimiento";
+import "./reportes-visita";
+import "./calendario";
+import "./tickets";
+import "./empresas";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -29,6 +250,7 @@ import {
     faProjectDiagram,
     faBoxOpen,
     faChartBar,
+    faLock,
     faUserLock,
     faShieldAlt,
     faUser,
@@ -76,8 +298,29 @@ import {
     faChevronDown,
     faTimes,
     faSignInAlt,
+    faSearch,
+    faClock,
+    faBan,
+    faRedo,
+    faInfoCircle,
+    faCalendarDay,
+    faFolder,
+    faClipboardQuestion,
+    faMapSigns,
+    faCheckCircle,
+    faTimesCircle,
+    faTrashAlt,
+    faExclamationTriangle,
+    faArrowUp,
+    faArrowDown,
+    faBalanceScale,
+    faInbox,
+    faSortDown,
+    faS,
+    faSort,
+    faSortUp,
+    faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
-
 library.add(
     faEye,
     faEyeSlash,
@@ -104,6 +347,7 @@ library.add(
     faProjectDiagram,
     faBoxOpen,
     faChartBar,
+    faLock,
     faUserLock,
     faHouseChimney,
     faShieldAlt,
@@ -150,16 +394,40 @@ library.add(
     faChevronUp,
     faChevronDown,
     faTimes,
-    faSignInAlt
+    faSignInAlt,
+    faSearch,
+    faClock,
+    faBan,
+    faRedo,
+    faInfoCircle,
+    faCalendarDay,
+    faFolder,
+    faClipboardQuestion,
+    faMapSigns,
+    faCheckCircle,
+    faTimesCircle,
+    faTrashAlt,
+    faExclamationTriangle,
+    faArrowUp,
+    faArrowDown,
+    faBalanceScale,
+    faInbox,
+    faSortDown,
+    faSortUp,
+    faIdCard
 );
 dom.watch();
 
 library.add(faEye, faEyeSlash, faMoon, faSun);
 dom.watch();
 
-// Alpine.js collapse plugin
 document.addEventListener("alpine:init", () => {
-    Alpine.plugin(collapse);
+    try {
+        if (!window.__ALPINE_COLLAPSE_REGISTERED__) {
+            Alpine.plugin(collapse);
+            window.__ALPINE_COLLAPSE_REGISTERED__ = true;
+        }
+    } catch (_) { }
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -186,7 +454,6 @@ function collapse(Alpine) {
     );
 }
 
-// Navigation store for SPA-like navigation
 document.addEventListener("alpine:init", () => {
     Alpine.store("navigation", {
         isTransitioning: false,
@@ -194,13 +461,8 @@ document.addEventListener("alpine:init", () => {
         currentView: null,
 
         async navigate(url, viewName) {
-            // Prevenir múltiples navegaciones simultáneas
-            if (this.isTransitioning) return;
-
-            // Si ya estamos en esta vista, no hacer nada
             if (this.currentView === viewName) return;
 
-            // Si la vista ya está cargada, usarla directamente
             if (this.loadedViews[viewName]) {
                 this.setContent(this.loadedViews[viewName]);
                 this.updateState(url, viewName);
@@ -209,16 +471,33 @@ document.addEventListener("alpine:init", () => {
 
             this.isTransitioning = true;
             this.showLoader();
-
             try {
-                const response = await fetch(`/load-view?view=${viewName}`);
-                if (!response.ok) {
-                    throw new Error(
-                        `HTTP ${response.status}: ${response.statusText}`
-                    );
+                const res = await fetch(`/load-view?view=${viewName}`, {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        Accept: "text/html",
+                    },
+                    credentials: "same-origin",
+                });
+                if (
+                    res.status === 401 ||
+                    res.status === 419 ||
+                    res.redirected ||
+                    (res.url && res.url.includes("/login"))
+                ) {
+                    window.location.assign("/login");
+                    return;
                 }
-
-                const html = await response.text();
+                if (res.status === 403) {
+                    const deniedHtml = await res.text();
+                    this.setContent(deniedHtml);
+                    this.updateState(url, viewName);
+                    return;
+                }
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                const html = await res.text();
                 this.loadedViews[viewName] = html;
                 this.setContent(html);
                 this.updateState(url, viewName);
@@ -233,27 +512,86 @@ document.addEventListener("alpine:init", () => {
         },
 
         setContent(html) {
-            // Guardar posición del scroll del sidebar antes de cambiar contenido
             this.saveSidebarScrollPosition();
 
-            document.querySelector("main").innerHTML = html;
-            // Reinicializar Alpine.js en el nuevo contenido
-            Alpine.initTree(document.querySelector("main"));
+            try {
+                if (typeof destroyExistingCharts === "function")
+                    destroyExistingCharts();
+            } catch (_) { }
 
-            // Restaurar posición del scroll del sidebar después de cargar nuevo contenido
+            const mainEl = document.querySelector("main");
+            try {
+                if (window.Alpine && Alpine.destroyTree)
+                    Alpine.destroyTree(mainEl);
+            } catch (_) { }
+
+            let sanitized = html;
+            try {
+                sanitized = sanitized.replace(
+                    /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
+                    ""
+                );
+            } catch (_) { }
+
+            mainEl.innerHTML = sanitized;
+            try {
+                if (window.Alpine) {
+                    try {
+                        if ("$nextTick" in window) delete window.$nextTick;
+                    } catch (_) { }
+                    try {
+                        if ("$watch" in window) delete window.$watch;
+                    } catch (_) { }
+                    try {
+                        if ("$dispatch" in window) delete window.$dispatch;
+                    } catch (_) { }
+                    const roots = Array.from(
+                        mainEl.querySelectorAll("[x-data]")
+                    ).filter((el) => !el.__x);
+                    for (const root of roots) {
+                        try {
+                            Alpine.initTree(root);
+                        } catch (_) { }
+                    }
+                }
+            } catch (_) { }
+
+            // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
+            try {
+                if (
+                    window.Livewire &&
+                    typeof window.Livewire.rescan === "function"
+                ) {
+                    window.Livewire.rescan(mainEl);
+                }
+            } catch (_) { }
+            try {
+                if (
+                    window.Livewire &&
+                    typeof window.Livewire.restart === "function"
+                ) {
+                    window.Livewire.restart();
+                }
+            } catch (_) { }
+            try {
+                window.dispatchEvent(new Event("livewire:navigated"));
+            } catch (_) { }
+
             this.restoreSidebarScrollPosition();
 
-            // Inicializar gráficos si estamos en el dashboard
             if (
                 html.includes('id="ordenesChart"') ||
                 html.includes('id="cotizacionesChart"') ||
                 html.includes('id="proyectosChart"')
             ) {
-                // Usar setTimeout para asegurar que el DOM esté listo
                 setTimeout(() => {
-                    initializeDashboardCharts();
+                    initializeDashboardChartsWithRetry();
                 }, 100);
             }
+
+            try {
+                document.dispatchEvent(new CustomEvent("app:view-loaded"));
+            } catch (_) { }
         },
 
         saveSidebarScrollPosition() {
@@ -272,7 +610,6 @@ document.addEventListener("alpine:init", () => {
                 "sidebar-scroll-position"
             );
             if (sidebar && savedScrollTop !== null) {
-                // Usar requestAnimationFrame para asegurar que el DOM esté listo
                 requestAnimationFrame(() => {
                     sidebar.scrollTop = parseInt(savedScrollTop, 10);
                 });
@@ -283,6 +620,10 @@ document.addEventListener("alpine:init", () => {
             // Actualizar la URL sin recargar la página
             window.history.pushState({ viewName }, "", url);
             this.currentView = viewName;
+            try {
+                const main = document.querySelector("main");
+                if (main) main.dataset.currentView = viewName;
+            } catch (_) { }
             this.updateActiveLinks(url);
         },
 
@@ -308,15 +649,12 @@ document.addEventListener("alpine:init", () => {
             `;
         },
 
-        // Método para actualizar los enlaces activos en la barra lateral
         updateActiveLinks(url) {
-            // Eliminar la clase activa de todos los enlaces
             document.querySelectorAll(".sidebar-link").forEach((link) => {
                 link.classList.remove("bg-gray-800", "text-blue-400");
                 link.classList.add("hover:bg-gray-800", "hover:text-blue-400");
             });
 
-            // Encontrar y marcar el enlace activo actual
             document.querySelectorAll(".sidebar-link").forEach((link) => {
                 if (link.getAttribute("href") === url) {
                     link.classList.add("bg-gray-800", "text-blue-400");
@@ -325,7 +663,6 @@ document.addEventListener("alpine:init", () => {
                         "hover:text-blue-400"
                     );
 
-                    // Encontrar y abrir el menú padre si existe
                     const parentDropdown = link.closest(
                         '[x-data^="sidebarDropdown"]'
                     );
@@ -335,7 +672,6 @@ document.addEventListener("alpine:init", () => {
                             .match(/sidebarDropdown\('([^']+)'/)[1];
                         localStorage.setItem(`sidebar-${dropdownKey}`, "true");
 
-                        // Forzar actualización del menú desplegable
                         const event = new CustomEvent(
                             "update-sidebar-dropdown",
                             {
@@ -348,52 +684,47 @@ document.addEventListener("alpine:init", () => {
             });
         },
 
-        // Método para manejar navegación con botón atrás/adelante del navegador
         handlePopState(event) {
             if (event.state && event.state.viewName) {
                 const viewName = event.state.viewName;
                 const url = window.location.pathname;
 
-                // Cargar la vista sin cambiar el estado del historial
                 if (this.loadedViews[viewName]) {
                     this.setContent(this.loadedViews[viewName]);
                     this.currentView = viewName;
                     this.updateActiveLinks(url);
                 } else {
-                    // Si no está cargada, hacer un reload completo
                     window.location.reload();
                 }
             }
         },
 
-        // Método para cargar la vista inicial basada en la URL actual
         async loadInitialView() {
             const path = window.location.pathname;
             const viewName = this.extractViewNameFromPath(path);
 
             if (viewName && viewName !== "dashboard") {
-                // Si no estamos en dashboard, cargar la vista correspondiente
                 await this.navigate(path, viewName);
             } else {
-                // Establecer dashboard como vista actual
                 this.currentView = "dashboard";
+                try {
+                    const main = document.querySelector("main");
+                    if (main) main.dataset.currentView = "dashboard";
+                } catch (_) { }
                 this.updateActiveLinks(path);
             }
         },
 
-        // Extraer el nombre de la vista desde el path
         extractViewNameFromPath(path) {
             const match = path.match(/\/admin\/(.+)$/);
             return match ? match[1] : "dashboard";
         },
     });
 
-    // Manejar navegación con botones del navegador
     window.addEventListener("popstate", (event) => {
         Alpine.store("navigation").handlePopState(event);
     });
 
-    // Cargar vista inicial cuando la página esté lista
     document.addEventListener("DOMContentLoaded", () => {
         // Verificar si la página es una SPA page
         const isSpaPage = document.querySelector('meta[name="spa-page"]');
@@ -411,173 +742,2299 @@ document.addEventListener("alpine:init", () => {
     });
 });
 
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.color = "#6B7280";
+if (typeof window !== "undefined" && window.Chart) {
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = "#6B7280";
+}
 
-// Función para inicializar los gráficos del dashboard
 function initializeDashboardCharts() {
-    // Initialize 'ordenesChart' only if element exists
+    const waitForCanvasReady = (el, cb, attempt = 0) => {
+        const max = 20; // ~3s total (20 * 150ms)
+        const delay = 150;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const ready =
+            rect.width > 10 && rect.height > 10 && el.offsetParent !== null;
+        if (ready) return cb();
+        if (attempt >= max) return cb(); // last resort: try anyway
+        setTimeout(() => waitForCanvasReady(el, cb, attempt + 1), delay);
+    };
+    // Helper reutilizable para fetch con parse seguro
+    const tryFetch = async (url, headers) => {
+        const r = await fetch(url, { headers });
+        if (!r.ok) return { ok: false };
+        try {
+            return { ok: true, data: await r.json() };
+        } catch (_) {
+            return { ok: false };
+        }
+    };
     const ordenesEl = document.getElementById("ordenesChart");
     if (ordenesEl) {
         // Destruir instancia existente si existe
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-
-        const ordenesCtx = ordenesEl.getContext("2d");
-        window.ordenesChartInstance = new Chart(ordenesCtx, {
-            type: "doughnut",
-            data: {
-                labels: ["Abiertas", "En Proceso", "Cerradas"],
-                datasets: [
-                    {
-                        data: [45, 123, 1079],
-                        backgroundColor: ["#EF4444", "#F59E0B", "#10B981"],
-                        borderWidth: 2,
-                        borderColor: "#FFFFFF",
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "bottom",
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            font: { size: 12 },
+        const initOrdenes = async () => {
+            const ordenesCtx = ordenesEl.getContext("2d");
+            const store = window.Alpine?.store("dashboard");
+            const fromCache = store?.charts?.ordenes;
+            const draw = (json) => {
+                const labels = json?.labels || [
+                    "Abiertas",
+                    "En Proceso",
+                    "Cerradas",
+                ];
+                const data = json?.data || [0, 0, 0];
+                if (!window.ordenesChartInstance) {
+                    window.ordenesChartInstance = new Chart(ordenesCtx, {
+                        type: "doughnut",
+                        data: {
+                            labels,
+                            datasets: [
+                                {
+                                    data,
+                                    backgroundColor: [
+                                        "#EF4444",
+                                        "#F59E0B",
+                                        "#10B981",
+                                    ],
+                                    borderWidth: 2,
+                                    borderColor: "#FFFFFF",
+                                },
+                            ],
                         },
-                    },
-                },
-            },
-        });
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "bottom",
+                                    labels: {
+                                        padding: 20,
+                                        usePointStyle: true,
+                                        font: { size: 12 },
+                                    },
+                                },
+                            },
+                        },
+                    });
+                } else {
+                    window.ordenesChartInstance.data.labels = labels;
+                    window.ordenesChartInstance.data.datasets[0].data = data;
+                    window.ordenesChartInstance.update();
+                }
+            };
+            if (fromCache) draw(fromCache);
+            if (store) {
+                const updated = await store.getChart("ordenes", {
+                    force: true,
+                });
+                if (updated) draw(updated);
+            } else {
+                let res = await tryFetch(
+                    "/api/dashboard/ordenes-estado",
+                    authHeaders()
+                );
+                if (!res.ok)
+                    res = await tryFetch("/api-web/dashboard/ordenes-estado", {
+                        Accept: "application/json",
+                    });
+                if (res.ok) draw(res.data);
+            }
+        };
+        waitForCanvasReady(ordenesEl, initOrdenes);
     }
 
-    // Initialize 'cotizacionesChart' only if element exists
     const cotizacionesEl = document.getElementById("cotizacionesChart");
     if (cotizacionesEl) {
-        // Destruir instancia existente si existe
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
 
-        const cotizacionesCtx = cotizacionesEl.getContext("2d");
-        window.cotizacionesChartInstance = new Chart(cotizacionesCtx, {
-            type: "line",
-            data: {
-                labels: [
-                    "Ene",
-                    "Feb",
-                    "Mar",
-                    "Abr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Ago",
-                ],
-                datasets: [
-                    {
-                        label: "Cotizaciones",
-                        data: [65, 78, 90, 81, 96, 87, 102, 115],
-                        borderColor: "#6366F1",
-                        backgroundColor: "rgba(99, 102, 241, 0.1)",
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: "#6366F1",
-                        pointBorderColor: "#FFFFFF",
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "#F3F4F6",
-                        },
-                    },
-                    x: {
-                        grid: {
-                            display: false,
-                        },
-                    },
-                },
-            },
-        });
+        const initCotizaciones = async () => {
+            const cotizacionesCtx = cotizacionesEl.getContext("2d");
+            const store = window.Alpine?.store("dashboard");
+            const fromCache = store?.charts?.cotizaciones;
+            const draw = (json) => {
+                const labels = json?.labels || [];
+                const data = json?.data || [];
+                if (!window.cotizacionesChartInstance) {
+                    window.cotizacionesChartInstance = new Chart(
+                        cotizacionesCtx,
+                        {
+                            type: "line",
+                            data: {
+                                labels,
+                                datasets: [
+                                    {
+                                        label: "Cotizaciones",
+                                        data,
+                                        borderColor: "#6366F1",
+                                        backgroundColor:
+                                            "rgba(99, 102, 241, 0.1)",
+                                        borderWidth: 3,
+                                        fill: true,
+                                        tension: 0.4,
+                                        pointBackgroundColor: "#6366F1",
+                                        pointBorderColor: "#FFFFFF",
+                                        pointBorderWidth: 2,
+                                        pointRadius: 5,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: "#F3F4F6" },
+                                    },
+                                    x: { grid: { display: false } },
+                                },
+                            },
+                        }
+                    );
+                } else {
+                    window.cotizacionesChartInstance.data.labels = labels;
+                    window.cotizacionesChartInstance.data.datasets[0].data =
+                        data;
+                    window.cotizacionesChartInstance.update();
+                }
+            };
+            if (fromCache) draw(fromCache);
+            if (store) {
+                const updated = await store.getChart("cotizaciones", {
+                    force: true,
+                });
+                if (updated) draw(updated);
+            } else {
+                let res = await tryFetch(
+                    "/api/dashboard/cotizaciones-mes",
+                    authHeaders()
+                );
+                if (!res.ok)
+                    res = await tryFetch(
+                        "/api-web/dashboard/cotizaciones-mes",
+                        { Accept: "application/json" }
+                    );
+                if (res.ok) draw(res.data);
+            }
+        };
+        waitForCanvasReady(cotizacionesEl, initCotizaciones);
     }
 
-    // Initialize 'proyectosChart' only if element exists
     const proyectosEl = document.getElementById("proyectosChart");
     if (proyectosEl) {
-        // Destruir instancia existente si existe
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
 
-        const proyectosCtx = proyectosEl.getContext("2d");
-        window.proyectosChartInstance = new Chart(proyectosCtx, {
-            type: "bar",
-            data: {
-                labels: [
-                    "En Proceso",
-                    "Finalizados",
-                    "Pendientes",
-                    "Cancelados",
-                ],
-                datasets: [
-                    {
-                        data: [234, 187, 23, 12],
-                        backgroundColor: [
+        const initProyectos = async () => {
+            const proyectosCtx = proyectosEl.getContext("2d");
+            const store = window.Alpine?.store("dashboard");
+            const fromCache = store?.charts?.proyectos;
+            const draw = (json) => {
+                const labels = json?.labels || [];
+                const data = json?.data || [];
+                const colors = labels.map(
+                    (_, i) =>
+                        [
                             "#06B6D4",
                             "#10B981",
                             "#F59E0B",
                             "#EF4444",
-                        ],
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: "y",
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "#F3F4F6",
+                            "#6366F1",
+                            "#8B5CF6",
+                        ][i % 6]
+                );
+                if (!window.proyectosChartInstance) {
+                    window.proyectosChartInstance = new Chart(proyectosCtx, {
+                        type: "bar",
+                        data: {
+                            labels,
+                            datasets: [
+                                {
+                                    data,
+                                    backgroundColor: colors,
+                                    borderRadius: 6,
+                                    borderSkipped: false,
+                                },
+                            ],
                         },
-                    },
-                    y: {
-                        grid: {
-                            display: false,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: "y",
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    grid: { color: "#F3F4F6" },
+                                },
+                                y: { grid: { display: false } },
+                            },
                         },
-                    },
-                },
-            },
-        });
+                    });
+                } else {
+                    window.proyectosChartInstance.data.labels = labels;
+                    window.proyectosChartInstance.data.datasets[0].data = data;
+                    window.proyectosChartInstance.data.datasets[0].backgroundColor =
+                        colors;
+                    window.proyectosChartInstance.update();
+                }
+            };
+            if (fromCache) draw(fromCache);
+            if (store) {
+                const updated = await store.getChart("proyectos", {
+                    force: true,
+                });
+                if (updated) draw(updated);
+            } else {
+                let res = await tryFetch(
+                    "/api/dashboard/proyectos-estado",
+                    authHeaders()
+                );
+                if (!res.ok)
+                    res = await tryFetch(
+                        "/api-web/dashboard/proyectos-estado",
+                        { Accept: "application/json" }
+                    );
+                if (res.ok) draw(res.data);
+            }
+        };
+        waitForCanvasReady(proyectosEl, initProyectos);
     }
 }
 
-// Inicializar gráficos cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", () => {
+function destroyExistingCharts() {
+    try {
+        if (window.ordenesChartInstance) {
+            window.ordenesChartInstance.destroy();
+        }
+    } catch (_) { }
+    try {
+        if (window.cotizacionesChartInstance) {
+            window.cotizacionesChartInstance.destroy();
+        }
+    } catch (_) { }
+    try {
+        if (window.proyectosChartInstance) {
+            window.proyectosChartInstance.destroy();
+        }
+    } catch (_) { }
+    window.ordenesChartInstance = null;
+    window.cotizacionesChartInstance = null;
+    window.proyectosChartInstance = null;
+}
+
+function initializeDashboardChartsWithRetry(retry = 0) {
+    const maxRetries = 10;
+    const delay = 200;
+    const hasTargets =
+        document.getElementById("ordenesChart") ||
+        document.getElementById("cotizacionesChart") ||
+        document.getElementById("proyectosChart");
+    if (!window.Chart || !hasTargets) {
+        if (retry < maxRetries) {
+            return setTimeout(
+                () => initializeDashboardChartsWithRetry(retry + 1),
+                delay
+            );
+        }
+        return;
+    }
     initializeDashboardCharts();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        window.__AUTH && window.__AUTH.ensureToken(false);
+    } catch (_) { }
+    initializeDashboardChartsWithRetry();
 });
+
+function authHeaders() {
+    try {
+        if (window.__AUTH && typeof window.__AUTH.headers === "function") {
+            return window.__AUTH.headers();
+        }
+    } catch (_) { }
+
+    return { Accept: "application/json" };
+}
+
+(function patchSetContent() {
+    const nav = window.Alpine?.store && window.Alpine.store("navigation");
+    if (!nav || typeof nav.setContent !== "function") return;
+    const original = nav.setContent.bind(nav);
+    nav.setContent = function (html) {
+        destroyExistingCharts();
+        return original(html);
+    };
+})();
+
+// Global Alpine factory for System Settings (Mantenimiento → General)
+// Registered here so it's available even when the view HTML is injected dynamically (inline <script> won't run on innerHTML)
+if (typeof window !== "undefined") {
+    window.settingsState = function () {
+        const initial = {
+            appLogoUrl: "/images/logo.png",
+            appName: "SIGSIH",
+            appLogoHeight: 96,
+        };
+        return {
+            tab: localStorage.getItem("mantenimientoTab") || "personalizacion",
+            logoUrl: initial.appLogoUrl,
+            nombreSistema: initial.appName,
+            logoHeight: Number(initial.appLogoHeight) || 96,
+            selectedLogoFile: null,
+            savedMessagePersonalizacion: "",
+            savedMessageParametros: "",
+            timezone: "UTC",
+            dateFormat: "Y-m-d",
+            sessionsLimit: 1,
+            requireEmailVerification: false,
+            passwordResetCooldown: 5,
+            passwordResetExpire: 60,
+            passwordResetMaxPerDay: 5,
+            dniFormat: "0000-0000-00000",
+            adminIntentos: 3,
+            adminCorreo: "",
+            adminUsuario: "",
+            adminPassword: "",
+            async init() {
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        credentials: "same-origin",
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.nombreSistema = data.appName || this.nombreSistema;
+                        this.logoUrl = data.logoUrl || this.logoUrl;
+                        this.logoHeight = data.logoHeight || this.logoHeight;
+                        this.timezone = data.timezone || this.timezone;
+                        this.dateFormat = data.dateFormat || this.dateFormat;
+                        this.sessionsLimit =
+                            data.sessionsLimit || this.sessionsLimit;
+                        this.requireEmailVerification =
+                            !!data.requireEmailVerification;
+                        this.passwordResetCooldown =
+                            data.passwordResetCooldown ??
+                            this.passwordResetCooldown;
+                        this.passwordResetExpire =
+                            data.passwordResetExpire ??
+                            this.passwordResetExpire;
+                        this.passwordResetMaxPerDay =
+                            data.passwordResetMaxPerDay ??
+                            this.passwordResetMaxPerDay;
+                        this.dniFormat = (
+                            data.dniFormat ||
+                            this.dniFormat ||
+                            ""
+                        ).toString();
+                        this.adminIntentos =
+                            data.adminIntentos || this.adminIntentos;
+                        this.adminCorreo = data.adminCorreo || this.adminCorreo;
+                        this.adminUsuario =
+                            data.adminUsuario || this.adminUsuario;
+                        this.adminPassword =
+                            data.adminPassword || this.adminPassword;
+                    }
+                } catch (_) { }
+            },
+            onLogoSelected(e) {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                this.selectedLogoFile = file;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    this.logoUrl = ev.target?.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            async guardarPersonalizacion() {
+                const fd = new FormData();
+                if (this.nombreSistema)
+                    fd.append("app_name", this.nombreSistema);
+                if (this.selectedLogoFile)
+                    fd.append("logo", this.selectedLogoFile);
+                if (this.logoHeight)
+                    fd.append("logo_height", String(this.logoHeight));
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        method: "POST",
+                        body: fd,
+                        credentials: "same-origin",
+                        headers: {
+                            "X-CSRF-TOKEN":
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || "",
+                        },
+                    });
+                    if (!res.ok) throw new Error("bad");
+                    const data = await res.json();
+                    this.nombreSistema = data.appName || this.nombreSistema;
+                    this.logoUrl = data.logoUrl || this.logoUrl;
+                    this.logoHeight = data.logoHeight || this.logoHeight;
+                    this.selectedLogoFile = null;
+                    this.savedMessagePersonalizacion =
+                        "Personalización guardada correctamente";
+                    try {
+                        const headerLogo = document.querySelector(
+                            'header img[alt="Logo"]'
+                        );
+                        if (headerLogo) {
+                            if (this.logoUrl) headerLogo.src = this.logoUrl;
+                            if (this.logoHeight)
+                                headerLogo.style.setProperty(
+                                    "--app-logo-max",
+                                    `${this.logoHeight}px`
+                                );
+                        }
+                        if (this.nombreSistema) {
+                            document.title = this.nombreSistema;
+                        }
+                    } catch (_) { }
+                    setTimeout(
+                        () => (this.savedMessagePersonalizacion = ""),
+                        2500
+                    );
+                } catch (e) {
+                    this.savedMessagePersonalizacion = "No se pudo guardar";
+                    setTimeout(
+                        () => (this.savedMessagePersonalizacion = ""),
+                        2500
+                    );
+                }
+            },
+            async guardarParametros() {
+                const fd = new FormData();
+                if (this.timezone) fd.append("timezone", this.timezone);
+                if (this.dateFormat) fd.append("date_format", this.dateFormat);
+                if (this.sessionsLimit)
+                    fd.append("sessions_limit", String(this.sessionsLimit));
+                fd.append(
+                    "require_email_verification",
+                    this.requireEmailVerification ? "1" : "0"
+                );
+                if (
+                    this.passwordResetCooldown !== undefined &&
+                    this.passwordResetCooldown !== null
+                )
+                    fd.append(
+                        "password_reset_cooldown",
+                        String(this.passwordResetCooldown)
+                    );
+                if (
+                    this.passwordResetExpire !== undefined &&
+                    this.passwordResetExpire !== null
+                )
+                    fd.append(
+                        "password_reset_expire",
+                        String(this.passwordResetExpire)
+                    );
+                if (
+                    this.passwordResetMaxPerDay !== undefined &&
+                    this.passwordResetMaxPerDay !== null
+                )
+                    fd.append(
+                        "password_reset_max_per_day",
+                        String(this.passwordResetMaxPerDay)
+                    );
+                if (this.dniFormat) fd.append("dni_format", this.dniFormat);
+                if (this.adminIntentos)
+                    fd.append("admin_intentos", String(this.adminIntentos));
+                if (this.adminCorreo)
+                    fd.append("admin_correo", this.adminCorreo);
+                if (this.adminUsuario)
+                    fd.append("admin_usuario", this.adminUsuario);
+                if (this.adminPassword)
+                    fd.append("admin_password", this.adminPassword);
+                try {
+                    const res = await fetch("/api-web/system-settings", {
+                        method: "POST",
+                        body: fd,
+                        credentials: "same-origin",
+                        headers: {
+                            "X-CSRF-TOKEN":
+                                document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || "",
+                        },
+                    });
+                    if (!res.ok) throw new Error("bad");
+                    const data = await res.json();
+                    this.timezone = data.timezone || this.timezone;
+                    this.dateFormat = data.dateFormat || this.dateFormat;
+                    this.sessionsLimit =
+                        data.sessionsLimit || this.sessionsLimit;
+                    this.requireEmailVerification =
+                        !!data.requireEmailVerification;
+                    this.passwordResetCooldown =
+                        data.passwordResetCooldown ??
+                        this.passwordResetCooldown;
+                    this.passwordResetExpire =
+                        data.passwordResetExpire ?? this.passwordResetExpire;
+                    this.passwordResetMaxPerDay =
+                        data.passwordResetMaxPerDay ??
+                        this.passwordResetMaxPerDay;
+                    this.dniFormat = (
+                        data.dniFormat ||
+                        this.dniFormat ||
+                        ""
+                    ).toString();
+                    this.adminIntentos =
+                        data.adminIntentos || this.adminIntentos;
+                    this.adminCorreo = data.adminCorreo || this.adminCorreo;
+                    this.adminUsuario = data.adminUsuario || this.adminUsuario;
+                    this.adminPassword =
+                        data.adminPassword || this.adminPassword;
+                    this.savedMessageParametros =
+                        "Parámetros guardados correctamente";
+                    setTimeout(() => (this.savedMessageParametros = ""), 2500);
+                } catch (e) {
+                    this.savedMessageParametros = "No se pudo guardar";
+                    setTimeout(() => (this.savedMessageParametros = ""), 2500);
+                }
+            },
+        };
+    };
+}
+
+// Alpine component factory for Gestión de Órdenes (available globally for Livewire/SPA)
+if (typeof window !== "undefined") {
+    window.gestionOrdenes = function (detalleBaseUrl) {
+        return {
+            tab: "ordenes",
+            searchOrden: "",
+            tecnicoOrden: "",
+            ordenarPor: "fecha_recepcion",
+            expandedRows: {},
+            isModalOpen: false,
+            isEditModalOpen: false,
+            isDeleteModalOpen: false,
+            ordenToEdit: null,
+            ordenToDelete: null,
+            ordenes: [],
+            tecnicosDisponibles: [],
+            solicitudesOptions: [],
+            tecnicosOptions: [],
+
+            cotizacionesOptions: [],
+            estadosOrdenOptions: [],
+            loadingCatalogos: {
+                solicitudes: false,
+                tecnicos: false,
+                cotizaciones: false,
+                estadosOrden: false,
+            },
+            authError: false,
+            authNotified: false,
+            loadingOrdenes: false,
+            saving: false,
+            deleting: false,
+            errors: {},
+            formOrden: {
+                id: null,
+                id_solicitud_servicio_fk: "",
+                id_tecnico_fk: "",
+                id_estado_orden_servicio_fk: "",
+                fecha_recepcion: new Date().toISOString().slice(0, 10),
+                fecha_inicio: "",
+                fecha_finalizacion: "",
+                observaciones: "",
+                diagnostico_tecnico: "",
+                diagnostico_cliente: "",
+                id_cotizacion_fk: "",
+            },
+            getToken() {
+                // Cookie-based auth only; no JS-accessible token
+                return null;
+            },
+            setToken(token) {
+                // No-op in cookie-only mode
+                return null;
+            },
+            getCsrf() {
+                const m = document.head.querySelector(
+                    'meta[name="csrf-token"]'
+                );
+                return m ? m.content : "";
+            },
+            apiHeaders() {
+                // Do not add Authorization; rely on HttpOnly cookie
+                return {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                };
+            },
+            async requireAuth() {
+                // With cookie auth, assume authenticated; 401 will be handled per-request
+                this.authError = false;
+                return true;
+            },
+            handleUnauthorized() {
+                this.authError = true;
+                if (!this.authNotified) {
+                    this.showToast(
+                        "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
+                        "error"
+                    );
+                    this.authNotified = true;
+                }
+            },
+            showToast(message, type = "ok") {
+                const toast = document.createElement("div");
+                toast.className =
+                    "fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm " +
+                    (type === "error"
+                        ? "bg-red-600 text-white"
+                        : "bg-green-600 text-white");
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3500);
+            },
+            resetForm() {
+                this.formOrden = {
+                    id: null,
+                    id_solicitud_servicio_fk: "",
+                    id_tecnico_fk: "",
+                    id_estado_orden_servicio_fk: "",
+                    fecha_recepcion: new Date().toISOString().slice(0, 10),
+                    fecha_inicio: "",
+                    fecha_finalizacion: "",
+                    observaciones: "",
+                    diagnostico_tecnico: "",
+                    diagnostico_cliente: "",
+                    id_cotizacion_fk: "",
+                };
+                this.errors = {};
+            },
+            formatDate(value) {
+                if (!value) return "";
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().slice(0, 10);
+                }
+                const cleaned = value.toString();
+                return cleaned.includes("T")
+                    ? cleaned.split("T")[0]
+                    : cleaned.split(" ")[0];
+            },
+            mapOrden(orden) {
+                const solicitud = orden.solicitud_servicio || {};
+                const cliente = solicitud.cliente || {};
+                const empresa = cliente.empresa || {};
+                const contacto = solicitud.contacto || {};
+                const tecnico = orden.tecnico || {};
+                const calificacion = {}; // calificación eliminada
+                const estado = orden.estado || {};
+                const cotizacion =
+                    orden.cotizacion || orden.cotizacion_generada || {};
+                const fechaRecepcion = this.formatDate(orden.fecha_recepcion);
+                const fechaInicio = this.formatDate(orden.fecha_inicio);
+                const fechaFinalizacion = this.formatDate(
+                    orden.fecha_finalizacion
+                );
+                const calificacionValor = calificacion.calificacion ?? null;
+                // Estado: derive name even if relation missing, using FK + options
+                const estadoIdFromRel =
+                    estado.id_estado_orden_servicio_pk ?? null;
+                const estadoIdFromTop =
+                    orden.id_estado_orden_servicio_fk ?? null;
+                const estadoId = estadoIdFromRel ?? estadoIdFromTop;
+                let estadoNombre =
+                    estado.nombre_estado ||
+                    estado.nombre ||
+                    estado.codigo ||
+                    "";
+                if (!estadoNombre && estadoId) {
+                    try {
+                        const opt = Array.isArray(this.estadosOrdenOptions)
+                            ? this.estadosOrdenOptions.find(
+                                (o) => String(o.value) === String(estadoId)
+                            )
+                            : null;
+                        if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
+                    } catch (_) {
+                        estadoNombre = `ID ${estadoId}`;
+                    }
+                }
+                return {
+                    id: orden.id_orden_servicio_pk,
+                    numero: orden.numero_orden_servicio || "",
+                    id_solicitud: orden.id_solicitud_servicio_fk,
+                    numero_solicitud:
+                        solicitud.numero_solicitud_acf ||
+                        solicitud.numero_solicitud_cliente ||
+                        "",
+                    numero_solicitud_acf:
+                        solicitud.numero_solicitud_acf || null,
+                    numero_solicitud_cliente:
+                        solicitud.numero_solicitud_cliente || null,
+                    cliente_nombre:
+                        empresa.nombre_comercial || empresa.razon_social || "",
+                    contacto_valor: contacto.valor_contacto || "",
+                    contacto_tipo: contacto.tipo_contacto || "",
+                    id_tecnico: orden.id_tecnico_fk,
+                    tecnico_nombre: tecnico.primer_nombre
+                        ? [tecnico.primer_nombre, tecnico.primer_apellido]
+                            .filter(Boolean)
+                            .join(" ")
+                        : "",
+                    tecnico_documento: tecnico.dni || "",
+                    fecha_recepcion: fechaRecepcion,
+                    fecha_inicio: fechaInicio,
+                    fecha_finalizacion: fechaFinalizacion,
+                    observaciones: orden.observaciones || "",
+                    diagnostico_tecnico: orden.diagnostico_tecnico || "",
+                    diagnostico_cliente: orden.diagnostico_cliente || "",
+
+                    id_cotizacion: orden.id_cotizacion_fk,
+                    cotizacion_total: cotizacion.total || null,
+                    estado: estadoNombre,
+                    estado_id: estadoId ? Number(estadoId) : null,
+                    estado_codigo: estado.codigo || "",
+                    raw: orden,
+                };
+            },
+            actualizarTecnicos() {
+                const mapa = new Map();
+                this.ordenes.forEach((orden) => {
+                    if (!orden.id_tecnico) return;
+                    const valor = String(orden.id_tecnico);
+                    const label = orden.tecnico_nombre
+                        ? `${orden.tecnico_nombre} (ID ${orden.id_tecnico})`
+                        : `ID ${orden.id_tecnico}`;
+                    mapa.set(valor, label);
+                });
+                this.tecnicosDisponibles = Array.from(mapa.entries()).map(
+                    ([value, label]) => ({ value, label })
+                );
+            },
+            ensureOption(listName, value, label) {
+                if (value === null || value === undefined || value === "")
+                    return;
+                if (!Array.isArray(this[listName])) {
+                    this[listName] = [];
+                }
+                const normalizedValue = String(value);
+                const exists = this[listName].some(
+                    (opt) => String(opt.value) === normalizedValue
+                );
+                if (!exists) {
+                    this[listName].push({
+                        value: normalizedValue,
+                        label: label || `ID ${normalizedValue}`,
+                    });
+                    this.sortOptions(listName);
+                }
+            },
+            sortOptions(listName) {
+                if (!Array.isArray(this[listName])) return;
+                this[listName].sort((a, b) =>
+                    a.label.localeCompare(b.label, "es")
+                );
+            },
+            ensureOrdenOptions(orden) {
+                if (!orden) return;
+                this.ensureOption(
+                    "solicitudesOptions",
+                    orden.id_solicitud,
+                    String(orden.id_solicitud)
+                );
+                this.ensureOption(
+                    "tecnicosOptions",
+                    orden.id_tecnico,
+                    orden.tecnico_nombre
+                        ? `${orden.tecnico_nombre}`
+                        : String(orden.id_tecnico)
+                );
+                if (orden.estado_id) {
+                    const label = orden.estado
+                        ? `${orden.estado}`
+                        : `ID ${orden.estado_id}`;
+                    this.ensureOption(
+                        "estadosOrdenOptions",
+                        orden.estado_id,
+                        label
+                    );
+                }
+
+                if (orden.id_cotizacion) {
+                    this.ensureOption(
+                        "cotizacionesOptions",
+                        orden.id_cotizacion,
+                        String(orden.id_cotizacion)
+                    );
+                }
+            },
+            async fetchCatalogos() {
+                if (!(await this.requireAuth())) {
+                    return;
+                }
+                await Promise.all([
+                    this.fetchSolicitudes(),
+                    this.fetchTecnicos(),
+                    this.fetchCotizaciones(),
+                ]);
+            },
+            async fetchSolicitudes() {
+                if (this.authError) return;
+                this.loadingCatalogos.solicitudes = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "200");
+                    const response = await fetch(
+                        "/api/solicitudes?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al cargar solicitudes");
+                    const json = await response.json();
+                    const opciones = (json.data || []).map((item) => ({
+                        value: String(item.id_solicitud_pk),
+                        label:
+                            item.nombre_solicitud ||
+                            `Solicitud #${item.id_solicitud_pk}`,
+                    }));
+                    this.solicitudesOptions = opciones;
+                    this.sortOptions("solicitudesOptions");
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
+                } catch (error) {
+                    console.error(error);
+                    this.showToast(
+                        "No se pudieron cargar las solicitudes",
+                        "error"
+                    );
+                } finally {
+                    this.loadingCatalogos.solicitudes = false;
+                }
+            },
+            async fetchTecnicos() {
+                if (this.authError) return;
+                this.loadingCatalogos.tecnicos = true;
+                try {
+                    // Usar el mismo catálogo que Tickets: solo usuarios con rol Técnico (principal o secundario)
+                    const response = await fetch("/api/tecnicos", {
+                        headers: this.apiHeaders(),
+                    });
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al cargar técnicos");
+                    const json = await response.json();
+                    const opciones = (json.data || json || []).map((item) => {
+                        const nombres = [
+                            item.primer_nombre,
+                            item.segundo_nombre,
+                            item.primer_apellido,
+                            item.segundo_apellido,
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .trim();
+                        return {
+                            value: String(item.id),
+                            label: nombres || "Persona sin nombre",
+                        };
+                    });
+                    this.tecnicosOptions = opciones;
+                    this.sortOptions("tecnicosOptions");
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
+                } catch (error) {
+                    console.error(error);
+                    this.showToast("No se pudieron cargar los técnicos", "error");
+                } finally {
+                    this.loadingCatalogos.tecnicos = false;
+                }
+            },
+
+            async fetchCotizaciones() {
+                if (this.authError) return;
+                this.loadingCatalogos.cotizaciones = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "100");
+                    params.set("sort", "fecha");
+                    params.set("direction", "desc");
+                    const response = await fetch(
+                        "/api/cotizaciones?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al cargar cotizaciones");
+                    const json = await response.json();
+                    const opciones = (json.data || []).map((item) => ({
+                        value: String(item.id_cotizacion_pk),
+                        label: String(item.id_cotizacion_pk),
+                    }));
+                    this.cotizacionesOptions = opciones;
+                    this.sortOptions("cotizacionesOptions");
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
+                } catch (error) {
+                    console.error(error);
+                    this.showToast(
+                        "No se pudieron cargar las cotizaciones",
+                        "error"
+                    );
+                } finally {
+                    this.loadingCatalogos.cotizaciones = false;
+                }
+            },
+            async fetchOrdenes() {
+                if (!(await this.requireAuth()) || this.authError) return;
+                this.loadingOrdenes = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "100");
+                    // Server-side filtering params
+                    if (
+                        this.searchOrden &&
+                        String(this.searchOrden).trim() !== ""
+                    ) {
+                        params.set("q", String(this.searchOrden).trim());
+                    }
+                    if (
+                        this.tecnicoOrden &&
+                        String(this.tecnicoOrden).trim() !== ""
+                    ) {
+                        params.set(
+                            "id_tecnico_fk",
+                            String(this.tecnicoOrden).trim()
+                        );
+                    }
+                    if (
+                        this.ordenarPor &&
+                        String(this.ordenarPor).trim() !== ""
+                    ) {
+                        params.set("order_by", String(this.ordenarPor).trim());
+                    }
+
+                    const response = await fetch(
+                        "/api/ordenes-servicio?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al cargar órdenes");
+                    const data = await response.json();
+                    this.ordenes = (data.data || []).map((orden) =>
+                        this.mapOrden(orden)
+                    );
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
+                    this.actualizarTecnicos();
+                } catch (error) {
+                    console.error(error);
+                    this.showToast(
+                        "No se pudieron cargar las órdenes de servicio",
+                        "error"
+                    );
+                } finally {
+                    this.loadingOrdenes = false;
+                }
+            },
+            openCreateOrden() {
+                this.resetForm();
+                this.isModalOpen = true;
+            },
+            openEditOrden(orden) {
+                this.errors = {};
+                this.ordenToEdit = orden;
+                // Carga perezosa del registro actualizado desde la API
+                (async () => {
+                    try {
+                        if (!(await this.requireAuth())) return;
+                        const res = await fetch(
+                            "/api/ordenes-servicio/" + orden.id,
+                            { headers: this.apiHeaders() }
+                        );
+                        if (res.status === 401) {
+                            this.handleUnauthorized();
+                            return;
+                        }
+                        if (!res.ok)
+                            throw new Error("Error al cargar la orden");
+                        const json = await res.json();
+                        const full = json.data || json; // Resource envuelve en data
+                        const mapped = this.mapOrden(full);
+                        this.ensureOrdenOptions(mapped);
+                        this.formOrden = {
+                            id: mapped.id,
+                            id_solicitud_servicio_fk: mapped.id_solicitud ?? "",
+                            id_tecnico_fk: mapped.id_tecnico ?? "",
+                            id_estado_orden_servicio_fk: mapped.estado_id
+                                ? String(mapped.estado_id)
+                                : "",
+                            fecha_recepcion: mapped.fecha_recepcion || "",
+                            fecha_inicio: mapped.fecha_inicio || "",
+                            fecha_finalizacion: mapped.fecha_finalizacion || "",
+                            observaciones: mapped.observaciones || "",
+                            diagnostico_tecnico:
+                                mapped.diagnostico_tecnico || "",
+                            diagnostico_cliente:
+                                mapped.diagnostico_cliente || "",
+                            id_cotizacion_fk: mapped.id_cotizacion ?? "",
+                        };
+                    } catch (e) {
+                        console.error(e);
+                        // Fallback a datos en memoria si falla la carga
+                        this.formOrden = {
+                            id: orden.id,
+                            id_solicitud_servicio_fk: orden.id_solicitud ?? "",
+                            id_tecnico_fk: orden.id_tecnico ?? "",
+                            id_estado_orden_servicio_fk: orden.estado_id
+                                ? String(orden.estado_id)
+                                : "",
+                            fecha_recepcion: orden.fecha_recepcion || "",
+                            fecha_inicio: orden.fecha_inicio || "",
+                            fecha_finalizacion: orden.fecha_finalizacion || "",
+                            observaciones: orden.observaciones || "",
+                            diagnostico_tecnico:
+                                orden.diagnostico_tecnico || "",
+                            diagnostico_cliente:
+                                orden.diagnostico_cliente || "",
+                            id_cotizacion_fk: orden.id_cotizacion ?? "",
+                        };
+                    } finally {
+                        this.isEditModalOpen = true;
+                    }
+                })();
+            },
+            openDeleteOrden(orden) {
+                this.ordenToDelete = orden;
+                this.isDeleteModalOpen = true;
+            },
+            detalleUrl(id) {
+                const base = detalleBaseUrl || "/admin/detalle-orden";
+                return base + "?orden=" + id;
+            },
+
+            buildPayload() {
+                return {
+                    id_solicitud_servicio_fk: this.formOrden
+                        .id_solicitud_servicio_fk
+                        ? Number(this.formOrden.id_solicitud_servicio_fk)
+                        : null,
+                    id_tecnico_fk: this.formOrden.id_tecnico_fk
+                        ? Number(this.formOrden.id_tecnico_fk)
+                        : null,
+                    id_estado_orden_servicio_fk: this.formOrden
+                        .id_estado_orden_servicio_fk
+                        ? Number(this.formOrden.id_estado_orden_servicio_fk)
+                        : null,
+                    fecha_recepcion: this.formOrden.fecha_recepcion || null,
+                    fecha_inicio: this.formOrden.fecha_inicio || null,
+                    fecha_finalizacion:
+                        this.formOrden.fecha_finalizacion || null,
+                    observaciones: this.formOrden.observaciones || null,
+                    diagnostico_tecnico:
+                        this.formOrden.diagnostico_tecnico || null,
+                    diagnostico_cliente:
+                        this.formOrden.diagnostico_cliente || null,
+                    id_cotizacion_fk: this.formOrden.id_cotizacion_fk
+                        ? Number(this.formOrden.id_cotizacion_fk)
+                        : null,
+                };
+            },
+            async fetchEstadosOrden() {
+                if (this.authError) return;
+                this.loadingCatalogos.estadosOrden = true;
+                try {
+                    const res = await fetch("/api/estados-orden-servicio", {
+                        headers: this.apiHeaders(),
+                    });
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok)
+                        throw new Error("Error al cargar estados de orden");
+                    const json = await res.json();
+                    const opciones = (json.data || []).map((e) => {
+                        const text = [e.nombre, e.codigo ? `(${e.codigo})` : ""]
+                            .filter(Boolean)
+                            .join(" ");
+                        return { value: String(e.id), label: text };
+                    });
+                    this.estadosOrdenOptions = opciones;
+                    this.sortOptions("estadosOrdenOptions");
+                } catch (err) {
+                    console.error(err);
+                    this.showToast(
+                        "No se pudieron cargar los estados de orden",
+                        "error"
+                    );
+                } finally {
+                    this.loadingCatalogos.estadosOrden = false;
+                }
+            },
+            async createOrden() {
+                if (!(await this.requireAuth()) || this.authError) return;
+                if (this.saving) return;
+                this.saving = true;
+                this.errors = {};
+                try {
+                    // Client-side required validation before sending to API
+                    if (!this.validateForm()) {
+                        this.saving = false;
+                        return;
+                    }
+                    const payload = this.buildPayload();
+                    const response = await fetch("/api/ordenes-servicio", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (response.status === 422) {
+                        const errorData = await response.json();
+                        this.errors = errorData.errors || {};
+                        throw new Error("Validación");
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al crear la orden");
+                    const data = await response.json();
+                    if (data.data) {
+                        const mapped = this.mapOrden(data.data);
+                        this.ensureOrdenOptions(mapped);
+                        this.ordenes.unshift(mapped);
+                        this.actualizarTecnicos();
+                    }
+                    this.showToast("Orden de servicio creada correctamente");
+                    this.isModalOpen = false;
+                    this.resetForm();
+                } catch (error) {
+                    console.error(error);
+                    if (error.message !== "Validación")
+                        this.showToast("No se pudo crear la orden", "error");
+                } finally {
+                    this.saving = false;
+                }
+            },
+            async updateOrden() {
+                if (!(await this.requireAuth()) || this.authError) return;
+                if (!this.formOrden.id || this.saving) return;
+                this.saving = true;
+                this.errors = {};
+                try {
+                    // Client-side required validation before sending to API
+                    if (!this.validateForm()) {
+                        this.saving = false;
+                        return;
+                    }
+                    const payload = this.buildPayload();
+                    const response = await fetch(
+                        "/api/ordenes-servicio/" + this.formOrden.id,
+                        {
+                            method: "PUT",
+                            headers: this.apiHeaders(),
+                            body: JSON.stringify(payload),
+                        }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (response.status === 422) {
+                        const errorData = await response.json();
+                        this.errors = errorData.errors || {};
+                        throw new Error("Validación");
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al actualizar la orden");
+                    const data = await response.json();
+                    if (data.data) {
+                        const mapped = this.mapOrden(data.data);
+                        this.ensureOrdenOptions(mapped);
+                        const index = this.ordenes.findIndex(
+                            (orden) => orden.id === this.formOrden.id
+                        );
+                        if (index !== -1) {
+                            this.ordenes.splice(index, 1, mapped);
+                        }
+                        this.actualizarTecnicos();
+                    }
+                    this.showToast("Orden de servicio actualizada");
+                    this.isEditModalOpen = false;
+                    this.ordenToEdit = null;
+                    this.resetForm();
+                } catch (error) {
+                    console.error(error);
+                    if (error.message !== "Validación")
+                        this.showToast(
+                            "No se pudo actualizar la orden",
+                            "error"
+                        );
+                } finally {
+                    this.saving = false;
+                }
+            },
+            async performDeleteOrden() {
+                if (!(await this.requireAuth()) || this.authError) return;
+                if (!this.ordenToDelete || this.deleting) return;
+                this.deleting = true;
+                try {
+                    const response = await fetch(
+                        "/api/ordenes-servicio/" + this.ordenToDelete.id,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!response.ok)
+                        throw new Error("Error al eliminar la orden");
+                    this.ordenes = this.ordenes.filter(
+                        (orden) => orden.id !== this.ordenToDelete.id
+                    );
+                    this.actualizarTecnicos();
+                    this.showToast("Orden de servicio eliminada");
+                } catch (error) {
+                    console.error(error);
+                    this.showToast("No se pudo eliminar la orden", "error");
+                } finally {
+                    this.deleting = false;
+                    this.isDeleteModalOpen = false;
+                    this.ordenToDelete = null;
+                }
+            },
+            submitOrden() {
+                if (this.formOrden.id) this.updateOrden();
+                else this.createOrden();
+            },
+            validateForm() {
+                // Minimal required set according to UI: Solicitud, Técnico y Cotización
+                // Estado, fechas y textos se mantienen opcionales a menos que se pida explícitamente
+                const errs = {};
+                const requiredMsg = "Este campo es obligatorio.";
+                if (!this.formOrden.id_solicitud_servicio_fk) {
+                    errs.id_solicitud_servicio_fk = [requiredMsg];
+                }
+                if (!this.formOrden.id_tecnico_fk) {
+                    errs.id_tecnico_fk = [requiredMsg];
+                }
+                if (!this.formOrden.id_cotizacion_fk) {
+                    errs.id_cotizacion_fk = [requiredMsg];
+                }
+                this.errors = errs;
+                if (Object.keys(errs).length) {
+                    this.showToast("Por favor completa los campos requeridos.", "error");
+                    return false;
+                }
+                return true;
+            },
+            filteredOrdenes() {
+                const term = this.searchOrden.trim().toLowerCase();
+                return this.ordenes
+                    .filter((orden) => {
+                        if (!this.tecnicoOrden) return true;
+                        return (
+                            String(orden.id_tecnico) ===
+                            String(this.tecnicoOrden)
+                        );
+                    })
+                    .filter((orden) => {
+                        if (!term) return true;
+                        return [
+                            orden.numero,
+                            orden.id,
+                            orden.id_solicitud,
+                            orden.numero_solicitud,
+                            orden.tecnico_nombre,
+                            orden.estado,
+                            orden.cliente_nombre,
+                            orden.observaciones,
+                            orden.diagnostico_cliente,
+                            orden.diagnostico_tecnico,
+                        ]
+                            .filter(Boolean)
+                            .some((field) =>
+                                field.toString().toLowerCase().includes(term)
+                            );
+                    })
+                    .sort((a, b) => {
+                        switch (this.ordenarPor) {
+                            case "id":
+                                return Number(a.id) - Number(b.id);
+                            case "fecha_recepcion":
+                                return (
+                                    new Date(
+                                        a.fecha_recepcion || "1970-01-01"
+                                    ) -
+                                    new Date(b.fecha_recepcion || "1970-01-01")
+                                );
+                            case "fecha_inicio":
+                                return (
+                                    new Date(a.fecha_inicio || "1970-01-01") -
+                                    new Date(b.fecha_inicio || "1970-01-01")
+                                );
+                            case "fecha_finalizacion":
+                                return (
+                                    new Date(
+                                        a.fecha_finalizacion || "1970-01-01"
+                                    ) -
+                                    new Date(
+                                        b.fecha_finalizacion || "1970-01-01"
+                                    )
+                                );
+                            default:
+                                return 0;
+                        }
+                    });
+            },
+            toggleRow(id) {
+                this.expandedRows[id] = !this.expandedRows[id];
+            },
+            async init() {
+                if (!(await this.requireAuth())) return;
+                // Debounce helper (local)
+                const debounce = (fn, ms = 350) => {
+                    let h;
+                    return (...a) => {
+                        clearTimeout(h);
+                        h = setTimeout(() => fn(...a), ms);
+                    };
+                };
+
+                // Watch filters and refetch from server (debounced)
+                this.$watch(
+                    "searchOrden",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    })
+                );
+                this.$watch(
+                    "tecnicoOrden",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    }, 250)
+                );
+                this.$watch(
+                    "ordenarPor",
+                    debounce(() => {
+                        this.fetchOrdenes();
+                    }, 150)
+                );
+
+                await Promise.all([
+                    this.fetchCatalogos(),
+                    this.fetchEstadosOrden(),
+                    this.fetchOrdenes(),
+                ]);
+            },
+        };
+    };
+}
+
+// Alpine component factory for Gestión de Solicitudes (Admin)
+if (typeof window !== "undefined") {
+    window.gestionSolicitudes = function () {
+        return {
+            // Tabs and filters
+            tab: "solicitudes",
+            searchSolicitud: "",
+            estadoSolicitud: "",
+            ordenarPor: "estado_solicitud",
+            searchContacto: "",
+            ordenarPorContacto: "tipo_contacto",
+            reportUrl() {
+                const params = new URLSearchParams();
+                params.set("modulo", "Solicitudes");
+                if (this.searchSolicitud)
+                    params.set("search", this.searchSolicitud);
+                if (this.estadoSolicitud)
+                    params.set("estado_solicitud", this.estadoSolicitud);
+                if (this.ordenarPor) params.set("ordenar_por", this.ordenarPor);
+                const now = new Date();
+                try {
+                    const fechaStr = now.toLocaleDateString("es-HN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                    });
+                    params.set("fecha", fechaStr);
+                } catch (_) {
+                    params.set("fecha", now.toISOString().slice(0, 10));
+                }
+                params.set("fecha_generacion", now.toISOString());
+                return "/admin/reportes-header?" + params.toString();
+            },
+
+            // Modals state
+            isModalOpen: false,
+            isEditModalOpen: false,
+            isDeleteModalOpen: false,
+            solicitudToEdit: null,
+            solicitudToDelete: null,
+
+            // Estados modals (not wired yet; reserved for future use)
+            isEstadoModalOpen: false,
+            isEditEstadoModalOpen: false,
+            estadoToEdit: {
+                id: null,
+                nombre_estado: "",
+                descripcion_estado: "",
+                codigo: "",
+                es_final: 0,
+                orden: 0,
+            },
+            isDeleteEstadoModalOpen: false,
+            estadoToDelete: null,
+
+            // Contactos modals/state
+            isContactoModalOpen: false,
+            isEditContactoModalOpen: false,
+            isDeleteContactoModalOpen: false,
+            contactoToEdit: null,
+            contactoToDelete: null,
+
+            // Data collections
+            solicitudes: [],
+            contactos: [],
+            clientesOptions: [],
+            estadosOptions: [],
+            contactosOptions: [], // full list for selects; filtered per cliente when rendering
+
+            // Forms and flags
+            formSolicitud: {
+                id: null,
+                id_cliente_fk: "",
+                descripcion_problema: "",
+                id_estado_solicitud_fk: "",
+                id_contacto_fk: "",
+            },
+            formContacto: {
+                id: null,
+                tipo_contacto: "",
+                valor_contacto: "",
+                id_cliente_fk: "",
+            },
+            errors: {},
+            saving: false,
+            deleting: false,
+            loadingSolicitudes: false,
+            loadingCatalogos: {
+                clientes: false,
+                estados: false,
+                contactos: false,
+            },
+            loadingContactos: false,
+
+            // Auth helpers (same pattern as órdenes)
+            getToken() {
+                return null;
+            },
+            setToken(token) {
+                return null;
+            },
+            getCsrf() {
+                const m = document.head.querySelector(
+                    'meta[name="csrf-token"]'
+                );
+                return m ? m.content : "";
+            },
+            apiHeaders() {
+                return {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                };
+            },
+            async requireAuth() {
+                return true;
+            },
+
+            showToast(message, type = "ok") {
+                const el = document.createElement("div");
+                el.className =
+                    "fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm " +
+                    (type === "error"
+                        ? "bg-red-600 text-white"
+                        : type === "warn"
+                            ? "bg-yellow-600 text-white"
+                            : "bg-green-600 text-white");
+                el.textContent = message;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 3500);
+            },
+
+            resetSolicitudForm() {
+                this.formSolicitud = {
+                    id: null,
+                    id_cliente_fk: "",
+                    descripcion_problema: "",
+                    id_estado_solicitud_fk: "",
+                    id_contacto_fk: "",
+                };
+                this.errors = {};
+            },
+            resetContactoForm() {
+                this.formContacto = {
+                    id: null,
+                    tipo_contacto: "",
+                    valor_contacto: "",
+                    id_cliente_fk: "",
+                };
+                this.errors = {};
+            },
+
+            // Mapping helpers
+            mapSolicitud(item) {
+                const cliente = item.cliente || {};
+                const empresa = cliente.empresa || {};
+                const persona = cliente.persona || {};
+                const estado = item.estado_solicitud || {};
+                const contacto = item.contacto || {};
+                // Build a human-readable client name for both empresa and persona
+                let clienteNombre = "";
+                if (
+                    cliente.tipo ||
+                    empresa.nombre_comercial ||
+                    empresa.razon_social
+                ) {
+                    // Try empresa-style fields first
+                    clienteNombre =
+                        cliente.nombre ||
+                        cliente.nombre_comercial ||
+                        empresa.nombre_comercial ||
+                        empresa.razon_social ||
+                        "";
+                }
+                if (!clienteNombre || !String(clienteNombre).trim()) {
+                    // Try persona fields either at root or nested under cliente.persona
+                    const pn =
+                        cliente.primer_nombre || persona.primer_nombre || "";
+                    const sn =
+                        cliente.segundo_nombre || persona.segundo_nombre || "";
+                    const pa =
+                        cliente.primer_apellido ||
+                        persona.primer_apellido ||
+                        "";
+                    const sa =
+                        cliente.segundo_apellido ||
+                        persona.segundo_apellido ||
+                        "";
+                    clienteNombre = [pn, sn, pa, sa]
+                        .filter(Boolean)
+                        .join(" ")
+                        .trim();
+                }
+                return {
+                    id: item.id_solicitud_pk,
+                    id_cliente_fk: item.id_cliente_fk,
+                    cliente_nombre: clienteNombre,
+                    numero_solicitud_acf: item.numero_solicitud_acf,
+                    numero_solicitud_cliente: item.numero_solicitud_cliente,
+                    descripcion_problema: item.descripcion_problema,
+                    id_estado_solicitud_fk: item.id_estado_solicitud_fk,
+                    estado_nombre: estado.nombre_estado || "",
+                    id_contacto_fk: item.id_contacto_fk,
+                    contacto_valor: contacto.valor_contacto || "",
+                };
+            },
+
+            // Catalogs
+            async fetchClientes() {
+                this.loadingCatalogos.clientes = true;
+                try {
+                    // Reutilizar el mismo catálogo unificado que usa Calendario
+                    const params = new URLSearchParams();
+                    params.set("per_page", "500");
+                    params.set("all", "1");
+                    const res = await fetch(
+                        "/api/clientes?" + params.toString(),
+                        {
+                            headers: this.apiHeaders(),
+                            credentials: "same-origin",
+                        }
+                    );
+                    if (!res.ok) throw new Error("Error clientes");
+                    const data = await res.json();
+                    const raw = Array.isArray(data?.data)
+                        ? data.data
+                        : Array.isArray(data?.data?.data)
+                            ? data.data.data
+                            : Array.isArray(data)
+                                ? data
+                                : [];
+                    const mapped = (raw || [])
+                        .map((c) => {
+                            let nombre;
+                            if (c.tipo === "empresa") {
+                                nombre =
+                                    c.nombre ||
+                                    c.nombre_comercial ||
+                                    c.razon_social ||
+                                    "";
+                            } else {
+                                const parts = [
+                                    c.primer_nombre,
+                                    c.segundo_nombre,
+                                    c.primer_apellido,
+                                    c.segundo_apellido,
+                                ].filter(Boolean);
+                                nombre = parts.join(" ");
+                            }
+                            if (!nombre || !String(nombre).trim()) {
+                                nombre = `Cliente ${c.id}`;
+                            }
+                            const id = c.id;
+                            if (!id) return null;
+                            return { value: String(id), label: nombre };
+                        })
+                        .filter(Boolean);
+                    // De-duplicar por value
+                    const uniq = {};
+                    for (const it of mapped) {
+                        if (!uniq[it.value]) uniq[it.value] = it;
+                    }
+                    this.clientesOptions = Object.values(uniq).sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                    );
+                } catch (e) {
+                    console.error(e);
+                    this.showToast(
+                        "No se pudieron cargar los clientes",
+                        "error"
+                    );
+                } finally {
+                    this.loadingCatalogos.clientes = false;
+                }
+            },
+            async fetchEstados() {
+                this.loadingCatalogos.estados = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "200");
+                    // Usar endpoint web-auth para permitir cookie HttpOnly
+                    const res = await fetch(
+                        "/api-web/estados-solicitud?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (!res.ok) throw new Error("Error estados");
+                    const json = await res.json();
+                    const options = (json.data || []).map((it) => ({
+                        value: String(it.id_estado_solicitud_pk || it.id),
+                        label:
+                            it.nombre ||
+                            it.nombre_estado ||
+                            `Estado ${it.id_estado_solicitud_pk || it.id}`,
+                    }));
+                    this.estadosOptions = options;
+                    this.estadosOptions.sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                    );
+                } catch (e) {
+                    console.error(e);
+                    this.showToast(
+                        "No se pudieron cargar los estados",
+                        "error"
+                    );
+                } finally {
+                    this.loadingCatalogos.estados = false;
+                }
+            },
+            async fetchContactosCatalogo() {
+                this.loadingCatalogos.contactos = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "200");
+                    const res = await fetch(
+                        "/api/contactos?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (!res.ok) throw new Error("Error contactos");
+                    const json = await res.json();
+                    const items = json.data || [];
+                    // Map contacts with a user-friendly label and keep reference to cliente
+                    this.contactosOptions = items.map((it) => {
+                        const value = String(it.id_contacto_pk || it.id);
+                        const base =
+                            it.valor_contacto || it.tipo_contacto || "Contacto";
+                        const cliente =
+                            this.clienteLabelById(it.id_cliente_fk) || "";
+                        const label = cliente ? `${base} — ${cliente}` : base;
+                        return {
+                            value,
+                            label,
+                            id_cliente_fk: String(it.id_cliente_fk || ""),
+                        };
+                    });
+                    // Optional: sort by label for nicer UX
+                    this.contactosOptions.sort((a, b) => a.label.localeCompare(b.label, "es"));
+                } catch (e) {
+                    console.error(e);
+                    this.showToast(
+                        "No se pudieron cargar los contactos",
+                        "error"
+                    );
+                } finally {
+                    this.loadingCatalogos.contactos = false;
+                }
+            },
+            filteredContactosForSelectedCliente() {
+                const idCliente = String(
+                    this.formSolicitud.id_cliente_fk || ""
+                );
+                // If no cliente selected, don't show any contacts yet
+                if (!idCliente) return [];
+                return this.contactosOptions.filter(
+                    (c) => String(c.id_cliente_fk || "") === idCliente
+                );
+            },
+            // When cliente changes, clear selected contacto to avoid mismatches
+            onClienteChange() {
+                this.formSolicitud.id_contacto_fk = "";
+            },
+
+            // Lookup helper to get client label from unified catalog by id
+            clienteLabelById(id) {
+                if (!id) return "";
+                const sid = String(id);
+                const found = this.clientesOptions.find(
+                    (o) => String(o.value) === sid
+                );
+                return found ? found.label : "";
+            },
+
+            // CRUD Solicitudes
+            async fetchSolicitudes() {
+                if (!(await this.requireAuth())) return;
+                this.loadingSolicitudes = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "100");
+                    const res = await fetch(
+                        "/api/solicitudes?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (!res.ok) throw new Error("Error solicitudes");
+                    const json = await res.json();
+                    this.solicitudes = (json.data || []).map((it) =>
+                        this.mapSolicitud(it)
+                    );
+                } catch (e) {
+                    console.error(e);
+                    this.showToast(
+                        "No se pudieron cargar las solicitudes",
+                        "error"
+                    );
+                } finally {
+                    this.loadingSolicitudes = false;
+                }
+            },
+            buildSolicitudPayload() {
+                return {
+                    id_cliente_fk: this.formSolicitud.id_cliente_fk
+                        ? Number(this.formSolicitud.id_cliente_fk)
+                        : null,
+                    descripcion_problema:
+                        this.formSolicitud.descripcion_problema || null,
+                    id_estado_solicitud_fk: this.formSolicitud
+                        .id_estado_solicitud_fk
+                        ? Number(this.formSolicitud.id_estado_solicitud_fk)
+                        : null,
+                    id_contacto_fk: this.formSolicitud.id_contacto_fk
+                        ? Number(this.formSolicitud.id_contacto_fk)
+                        : null,
+                };
+            },
+            openCreateSolicitud() {
+                this.resetSolicitudForm();
+                this.isModalOpen = true;
+            },
+            openEditSolicitud(item) {
+                this.errors = {};
+                this.solicitudToEdit = item;
+                this.formSolicitud = {
+                    id: item.id,
+                    id_cliente_fk: item.id_cliente_fk ?? "",
+                    descripcion_problema: item.descripcion_problema ?? "",
+                    id_estado_solicitud_fk: item.id_estado_solicitud_fk ?? "",
+                    id_contacto_fk: item.id_contacto_fk ?? "",
+                };
+                this.isEditModalOpen = true;
+            },
+            openDeleteSolicitud(item) {
+                this.solicitudToDelete = item;
+                this.isDeleteModalOpen = true;
+            },
+            async createSolicitud() {
+                if (!(await this.requireAuth()) || this.saving) return;
+                this.saving = true;
+                this.errors = {};
+                try {
+                    const payload = this.buildSolicitudPayload();
+                    const res = await fetch("/api/solicitudes", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
+                    if (res.status === 422) {
+                        const err = await res.json();
+                        this.errors = err.errors || {};
+                        throw new Error("Validación");
+                    }
+                    if (!res.ok) {
+                        let msg = "Error al crear la solicitud";
+                        try {
+                            const errText = await res.text();
+                            if (errText) msg += `: ${errText.slice(0, 300)}`;
+                        } catch (_) { }
+                        throw new Error(msg);
+                    }
+                    const json = await res.json();
+                    if (json.data)
+                        this.solicitudes.unshift(this.mapSolicitud(json.data));
+                    this.showToast("Solicitud creada correctamente");
+                    this.isModalOpen = false;
+                    this.resetSolicitudForm();
+                } catch (e) {
+                    console.error(e);
+                    if (e.message !== "Validación")
+                        this.showToast(
+                            "No se pudo crear la solicitud",
+                            "error"
+                        );
+                } finally {
+                    this.saving = false;
+                }
+            },
+            async updateSolicitud() {
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.formSolicitud.id ||
+                    this.saving
+                )
+                    return;
+                this.saving = true;
+                this.errors = {};
+                try {
+                    const payload = this.buildSolicitudPayload();
+                    const res = await fetch(
+                        `/api/solicitudes/${this.formSolicitud.id}`,
+                        {
+                            method: "PUT",
+                            headers: this.apiHeaders(),
+                            body: JSON.stringify(payload),
+                        }
+                    );
+                    if (res.status === 422) {
+                        const err = await res.json();
+                        this.errors = err.errors || {};
+                        throw new Error("Validación");
+                    }
+                    if (!res.ok)
+                        throw new Error("Error al actualizar la solicitud");
+                    const json = await res.json();
+                    if (json.data) {
+                        const mapped = this.mapSolicitud(json.data);
+                        const idx = this.solicitudes.findIndex(
+                            (s) => s.id === this.formSolicitud.id
+                        );
+                        if (idx !== -1) this.solicitudes.splice(idx, 1, mapped);
+                    }
+                    this.showToast("Solicitud actualizada");
+                    this.isEditModalOpen = false;
+                    this.solicitudToEdit = null;
+                    this.resetSolicitudForm();
+                } catch (e) {
+                    console.error(e);
+                    if (e.message !== "Validación")
+                        this.showToast(
+                            "No se pudo actualizar la solicitud",
+                            "error"
+                        );
+                } finally {
+                    this.saving = false;
+                }
+            },
+            async performDeleteSolicitud() {
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.solicitudToDelete ||
+                    this.deleting
+                )
+                    return;
+                this.deleting = true;
+                try {
+                    const res = await fetch(
+                        `/api/solicitudes/${this.solicitudToDelete.id}`,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
+                    if (!res.ok)
+                        throw new Error("Error al eliminar la solicitud");
+                    this.solicitudes = this.solicitudes.filter(
+                        (s) => s.id !== this.solicitudToDelete.id
+                    );
+                    this.showToast("Solicitud eliminada");
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("No se pudo eliminar la solicitud", "error");
+                } finally {
+                    this.deleting = false;
+                    this.isDeleteModalOpen = false;
+                    this.solicitudToDelete = null;
+                }
+            },
+            submitSolicitud() {
+                // quick client-side validation
+                this.errors = {};
+                const errs = {};
+                if (!this.formSolicitud.id_cliente_fk) errs.id_cliente_fk = ["Seleccione un cliente."];
+                if (!this.formSolicitud.descripcion_problema || String(this.formSolicitud.descripcion_problema).trim().length === 0)
+                    errs.descripcion_problema = ["La descripción es obligatoria."];
+                if (!this.formSolicitud.id_estado_solicitud_fk) errs.id_estado_solicitud_fk = ["Seleccione un estado."];
+                if (!this.formSolicitud.id_contacto_fk) errs.id_contacto_fk = ["Seleccione un contacto."];
+                if (Object.keys(errs).length) {
+                    this.errors = errs;
+                    this.showToast("Complete los campos requeridos", "warn");
+                    return;
+                }
+                if (this.formSolicitud.id) this.updateSolicitud();
+                else this.createSolicitud();
+            },
+
+            // Contactos list + CRUD (simple)
+            async fetchContactos() {
+                if (!(await this.requireAuth())) return;
+                this.loadingContactos = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "100");
+                    const res = await fetch(
+                        "/api/contactos?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (!res.ok) throw new Error("Error contactos");
+                    const json = await res.json();
+                    this.contactos = (json.data || []).map((it) => ({
+                        id: it.id_contacto_pk || it.id,
+                        tipo_contacto: it.tipo_contacto,
+                        valor_contacto: it.valor_contacto,
+                        id_cliente_fk: it.id_cliente_fk,
+                    }));
+                } catch (e) {
+                    console.error(e);
+                    this.showToast(
+                        "No se pudieron cargar los contactos",
+                        "error"
+                    );
+                } finally {
+                    this.loadingContactos = false;
+                }
+            },
+            openCreateContacto() {
+                this.resetContactoForm();
+                this.isContactoModalOpen = true;
+            },
+            openEditContacto(item) {
+                this.errors = {};
+                this.contactoToEdit = item;
+                this.formContacto = {
+                    id: item.id,
+                    tipo_contacto: item.tipo_contacto || "",
+                    valor_contacto: item.valor_contacto || "",
+                    id_cliente_fk: item.id_cliente_fk || "",
+                };
+                this.isEditContactoModalOpen = true;
+            },
+            openDeleteContacto(item) {
+                this.contactoToDelete = item;
+                this.isDeleteContactoModalOpen = true;
+            },
+            async createContacto() {
+                if (!(await this.requireAuth()) || this.saving) return;
+                this.saving = true;
+                this.errors = {};
+                try {
+                    const payload = {
+                        tipo_contacto: this.formContacto.tipo_contacto || null,
+                        valor_contacto:
+                            this.formContacto.valor_contacto || null,
+                        id_cliente_fk: this.formContacto.id_cliente_fk
+                            ? Number(this.formContacto.id_cliente_fk)
+                            : null,
+                    };
+                    const res = await fetch("/api/contactos", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
+                    if (res.status === 422) {
+                        const err = await res.json();
+                        this.errors = err.errors || {};
+                        throw new Error("Validación");
+                    }
+                    if (!res.ok) throw new Error("Error al crear contacto");
+                    const json = await res.json();
+                    if (json.data)
+                        this.contactos.unshift({
+                            id: json.data.id_contacto_pk || json.data.id,
+                            tipo_contacto: json.data.tipo_contacto,
+                            valor_contacto: json.data.valor_contacto,
+                            id_cliente_fk: json.data.id_cliente_fk,
+                        });
+                    this.showToast("Contacto creado");
+                    this.isContactoModalOpen = false;
+                    this.resetContactoForm();
+                } catch (e) {
+                    console.error(e);
+                    if (e.message !== "Validación")
+                        this.showToast("No se pudo crear el contacto", "error");
+                } finally {
+                    this.saving = false;
+                }
+            },
+            async updateContacto() {
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.formContacto.id ||
+                    this.saving
+                )
+                    return;
+                this.saving = true;
+                this.errors = {};
+                try {
+                    const payload = {
+                        tipo_contacto: this.formContacto.tipo_contacto || null,
+                        valor_contacto:
+                            this.formContacto.valor_contacto || null,
+                        id_cliente_fk: this.formContacto.id_cliente_fk
+                            ? Number(this.formContacto.id_cliente_fk)
+                            : null,
+                    };
+                    const res = await fetch(
+                        `/api/contactos/${this.formContacto.id}`,
+                        {
+                            method: "PUT",
+                            headers: this.apiHeaders(),
+                            body: JSON.stringify(payload),
+                        }
+                    );
+                    if (res.status === 422) {
+                        const err = await res.json();
+                        this.errors = err.errors || {};
+                        throw new Error("Validación");
+                    }
+                    if (!res.ok)
+                        throw new Error("Error al actualizar contacto");
+                    const json = await res.json();
+                    if (json.data) {
+                        const updated = {
+                            id: json.data.id_contacto_pk || json.data.id,
+                            tipo_contacto: json.data.tipo_contacto,
+                            valor_contacto: json.data.valor_contacto,
+                            id_cliente_fk: json.data.id_cliente_fk,
+                        };
+                        const idx = this.contactos.findIndex(
+                            (c) => c.id === this.formContacto.id
+                        );
+                        if (idx !== -1) this.contactos.splice(idx, 1, updated);
+                    }
+                    this.showToast("Contacto actualizado");
+                    this.isEditContactoModalOpen = false;
+                    this.contactoToEdit = null;
+                    this.resetContactoForm();
+                } catch (e) {
+                    console.error(e);
+                    if (e.message !== "Validación")
+                        this.showToast(
+                            "No se pudo actualizar el contacto",
+                            "error"
+                        );
+                } finally {
+                    this.saving = false;
+                }
+            },
+            async performDeleteContacto() {
+                if (
+                    !(await this.requireAuth()) ||
+                    !this.contactoToDelete ||
+                    this.deleting
+                )
+                    return;
+                this.deleting = true;
+                try {
+                    const res = await fetch(
+                        `/api/contactos/${this.contactoToDelete.id}`,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
+                    if (!res.ok) throw new Error("Error al eliminar contacto");
+                    this.contactos = this.contactos.filter(
+                        (c) => c.id !== this.contactoToDelete.id
+                    );
+                    this.showToast("Contacto eliminado");
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("No se pudo eliminar el contacto", "error");
+                } finally {
+                    this.deleting = false;
+                    this.isDeleteContactoModalOpen = false;
+                    this.contactoToDelete = null;
+                }
+            },
+            submitContacto() {
+                if (this.formContacto.id) this.updateContacto();
+                else this.createContacto();
+            },
+
+            // Derived collections and filters
+            filteredContactos() {
+                const term = this.searchContacto.trim().toLowerCase();
+                const list = this.contactos
+                    .filter((c) => {
+                        if (!term) return true;
+                        const cliente =
+                            this.clienteLabelById(c.id_cliente_fk) || "";
+                        return [c.tipo_contacto, c.valor_contacto, cliente]
+                            .filter(Boolean)
+                            .some((f) =>
+                                f.toString().toLowerCase().includes(term)
+                            );
+                    })
+                    .sort((a, b) => {
+                        switch (this.ordenarPorContacto) {
+                            case "valor_contacto":
+                                return (a.valor_contacto || "").localeCompare(
+                                    b.valor_contacto || "",
+                                    "es"
+                                );
+                            case "cliente": {
+                                const na =
+                                    this.clienteLabelById(a.id_cliente_fk) ||
+                                    "";
+                                const nb =
+                                    this.clienteLabelById(b.id_cliente_fk) ||
+                                    "";
+                                return na.localeCompare(nb, "es");
+                            }
+                            case "tipo_contacto":
+                            default:
+                                return (a.tipo_contacto || "").localeCompare(
+                                    b.tipo_contacto || "",
+                                    "es"
+                                );
+                        }
+                    });
+                return list;
+            },
+            filteredSolicitudes() {
+                const term = this.searchSolicitud.trim().toLowerCase();
+                const estadoSel = this.estadoSolicitud
+                    ? String(this.estadoSolicitud).toLowerCase()
+                    : "";
+                return this.solicitudes
+                    .filter((s) => {
+                        if (!estadoSel) return true;
+                        const byId =
+                            String(
+                                s.id_estado_solicitud_fk || ""
+                            ).toLowerCase() === estadoSel;
+                        const byName =
+                            (s.estado_nombre || "").toLowerCase() === estadoSel;
+                        return byId || byName;
+                    })
+                    .filter((s) => {
+                        if (!term) return true;
+                        return [
+                            s.id,
+                            s.cliente_nombre,
+                            s.numero_solicitud_acf,
+                            s.numero_solicitud_cliente,
+                            s.descripcion_problema,
+                            s.estado_nombre,
+                        ]
+                            .filter(Boolean)
+                            .some((f) =>
+                                f.toString().toLowerCase().includes(term)
+                            );
+                    })
+                    .sort((a, b) => {
+                        switch (this.ordenarPor) {
+                            case "estado":
+                            case "estado_solicitud":
+                                return (a.estado_nombre || "").localeCompare(
+                                    b.estado_nombre || "",
+                                    "es"
+                                );
+                            case "cliente":
+                                return (
+                                    a.cliente_nombre ||
+                                    this.clienteLabelById(a.id_cliente_fk) ||
+                                    ""
+                                ).localeCompare(
+                                    b.cliente_nombre ||
+                                    this.clienteLabelById(
+                                        b.id_cliente_fk
+                                    ) ||
+                                    "",
+                                    "es"
+                                );
+                            case "solicitud_acf":
+                                return String(
+                                    a.numero_solicitud_acf || ""
+                                ).localeCompare(
+                                    String(b.numero_solicitud_acf || ""),
+                                    "es",
+                                    { numeric: true }
+                                );
+                            case "solicitud_cliente":
+                                return String(
+                                    a.numero_solicitud_cliente || ""
+                                ).localeCompare(
+                                    String(b.numero_solicitud_cliente || ""),
+                                    "es",
+                                    { numeric: true }
+                                );
+                            case "fecha_creacion":
+                                // Campo no disponible: mantener orden estable
+                                return 0;
+                            default:
+                                return 0;
+                        }
+                    });
+            },
+
+            // Init
+            async init() {
+                if (!(await this.requireAuth())) return;
+                await Promise.all([
+                    this.fetchClientes(),
+                    this.fetchEstados(),
+                    this.fetchContactosCatalogo(),
+                    this.fetchSolicitudes(),
+                    this.fetchContactos(),
+                ]);
+            },
+        };
+    };
+}

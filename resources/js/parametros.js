@@ -17,8 +17,8 @@ document.addEventListener('alpine:init', () => {
             this.fetchParametros();
         },
         debounceFetch(){ clearTimeout(this.debounceTimer); this.debounceTimer=setTimeout(()=>{ this.pagination.page=1; this.fetchParametros(); },400); },
-        getToken(){ const t=localStorage.getItem('token'); if(t) return t; const m=document.cookie.match(/auth_token=([^;]+)/); return m?decodeURIComponent(m[1]):''; },
-        authHeaders(){ return { 'Authorization':'Bearer '+this.getToken(),'Content-Type':'application/json','Accept':'application/json' }; },
+    getToken(){ return null; },
+    authHeaders(){ return { 'Content-Type':'application/json','Accept':'application/json' }; },
         async fetchParametros(){ this.loading=true; this.error=''; const params=new URLSearchParams({per_page:this.pagination.per_page,page:this.pagination.page}); if(this.search) params.append('q',this.search); if(this.ordenarPor){ params.append('sort',this.ordenarPor); params.append('direction',this.ordenDirection);} try{ const r=await fetch(`${this.apiBase}?${params.toString()}`,{headers:this.authHeaders(),credentials:'include'}); if(r.status===401){ this.error='Sesión expirada'; this.parametros=[]; return;} if(!r.ok) throw await r.json(); const data=await r.json(); this.parametros=data.data; if(data.meta){ Object.assign(this.pagination,{page:data.meta.page,per_page:data.meta.per_page,total:data.meta.total,last_page:data.meta.last_page}); } }catch(e){ this.error=e.error||e.message||'Error'; } finally{ this.loading=false; } },
         changePage(p){ if(p>=1 && p<=this.pagination.last_page){ this.pagination.page=p; this.fetchParametros(); } },
         openCreate(){ if(this.isSubmitting)return; this.createForm={parametro:'',valor:''}; this.formError=''; this.isModalOpen=true; },

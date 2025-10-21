@@ -52,8 +52,8 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>ACF-2025-001</td>
-                        <td>CL-1001</td>
+                        <td id="num-solicitud-acf">—</td>
+                        <td id="num-solicitud-cliente">—</td>
                     </tr>
                 </tbody>
             </table>
@@ -71,24 +71,24 @@
                     <th>HORA DE RECEPCION</th>
                 </tr>
                 <tr>
-                    <td>2025-07-01</td>
-                    <td>08:30</td>
+                    <td id="fecha-recepcion">—</td>
+                    <td id="hora-recepcion">—</td>
                 </tr>
                 <tr>
                     <th>FECHA DE INICIO</th>
                     <th>HORA DE INICIO</th>
                 </tr>
                 <tr>
-                    <td>2025-07-02</td>
-                    <td>09:00</td>
+                    <td id="fecha-inicio">—</td>
+                    <td id="hora-inicio">—</td>
                 </tr>
                 <tr>
                     <th>FECHA DE CULMINACION</th>
                     <th>HORA DE CULMINACION</th>
                 </tr>
                 <tr>
-                    <td>2025-07-05</td>
-                    <td>16:45</td>
+                    <td id="fecha-fin">—</td>
+                    <td id="hora-fin">—</td>
                 </tr>
             </table>
 
@@ -101,9 +101,9 @@
                 <tbody>
                     <tr>
                         <td>ABIERTA</td>
-                        <td class="checkbox-cell"><input type="checkbox" checked></td>
+                        <td class="checkbox-cell"><input id="estado-abierta" type="checkbox"></td>
                         <td>CERRADA</td>
-                        <td class="checkbox-cell"><input type="checkbox"></td>
+                        <td class="checkbox-cell"><input id="estado-cerrada" type="checkbox"></td>
                     </tr>
                 </tbody>
             </table>
@@ -116,40 +116,40 @@
                     <td colspan="2"
                         style="padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-right: none;">
                         <div class="field-header">CLIENTE:</div>
-                        <div style="height: 25px;">Empresa Ejemplo S.A.</div>
+                        <div id="cliente-nombre" style="height: 25px;">—</div>
                     </td>
                     <td colspan="2" style="padding: 0; vertical-align: top; border: 1px solid var(--border-color);">
                         <div class="field-header">CONTACTO</div>
-                        <div style="height: 25px;">Juan Pérez</div>
+                        <div id="contacto-nombre" style="height: 25px;">—</div>
                     </td>
                 </tr>
                 <tr>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none; border-right: none;">
                         <div class="field-header">CIUDAD</div>
-                        <div style="height: 25px;">San Salvador</div>
+                        <div id="cliente-ciudad" style="height: 25px;">—</div>
                     </td>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none; border-right: none;">
                         <div class="field-header">OFICINA</div>
-                        <div style="height: 25px;">Central</div>
+                        <div id="cliente-oficina" style="height: 25px;">—</div>
                     </td>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none; border-right: none;">
                         <div class="field-header">TELEFONOS</div>
-                        <div style="height: 25px;">+503 2209-9400</div>
+                        <div id="cliente-telefonos" style="height: 25px;">—</div>
                     </td>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none;">
                         <div class="field-header">CORREO ELECTRONICO</div>
-                        <div style="height: 25px;">contacto@empresa.com</div>
+                        <div id="cliente-correo" style="height: 25px;">—</div>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="4"
                         style="padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none;">
                         <div class="field-header">DIRECCION</div>
-                        <div style="height: 25px;">Av. Los Espliegos y Calle Los Eucaliptos N°10</div>
+                        <div id="cliente-direccion" style="height: 25px;">—</div>
                     </td>
                 </tr>
             </tbody>
@@ -161,23 +161,20 @@
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 0;">
                         <div class="field-header">DESCRIPCION DEL SERVICIO / FALLA (CLIENTE):</div>
-                        <div class="field-content-large">El cajero automático no enciende y muestra error de energía.
-                        </div>
+                        <div id="desc-cliente" class="field-content-large">—</div>
                     </td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 0;">
                         <div class="field-header">DESCRIPCION DEL SERVICIO / FALLA (PERSONAL ACF):</div>
-                        <div class="field-content-large">Se realizó revisión del sistema eléctrico y se reemplazó el
-                            fusible principal.</div>
+                        <div id="desc-acf" class="field-content-large">—</div>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding: 0;">
                         <div class="field-header">ACTIVIDAD REALIZADA PARA LA SOLUCIÓN (ADJUNTAR FOTOS/VIDEO DE LA
                             ACTIVIDAD):</div>
-                        <div class="field-content-large">Se documentó la reparación con fotos y se probó el
-                            funcionamiento del cajero.</div>
+                        <div id="actividad" class="field-content-large">—</div>
                     </td>
                 </tr>
             </tbody>
@@ -187,10 +184,9 @@
             <tr>
                 <th style="width: 30%;">SE INSTALO ALGUN REPUESTO:</th>
                 <td>
-                    <span class="checkbox-label">SI <input type="checkbox" style="vertical-align: middle;"
-                            checked></span>
-                    <span class="checkbox-label">NO <input type="checkbox" style="vertical-align: middle;"></span>
-                    <span>CUAL: <span style="display: inline-block; width: 70%;">Fusible principal</span></span>
+                    <span class="checkbox-label">SI <input id="repuesto-si" type="checkbox" style="vertical-align: middle;"></span>
+                    <span class="checkbox-label">NO <input id="repuesto-no" type="checkbox" style="vertical-align: middle;"></span>
+                    <span>CUAL: <span id="repuesto-cual" style="display: inline-block; width: 70%;">—</span></span>
                 </td>
             </tr>
         </table>
@@ -220,10 +216,10 @@
                 <tr>
                     <td style="padding: 0;">
                         <div class="firma-label">NOMBRE Y APELLIDO</div>
-                        <div class="firma-space">Juan Pérez</div>
+                        <div id="firma-cliente-nombre" class="firma-space">—</div>
                         <div class="firma-label">C.I.</div>
-                        <div class="firma-space">12345678-9</div>
-                        <div class="firma-label">CARGO</div>
+                        <div id="firma-cliente-ci" class="firma-space">—</div>
+                        
                         <div class="firma-space">Gerente de Operaciones</div>
                         <div class="firma-label">FIRMA</div>
                         <div class="firma-space-larger"></div>
@@ -238,10 +234,10 @@
                 <tr>
                     <td style="padding: 0;">
                         <div class="firma-label">NOMBRE Y APELLIDO</div>
-                        <div class="firma-space">Carlos López</div>
+                        <div id="firma-tecnico-nombre" class="firma-space">—</div>
                         <div class="firma-label">C.I.</div>
-                        <div class="firma-space">87654321-0</div>
-                        <div class="firma-label">CARGO</div>
+                        <div id="firma-tecnico-ci" class="firma-space">—</div>
+                        
                         <div class="firma-space">Técnico ACF</div>
                         <div class="firma-label">FIRMA</div>
                         <div class="firma-space-larger"></div>
@@ -261,6 +257,124 @@
     </div>
 
     </div>
+
+    <script>
+        (function () {
+            const qs = new URLSearchParams(location.search);
+            const id = qs.get('orden');
+            if (!id) {
+                console.warn('Falta el parámetro ?orden=ID');
+                return;
+            }
+            const $ = (id) => document.getElementById(id);
+            const setText = (id, value) => {
+                const el = $(id);
+                if (!el) return;
+                const v = (value ?? '—');
+                el.textContent = (typeof v === 'string') ? v.trim() || '—' : v;
+            };
+            const parseDate = (val) => {
+                if (!val) return { d: '—', t: '—' };
+                try {
+                    const dt = new Date(val);
+                    if (!isNaN(dt.getTime())) {
+                        const d = dt.toISOString().slice(0, 10);
+                        const t = dt.toTimeString().slice(0,5);
+                        return { d, t };
+                    }
+                    // Fallback "YYYY-MM-DD HH:MM:SS"
+                    const [d, rest] = String(val).split(' ');
+                    const t = (rest || '').slice(0,5) || '—';
+                    return { d: d || '—', t };
+                } catch (_) { return { d: '—', t: '—' }; }
+            };
+            const nombresPersona = (p) => {
+                if (!p) return '';
+                return [p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido]
+                    .filter(Boolean).join(' ').trim();
+            };
+
+            fetch('/api/ordenes-servicio/' + encodeURIComponent(id), { headers: { 'Accept': 'application/json' } })
+                .then(async (res) => {
+                    if (res.status === 401) throw new Error('No autorizado');
+                    if (!res.ok) throw new Error('Error al cargar la orden');
+                    const json = await res.json();
+                    const data = json.data || json;
+
+                    // Encabezado números de solicitud
+                    const sol = data.solicitud_servicio || data.solicitud || {};
+                    setText('num-solicitud-acf', sol.numero_solicitud_acf || '—');
+                    setText('num-solicitud-cliente', sol.numero_solicitud_cliente || '—');
+
+                    // Fechas
+                    const fr = parseDate(data.fecha_recepcion);
+                    const fi = parseDate(data.fecha_inicio);
+                    const ff = parseDate(data.fecha_finalizacion);
+                    setText('fecha-recepcion', fr.d); setText('hora-recepcion', fr.t);
+                    setText('fecha-inicio', fi.d); setText('hora-inicio', fi.t);
+                    setText('fecha-fin', ff.d); setText('hora-fin', ff.t);
+
+                    // Estado
+                    const estado = data.estado || {};
+                    const codigo = (estado.codigo || estado.nombre || '').toString().toLowerCase();
+                    const cerrada = codigo.includes('cerr') || !!data.fecha_finalizacion;
+                    const abierta = !cerrada;
+                    const chkA = $('estado-abierta'); const chkC = $('estado-cerrada');
+                    if (chkA) chkA.checked = abierta;
+                    if (chkC) chkC.checked = cerrada;
+
+                    // Cliente y contacto
+                    const cliente = (sol.cliente || {});
+                    const empresa = cliente.empresa || {};
+                    const clienteNombre = empresa.nombre_comercial || empresa.razon_social || cliente.nombre || '';
+                    setText('cliente-nombre', clienteNombre || '—');
+                    const contacto = sol.contacto || {};
+                    // Nombre de contacto: si viene junto al cliente.persona o no disponible
+                    const contactoNombre = contacto.nombre || '';
+                    setText('contacto-nombre', contactoNombre || '—');
+                    // Tel/Correo a partir del contacto si su tipo lo indica
+                    const tipo = (contacto.tipo_contacto || '').toLowerCase();
+                    if (tipo.includes('mail')) setText('cliente-correo', contacto.valor_contacto);
+                    if (tipo.includes('tel')) setText('cliente-telefonos', contacto.valor_contacto);
+
+                    // Dirección / Ciudad / Oficina (si están disponibles)
+                    setText('cliente-direccion', empresa.direccion || cliente.direccion || '');
+                    setText('cliente-ciudad', empresa.ciudad || cliente.ciudad || '');
+                    setText('cliente-oficina', empresa.oficina || '');
+
+                    // Descripciones
+                    // Preferir lo que el cliente declaró en la orden; si no, caer a la solicitud
+                    setText('desc-cliente', (data.diagnostico_cliente && data.diagnostico_cliente.trim()) ? data.diagnostico_cliente : (sol.descripcion_problema || ''));
+                    setText('desc-acf', data.diagnostico_tecnico || '');
+                    setText('actividad', data.observaciones || '');
+
+                    // Firmas
+                    // Cliente: intentar con empresa/persona
+                    setText('firma-cliente-nombre', clienteNombre || '');
+                    setText('firma-cliente-ci', empresa.rtn || '');
+                    // Técnico
+                    const tecnico = data.tecnico || {};
+                    setText('firma-tecnico-nombre', nombresPersona(tecnico) || '');
+                    setText('firma-tecnico-ci', tecnico.dni || '');
+
+                    // Repuestos (si se expone un array detalles_orden_producto)
+                    const detalles = data.detalles_producto || data.detalle_orden_producto || [];
+                    if (Array.isArray(detalles) && detalles.length) {
+                        const si = $('repuesto-si'); const no = $('repuesto-no');
+                        if (si) si.checked = true; if (no) no.checked = false;
+                        const nombres = detalles.map(d => d.producto_nombre || d.nombre || d.repuesto || '').filter(Boolean);
+                        setText('repuesto-cual', nombres.join(', '));
+                    } else {
+                        const si = $('repuesto-si'); const no = $('repuesto-no');
+                        if (si) si.checked = false; if (no) no.checked = true;
+                    }
+                })
+                .catch((e) => {
+                    console.error(e);
+                    alert('No se pudo cargar la orden. Verifica tu sesión o el ID.');
+                });
+        })();
+    </script>
 
 </body>
 

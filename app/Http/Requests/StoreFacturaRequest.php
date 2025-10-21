@@ -24,7 +24,7 @@ class StoreFacturaRequest extends FormRequest
             'total_letras' => 'nullable|string|max:500',
             'id_estado_factura_fk' => 'required|integer|exists:tbl_estado_factura,id_estado_factura_pk',
             'id_cai_fk' => 'required|integer|exists:tbl_cai,id_cai_pk',
-            'id_cliente_fk' => 'required|integer|exists:tbl_persona,id_persona_pk'
+            'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk'
         ];
     }
 

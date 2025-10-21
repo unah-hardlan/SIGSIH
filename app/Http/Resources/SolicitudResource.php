@@ -17,6 +17,7 @@ class SolicitudResource extends JsonResource
         return [
             'id_solicitud_pk' => $this->id_solicitud_pk,
             'id_cliente_fk' => $this->id_cliente_fk,
+            'nombre_solicitud' => $this->nombre_solicitud,
             'numero_solicitud_acf' => $this->numero_solicitud_acf,
             'numero_solicitud_cliente' => $this->numero_solicitud_cliente,
             'descripcion_problema' => $this->descripcion_problema,
@@ -26,16 +27,25 @@ class SolicitudResource extends JsonResource
             // Relaciones
             'cliente' => $this->whenLoaded('cliente', function () {
                 return [
-                    'id' => $this->cliente->id,
-                    'name' => $this->cliente->name,
-                    'email' => $this->cliente->email,
+                    'id_cliente_pk' => $this->cliente->id_cliente_pk,
+                    'tipo_cliente' => $this->cliente->tipo_cliente,
+                    'estado_cliente' => $this->cliente->estado_cliente,
+                    'fecha_registro' => $this->cliente->fecha_registro?->toDateTimeString(),
+                    'empresa' => $this->cliente->relationLoaded('empresa') && $this->cliente->empresa
+                        ? [
+                            'nombre_comercial' => $this->cliente->empresa->nombre_comercial,
+                            'razon_social' => $this->cliente->empresa->razon_social,
+                            'rtn' => $this->cliente->empresa->rtn,
+                        ]
+                        : null,
                 ];
             }),
             'estado_solicitud' => $this->whenLoaded('estadoSolicitud', function () {
                 return [
                     'id_estado_solicitud_pk' => $this->estadoSolicitud->id_estado_solicitud_pk,
-                    'nombre_estado' => $this->estadoSolicitud->nombre_estado,
-                    'descripcion_estado' => $this->estadoSolicitud->descripcion_estado,
+                    // Map from actual columns on related model
+                    'nombre_estado' => $this->estadoSolicitud->nombre,
+                    'descripcion_estado' => $this->estadoSolicitud->descripcion,
                 ];
             }),
             'contacto' => $this->whenLoaded('contacto', function () {
@@ -43,7 +53,7 @@ class SolicitudResource extends JsonResource
                     'id_contacto_pk' => $this->contacto->id_contacto_pk,
                     'tipo_contacto' => $this->contacto->tipo_contacto,
                     'valor_contacto' => $this->contacto->valor_contacto,
-                    'id_persona_fk' => $this->contacto->id_persona_fk,
+                    'id_cliente_fk' => $this->contacto->id_cliente_fk,
                 ];
             }),
         ];

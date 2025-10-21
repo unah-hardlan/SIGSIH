@@ -10,15 +10,16 @@ class ContactoController extends Controller
 {
     public function index()
     {
-        $query = Contacto::with(['persona']);
+        $query = Contacto::with(['cliente.empresa']);
 
         // Filtros
         if ($q = request('q')) {
-            $query->where(function($sub) use ($q) {
+            $query->where(function ($sub) use ($q) {
                 $sub->where('tipo_contacto', 'like', "%$q%")
                     ->orWhere('valor_contacto', 'like', "%$q%")
-                    ->orWhereHas('persona', function($personaQuery) use ($q) {
-                        $personaQuery->where('nombre_persona', 'like', "%$q%");
+                    ->orWhereHas('cliente.empresa', function ($empresaQuery) use ($q) {
+                        $empresaQuery->where('nombre_comercial', 'like', "%$q%")
+                                     ->orWhere('razon_social', 'like', "%$q%");
                     });
             });
         }
@@ -27,15 +28,15 @@ class ContactoController extends Controller
             $query->where('tipo_contacto', 'like', "%$tipo%");
         }
 
-        if ($persona = request('persona')) {
-            $query->where('id_persona_fk', $persona);
+        if ($cliente = request('cliente')) {
+            $query->where('id_cliente_fk', $cliente);
         }
 
         // Ordenamiento dinámico
         $sortable = [
             'tipo' => 'tipo_contacto',
             'valor' => 'valor_contacto',
-            'persona' => 'id_persona_fk',
+            'cliente' => 'id_cliente_fk',
             'id' => 'id_contacto_pk',
         ];
         $sort = request('sort');
@@ -64,19 +65,19 @@ class ContactoController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'tipo_contacto' => 'required|string|max:50',
             'valor_contacto' => 'required|string|max:255',
-            'id_persona_fk' => 'required|integer|exists:tbl_persona,id_persona_pk',
+            'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
         ]);
 
-        $contacto = Contacto::create($request->all());
-        return (new ContactoResource($contacto->load(['persona'])))->response()->setStatusCode(201);
+        $contacto = Contacto::create($validated);
+        return (new ContactoResource($contacto->load(['cliente.empresa'])))->response()->setStatusCode(201);
     }
 
     public function show($id)
     {
-        $contacto = Contacto::with(['persona'])->find($id);
+        $contacto = Contacto::with(['cliente.empresa'])->find($id);
         if (!$contacto) {
             return response()->json(['error' => 'Contacto no encontrado'], 404);
         }
@@ -92,14 +93,14 @@ class ContactoController extends Controller
             return response()->json(['error' => 'Contacto no encontrado'], 404);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'tipo_contacto' => 'sometimes|required|string|max:50',
             'valor_contacto' => 'sometimes|required|string|max:255',
-            'id_persona_fk' => 'sometimes|required|integer|exists:tbl_persona,id_persona_pk',
+            'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
         ]);
 
-        $contacto->update($request->all());
-        return (new ContactoResource($contacto->load(['persona'])))->response();
+        $contacto->update($validated);
+        return (new ContactoResource($contacto->load(['cliente.empresa'])))->response();
     }
 
     public function destroy($id)

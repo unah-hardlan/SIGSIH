@@ -62,30 +62,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
 });
 
-// Helper para inicializar la lógica responsive del sidebar desde x-init sin usar "const" dentro del atributo
 window.initResponsiveSidebar = function (scope) {
     if (!scope) return;
 
-    // Configuración inicial
     scope.isMobile = window.innerWidth < 768;
 
-    // Establecer estado inicial del sidebar según el tipo de dispositivo
     if (scope.isMobile) {
-        scope.sidebarOpen = false; // En móviles, cerrado por defecto
+        scope.sidebarOpen = false;
     } else {
-        scope.sidebarOpen = true; // En desktop, abierto por defecto
+        scope.sidebarOpen = true;
     }
 
     function checkMobile() {
         var wasMobile = scope.isMobile;
         scope.isMobile = window.innerWidth < 768;
 
-        // Al cambiar de móvil a desktop, abrir sidebar
         if (wasMobile && !scope.isMobile) {
             scope.sidebarOpen = true;
-        }
-        // Al cambiar de desktop a móvil, cerrar sidebar
-        else if (!wasMobile && scope.isMobile) {
+        } else if (!wasMobile && scope.isMobile) {
             scope.sidebarOpen = false;
         }
     }

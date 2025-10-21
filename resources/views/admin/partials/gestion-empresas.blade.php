@@ -1,455 +1,243 @@
-<div x-data="{
-        tab: 'empresas',
-        isEmpresaModalOpen: false,
-        isEmpresaRegistradaModalOpen: false,
-        isOficinaModalOpen: false,
-        isDeleteEmpresaModalOpen: false,
-        isDeleteEmpresaRegistradaModalOpen: false,
-        isDeleteOficinaModalOpen: false,
-        empresaToEdit: null,
-        empresaRegistradaToEdit: null,
-        oficinaToEdit: null,
-        empresaToDelete: null,
-        empresaRegistradaToDelete: null,
-        oficinaToDelete: null,
-        empresas: [
-            {id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'},
-            {id: 2, nombre_empresa: 'Soluciones S.A.', descripcion_empresa: 'Empresa de tecnología', estado_empresa: 'Activo'},
-            {id: 3, nombre_empresa: 'Comercial XYZ', descripcion_empresa: 'Comercio mayorista', estado_empresa: 'Inactivo'}
-        ],
-        empresasRegistradas: [
-            {id: 1, nombre_empresa: 'Empresa Registrada 1', descripcion_empresa: 'Desc 1', estado_empresa: 'Activo'},
-            {id: 2, nombre_empresa: 'Empresa Registrada 2', descripcion_empresa: 'Desc 2', estado_empresa: 'Inactivo'}
-        ],
-        openEmpresaModal(edit = false, empresa = null) {
-            this.isEmpresaModalOpen = true;
-            this.empresaToEdit = edit ? empresa : null;
-        },
-        openEmpresaRegistradaModal(edit = false, empresa = null) {
-            this.isEmpresaRegistradaModalOpen = true;
-            this.empresaRegistradaToEdit = edit ? empresa : null;
-        },
-        openOficinaModal(edit = false, oficina = null) {
-            this.isOficinaModalOpen = true;
-            this.oficinaToEdit = edit ? oficina : null;
-        },
-        openDeleteEmpresaModal(empresa) {
-            this.empresaToDelete = empresa;
-            this.isDeleteEmpresaModalOpen = true;
-        },
-        openDeleteEmpresaRegistradaModal(empresa) {
-            this.empresaRegistradaToDelete = empresa;
-            this.isDeleteEmpresaRegistradaModalOpen = true;
-        },
-        openDeleteOficinaModal(oficina) {
-            this.oficinaToDelete = oficina;
-            this.isDeleteOficinaModalOpen = true;
-        },
-        deleteEmpresa() {
-            if (this.empresaToDelete) {
-                // Aquí iría la lógica para eliminar la empresa
-                console.log('Eliminando empresa:', this.empresaToDelete);
-                this.isDeleteEmpresaModalOpen = false;
-                this.empresaToDelete = null;
-            }
-        },
-        deleteEmpresaRegistrada() {
-            if (this.empresaRegistradaToDelete) {
-                // Eliminar de la lista local
-                this.empresasRegistradas = this.empresasRegistradas.filter(e => e.id !== this.empresaRegistradaToDelete.id);
-                console.log('Eliminando empresa registrada:', this.empresaRegistradaToDelete);
-                this.isDeleteEmpresaRegistradaModalOpen = false;
-                this.empresaRegistradaToDelete = null;
-            }
-        },
-        deleteOficina() {
-            if (this.oficinaToDelete) {
-                // Eliminar de la lista local
-                this.oficinas = this.oficinas.filter(o => o.id !== this.oficinaToDelete.id);
-                console.log('Eliminando oficina:', this.oficinaToDelete);
-                this.isDeleteOficinaModalOpen = false;
-                this.oficinaToDelete = null;
-            }
-        },
-        oficinas: [
-            {id: 1, nombre: 'Oficina Central'},
-            {id: 2, nombre: 'Sucursal Norte'},
-            {id: 3, nombre: 'Sucursal Sur'}
-        ]
-    }" @include('partials.persist-tab', ['tabKey' => 'admin-gestion-empresas-tab'])
-    @keydown.window.escape="isEmpresaModalOpen = false; isEmpresaRegistradaModalOpen = false; isOficinaModalOpen = false; isDeleteEmpresaModalOpen = false; isDeleteEmpresaRegistradaModalOpen = false; isDeleteOficinaModalOpen = false">
+<div x-data="empresaData()" @include('partials.persist-tab', ['tabKey'=> 'admin-gestion-empresas-tab'])
+    @modal-submit.window="
+    if($event.detail.formId==='empresa-form'){
+    submitEmpresa();
+    }
+    "
+    @keydown.window.escape="isEmpresaModalOpen = false; isDeleteEmpresaModalOpen = false"
+    @confirm-delete.window="
+    if (isDeleteEmpresaModalOpen) {
+    deleteEmpresa();
+    }
+    ">
 
-    <!-- Tabs -->
-    <ul class="flex border-b nunito-bold mb-6 flex-wrap gap-2">
-        <li @click="tab='empresas'"
-            :class="tab==='empresas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
-            class="pb-2 mr-4">Empresas</li>
-        <li @click="tab='form-nombre'"
-            :class="tab==='form-nombre' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
-            class="pb-2 mr-4">Empresas Registradas</li>
-        <li @click="tab='oficinas'"
-            :class="tab==='oficinas' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 hover:text-blue-500 cursor-pointer'"
-            class="pb-2">Oficinas Empresa</li>
-    </ul>
 
-    <!-- TAB 1: Empresas Cliente -->
-    <div x-show="tab==='empresas'" class="overflow-x-auto">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full mb-4">
-            <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 w-full">
-                <input type="text" placeholder="Buscar empresa..."
-                    class="border rounded px-3 py-2 text-sm w-full md:w-56" />
-                <select class="border rounded px-3 py-2 text-sm w-full md:w-48">
-                    <option>Todos los tipos</option>
-                    <option>Pública</option>
-                    <option>Privada</option>
-                </select>
-                <select class="border rounded px-3 py-2 text-sm w-full md:w-48">
-                    <option>Ordenar por Nombre</option>
-                    <option>Fecha Registro</option>
-                </select>
-            </div>
-            <div class="flex flex-col gap-2 w-full md:w-auto">
-                <button @click="openEmpresaModal(false)"
-                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg nunito-bold transition whitespace-nowrap font-bold w-full md:w-auto">
+    <!-- Title -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Gestión de Empresas</h1>
+    </div>
+
+    <!-- Responsive Table -->
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
+            @include('partials.filtros-generales', [
+            'searchModel' => 'searchEmpresa',
+            'filtrosSelect' => [],
+            'ordenarOptions' => [
+            'nombre_comercial' => 'Nombre',
+            'estado_cliente' => 'Estado',
+            'fecha_registro' => 'Fecha'
+            ]
+            ])
+        </x-slot>
+        <x-slot name="actions">
+            <div class="flex flex-col gap-2 w-full sm:w-auto">
+                <button @click="isEmpresaModalOpen = true"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                     Nueva Empresa
                 </button>
-                <a href="/admin/reportes-header?modulo=Empresas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                   class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                <a :href="reportUrl()" target="_blank"
+                    class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </a>
             </div>
-        </div>
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-100 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left">ID</th>
-                    <th class="py-2 px-4 text-left">Fecha Registro</th>
-                    <th class="py-2 px-4 text-left">Nombre Empresa</th>
-                    <th class="py-2 px-4 text-left">Dirección</th>
-                    <th class="py-2 px-4 text-left">Oficina</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b nunito-regular">
-                    <td class="py-2 px-4">1</td>
-                    <td class="py-2 px-4">2025-08-03</td>
-                    <td class="py-2 px-4">Empresa Ejemplo</td>
-                    <td class="py-2 px-4">Av. Principal 123</td>
-                    <td class="py-2 px-4">Oficina Central</td>
-                    <td class="py-2 px-4 flex gap-2">
-                        <a href="#"
-                            @click.prevent="openEmpresaModal(true, {id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'})"
-                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                        <a href="#" @click.prevent="openDeleteEmpresaModal({id: 1, nombre_empresa: 'Empresa Ejemplo', descripcion_empresa: 'Descripción de ejemplo', estado_empresa: 'Activo'})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- TAB 2: Empresas Registradas -->
-    <div x-show="tab==='form-nombre'" class="overflow-x-auto">
-        <!-- Filtros -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full mb-4">
-            <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 w-full">
-                <input type="text" placeholder="Buscar por nombre..."
-                    class="border rounded px-3 py-2 text-sm w-full md:w-56" />
-                <input type="text" placeholder="Buscar por descripción..."
-                    class="border rounded px-3 py-2 text-sm w-full md:w-56" />
-                <select class="border rounded px-3 py-2 text-sm w-full md:w-48">
-                    <option>Ordenar por Nombre</option>
-                    <option>Ordenar por ID</option>
-                </select>
-            </div>
-            <button @click="openEmpresaRegistradaModal(false)"
-                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg nunito-bold transition whitespace-nowrap font-bold w-full md:w-auto">
-                Agregar empresa registrada
-            </button>
-        </div>
-        <table class="min-w-full text-sm mt-2">
-            <thead class="bg-gray-100 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left">ID</th>
-                    <th class="py-2 px-4 text-left">Nombre Empresa</th>
-                    <th class="py-2 px-4 text-left">Descripción</th>
-                    <th class="py-2 px-4 text-left">Estado</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="empresa in empresasRegistradas" :key="empresa.id">
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4" x-text="empresa.id"></td>
-                        <td class="py-2 px-4" x-text="empresa.nombre_empresa"></td>
-                        <td class="py-2 px-4" x-text="empresa.descripcion_empresa"></td>
-                        <td class="py-2 px-4">
-                            <span class="px-2 py-1 rounded"
-                                :class="empresa.estado_empresa === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'"
-                                x-text="empresa.estado_empresa"></span>
-                        </td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="#" @click.prevent="openEmpresaRegistradaModal(true, empresa)"
-                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click.prevent="openDeleteEmpresaRegistradaModal(empresa)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
+        </x-slot>
+        <x-slot name="table">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold rounded-t-lg">
+                    <tr>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Nombre Comercial</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Razón Social</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Descripción</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">RTN</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Registro</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Horario</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Estado</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Acciones</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- TAB 3: Oficinas Empresa -->
-    <div x-show="tab==='oficinas'" class="overflow-x-auto">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full mb-4">
-            <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 w-full">
-                <input type="text" placeholder="Buscar oficina..."
-                    class="border rounded px-3 py-2 text-sm w-full md:w-56" />
-                <select class="border rounded px-3 py-2 text-sm w-full md:w-48">
-                    <option>Todos los departamentos</option>
-                    <option>Ventas</option>
-                    <option>Soporte</option>
-                </select>
-                <select class="border rounded px-3 py-2 text-sm w-full md:w-48">
-                    <option>Ordenar por Nombre</option>
-                    <option>Ordenar por ID Oficina</option>
-                </select>
-            </div>
-            <button @click="openOficinaModal(false)"
-                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg nunito-bold transition whitespace-nowrap font-bold w-full md:w-auto">
-                Nueva Oficina
-            </button>
-        </div>
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-100 nunito-bold">
-                <tr>
-                    <th class="py-2 px-4 text-left">ID Oficina</th>
-                    <th class="py-2 px-4 text-left">Nombre Oficina</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <template x-for="oficina in oficinas" :key="oficina.id">
-                    <tr class="border-b nunito-regular">
-                        <td class="py-2 px-4" x-text="oficina.id"></td>
-                        <td class="py-2 px-4" x-text="oficina.nombre"></td>
-                        <td class="py-2 px-4 flex gap-2">
-                            <a href="#" @click.prevent="openOficinaModal(true, oficina)"
-                                class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                            <a href="#" @click.prevent="openDeleteOficinaModal(oficina)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    <template x-if="loadingEmpresas">
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando empresas...
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingEmpresas && empresas.length === 0">
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">
+                                No hay empresas registradas
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingEmpresas && empresas.length > 0">
+                        <template x-for="e in empresas" :key="e.id">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4" x-text="e.nombre_comercial"></td>
+                                <td class="py-2 px-4" x-text="e.razon_social"></td>
+                                <td class="py-2 px-4" x-text="e.descripcion_empresa"></td>
+                                <td class="py-2 px-4" x-text="e.rtn"></td>
+                                <td class="py-2 px-4 break-all" x-text="e.fecha_registro"></td>
+                                <td class="py-2 px-4" x-text="e.horario_atencion"></td>
+                                <td class="py-2 px-4">
+                                    <span class="px-2 py-1 rounded nunito-regular"
+                                        :class="e.estado_label==='Activo' ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-100' : 'bg-red-700 text-red-100'"
+                                        x-text="e.estado_label"></span>
+                                </td>
+                                <td class="py-2 px-4 flex gap-2">
+                                    <a href="#" @click.prevent="openEmpresaModal(true, e)"
+                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="openDeleteEmpresaModal(e)"
+                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </x-slot>
+        <x-slot name="cards">
+            <template x-if="loadingEmpresas">
+                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando empresas...</div>
+            </template>
+            <template x-if="!loadingEmpresas && empresas.length === 0">
+                <div class="p-8 text-center text-gray-500 nunito-regular">No hay empresas registradas</div>
+            </template>
+            <template x-for="e in empresas" :key="'card-emp-'+(e.id || e.raw?.id_cliente_fk || Math.random())">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="e.nombre_comercial"></h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400" x-text="e.razon_social"></p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-xs font-semibold"
+                              :class="e.estado_label==='Activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'"
+                              x-text="e.estado_label"></span>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-300" x-text="e.descripcion_empresa || '—'"></p>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300">
+                        <div><span class="nunito-bold">RTN:</span> <span x-text="e.rtn || '—'"></span></div>
+                        <div><span class="nunito-bold">Registro:</span> <span x-text="e.fecha_registro || '—'"></span></div>
+                        <div class="col-span-2"><span class="nunito-bold">Horario:</span> <span x-text="e.horario_atencion || '—'"></span></div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button @click="openEmpresaModal(true, e)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button @click="openDeleteEmpresaModal(e)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </x-slot>
+    </x-responsive-table>
 
     <!-- Modal Empresas Cliente -->
-    <div x-show="isEmpresaModalOpen" x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-        @click.self="isEmpresaModalOpen = false">
-            <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
-            <h2 class="text-xl font-bold mb-4" x-text="empresaToEdit ? 'Editar Empresa' : 'Agregar Empresa'"></h2>
-            <form @submit.prevent="isEmpresaModalOpen = false">
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Empresa Registrada <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" required>
-                        <option value="">Seleccionar empresa registrada...</option>
-                        <template x-for="empresa in empresasRegistradas" :key="empresa.id">
-                            <option :value="empresa.id" x-text="empresa.nombre_empresa"
-                                :selected="empresaToEdit && empresaToEdit.id === empresa.id"></option>
+    <x-admin.form-modal modalName="isEmpresaModalOpen" title="Empresa" submitLabel="Guardar Empresa"
+        formId="empresa-form" maxWidth="max-w-2xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="nombre_comercial" class="block text-sm font-medium nunito-bold">Nombre Comercial <span
+                        class="text-red-500">*</span></label>
+                <input type="text" id="nombre_comercial"
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" maxlength="150"
+                    x-model="formEmpresa.nombre_comercial" required>
+                <template x-if="errors.nombre_comercial">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_comercial[0]"></p>
+                </template>
+            </div>
+            <div>
+                <label for="razon_social" class="block text-sm font-medium nunito-bold">Razón Social</label>
+                <input type="text" id="razon_social"
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" maxlength="150"
+                    x-model="formEmpresa.razon_social">
+                <template x-if="errors.razon_social">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.razon_social[0]"></p>
+                </template>
+            </div>
+            <div>
+                <label for="rtn" class="block text-sm font-medium nunito-bold">RTN</label>
+                <input type="text" id="rtn"
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" maxlength="30"
+                    x-model="formEmpresa.rtn">
+                <template x-if="errors.rtn">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.rtn[0]"></p>
+                </template>
+            </div>
+            <div class="md:col-span-2">
+                <label for="descripcion_empresa" class="block text-sm font-medium nunito-bold">Descripción</label>
+                <textarea id="descripcion_empresa"
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" rows="3"
+                    maxlength="255" x-model="formEmpresa.descripcion_empresa"></textarea>
+                <template x-if="errors.descripcion_empresa">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_empresa[0]"></p>
+                </template>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium nunito-bold">Horario de atención</label>
+                <div class="mt-2 space-y-2">
+                    <!-- Días -->
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <template x-for="d in diasLabels()" :key="d.k">
+                            <label
+                                class="inline-flex items-center gap-1 px-2 py-1 border rounded-md text-xs cursor-pointer bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                                <input type="checkbox" class="rounded" :checked="horarioUI.dias[d.k]"
+                                    @change="horarioUI.dias[d.k] = !horarioUI.dias[d.k]">
+                                <span x-text="d.t"></span>
+                            </label>
                         </template>
-                    </select>
+                        <button type="button" class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-md"
+                            @click="setDias('lv')">Lun–Vie</button>
+                        <button type="button" class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-md"
+                            @click="setDias('todos')">Todos</button>
+                        <button type="button" class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-md"
+                            @click="setDias('ninguno')">Ninguno</button>
+                    </div>
+                    <!-- Horas -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-gray-600 dark:text-gray-300">Hora:</label>
+                        <input type="time" x-model="horarioUI.desde"
+                            class="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600" />
+                        <span>–</span>
+                        <input type="time" x-model="horarioUI.hasta"
+                            class="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600" />
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Horario: <span class="italic"
+                            x-text="formEmpresa.horario_atencion || '—'"></span></p>
+                    <!-- Hidden bind to send -->
+                    <input type="hidden" x-model="formEmpresa.horario_atencion">
+                    <template x-if="errors.horario_atencion">
+                        <p class="text-xs text-red-600" x-text="errors.horario_atencion[0]"></p>
+                    </template>
                 </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Dirección <span class="text-red-500">*</span></label>
-                    <input type="text" class="border rounded px-3 py-2 w-full" maxlength="255"
-                        :value="empresaToEdit ? empresaToEdit.direccion : ''"
-                        :placeholder="empresaToEdit ? '' : 'Ejemplo: Av. Principal 123'" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Oficina <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" required>
-                        <option value="">Seleccionar oficina...</option>
-                        <template x-for="oficina in oficinas" :key="oficina.id">
-                            <option :value="oficina.id" x-text="oficina.nombre"
-                                :selected="empresaToEdit && empresaToEdit.oficina_id === oficina.id"></option>
-                        </template>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Estado <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                        required>
-                        <option value="">Seleccionar estado</option>
-                        <option :selected="empresaToEdit && empresaToEdit.estado_empresa === 'Activo'">Activo</option>
-                        <option :selected="empresaToEdit && empresaToEdit.estado_empresa === 'Inactivo'">Inactivo
-                        </option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" @click="isEmpresaModalOpen = false"
-                        class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                        x-text="empresaToEdit ? 'Guardar Cambios' : 'Agregar Empresa'"></button>
-                </div>
-            </form>
-            <button @click="isEmpresaModalOpen = false"
-                class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">
-                &times;
-            </button>
+            </div>
+            <div>
+                <label for="fecha_registro" class="block text-sm font-medium nunito-bold">Fecha registro <span
+                        class="text-red-500">*</span></label>
+                <input type="date" id="fecha_registro"
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
+                    x-model="formEmpresa.fecha_registro" required>
+                <template x-if="errors.fecha_registro">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_registro[0]"></p>
+                </template>
+            </div>
+            <div>
+                <label for="estado_cliente" class="block text-sm font-medium nunito-bold">Estado <span
+                        class="text-red-500">*</span></label>
+                <select id="estado_cliente"
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
+                    x-model="formEmpresa.estado_cliente" required>
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                </select>
+            </div>
         </div>
-    </div>
+    </x-admin.form-modal>
 
-    <!-- Modal Empresas Registradas -->
-    <div x-show="isEmpresaRegistradaModalOpen" x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-        @click.self="isEmpresaRegistradaModalOpen = false">
-            <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
-            <h2 class="text-xl font-bold mb-4"
-                x-text="empresaRegistradaToEdit ? 'Editar Empresa Registrada' : 'Agregar Empresa Registrada'"></h2>
-            <form @submit.prevent="isEmpresaRegistradaModalOpen = false">
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Nombre de Empresa <span class="text-red-500">*</span></label>
-                    <input type="text" class="border rounded px-3 py-2 w-full" maxlength="100"
-                        pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                        :value="empresaRegistradaToEdit ? empresaRegistradaToEdit.nombre_empresa : ''"
-                        :placeholder="empresaRegistradaToEdit ? '' : 'Ejemplo S.A.'" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Descripción</label>
-                    <textarea class="border rounded px-3 py-2 w-full" rows="2" maxlength="255"
-                        :placeholder="empresaRegistradaToEdit ? '' : 'Descripción de la empresa'"
-                        x-text="empresaRegistradaToEdit ? empresaRegistradaToEdit.descripcion_empresa : ''"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Estado <span class="text-red-500">*</span></label>
-                    <select class="border rounded px-3 py-2 w-full" maxlength="20" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
-                        required>
-                        <option value="">Seleccionar estado</option>
-                        <option
-                            :selected="empresaRegistradaToEdit && empresaRegistradaToEdit.estado_empresa === 'Activo'">
-                            Activo</option>
-                        <option
-                            :selected="empresaRegistradaToEdit && empresaRegistradaToEdit.estado_empresa === 'Inactivo'">
-                            Inactivo
-                        </option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" @click="isEmpresaRegistradaModalOpen = false"
-                        class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                        x-text="empresaRegistradaToEdit ? 'Guardar Cambios' : 'Agregar Empresa Registrada'"></button>
-                </div>
-            </form>
-            <button @click="isEmpresaRegistradaModalOpen = false"
-                class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">
-                &times;
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal Oficina -->
-    <div x-show="isOficinaModalOpen" x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-        @click.self="isOficinaModalOpen = false">
-            <div class="bg-white rounded-xl shadow-lg p-4 w-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative mx-4 sm:mx-2">
-            <h2 class="text-xl font-bold mb-4" x-text="oficinaToEdit ? 'Editar Oficina' : 'Agregar Oficina'"></h2>
-            <form @submit.prevent="isOficinaModalOpen = false">
-                <div class="mb-4">
-                    <label class="block font-medium mb-1">Nombre de Oficina</label>
-                    <input type="text" class="border rounded px-3 py-2 w-full"
-                        :value="oficinaToEdit ? oficinaToEdit.nombre : ''"
-                        :placeholder="oficinaToEdit ? '' : 'Oficina Central'">
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" @click="isOficinaModalOpen = false"
-                        class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                        x-text="oficinaToEdit ? 'Guardar Cambios' : 'Agregar Oficina'"></button>
-                </div>
-            </form>
-            <button @click="isOficinaModalOpen = false"
-                class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">
-                &times;
-            </button>
-        </div>
-    </div>
-
-    <!-- Confirmation Modals -->
-    <div x-show="isDeleteEmpresaModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-         @click.away="isDeleteEmpresaModalOpen = false"
-         style="display: none;">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-gray-700">Eliminar Empresa Cliente</h3>
-                <button @click="isDeleteEmpresaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="mt-4">
-                <p>¿Estás seguro de que deseas eliminar la empresa cliente <strong x-text="empresaToDelete ? empresaToDelete.nombre_empresa : ''"></strong>? Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button type="button" @click="isDeleteEmpresaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
-                <button type="submit" @click="deleteEmpresa()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="isDeleteEmpresaRegistradaModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-         @click.away="isDeleteEmpresaRegistradaModalOpen = false"
-         style="display: none;">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-gray-700">Eliminar Empresa Registrada</h3>
-                <button @click="isDeleteEmpresaRegistradaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="mt-4">
-                <p>¿Estás seguro de que deseas eliminar la empresa registrada <strong x-text="empresaRegistradaToDelete ? empresaRegistradaToDelete.nombre_empresa : ''"></strong>? Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button type="button" @click="isDeleteEmpresaRegistradaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
-                <button type="submit" @click="deleteEmpresaRegistrada()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="isDeleteOficinaModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-         @click.away="isDeleteOficinaModalOpen = false"
-         style="display: none;">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" @click.stop>
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-gray-700">Eliminar Oficina</h3>
-                <button @click="isDeleteOficinaModalOpen = false" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="mt-4">
-                <p>¿Estás seguro de que deseas eliminar la oficina <strong x-text="oficinaToDelete ? oficinaToDelete.nombre : ''"></strong>? Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button type="button" @click="isDeleteOficinaModalOpen = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 mr-2">Cancelar</button>
-                <button type="submit" @click="deleteOficina()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Eliminar</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modal de confirmación para eliminar empresa cliente -->
+    <x-admin.confirmation-modal modal-name="isDeleteEmpresaModalOpen" title="Eliminar Empresa Cliente"
+        item-to-delete="empresaToDelete" item-name-property="nombre_comercial"
+        message="¿Estás seguro de que deseas eliminar la empresa cliente" />
 </div>
