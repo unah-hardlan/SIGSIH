@@ -1,4 +1,40 @@
 window.caiApiHandlers = {
+    // ===== Formatting helpers (shared by add/edit) =====
+    normalizeCodigo(v) {
+        try {
+            return String(v || '')
+                .toUpperCase()
+                .replace(/\s+/g, '')
+                .replace(/[^A-Z0-9\-]/g, '')
+                .replace(/\-+/g, '-');
+        } catch (_) { return String(v || ''); }
+    },
+    formatRango(v) {
+        try {
+            const digits = String(v || '').replace(/\D/g, '');
+            const padded = digits.padStart(16, '0').slice(-16);
+            return padded.replace(/(\d{3})(\d{3})(\d{2})(\d{8})/, '$1-$2-$3-$4');
+        } catch (_) { return String(v || ''); }
+    },
+    isValidRango(v) {
+        try { return /^(\d{3})-(\d{3})-(\d{2})-(\d{8})$/.test(String(v || '')); } catch (_) { return false; }
+    },
+    onlyDigits(v) { try { return String(v || '').replace(/\D/g, ''); } catch (_) { return v; } },
+    normalizeFecha(v) {
+        try {
+            const s = String(v || '').trim();
+            // dd/mm/yyyy -> yyyy-mm-dd
+            const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (m) { return `${m[3]}-${m[2]}-${m[1]}`; }
+            return s; // assume yyyy-mm-dd or empty
+        } catch (_) { return v; }
+    },
+    isValidFecha(v) {
+        try {
+            const n = Date.parse(String(v || ''));
+            return Number.isFinite(n);
+        } catch (_) { return false; }
+    },
     /**
      * Fetches the list of CAI from the API.
      * @param {object} component - The Alpine.js component's `this` context.
@@ -8,7 +44,7 @@ window.caiApiHandlers = {
         if (component.loadingCai) {
             return;
         }
-        
+
         component.loadingCai = true;
         try {
             const response = await fetch("/api/cai", {
@@ -17,14 +53,14 @@ window.caiApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            
+
             // Assuming the API returns data in 'data' key or directly an array
             component.cais = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
-                
+                    ? data
+                    : [];
+
             // También cargar los estados CAI para los selects
             await this.fetchEstadosCai(component);
         } catch (error) {
@@ -50,14 +86,14 @@ window.caiApiHandlers = {
                 credentials: "same-origin",
             });
             const data = await response.json().catch(() => ({}));
-            
+
             if (!response.ok) throw data;
-            
+
             component.estadosCai = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("❌ Error fetching Estados CAI:", error);
         }
@@ -68,12 +104,12 @@ window.caiApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitCai(component) {
-        const codigoTrim = String(component.codigo || "").trim();
-        const rangoInicioTrim = String(component.rango_inicio || "").trim();
-        const rangoFinTrim = String(component.rango_fin || "").trim();
-        const fechaLimite = component.fecha_limite;
+        let codigoTrim = String(component.codigo || "").trim();
+        let rangoInicioTrim = String(component.rango_inicio || "").trim();
+        let rangoFinTrim = String(component.rango_fin || "").trim();
+        let fechaLimite = component.fecha_limite;
         const estadoCaiId = component.id_estado_cai_fk;
-        
+
         if (!codigoTrim) {
             window.showToast &&
                 window.showToast(
@@ -82,7 +118,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         if (!rangoInicioTrim || !rangoFinTrim) {
             window.showToast &&
                 window.showToast(
@@ -91,7 +127,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         if (!fechaLimite) {
             window.showToast &&
                 window.showToast(
@@ -100,7 +136,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         if (!estadoCaiId) {
             window.showToast &&
                 window.showToast(
@@ -109,7 +145,26 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+        // Formatear a formatos consistentes
+        codigoTrim = this.normalizeCodigo(codigoTrim);
+        rangoInicioTrim = this.formatRango(rangoInicioTrim);
+        rangoFinTrim = this.formatRango(rangoFinTrim);
+        fechaLimite = this.normalizeFecha(fechaLimite);
+
+        // Validaciones de formato
+        if (!this.isValidRango(rangoInicioTrim)) {
+            window.showToast && window.showToast('Rango Inicio inválido. Formato esperado: 000-000-00-00000000', 'error');
+            return;
+        }
+        if (!this.isValidRango(rangoFinTrim)) {
+            window.showToast && window.showToast('Rango Fin inválido. Formato esperado: 000-000-00-00000000', 'error');
+            return;
+        }
+        if (!this.isValidFecha(fechaLimite)) {
+            window.showToast && window.showToast('Fecha Límite inválida', 'error');
+            return;
+        }
+
         if (
             component.cais.some(
                 (c) =>
@@ -120,7 +175,7 @@ window.caiApiHandlers = {
                 window.showToast("El CAI ya existe", "error");
             return;
         }
-        
+
         try {
             const payload = {
                 codigo: codigoTrim,
@@ -171,15 +226,15 @@ window.caiApiHandlers = {
     async updateCai(component) {
         if (!component.itemToEdit || (!component.itemToEdit.id && !component.itemToEdit.id_cai_pk))
             return;
-            
+
         // Leer valores directamente desde los campos del formulario
-        const codigoTrim = String(document.getElementById('edit_codigo')?.value || "").trim();
-        const rangoInicioTrim = String(document.getElementById('edit_rango_inicio')?.value || "").trim();
-        const rangoFinTrim = String(document.getElementById('edit_rango_fin')?.value || "").trim();
-        const consecutivoActual = parseInt(document.getElementById('edit_consecutivo_actual')?.value) || 0;
-        const fechaLimite = document.getElementById('edit_fecha_limite')?.value;
+        let codigoTrim = String(document.getElementById('edit_codigo')?.value || "").trim();
+        let rangoInicioTrim = String(document.getElementById('edit_rango_inicio')?.value || "").trim();
+        let rangoFinTrim = String(document.getElementById('edit_rango_fin')?.value || "").trim();
+        const consecutivoActual = parseInt(this.onlyDigits(document.getElementById('edit_consecutivo_actual')?.value)) || 0;
+        let fechaLimite = document.getElementById('edit_fecha_limite')?.value;
         const estadoCaiId = parseInt(document.getElementById('edit_id_estado_cai_fk')?.value);
-        
+
         if (!codigoTrim) {
             window.showToast &&
                 window.showToast(
@@ -188,7 +243,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         if (!rangoInicioTrim || !rangoFinTrim) {
             window.showToast &&
                 window.showToast(
@@ -197,7 +252,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         if (!fechaLimite) {
             window.showToast &&
                 window.showToast(
@@ -206,7 +261,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         if (!estadoCaiId) {
             window.showToast &&
                 window.showToast(
@@ -215,7 +270,26 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+        // Formatear a formatos consistentes
+        codigoTrim = this.normalizeCodigo(codigoTrim);
+        rangoInicioTrim = this.formatRango(rangoInicioTrim);
+        rangoFinTrim = this.formatRango(rangoFinTrim);
+        fechaLimite = this.normalizeFecha(fechaLimite);
+
+        // Validaciones de formato
+        if (!this.isValidRango(rangoInicioTrim)) {
+            window.showToast && window.showToast('Rango Inicio inválido. Formato esperado: 000-000-00-00000000', 'error');
+            return;
+        }
+        if (!this.isValidRango(rangoFinTrim)) {
+            window.showToast && window.showToast('Rango Fin inválido. Formato esperado: 000-000-00-00000000', 'error');
+            return;
+        }
+        if (!this.isValidFecha(fechaLimite)) {
+            window.showToast && window.showToast('Fecha Límite inválida', 'error');
+            return;
+        }
+
         if (
             component.cais.some(
                 (c) =>
@@ -230,7 +304,7 @@ window.caiApiHandlers = {
                 );
             return;
         }
-        
+
         try {
             const payload = {
                 codigo: codigoTrim,
@@ -295,7 +369,7 @@ window.caiApiHandlers = {
     async deleteCai(component) {
         if (!component.itemToDelete || (!component.itemToDelete.id && !component.itemToDelete.id_cai_pk))
             return;
-            
+
         try {
             const response = await fetch(
                 `/api/cai/${component.itemToDelete.id_cai_pk || component.itemToDelete.id}`,
