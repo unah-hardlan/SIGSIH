@@ -472,11 +472,11 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="nombre_proyecto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" x-model="nombre_proyecto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Orden de Servicio</label>
-                    <select x-model="id_orden_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="id_orden_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="os in catalogoOrdenesServicio" :key="os.id_orden_servicio_pk">
                             <option :value="os.id_orden_servicio_pk" x-text="os.codigo_orden || os.numero_orden_servicio || os.nombre_orden || 'OS-' + os.id_orden_servicio_pk"></option>
@@ -485,19 +485,19 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Inicio</label>
-                    <input type="date" x-model="fecha_inicio_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="fecha_inicio_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Estimada</label>
-                    <input type="date" x-model="fecha_estimada_fin_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="fecha_estimada_fin_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Real</label>
-                    <input type="date" x-model="fecha_finalizacion_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="fecha_finalizacion_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado del Proyecto</label>
-                    <select x-model="id_estado_proyecto_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="id_estado_proyecto_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="estado in catalogoEstadosProyecto" :key="estado.id_estado_proyecto_pk">
                             <option :value="estado.id_estado_proyecto_pk" x-text="estado.nombre"></option>
@@ -506,7 +506,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea x-model="descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -536,11 +536,11 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 }); }">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="itemToEdit.nombre_proyecto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" x-model="itemToEdit.nombre_proyecto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Orden de Servicio</label>
-                    <select x-model="itemToEdit.id_orden_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="itemToEdit.id_orden_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="os in catalogoOrdenesServicio" :key="os.id_orden_servicio_pk">
                             <option :value="os.id_orden_servicio_pk" x-text="os.codigo_orden || os.numero_orden_servicio || os.nombre_orden || 'OS-' + os.id_orden_servicio_pk" :selected="itemToEdit && (os.id_orden_servicio_pk == (itemToEdit.id_orden_servicio_fk || itemToEdit.orden_servicio?.id_orden_servicio_pk))"></option>
@@ -549,19 +549,19 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Inicio</label>
-                    <input type="date" x-model="itemToEdit.fecha_inicio_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="itemToEdit.fecha_inicio_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Estimada</label>
-                    <input type="date" x-model="itemToEdit.fecha_estimada_fin_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="itemToEdit.fecha_estimada_fin_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Real</label>
-                    <input type="date" x-model="itemToEdit.fecha_finalizacion_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="itemToEdit.fecha_finalizacion_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado del Proyecto</label>
-                    <select x-model="itemToEdit.id_estado_proyecto_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="itemToEdit.id_estado_proyecto_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="estado in catalogoEstadosProyecto" :key="estado.id_estado_proyecto_pk">
                             <option :value="estado.id_estado_proyecto_pk" x-text="estado.nombre" :selected="itemToEdit && (estado.id_estado_proyecto_pk == (itemToEdit.id_estado_proyecto_fk || itemToEdit.estado_proyecto?.id_estado_proyecto_pk))"></option>
@@ -570,7 +570,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="itemToEdit.descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea x-model="itemToEdit.descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>
@@ -583,7 +583,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="id_proyecto_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="id_proyecto_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto"></option>
@@ -592,19 +592,19 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="nombre_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" x-model="nombre_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="fecha_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="fecha_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="monto_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="monto_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="id_categoria_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="id_categoria_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => !c.tipo_categoria || c.tipo_categoria.toLowerCase() === 'ingreso')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria"></option>
@@ -613,7 +613,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea x-model="descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -624,7 +624,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="ingresoToEdit.id_proyecto_fk" x-bind:value="ingresoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="ingresoToEdit.id_proyecto_fk" x-bind:value="ingresoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto" :selected="ingresoToEdit && (proyecto.id_proyecto_pk == (ingresoToEdit.id_proyecto_fk || ingresoToEdit.proyecto?.id_proyecto_pk))"></option>
@@ -633,19 +633,19 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="ingresoToEdit.nombre_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" x-model="ingresoToEdit.nombre_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="ingresoToEdit.fecha_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="ingresoToEdit.fecha_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="ingresoToEdit.monto_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="ingresoToEdit.monto_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="ingresoToEdit.id_categoria_fk" x-bind:value="ingresoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="ingresoToEdit.id_categoria_fk" x-bind:value="ingresoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => !c.tipo_categoria || c.tipo_categoria.toLowerCase() === 'ingreso')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria" :selected="ingresoToEdit && (cat.id_categoria_pk == (ingresoToEdit.id_categoria_fk || ingresoToEdit.categoria?.id_categoria_pk))"></option>
@@ -654,7 +654,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="ingresoToEdit.descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea x-model="ingresoToEdit.descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>
@@ -667,7 +667,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="id_proyecto_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="id_proyecto_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto"></option>
@@ -676,19 +676,19 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="nombre_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" x-model="nombre_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="fecha_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="fecha_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="monto_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="monto_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="id_categoria_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="id_categoria_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => c.tipo_categoria && c.tipo_categoria.toLowerCase() === 'gasto')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria"></option>
@@ -697,7 +697,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="descripcion_gasto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea x-model="descripcion_gasto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -729,7 +729,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     })(); }); }">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="gastoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="gastoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto" :selected="gastoToEdit && (proyecto.id_proyecto_pk == (gastoToEdit.id_proyecto_fk || gastoToEdit.proyecto?.id_proyecto_pk))"></option>
@@ -738,19 +738,19 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="gastoToEdit.nombre" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" x-model="gastoToEdit.nombre" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="gastoToEdit.fecha" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" x-model="gastoToEdit.fecha" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="gastoToEdit.monto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="gastoToEdit.monto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="gastoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select x-model="gastoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => c.tipo_categoria && c.tipo_categoria.toLowerCase() === 'gasto')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria" :selected="gastoToEdit && (cat.id_categoria_pk == (gastoToEdit.id_categoria_fk || gastoToEdit.categoria?.id_categoria_pk))"></option>
@@ -759,7 +759,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="gastoToEdit.descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea x-model="gastoToEdit.descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>

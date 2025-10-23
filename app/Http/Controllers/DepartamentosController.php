@@ -127,6 +127,14 @@ class DepartamentosController extends Controller
             ], 404);
         }
 
+        // Verificar si el departamento tiene ciudades asociadas
+        if ($departamento->ciudades()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar el departamento porque tiene ciudades asociadas'
+            ], 400);
+        }
+
         $departamento->delete();
 
         return response()->json([

@@ -269,7 +269,7 @@
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="id_cliente" name="id_cliente" x-model="formSolicitud.id_cliente_fk"
                     @change="onClienteChange()"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
@@ -285,7 +285,7 @@
                     Problema</label>
                 <textarea id="descripcion_problema" name="descripcion_problema" rows="2"
                     x-model="formSolicitud.descripcion_problema"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema"
                     x-text="errors.descripcion_problema?.[0]"></p>
             </div>
@@ -293,7 +293,7 @@
                 <label for="estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
                     Solicitud</label>
                 <select id="estado_solicitud" name="estado_solicitud" x-model="formSolicitud.id_estado_solicitud_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
                     <template x-for="opt in estadosOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
@@ -306,7 +306,7 @@
                 <label for="id_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
                 <select id="id_contacto" name="id_contacto" x-model="formSolicitud.id_contacto_fk"
                     :disabled="!formSolicitud.id_cliente_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="" class="nunito-regular">Seleccione un contacto</option>
                     <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
@@ -329,7 +329,7 @@
                         class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                     <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk"
                         @change="onClienteChange()"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un cliente</option>
                         <template x-for="opt in clientesOptions" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>
@@ -345,7 +345,7 @@
                         Problema</label>
                     <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
                         x-model="formSolicitud.descripcion_problema"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                     <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema"
                         x-text="errors.descripcion_problema?.[0]"></p>
                 </div>
@@ -356,7 +356,7 @@
                         Solicitud</label>
                     <select id="edit_estado_solicitud" name="edit_estado_solicitud"
                         x-model="formSolicitud.id_estado_solicitud_fk"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un estado</option>
                         <template x-for="opt in estadosOptions" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>
@@ -370,7 +370,7 @@
                         class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
                     <select id="edit_id_contacto" name="edit_id_contacto" x-model="formSolicitud.id_contacto_fk"
                         :disabled="!formSolicitud.id_cliente_fk"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                         <option value="" class="nunito-regular">Seleccione un contacto</option>
                         <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>
@@ -397,13 +397,13 @@
                 <label for="nombre_estado" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del
                     Estado</label>
                 <input type="text" id="nombre_estado" name="nombre_estado"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="descripcion_estado"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                 <textarea id="descripcion_estado" name="descripcion_estado" rows="2"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
             </div>
         </div>
     </x-admin.form-modal>
@@ -420,14 +420,14 @@
                         Estado</label>
                     <input type="text" id="edit_nombre_estado" name="edit_nombre_estado"
                         x-model="estadoToEdit.nombre_estado"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_descripcion_estado"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion_estado" name="edit_descripcion_estado" rows="2"
                         x-model="estadoToEdit.descripcion_estado"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </template>
@@ -447,18 +447,18 @@
                 <label for="tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de
                     Contacto</label>
                 <input type="text" id="tipo_contacto" name="tipo_contacto" x-model="formContacto.tipo_contacto"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="valor_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Valor
                     Contacto</label>
                 <input type="text" id="valor_contacto" name="valor_contacto" x-model="formContacto.valor_contacto"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="id_cliente_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="id_cliente_fk" name="id_cliente_fk" x-model="formContacto.id_cliente_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
@@ -479,20 +479,20 @@
                         Contacto</label>
                     <input type="text" id="edit_tipo_contacto" name="edit_tipo_contacto"
                         x-model="formContacto.tipo_contacto"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_valor_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Valor
                         Contacto</label>
                     <input type="text" id="edit_valor_contacto" name="edit_valor_contacto"
                         x-model="formContacto.valor_contacto"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_id_cliente_fk"
                         class="block textsm font-medium text-gray-700 nunito-bold">Cliente</label>
                     <select id="edit_id_cliente_fk" name="edit_id_cliente_fk" x-model="formContacto.id_cliente_fk"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un cliente</option>
                         <template x-for="opt in clientesOptions" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>

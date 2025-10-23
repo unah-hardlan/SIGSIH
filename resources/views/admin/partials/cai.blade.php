@@ -262,7 +262,7 @@
                 <input type="text" id="codigo" name="codigo" x-model="codigo" placeholder="Ej: CAI-2024-003-C"
                     title="Solo letras, números y guiones. Se normaliza automáticamente."
                     @blur="codigo = window.caiApiHandlers.normalizeCodigo(codigo)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-cod">
                 <p id="hint-cod" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato sugerido: CAI-AAAA-XXX-X.
                     Se convierte a mayúsculas y sin espacios.</p>
@@ -274,7 +274,7 @@
                     placeholder="000-000-00-00000000"
                     title="Formato: 000-000-00-00000000. Se autoformatea mientras escribe."
                     @input="rango_inicio = window.caiApiHandlers.formatRango(rango_inicio)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-rini">
                 <p id="hint-rini" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato: 000-000-00-00000000</p>
             </div>
@@ -283,7 +283,7 @@
                 <input type="text" id="rango_fin" name="rango_fin" x-model="rango_fin" placeholder="000-000-00-00000000"
                     title="Formato: 000-000-00-00000000. Se autoformatea mientras escribe."
                     @input="rango_fin = window.caiApiHandlers.formatRango(rango_fin)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-rfin">
                 <p id="hint-rfin" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato: 000-000-00-00000000</p>
             </div>
@@ -293,7 +293,7 @@
                 <input type="text" id="consecutivo_actual" name="consecutivo_actual" x-model="consecutivo_actual"
                     placeholder="Ej: 999" title="Solo números" inputmode="numeric"
                     @input="consecutivo_actual = window.caiApiHandlers.onlyDigits(consecutivo_actual)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-consec">
                 <p id="hint-consec" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo números</p>
             </div>
@@ -304,7 +304,7 @@
                     placeholder="dd/mm/aaaa o yyyy-mm-dd"
                     title="Puede ingresar dd/mm/aaaa o yyyy-mm-dd. Se normaliza a yyyy-mm-dd."
                     @blur="fecha_limite = window.caiApiHandlers.normalizeFecha(fecha_limite)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-fecha">
                 <p id="hint-fecha" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se normaliza a yyyy-mm-dd</p>
             </div>
@@ -312,7 +312,7 @@
                 <label for="id_estado_cai_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Estado
                     CAI</label>
                 <select id="id_estado_cai_fk" name="id_estado_cai_fk" x-model="id_estado_cai_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Seleccionar estado</option>
                     <template x-for="estado in estadosCai" :key="estado.id_estado_cai_pk || estado.id">
                         <option :value="estado.id_estado_cai_pk || estado.id"
@@ -332,7 +332,7 @@
                     placeholder="Ej: CAI-2024-003-C"
                     title="Solo letras, números y guiones. Se normaliza automáticamente."
                     @blur="$el.value = window.caiApiHandlers.normalizeCodigo($el.value)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-cod-edit">
                 <p id="hint-cod-edit" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato sugerido:
                     CAI-AAAA-XXX-X</p>
@@ -344,7 +344,7 @@
                     placeholder="000-000-00-00000000"
                     title="Formato: 000-000-00-00000000. Se autoformatea mientras escribe."
                     @input="$el.value = window.caiApiHandlers.formatRango($el.value)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-rini-edit">
                 <p id="hint-rini-edit" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato:
                     000-000-00-00000000</p>
@@ -356,7 +356,7 @@
                     placeholder="000-000-00-00000000"
                     title="Formato: 000-000-00-00000000. Se autoformatea mientras escribe."
                     @input="$el.value = window.caiApiHandlers.formatRango($el.value)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-rfin-edit">
                 <p id="hint-rfin-edit" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato:
                     000-000-00-00000000</p>
@@ -367,7 +367,7 @@
                 <input type="text" id="edit_consecutivo_actual" name="edit_consecutivo_actual"
                     :value="itemToEdit?.consecutivo_actual" inputmode="numeric" placeholder="Ej: 999"
                     title="Solo números" @input="$el.value = window.caiApiHandlers.onlyDigits($el.value)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-consec-edit">
                 <p id="hint-consec-edit" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo números</p>
             </div>
@@ -378,7 +378,7 @@
                     placeholder="dd/mm/aaaa o yyyy-mm-dd"
                     title="Puede ingresar dd/mm/aaaa o yyyy-mm-dd. Se normaliza a yyyy-mm-dd."
                     @blur="$el.value = window.caiApiHandlers.normalizeFecha($el.value)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     aria-describedby="hint-fecha-edit">
                 <p id="hint-fecha-edit" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se normaliza a yyyy-mm-dd
                 </p>
@@ -387,7 +387,7 @@
                 <label for="edit_id_estado_cai_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Estado
                     CAI</label>
                 <select id="edit_id_estado_cai_fk" name="edit_id_estado_cai_fk" :value="itemToEdit?.id_estado_cai_fk"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Seleccionar estado</option>
                     <template x-for="estado in estadosCai" :key="estado.id_estado_cai_pk || estado.id">
                         <option :value="estado.id_estado_cai_pk || estado.id"

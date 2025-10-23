@@ -197,13 +197,13 @@
                     <label for="nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del
                         Servicio</label>
                     <input type="text" id="nombre_servicio" x-model="nombre_servicio" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion_servicio"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="descripcion_servicio" x-model="descripcion_servicio" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -218,13 +218,13 @@
                         <label for="edit_nombre_servicio"
                             class="block text-sm font-medium text-gray-700 nunito-bold">Nombre del Servicio</label>
                         <input type="text" id="edit_nombre_servicio" x-model="itemToEdit.nombre_servicio" required
-                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     </div>
                     <div class="col-span-2">
                         <label for="edit_descripcion_servicio"
                             class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                         <textarea id="edit_descripcion_servicio" x-model="itemToEdit.descripcion_servicio" rows="2"
-                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                     </div>
                 </div>
             </template>

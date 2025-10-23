@@ -154,13 +154,13 @@ x-effect="
                 <div>
                     <label for="nombre_tipo_visita" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="nombre_tipo_visita" x-model="nombre_tipo_visita" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion_tipo_visita"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="descripcion_tipo_visita" x-model="descripcion_tipo_visita" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -172,13 +172,13 @@ x-effect="
                 <div>
                     <label for="edit_nombre_tipo_visita" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="edit_nombre_tipo_visita" x-model="edit_nombre_tipo_visita" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="edit_descripcion_tipo_visita"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion_tipo_visita" x-model="edit_descripcion_tipo_visita" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>

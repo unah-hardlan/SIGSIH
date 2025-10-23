@@ -53,7 +53,7 @@
         <!-- Grid con columnas independientes y alturas diferenciadas -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-5 text-gray-900 dark:text-gray-200 items-start lg:rounded-lg b">
             <!-- Roles -->
-            <div class="sm:col-span-1 bg-white dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-3 sm:p-4 h-auto sm:h-[500px] flex flex-col" x-data="{ roleQ: '' }">
+            <div class="sm:col-span-1 bg-slate-100 dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-500 dark:ring-gray-700 p-3 sm:p-4 h-auto sm:h-[500px] flex flex-col" x-data="{ roleQ: '' }">
                 <div class="flex items-center justify-between mb-2 sm:mb-3">
                     <h3 class="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100">Roles</h3>
                     <span class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-white" x-text="$store.access.roles.length + ' totales'"></span>
@@ -77,7 +77,7 @@
                 </ul>
             </div>
             <!-- Matriz -->
-            <div class="sm:col-span-3 bg-white dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 p-3 sm:p-4 overflow-x-auto" x-data="{ objQ: '' }">
+            <div class="sm:col-span-3 bg-white dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-500 dark:ring-gray-700 p-3 sm:p-4 overflow-x-auto" x-data="{ objQ: '' }">
                 <template x-if="!$store.access.selectedRoleId">
                     <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 p-4">Selecciona un rol para configurar sus permisos.</div>
                 </template>
@@ -96,13 +96,11 @@
                                 <i class="fas fa-filter absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm"></i>
                             </div>
                         </div>
-                        <!-- Contenido de módulos: el scroll lo maneja el contenedor padre -->
                         <div class="space-y-3 sm:space-y-5">
-                            <!-- Grupos por módulo (tipo de objeto) -->
                             <template x-for="g in $store.access.grupos()" :key="'grp-'+g.id">
-                                <div class="mb-3 sm:mb-5 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl overflow-hidden bg-white dark:bg-gray-900">
+                                <div class="mb-3 sm:mb-5 border border-gray-400 dark:border-gray-700 rounded-lg sm:rounded-xl overflow-hidden bg-white dark:bg-gray-900">
                                     <!-- Encabezado de módulo -->
-                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 gap-2 sm:gap-0">
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-4 py-2 sm:py-3 bg-slate-200 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 gap-2 sm:gap-0">
                                         <div class="flex items-center gap-1.5 sm:gap-2">
                                             <i class="fas fa-folder text-gray-500 dark:text-gray-400 text-xs sm:text-sm"></i>
                                             <h4 class="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100" x-text="g.nombre"></h4>
@@ -196,7 +194,7 @@
                                                 </thead>
                                                 <tbody>
                                                     <template x-for="o in g.objetos" :key="o.id">
-                                                        <tr class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())">
+                                                        <tr class="border-t border-slate-400/70 dark:border-gray-700 bg-white dark:bg-gray-900" x-show="!objQ || (o.nombre_objeto||'').toLowerCase().includes(objQ.toLowerCase())">
                                                             <td class="p-3 sticky left-0 z-10 bg-inherit text-sm" x-text="o.nombre_objeto"></td>
                                                             <template x-for="col in $store.access.permColumns" :key="col.field">
                                                                 <td class="p-3 text-center">

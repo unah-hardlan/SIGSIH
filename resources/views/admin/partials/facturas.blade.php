@@ -173,52 +173,52 @@
             <div>
                 <label for="numero_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
                 <input type="text" id="numero_factura" name="numero_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="fecha_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
                 <input type="date" id="fecha_factura" name="fecha_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="oc_factura" class="block text-sm font-medium text-gray-700 nunito-bold">OC</label>
                 <input type="text" id="oc_factura" name="oc_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="subtotal_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Subtotal</label>
                 <input type="number" id="subtotal_factura" name="subtotal_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="impuesto_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Impuesto</label>
                 <input type="number" step="0.01" id="impuesto_factura" name="impuesto_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="descuento_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
                 <input type="number" step="0.01" id="descuento_factura" name="descuento_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="total_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
                 <input type="number" id="total_factura" name="total_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="total_letras_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Total
                     Letras</label>
                 <input type="text" id="total_letras_factura" name="total_letras_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="estado_factura_id" class="block text-sm font-medium text-gray-700 nunito-bold">Estado
                     Factura</label>
                 <select id="estado_factura_id" name="estado_factura_id"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
                     <template x-for="estado in estadosFactura" :key="estado.id || estado.id_estado_factura_pk">
                         <option :value="estado.id || estado.id_estado_factura_pk" x-text="estado.nombre_estado"
@@ -230,7 +230,7 @@
             <div>
                 <label for="cai_factura" class="block text-sm font-medium text-gray-700 nunito-bold">CAI</label>
                 <select id="cai_factura" name="cai_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un CAI</option>
                     <template x-for="cai in cais" :key="cai.id || cai.id_cai_pk">
                         <option :value="cai.id || cai.id_cai_pk" x-text="cai.codigo" class="nunito-regular">
@@ -241,7 +241,7 @@
             <div>
                 <label for="cliente_id" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="cliente_id" name="cliente_id"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="cliente in clientes" :key="cliente.id || cliente.id_cliente_pk">
                         <option :value="cliente.id || cliente.id_cliente_pk" x-text="cliente.nombre"
@@ -260,58 +260,58 @@
                 <label for="edit_numero_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
                 <input type="text" id="edit_numero_factura" name="edit_numero_factura" :value="itemToEdit?.numero"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_fecha_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
                 <input type="date" id="edit_fecha_factura" name="edit_fecha_factura" :value="itemToEdit?.fecha"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_oc_factura" class="block text-sm font-medium text-gray-700 nunito-bold">OC</label>
                 <input type="text" id="edit_oc_factura" name="edit_oc_factura" :value="itemToEdit?.oc"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_subtotal_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Subtotal</label>
                 <input type="number" id="edit_subtotal_factura" name="edit_subtotal_factura"
                     :value="itemToEdit?.subtotal"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_impuesto_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Impuesto</label>
                 <input type="number" step="0.01" id="edit_impuesto_factura" name="edit_impuesto_factura"
                     :value="itemToEdit?.impuesto"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_descuento_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
                 <input type="number" step="0.01" id="edit_descuento_factura" name="edit_descuento_factura"
                     :value="itemToEdit?.descuento"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_total_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
                 <input type="number" id="edit_total_factura" name="edit_total_factura" :value="itemToEdit?.total"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_total_letras_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Total
                     Letras</label>
                 <input type="text" id="edit_total_letras_factura" name="edit_total_letras_factura"
                     :value="itemToEdit?.total_letras"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_estado_factura_id" class="block text-sm font-medium text-gray-700 nunito-bold">Estado
                     Factura</label>
                 <select id="edit_estado_factura_id" name="edit_estado_factura_id"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
                     <template x-for="estado in estadosFactura" :key="estado.id || estado.id_estado_factura_pk">
                         <option :value="estado.id || estado.id_estado_factura_pk"
@@ -324,7 +324,7 @@
             <div>
                 <label for="edit_cai_factura" class="block text-sm font-medium text-gray-700 nunito-bold">CAI</label>
                 <select id="edit_cai_factura" name="edit_cai_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un CAI</option>
                     <template x-for="cai in cais" :key="cai.id || cai.id_cai_pk">
                         <option :value="cai.id || cai.id_cai_pk"
@@ -337,7 +337,7 @@
             <div>
                 <label for="edit_cliente_id" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="edit_cliente_id" name="edit_cliente_id"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="cliente in clientes" :key="cliente.id || cliente.id_cliente_pk">
                         <option :value="cliente.id || cliente.id_cliente_pk"
@@ -460,28 +460,28 @@
             <div>
                 <label for="id_factura" class="block text-sm font-medium text-gray-700 nunito-bold">ID Factura</label>
                 <input type="text" id="id_factura" name="id_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="id_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">ID Servicio</label>
                 <input type="text" id="id_servicio" name="id_servicio"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Servicio</label>
                 <input type="date" id="fecha_servicio" name="fecha_servicio"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
                 <input type="number" id="horas" name="horas"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="descuento" class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
                 <input type="number" id="descuento" name="descuento"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
         </div>
     </x-admin.form-modal>
@@ -494,31 +494,31 @@
                 <label for="edit_id_factura" class="block text-sm font-medium text-gray-700 nunito-bold">ID
                     Factura</label>
                 <input type="text" id="edit_id_factura" name="edit_id_factura" :value="detalleToEdit.id_factura"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_id_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">ID
                     Servicio</label>
                 <input type="text" id="edit_id_servicio" name="edit_id_servicio" :value="detalleToEdit.id_servicio"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Servicio</label>
                 <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio"
                     :value="detalleToEdit.fecha_servicio"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
                 <input type="number" id="edit_horas" name="edit_horas" :value="detalleToEdit.horas"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="edit_descuento"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
                 <input type="number" id="edit_descuento" name="edit_descuento" :value="detalleToEdit.descuento"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
         </div>
     </x-admin.edit-modal>

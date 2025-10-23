@@ -187,17 +187,17 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
                 <div>
                     <label for="nombre_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="nombre_categoria" x-model="nombre_categoria" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="descripcion_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="descripcion_categoria" x-model="descripcion_categoria" rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
                 <div>
                     <label for="tipo_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Categoría</label>
                     <select id="tipo_categoria" x-model="tipo_categoria" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccionar tipo</option>
                         <option value="ingreso">Ingreso</option>
                         <option value="gasto">Gasto</option>
@@ -214,17 +214,17 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
                 <div>
                     <label for="edit_nombre_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="edit_nombre_categoria" x-model="itemToEdit.nombre_categoria" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_descripcion_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion_categoria" x-model="itemToEdit.descripcion_categoria" rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
                 <div>
                     <label for="edit_tipo_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Categoría</label>
                     <select id="edit_tipo_categoria" x-model="itemToEdit.tipo_categoria" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccionar tipo</option>
                         <option value="ingreso">Ingreso</option>
                         <option value="gasto">Gasto</option>
