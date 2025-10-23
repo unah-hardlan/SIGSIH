@@ -16,4 +16,10 @@ class Pais extends Model
     protected $fillable = [
         'nombre_pais'
     ];
+
+    // Relación con Departamentos
+    public function departamentos()
+    {
+        return $this->hasMany(Departamento::class, 'id_pais_pk', 'id_pais_pk');
+    }
 }

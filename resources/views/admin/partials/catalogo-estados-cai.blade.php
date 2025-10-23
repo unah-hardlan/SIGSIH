@@ -230,28 +230,28 @@
                     <label for="codigo_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
                     <input type="text" id="codigo_estado_cai" x-model="codigo_estado_cai" maxlength="10"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="nombre_estado_cai" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                         Estado CAI</label>
                     <input type="text" id="nombre_estado_cai" x-model="nombre_estado_cai" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="descripcion_estado_cai" x-model="descripcion_estado_cai" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
                 <div>
                     <label for="orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
                     <input type="number" id="orden" x-model="orden" min="0"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="es_final" x-model="es_final"
-                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 ">
                     <label for="es_final" class="ml-2 block text-sm font-medium text-gray-700 nunito-bold">¿Es estado
                         final?</label>
                 </div>
@@ -266,28 +266,28 @@
                     <label for="edit_codigo_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
                     <input type="text" id="edit_codigo_estado_cai" x-model="itemToEdit.codigo_estado_cai" maxlength="10"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_nombre_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Estado CAI</label>
                     <input type="text" id="edit_nombre_estado_cai" x-model="itemToEdit.nombre_estado_cai" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="edit_descripcion_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion_estado_cai" x-model="itemToEdit.descripcion_estado_cai" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
                 <div>
                     <label for="edit_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
                     <input type="number" id="edit_orden" x-model="itemToEdit.orden" min="0"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="edit_es_final" x-model="itemToEdit.es_final"
-                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 ">
                     <label for="edit_es_final" class="ml-2 block text-sm font-medium text-gray-700 nunito-bold">¿Es
                         estado final?</label>
                 </div>

@@ -745,7 +745,7 @@
             <div>
                 <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
                 <template x-if="caOptionsDisponibles.length > 0">
-                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un país</option>
                         <template x-for="n in caOptionsDisponibles" :key="n">
                             <option :value="n" x-text="n"></option>
@@ -770,7 +770,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -781,7 +781,7 @@
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
                 <!-- If we have suggestions for the selected country, show a select; otherwise show a text input -->
                 <template x-if="suggestedDepartamentos.length > 0">
-                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un departamento</option>
                         <template x-for="opt in suggestedDepartamentos" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -789,7 +789,7 @@
                     </select>
                 </template>
                 <template x-if="suggestedDepartamentos.length === 0">
-                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" />
+                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" />
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedDepartamentos.length === 0">No hay catálogo para el país seleccionado. Puedes escribirlo manualmente.</p>
             </div>
@@ -806,7 +806,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="departamento_ciudad = ''; refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -815,9 +815,9 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
-                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un departamento</option>
-                    <template x-for="departamento in departamentosFiltradosCiudad" :key="departamento.id_departamento_pk">
+                    <template x-for="departamento in departamentosFiltradosCiudad" :key="'dep-' + pais_ciudad + '-' + departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
                     </template>
                 </select>
@@ -825,7 +825,7 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
                 <template x-if="suggestedCiudades.length > 0">
-                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona una ciudad</option>
                         <template x-for="opt in suggestedCiudades" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -833,7 +833,7 @@
                     </select>
                 </template>
                 <template x-if="suggestedCiudades.length === 0">
-                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedCiudades.length === 0">No hay catálogo para el país/departamento seleccionado. Puedes escribirlo manualmente.</p>
             </div>
@@ -850,28 +850,28 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Calle</label>
-                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="numero" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
-                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="colonia" class="block text-sm font-medium text-gray-700 nunito-bold">Colonia</label>
-                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
-                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
-                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
-                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
@@ -913,7 +913,7 @@
         <template x-if="itemToEdit">
         <div>
             <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
-            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
         </div>
         </template>
     </x-admin.edit-modal>
@@ -927,7 +927,7 @@
             <div>
                 <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
                 <template x-if="editSuggestedDepartamentos.length > 0">
-                    <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                         <option value="">Selecciona un departamento</option>
                         <template x-for="opt in editSuggestedDepartamentos" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -935,12 +935,12 @@
                     </select>
                 </template>
                 <template x-if="editSuggestedDepartamentos.length === 0">
-                    <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                 </template>
             </div>
             <div>
                 <label for="edit_pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -965,7 +965,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -974,7 +974,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Departamento</label>
-                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona un departamento</option>
                     <template x-for="departamento in departamentosFiltradosCiudadEdit" :key="departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
@@ -984,7 +984,7 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
                 <template x-if="editSuggestedCiudades.length > 0">
-                    <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                         <option value="">Selecciona una ciudad</option>
                         <template x-for="opt in editSuggestedCiudades" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -992,7 +992,7 @@
                     </select>
                 </template>
                 <template x-if="editSuggestedCiudades.length === 0">
-                    <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                 </template>
             </div>
         </div>
@@ -1007,28 +1007,28 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
-                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             <div>
                 <label for="edit_numero" class="block text-sm font-medium text-gray-700">Número</label>
-                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             <div>
                 <label for="edit_colonia" class="block text-sm font-medium text-gray-700">Colonia</label>
-                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             <div>
                 <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
-                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 " placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
-                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             
             <div>
                 <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
-                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>

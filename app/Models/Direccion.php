@@ -35,6 +35,12 @@ class Direccion extends Model
         return $this->belongsTo(Agencia::class, 'agencia_id', 'id_agencias_pk');
     }
 
+    // Relación con Agencias (inversa)
+    public function agencias()
+    {
+        return $this->hasMany(Agencia::class, 'id_direccion_fk', 'id_direccion_pk');
+    }
+
     // Accessor para dirección completa
     public function getDireccionCompletaAttribute()
     {

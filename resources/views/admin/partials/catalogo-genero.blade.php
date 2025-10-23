@@ -186,7 +186,7 @@
             <div>
                 <label for="genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                 <input type="text" id="genero" x-model="genero" required
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
         </x-admin.form-modal>
 
@@ -197,7 +197,7 @@
                 <div>
                     <label for="edit_genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="edit_genero" x-model="itemToEdit.genero" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
             </template>
         </x-admin.edit-modal>

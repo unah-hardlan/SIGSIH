@@ -185,7 +185,7 @@
                 <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
@@ -204,7 +204,7 @@
                 <label for="id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold"> Técnico</label>
                 <select id="id_tecnico" name="id_tecnico" x-model="formOrden.id_tecnico_fk"
                     :disabled="loadingCatalogos.tecnicos"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
@@ -223,7 +223,7 @@
                 <label for="fecha_recepcion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Recepción</label>
                 <input type="date" id="fecha_recepcion" name="fecha_recepcion" x-model="formOrden.fecha_recepcion"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_recepcion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_recepcion[0]"></p>
                 </template>
@@ -232,7 +232,7 @@
                 <label for="id_estado_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
                 <select id="id_estado_orden" name="id_estado_orden" x-model="formOrden.id_estado_orden_servicio_fk"
                     :disabled="loadingCatalogos.estadosOrden"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Estado por defecto</option>
                     <template x-for="opt in estadosOrdenOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
@@ -251,7 +251,7 @@
                 <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Inicio</label>
                 <input type="date" id="fecha_inicio" name="fecha_inicio" x-model="formOrden.fecha_inicio"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
                 </template>
@@ -261,7 +261,7 @@
                     Finalización</label>
                 <input type="date" id="fecha_finalizacion" name="fecha_finalizacion"
                     x-model="formOrden.fecha_finalizacion"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
                 </template>
@@ -270,7 +270,7 @@
                 <label for="observaciones"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Observaciones</label>
                 <textarea id="observaciones" name="observaciones" rows="2" x-model="formOrden.observaciones"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <template x-if="errors.observaciones">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.observaciones[0]"></p>
                 </template>
@@ -280,7 +280,7 @@
                     del Técnico</label>
                 <textarea id="diagnostico_tecnico" name="diagnostico_tecnico" rows="2"
                     x-model="formOrden.diagnostico_tecnico"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <template x-if="errors.diagnostico_tecnico">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_tecnico[0]"></p>
                 </template>
@@ -290,7 +290,7 @@
                     del Cliente</label>
                 <textarea id="diagnostico_cliente" name="diagnostico_cliente" rows="2"
                     x-model="formOrden.diagnostico_cliente"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <template x-if="errors.diagnostico_cliente">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_cliente[0]"></p>
                 </template>
@@ -301,7 +301,7 @@
                     Cotización</label>
                 <select id="id_cotizacion" name="id_cotizacion" x-model="formOrden.id_cotizacion_fk"
                     :disabled="loadingCatalogos.cotizaciones"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
@@ -329,7 +329,7 @@
                     class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
                 <select id="edit_id_solicitud" name="edit_id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
@@ -349,7 +349,7 @@
                     Técnico</label>
                 <select id="edit_id_tecnico" name="edit_id_tecnico" x-model="formOrden.id_tecnico_fk"
                     :disabled="loadingCatalogos.tecnicos"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
@@ -369,7 +369,7 @@
                     Recepción</label>
                 <input type="date" id="edit_fecha_recepcion" name="edit_fecha_recepcion"
                     x-model="formOrden.fecha_recepcion"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_recepcion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_recepcion[0]"></p>
                 </template>
@@ -379,7 +379,7 @@
                     class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
                 <select id="edit_id_estado_orden" name="edit_id_estado_orden"
                     x-model="formOrden.id_estado_orden_servicio_fk" :disabled="loadingCatalogos.estadosOrden"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Estado por defecto</option>
                     <template x-for="opt in estadosOrdenOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
@@ -398,7 +398,7 @@
                 <label for="edit_fecha_inicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Inicio</label>
                 <input type="date" id="edit_fecha_inicio" name="edit_fecha_inicio" x-model="formOrden.fecha_inicio"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
                 </template>
@@ -408,7 +408,7 @@
                     Finalización</label>
                 <input type="date" id="edit_fecha_finalizacion" name="edit_fecha_finalizacion"
                     x-model="formOrden.fecha_finalizacion"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
                 </template>
@@ -417,7 +417,7 @@
                 <label for="edit_observaciones"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Observaciones</label>
                 <textarea id="edit_observaciones" name="edit_observaciones" rows="2" x-model="formOrden.observaciones"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <template x-if="errors.observaciones">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.observaciones[0]"></p>
                 </template>
@@ -427,7 +427,7 @@
                     class="block text-sm font-medium text-gray-700 nunito-bold">Diagnóstico del Técnico</label>
                 <textarea id="edit_diagnostico_tecnico" name="edit_diagnostico_tecnico" rows="2"
                     x-model="formOrden.diagnostico_tecnico"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <template x-if="errors.diagnostico_tecnico">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_tecnico[0]"></p>
                 </template>
@@ -437,7 +437,7 @@
                     class="block text-sm font-medium text-gray-700 nunito-bold">Diagnóstico del Cliente</label>
                 <textarea id="edit_diagnostico_cliente" name="edit_diagnostico_cliente" rows="2"
                     x-model="formOrden.diagnostico_cliente"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <template x-if="errors.diagnostico_cliente">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_cliente[0]"></p>
                 </template>
@@ -448,7 +448,7 @@
                     Cotización</label>
                 <select id="edit_id_cotizacion" name="edit_id_cotizacion" x-model="formOrden.id_cotizacion_fk"
                     :disabled="loadingCatalogos.cotizaciones"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>

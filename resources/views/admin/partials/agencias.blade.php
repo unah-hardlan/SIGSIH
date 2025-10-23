@@ -209,7 +209,7 @@ x-init="fetch(); fetchDirecciones(); $watch('searchAgencia', () => fetch()); $wa
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label for="nombre_agencia" class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Nombre de la agencia</label>
-          <input type="text" id="nombre_agencia" name="nombre_agencia" x-model="formAgencia.nombre" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Ej. Agencia Centro">
+          <input type="text" id="nombre_agencia" name="nombre_agencia" x-model="formAgencia.nombre" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white  nunito-regular px-2" placeholder="Ej. Agencia Centro">
         </div>
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold mb-2">Horario</label>
@@ -241,7 +241,7 @@ x-init="fetch(); fetchDirecciones(); $watch('searchAgencia', () => fetch()); $wa
         </div>
         <div class="md:col-span-2">
           <label for="direccion_agencia" class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Dirección</label>
-          <select id="direccion_agencia" name="direccion_agencia" x-model.number="formAgencia.direccion_id" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+          <select id="direccion_agencia" name="direccion_agencia" x-model.number="formAgencia.direccion_id" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white  nunito-regular px-2">
             <option value="">Seleccione una dirección</option>
             <template x-for="d in direcciones" :key="d.id_direccion_pk">
               <option :value="d.id_direccion_pk" x-text="(d.direccion_completa || [d.calle, d.numero, d.colonia].filter(Boolean).join(' ')) + (d.ciudad ? ' - ' + d.ciudad.nombre_ciudad : '')"></option>

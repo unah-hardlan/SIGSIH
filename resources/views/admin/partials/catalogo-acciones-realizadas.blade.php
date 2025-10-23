@@ -150,12 +150,12 @@ x-effect="
                 <div>
                     <label for="nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="nombre" x-model="nombre" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="descripcion" x-model="descripcion" rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -168,12 +168,12 @@ x-effect="
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>
