@@ -81,12 +81,10 @@ Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', funct
 
 
 // Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
-Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
-    // 2FA setup (authenticated)
+Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function () {
     Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
     Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
     Route::post('2fa/disable', [TwoFactorController::class, 'disable']);
-    // Perfil del usuario autenticado
     Route::get('me', [ProfileController::class, 'me']);
     Route::post('perfil/persona', [ProfileController::class, 'savePersona']);
     Route::post('perfil/avatar', [ProfileController::class, 'uploadAvatar']);
@@ -199,9 +197,9 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
         // Buscar rol técnico (match por 'tecn' case/acento-insensible en la medida posible)
         $roles = \App\Models\Rol::query()
             ->where('rol', 'like', '%tecn%')
-            ->get(['id_rol_pk','rol']);
+            ->get(['id_rol_pk', 'rol']);
         if ($roles->isEmpty()) {
-            return response()->json([ 'data' => [], 'meta' => ['count' => 0] ]);
+            return response()->json(['data' => [], 'meta' => ['count' => 0]]);
         }
         $roleIds = $roles->pluck('id_rol_pk')->all();
         // Usuarios con rol principal técnico
@@ -212,7 +210,7 @@ Route::middleware(['jwt.auth', 'auto.permiso'])->group(function () {
             ->pluck('id_usuario_fk')->all();
         $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
         if (empty($userIds)) {
-            return response()->json([ 'data' => [], 'meta' => ['count' => 0] ]);
+            return response()->json(['data' => [], 'meta' => ['count' => 0]]);
         }
         $personas = \App\Models\Persona::whereIn('id_usuario_fk', $userIds)
             ->orderBy('primer_nombre')
