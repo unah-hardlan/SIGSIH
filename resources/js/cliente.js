@@ -14,6 +14,8 @@ import {
     faMoon,
     faSun,
     faHouseChimney,
+    faClipboardQuestion,
+    faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -26,7 +28,9 @@ library.add(
     faUser,
     faMoon,
     faSun,
-    faHouseChimney
+    faHouseChimney,
+    faClipboardQuestion,
+    faPlus
 );
 
 dom.watch();

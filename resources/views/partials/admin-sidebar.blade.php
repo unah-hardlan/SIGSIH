@@ -94,7 +94,7 @@
 
             {{-- Seguridad --}}
             @if($canSeguridad)
-            <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -143,7 +143,7 @@
 
             {{-- Clientes --}}
             @if($canClientes)
-            <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -200,7 +200,7 @@
 
             {{-- Proyectos --}}
             @if($canProyectos)
-            <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -237,7 +237,7 @@
 
             {{-- Tickets --}}
             @if($canTickets)
-            <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -266,7 +266,7 @@
 
             {{-- Calendario --}}
             @if($canCalendario)
-            <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -303,7 +303,7 @@
 
             {{-- Facturación --}}
             @if($canFacturacion)
-            <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -340,7 +340,7 @@
 
             {{-- Reportes --}}
             @if($canReportes)
-            <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -369,7 +369,7 @@
 
             {{-- Inventario --}}
             @if($canInventario)
-            <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -406,7 +406,7 @@
 
             {{-- Administración --}}
             @if($canAdministracion)
-            <li class="mt-2" x-data="sidebarDropdown('administracion', false)" x-init="init()">
+            <li class="mt-2" x-data="sidebarDropdown('administracion', false)" x-init="init()" @close-all-dropdowns.window="close()">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
@@ -459,7 +459,7 @@
 
             {{-- Mantenimiento --}}
             @if($canMantenimiento)
-            <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -494,7 +494,7 @@
 
             {{-- Catalogo --}}
             @if($canCatalogo)
-            <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()"
+            <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()" @close-all-dropdowns.window="close()"
                 :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
@@ -509,178 +509,329 @@
                     </svg>
                 </button>
                 <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                    {{-- Nuevo dropdown anidado para todos los "Estados" dentro de Catálogo --}}
+                    <li x-data="sidebarDropdown('catalogo-estados', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-flag w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Estados</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            @if($perm->can($u, ['Estados CAI'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-cai" class="py-1 px-3">
+                                    <i class="fas fa-barcode text-sm w-4 text-center"></i>
+                                    Estados CAI
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Estados de Proyecto'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-proyecto" class="py-1 px-3">
+                                    <i class="fas fa-project-diagram text-sm w-4 text-center"></i>
+                                    Estados de Proyecto
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Estados de Solicitud'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-solicitud" class="py-1 px-3">
+                                    <i class="fas fa-tasks text-sm w-4 text-center"></i>
+                                    Estados de Solicitud
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Estados de Tickets'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-tickets" class="py-1 px-3">
+                                    <i class="fas fa-ticket-alt text-sm w-4 text-center"></i>
+                                    Estados de Tickets
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Estados del Calendario'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-calendario" class="py-1 px-3">
+                                    <i class="fas fa-calendar-check text-sm w-4 text-center"></i>
+                                    Estados del Calendario
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+                        </ul>
+                    </li>
+                    {{-- Nuevo dropdown anidado para "Servicios" dentro de Catálogo --}}
+                    <li x-data="sidebarDropdown('catalogo-servicios', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-concierge-bell w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Servicios</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            @if($perm->can($u, ['Servicio Factura'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-factura" class="py-1 px-3">
+                                    <i class="fas fa-list text-sm w-4 text-center"></i>
+                                    Servicio Factura
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Servicios Realizados'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-realizados" class="py-1 px-3">
+                                    <i class="fas fa-plus text-sm w-4 text-center"></i>
+                                    Servicios Realizados
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+                        </ul>
+                    </li>
+                    {{-- Nuevo dropdown anidado para "Tipos" dentro de Catálogo --}}
+                    <li x-data="sidebarDropdown('catalogo-tipos', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-tags w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Tipos</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            @if($perm->can($u, ['Tipo de Movimiento'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-movimiento" class="py-1 px-3">
+                                    <i class="fas fa-clipboard-list text-sm w-4 text-center"></i>
+                                    Tipo de Movimiento
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Tipo de Objeto'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-objeto" class="py-1 px-3">
+                                    <i class="fas fa-object-group text-sm w-4 text-center"></i>
+                                    Tipo de Objeto
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Tipo de Producto'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-producto" class="py-1 px-3">
+                                    <i class="fas fa-box text-sm w-4 text-center"></i>
+                                    Tipo de Producto
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Tipo de Visita'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-visita" class="py-1 px-3">
+                                    <i class="fas fa-user-friends text-sm w-4 text-center"></i>
+                                    Tipo de Visita
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+
+                            @if($perm->can($u, ['Tipo de Mantenimiento'], 'consultar'))
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-mantenimiento" class="py-1 px-3">
+                                    <i class="fas fa-wrench text-sm w-4 text-center"></i>
+                                    Tipo de Mantenimiento
+                                </x-admin.sidebar-link>
+                            </li>
+                            @endif
+                        </ul>
+                    </li>
+                    {{-- Dropdown individual para "Acciones Realizadas" --}}
                     @if($perm->can($u, ['Acciones Realizadas'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-acciones-realizadas"
-                            class="py-1 px-3">
-                            <i class="fas fa-list-alt text-sm w-4 text-center"></i>
-                            Acciones Realizadas
-                        </x-admin.sidebar-link>
+                    <li x-data="sidebarDropdown('catalogo-acciones-realizadas', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-list-alt w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Acciones</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-acciones-realizadas" class="py-1 px-3">
+                                    <i class="fas fa-list-alt text-sm w-4 text-center"></i>
+                                    Acciones Realizadas
+                                </x-admin.sidebar-link>
+                            </li>
+                        </ul>
                     </li>
                     @endif
+                    {{-- Dropdown individual para "Administración de Facturas" --}}
                     @if($perm->can($u, ['Administración de Facturas','Administracion de Facturas'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-admin-facturas"
-                            class="py-1 px-3">
-                            <i class="fas fa-file-invoice-dollar text-sm w-4 text-center"></i>
-                            Administración de Facturas
-                        </x-admin.sidebar-link>
+                    <li x-data="sidebarDropdown('catalogo-admin-facturas', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-file-invoice-dollar w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Administración</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-admin-facturas" class="py-1 px-3">
+                                    <i class="fas fa-file-invoice-dollar text-sm w-4 text-center"></i>
+                                    Administración de Facturas
+                                </x-admin.sidebar-link>
+                            </li>
+                        </ul>
                     </li>
                     @endif
-                    @if($perm->can($u, ['Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos'],
-                    'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-categorias-ingresos-gastos"
-                            class="py-1 px-3">
-                            <i class="fas fa-coins text-sm w-4 text-center"></i>
-                            Categorías de Ingresos y Gastos
-                        </x-admin.sidebar-link>
+                    {{-- Dropdown individual para "Categorías de Ingresos y Gastos" --}}
+                    @if($perm->can($u, ['Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos'], 'consultar'))
+                    <li x-data="sidebarDropdown('catalogo-categorias-ingresos-gastos', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-coins w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Categorías</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-categorias-ingresos-gastos" class="py-1 px-3">
+                                    <i class="fas fa-coins text-sm w-4 text-center"></i>
+                                    Categorías de Ingresos y Gastos
+                                </x-admin.sidebar-link>
+                            </li>
+                        </ul>
                     </li>
                     @endif
-                    @if($perm->can($u, ['Estados CAI'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-cai"
-                            class="py-1 px-3">
-                            <i class="fas fa-barcode text-sm w-4 text-center"></i>
-                            Estados CAI
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Estados de Proyecto'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-proyecto"
-                            class="py-1 px-3">
-                            <i class="fas fa-project-diagram text-sm w-4 text-center"></i>
-                            Estados de Proyecto
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Estados de Solicitud'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-solicitud"
-                            class="py-1 px-3">
-                            <i class="fas fa-tasks text-sm w-4 text-center"></i>
-                            Estados de Solicitud
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Estados de Tickets'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-tickets"
-                            class="py-1 px-3">
-                            <i class="fas fa-ticket-alt text-sm w-4 text-center"></i>
-                            Estados de Tickets
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Estados del Calendario'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-estados-calendario"
-                            class="py-1 px-3">
-                            <i class="fas fa-calendar-check text-sm w-4 text-center"></i>
-                            Estados del Calendario
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
+                    {{-- Dropdown individual para "Género" --}}
                     @if($perm->can($u, ['Género','Genero'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-genero" class="py-1 px-3">
-                            <i class="fas fa-venus-mars text-sm w-4 text-center"></i>
-                            Genero
-                        </x-admin.sidebar-link>
+                    <li x-data="sidebarDropdown('catalogo-genero', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-venus-mars w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Género</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-genero" class="py-1 px-3">
+                                    <i class="fas fa-venus-mars text-sm w-4 text-center"></i>
+                                    Género
+                                </x-admin.sidebar-link>
+                            </li>
+                        </ul>
                     </li>
                     @endif
 
-                    @if($perm->can($u, ['Servicio Factura'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-factura"
-                            class="py-1 px-3">
-                            <i class="fas fa-list text-sm w-4 text-center"></i>
-                            Servicio Factura
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Servicios Realizados'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-realizados"
-                            class="py-1 px-3">
-                            <i class="fas fa-plus text-sm w-4 text-center"></i>
-                            Servicios Realizados
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Tipo de Movimiento'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-movimiento"
-                            class="py-1 px-3">
-                            <i class="fas fa-clipboard-list text-sm w-4 text-center"></i>
-                            Tipo de Movimiento
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Tipo de Objeto'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-objeto"
-                            class="py-1 px-3">
-                            <i class="fas fa-object-group text-sm w-4 text-center"></i>
-                            Tipo de Objeto
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-
-                    @if($perm->can($u, ['Tipo de Producto'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-producto"
-                            class="py-1 px-3">
-                            <i class="fas fa-box text-sm w-4 text-center"></i>
-                            Tipo de Producto
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Tipo de Visita'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-visita"
-                            class="py-1 px-3">
-                            <i class="fas fa-user-friends text-sm w-4 text-center"></i>
-                            Tipo de Visita
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
-                    @if($perm->can($u, ['Tipo de Mantenimiento'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-tipo-mantenimiento"
-                            class="py-1 px-3">
-                            <i class="fas fa-wrench text-sm w-4 text-center"></i>
-                            Tipo de Mantenimiento
-                        </x-admin.sidebar-link>
-                    </li>
-                    @endif
+                    {{-- Dropdown individual para "Origen Kardex" --}}
                     @if($perm->can($u, ['Origen Kardex','Origenes','Origen'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-origen-kardex"
-                            class="py-1 px-3">
-                            <i class="fas fa-map-signs text-sm w-4 text-center"></i>
-                            Origen Kardex
-                        </x-admin.sidebar-link>
+                    <li x-data="sidebarDropdown('catalogo-origen-kardex', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-map-signs w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Origen Kardex</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-origen-kardex" class="py-1 px-3">
+                                    <i class="fas fa-map-signs text-sm w-4 text-center"></i>
+                                    Origen Kardex
+                                </x-admin.sidebar-link>
+                            </li>
+                        </ul>
                     </li>
                     @endif
+                    {{-- Dropdown individual para "Ubicaciones" --}}
                     @if($perm->can($u, ['Ubicaciones'], 'consultar'))
-                    <li>
-                        <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-ubicaciones"
-                            class="py-1 px-3">
-                            <i class="fas fa-map-marker-alt text-sm w-4 text-center"></i>
-                            Ubicaciones
-                        </x-admin.sidebar-link>
+                    <li x-data="sidebarDropdown('catalogo-ubicaciones', false)" x-init="init()" @close-all-dropdowns.window="close()">
+                        <button @click="toggle()"
+                            :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
+                            class="w-full flex items-center justify-between px-3 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-map-marker-alt w-4 text-center"></i>
+                                <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold uppercase">Ubicaciones</span>
+                            </div>
+                            <svg :class="{'rotate-90': open, 'hidden': !sidebarOpen}" class="w-4 h-4 ml-2 transition-transform"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
+                            <li>
+                                <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-ubicaciones" class="py-1 px-3">
+                                    <i class="fas fa-map-marker-alt text-sm w-4 text-center"></i>
+                                    Ubicaciones
+                                </x-admin.sidebar-link>
+                            </li>
+                        </ul>
                     </li>
                     @endif
                 </ul>
-
-
-
-
             </li>
             @endif
         </ul>
     </nav>
+
+    {{-- Cerrar desplegables --}}
+    <div class="sticky bottom-0 p-4 border-t border-gray-700 dark:border-gray-600 bg-gray-900 dark:bg-gray-800">
+        <button @click="$dispatch('close-all-dropdowns')"
+            class="w-full flex items-center gap-3 px-4 py-2 text-gray-400 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors rounded-lg">
+            <i class="fas fa-times w-5 text-center"></i>
+            <span :class="!sidebarOpen && 'hidden'" class="text-sm nunito-bold">Cerrar desplegables</span>
+        </button>
+    </div>
 
 </aside>

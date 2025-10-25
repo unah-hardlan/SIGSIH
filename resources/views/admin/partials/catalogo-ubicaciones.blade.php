@@ -18,6 +18,8 @@
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
+    // Filtro global para las cuatro tablas
+    filtroUbicaciones: '',
     normalize(str) { return (str || '').toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''); },
     caCatalog: ['Belice','Costa Rica','El Salvador','Guatemala','Honduras','Nicaragua','Panamá'],
     get caOptionsDisponibles() {
@@ -116,6 +118,54 @@
         }
         // Fallback si el backend incluye pais anidado
         return dir?.ciudad?.departamento?.pais?.nombre_pais || '';
+    },
+    // Colecciones filtradas por el término global
+    get filteredPaises() {
+        const term = String(this.filtroUbicaciones || '').toLowerCase().trim();
+        if (!term) return this.paises || [];
+        return (this.paises || []).filter(p => String(p?.nombre_pais || '').toLowerCase().includes(term));
+    },
+    get filteredDepartamentos() {
+        const term = String(this.filtroUbicaciones || '').toLowerCase().trim();
+        if (!term) return this.departamentos || [];
+        return (this.departamentos || []).filter(d => {
+            const nombre = String(d?.nombre_departamento || '').toLowerCase();
+            const pais = String(d?.pais?.nombre_pais || '').toLowerCase();
+            return nombre.includes(term) || pais.includes(term);
+        });
+    },
+    get filteredCiudades() {
+        const term = String(this.filtroUbicaciones || '').toLowerCase().trim();
+        if (!term) return this.ciudades || [];
+        return (this.ciudades || []).filter(c => {
+            const nombre = String(c?.nombre_ciudad || '').toLowerCase();
+            const depNombre = String(c?.departamento?.nombre_departamento || this.getDepartamentoNombreById(c?.id_departamento_fk) || '').toLowerCase();
+            // Obtener nombre de país vía departamento
+            let paisNombre = '';
+            const dep = c?.departamento || this.getDepartamentoByCiudadId(c?.id_ciudad_pk);
+            if (dep?.id_pais_pk) {
+                const p = (this.paises || []).find(pp => String(pp.id_pais_pk) === String(dep.id_pais_pk));
+                paisNombre = String(p?.nombre_pais || '').toLowerCase();
+            }
+            return nombre.includes(term) || depNombre.includes(term) || paisNombre.includes(term);
+        });
+    },
+    get filteredDirecciones() {
+        const term = String(this.filtroUbicaciones || '').toLowerCase().trim();
+        if (!term) return this.direcciones || [];
+        return (this.direcciones || []).filter(d => {
+            const parts = [
+                d?.calle,
+                d?.numero,
+                d?.colonia,
+                d?.codigo_postal,
+                d?.referencia,
+                d?.ciudad?.nombre_ciudad,
+                this.getDepartamentoNombreByDireccion(d),
+                this.getPaisNombreByDireccion(d),
+            ].map(v => String(v ?? '').toLowerCase());
+            return parts.some(p => p.includes(term));
+        });
     },
     refreshCiudadSuggestions() {
         try {
@@ -259,11 +309,7 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Ubicaciones de Agencias</h1>
         <div class="flex flex-wrap gap-2 items-center mb-6">
             @include('partials.filtros-generales', [
-            'searchModel' => 'filtroUbicaciones',
-            'ordenarOptions' => [
-            'nombre' => 'Nombre',
-            'id' => 'ID'
-            ]
+                'searchModel' => 'filtroUbicaciones'
             ])
         </div>
     </div>
@@ -312,13 +358,13 @@
                                         <td colspan="9" class="px-4 py-3 text-center text-gray-500">Cargando direcciones...</td>
                                     </tr>
                                 </template>
-                                <template x-if="!loadingDirecciones && direcciones.length === 0">
+                                <template x-if="!loadingDirecciones && filteredDirecciones.length === 0">
                                     <tr>
                                         <td colspan="9" class="px-4 py-3 text-center text-gray-500">No hay direcciones registradas</td>
                                     </tr>
                                 </template>
-                                <template x-if="!loadingDirecciones && direcciones.length > 0">
-                                    <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
+                                <template x-if="!loadingDirecciones && filteredDirecciones.length > 0">
+                                    <template x-for="direccion in filteredDirecciones" :key="direccion.id_direccion_pk">
                                         <tr class="nunito-regular">
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.calle"></td>
                                             <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="direccion.numero"></td>
@@ -351,13 +397,13 @@
                                 <i class="fas fa-spinner fa-spin mr-2"></i> Cargando direcciones...
                             </div>
                         </template>
-                        <template x-if="!loadingDirecciones && direcciones.length === 0">
+                        <template x-if="!loadingDirecciones && filteredDirecciones.length === 0">
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
                                 No hay direcciones registradas
                             </div>
                         </template>
-                        <template x-if="!loadingDirecciones && direcciones.length > 0">
-                            <template x-for="direccion in direcciones" :key="direccion.id_direccion_pk">
+                        <template x-if="!loadingDirecciones && filteredDirecciones.length > 0">
+                            <template x-for="direccion in filteredDirecciones" :key="direccion.id_direccion_pk">
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                     <div class="space-y-1">
                                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-bold">Dirección</p>
@@ -432,13 +478,13 @@
                                                 <td colspan="2" class="px-4 py-3 text-center text-gray-500">Cargando países...</td>
                                             </tr>
                                         </template>
-                                        <template x-if="!loadingPaises && paises.length === 0">
+                                        <template x-if="!loadingPaises && filteredPaises.length === 0">
                                             <tr>
                                                 <td colspan="2" class="px-4 py-3 text-center text-gray-500">No hay países registrados</td>
                                             </tr>
                                         </template>
-                                        <template x-if="!loadingPaises && paises.length > 0">
-                                            <template x-for="pais in paises" :key="pais.id_pais_pk">
+                                        <template x-if="!loadingPaises && filteredPaises.length > 0">
+                                            <template x-for="pais in filteredPaises" :key="pais.id_pais_pk">
                                                 <tr class="nunito-regular">
                                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
                                                     <td class="px-4 py-3">
@@ -464,13 +510,13 @@
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Cargando países...
                                     </div>
                                 </template>
-                                <template x-if="!loadingPaises && paises.length === 0">
+                                <template x-if="!loadingPaises && filteredPaises.length === 0">
                                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
                                         No hay países registrados
                                     </div>
                                 </template>
-                                <template x-if="!loadingPaises && paises.length > 0">
-                                    <template x-for="pais in paises" :key="pais.id_pais_pk">
+                                <template x-if="!loadingPaises && filteredPaises.length > 0">
+                                    <template x-for="pais in filteredPaises" :key="pais.id_pais_pk">
                                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
                                             <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
@@ -526,13 +572,13 @@
                                                 <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando departamentos...</td>
                                             </tr>
                                         </template>
-                                        <template x-if="!loadingDepartamentos && departamentos.length === 0">
+                                        <template x-if="!loadingDepartamentos && filteredDepartamentos.length === 0">
                                             <tr>
                                                 <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay departamentos registrados</td>
                                             </tr>
                                         </template>
-                                        <template x-if="!loadingDepartamentos && departamentos.length > 0">
-                                            <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                                        <template x-if="!loadingDepartamentos && filteredDepartamentos.length > 0">
+                                            <template x-for="departamento in filteredDepartamentos" :key="departamento.id_departamento_pk">
                                                 <tr class="nunito-regular">
                                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="departamento.nombre_departamento"></td>
                                                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
@@ -559,13 +605,13 @@
                                         <i class="fas fa-spinner fa-spin mr-2"></i> Cargando departamentos...
                                     </div>
                                 </template>
-                                <template x-if="!loadingDepartamentos && departamentos.length === 0">
+                                <template x-if="!loadingDepartamentos && filteredDepartamentos.length === 0">
                                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
                                         No hay departamentos registrados
                                     </div>
                                 </template>
-                                <template x-if="!loadingDepartamentos && departamentos.length > 0">
-                                    <template x-for="departamento in departamentos" :key="departamento.id_departamento_pk">
+                                <template x-if="!loadingDepartamentos && filteredDepartamentos.length > 0">
+                                    <template x-for="departamento in filteredDepartamentos" :key="departamento.id_departamento_pk">
                                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                             <div>
                                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="departamento.nombre_departamento"></h3>
@@ -625,13 +671,13 @@
                                             <td colspan="3" class="px-4 py-3 text-center text-gray-500">Cargando ciudades...</td>
                                         </tr>
                                     </template>
-                                    <template x-if="!loadingCiudades && ciudades.length === 0">
+                                    <template x-if="!loadingCiudades && filteredCiudades.length === 0">
                                         <tr>
                                             <td colspan="3" class="px-4 py-3 text-center text-gray-500">No hay ciudades registradas</td>
                                         </tr>
                                     </template>
-                                    <template x-if="!loadingCiudades && ciudades.length > 0">
-                                        <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                                    <template x-if="!loadingCiudades && filteredCiudades.length > 0">
+                                        <template x-for="ciudad in filteredCiudades" :key="ciudad.id_ciudad_pk">
                                             <tr class="nunito-regular">
                                                 <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="ciudad.nombre_ciudad"></td>
                                                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
@@ -658,13 +704,13 @@
                                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando ciudades...
                                 </div>
                             </template>
-                            <template x-if="!loadingCiudades && ciudades.length === 0">
+                            <template x-if="!loadingCiudades && filteredCiudades.length === 0">
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-6 text-center text-gray-500 nunito-regular">
                                     No hay ciudades registradas
                                 </div>
                             </template>
-                            <template x-if="!loadingCiudades && ciudades.length > 0">
-                                <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                            <template x-if="!loadingCiudades && filteredCiudades.length > 0">
+                                <template x-for="ciudad in filteredCiudades" :key="ciudad.id_ciudad_pk">
                                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                         <div>
                                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="ciudad.nombre_ciudad"></h3>
@@ -699,7 +745,7 @@
             <div>
                 <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
                 <template x-if="caOptionsDisponibles.length > 0">
-                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un país</option>
                         <template x-for="n in caOptionsDisponibles" :key="n">
                             <option :value="n" x-text="n"></option>
@@ -724,7 +770,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -735,7 +781,7 @@
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
                 <!-- If we have suggestions for the selected country, show a select; otherwise show a text input -->
                 <template x-if="suggestedDepartamentos.length > 0">
-                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un departamento</option>
                         <template x-for="opt in suggestedDepartamentos" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -743,7 +789,7 @@
                     </select>
                 </template>
                 <template x-if="suggestedDepartamentos.length === 0">
-                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" />
+                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" />
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedDepartamentos.length === 0">No hay catálogo para el país seleccionado. Puedes escribirlo manualmente.</p>
             </div>
@@ -760,7 +806,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="departamento_ciudad = ''; refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -769,9 +815,9 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
-                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un departamento</option>
-                    <template x-for="departamento in departamentosFiltradosCiudad" :key="departamento.id_departamento_pk">
+                    <template x-for="departamento in departamentosFiltradosCiudad" :key="'dep-' + pais_ciudad + '-' + departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
                     </template>
                 </select>
@@ -779,7 +825,7 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
                 <template x-if="suggestedCiudades.length > 0">
-                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona una ciudad</option>
                         <template x-for="opt in suggestedCiudades" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -787,7 +833,7 @@
                     </select>
                 </template>
                 <template x-if="suggestedCiudades.length === 0">
-                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedCiudades.length === 0">No hay catálogo para el país/departamento seleccionado. Puedes escribirlo manualmente.</p>
             </div>
@@ -804,28 +850,28 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Calle</label>
-                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="numero" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
-                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="colonia" class="block text-sm font-medium text-gray-700 nunito-bold">Colonia</label>
-                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
-                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
-                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
-                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
@@ -867,7 +913,7 @@
         <template x-if="itemToEdit">
         <div>
             <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
-            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
         </div>
         </template>
     </x-admin.edit-modal>
@@ -881,7 +927,7 @@
             <div>
                 <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
                 <template x-if="editSuggestedDepartamentos.length > 0">
-                    <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                         <option value="">Selecciona un departamento</option>
                         <template x-for="opt in editSuggestedDepartamentos" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -889,12 +935,12 @@
                     </select>
                 </template>
                 <template x-if="editSuggestedDepartamentos.length === 0">
-                    <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                 </template>
             </div>
             <div>
                 <label for="edit_pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -919,7 +965,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
@@ -928,7 +974,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Departamento</label>
-                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona un departamento</option>
                     <template x-for="departamento in departamentosFiltradosCiudadEdit" :key="departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
@@ -938,7 +984,7 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
                 <template x-if="editSuggestedCiudades.length > 0">
-                    <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                         <option value="">Selecciona una ciudad</option>
                         <template x-for="opt in editSuggestedCiudades" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
@@ -946,7 +992,7 @@
                     </select>
                 </template>
                 <template x-if="editSuggestedCiudades.length === 0">
-                    <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                 </template>
             </div>
         </div>
@@ -961,28 +1007,28 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
-                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             <div>
                 <label for="edit_numero" class="block text-sm font-medium text-gray-700">Número</label>
-                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             <div>
                 <label for="edit_colonia" class="block text-sm font-medium text-gray-700">Colonia</label>
-                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             <div>
                 <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
-                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 " placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
             </div>
             <div>
                 <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
-                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
             </div>
             
             <div>
                 <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
-                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>

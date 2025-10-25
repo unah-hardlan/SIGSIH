@@ -15,20 +15,19 @@ class FacturaController extends Controller
     {
         try {
             $facturas = Factura::with([
-                'estadoFactura', 
-                'cai', 
+                'estadoFactura',
+                'cai',
                 'cliente.persona',
                 'cliente.empresa'
             ])->get();
-            
+
             $response = [
                 'success' => true,
                 'data' => FacturaResource::collection($facturas)->toArray($request)
             ];
-            
+
             return response()->json($response, 200);
         } catch (\Exception $e) {
-            \Log::error('Error in facturas index:', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las facturas',
@@ -41,20 +40,17 @@ class FacturaController extends Controller
     {
         try {
             $validatedData = $request->validated();
-            \Log::info('Creating factura with data:', $validatedData);
-            
+
             $factura = Factura::create($validatedData);
-            \Log::info('Factura created with ID:', ['id' => $factura->id_factura_pk]);
-            
+
             $factura->load(['estadoFactura', 'cai', 'cliente.persona', 'cliente.empresa']);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Factura creada exitosamente',
                 'data' => new FacturaResource($factura)
             ], 201);
         } catch (\Exception $e) {
-            \Log::error('Error creating factura:', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear la factura',
@@ -89,43 +85,47 @@ class FacturaController extends Controller
     {
         try {
             $clientes = Cliente::with(['empresa', 'persona'])->get();
-            
+
             // Filtrar solo clientes que tienen datos válidos
-            $clientesValidos = $clientes->filter(function($cliente) {
+            $clientesValidos = $clientes->filter(function ($cliente) {
                 if ($cliente->tipo_cliente === 'empresa') {
-                    return $cliente->empresa && 
-                           ($cliente->empresa->nombre_comercial || $cliente->empresa->razon_social);
+                    return $cliente->empresa &&
+                        ($cliente->empresa->nombre_comercial || $cliente->empresa->razon_social);
                 } elseif ($cliente->tipo_cliente === 'persona') {
-                    return $cliente->persona && 
-                           ($cliente->persona->primer_nombre || $cliente->persona->primer_apellido);
+                    return $cliente->persona &&
+                        ($cliente->persona->primer_nombre || $cliente->persona->primer_apellido);
                 }
                 return false;
             });
-            
-            $result = $clientesValidos->map(function($cliente) {
+
+            $result = $clientesValidos->map(function ($cliente) {
                 $nombre = 'Cliente sin datos';
-                
+
                 if ($cliente->tipo_cliente === 'empresa' && $cliente->empresa) {
                     $nombre = $cliente->empresa->nombre_comercial ?? $cliente->empresa->razon_social ?? 'Empresa sin nombre';
-                } elseif ($cliente->tipo_cliente === 'persona' && $cliente->persona) {
-                    $nombre = trim(($cliente->persona->primer_nombre ?? '') . ' ' . ($cliente->persona->primer_apellido ?? ''));
-                    if (empty($nombre)) {
-                        $nombre = 'Persona sin nombre';
+                } elseif ($cliente->type === 'persona' || $cliente->tipo_cliente === 'persona') {
+                    // cliente->persona puede ser una colección; tomar el primer elemento si es necesario
+                    $persona = $cliente->persona;
+                    if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                        $persona = $persona->first();
+                    }
+                    $nombre = 'Persona sin nombre';
+                    if ($persona) {
+                        $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')) ?: 'Persona sin nombre';
                     }
                 }
-                
+
                 return [
                     'id' => $cliente->id_cliente_pk,
                     'nombre' => $nombre,
                     'tipo' => $cliente->tipo_cliente
                 ];
             });
-            
+
             return response()->json($result->values()); // values() reindexar array
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error fetching clientes: ' . $e->getMessage());
-            
+
             return response()->json([
                 ['id' => 1, 'nombre' => 'Error al cargar clientes']
             ], 500);

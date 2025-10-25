@@ -3,9 +3,18 @@ document.addEventListener('alpine:init', () => {
         isEstadoFacturaModalOpen: false,
         isEditEstadoFacturaModalOpen: false,
         isDeleteEstadoFacturaModalOpen: false,
-        itemToEdit: null,
+        itemToEdit: {
+            id_estado_factura_pk: null,
+            codigo: '',
+            nombre: '',
+            descripcion: '',
+            es_final: false,
+            orden: 0,
+        },
         itemToDelete: null,
         estadosFactura: [],
+        categorias: [],
+        numbers: [],
         loadingEstadosFactura: false,
         nombre: '',
         descripcion: '',
@@ -13,10 +22,75 @@ document.addEventListener('alpine:init', () => {
         es_final: false,
         orden: 0,
         filtroEstadoFactura: '',
-        ordenarPor: '',
+        ordenarPor: 'nombre',
+        currentPage: 1,
+        perPage: 10,
 
         async init() {
             await this.fetchEstadosFactura();
+            this.$watch('filtroEstadoFactura', () => {
+                this.currentPage = 1;
+            });
+            this.$watch('ordenarPor', () => {
+                this.currentPage = 1;
+            });
+        },
+
+        paginatedEstadosFactura() {
+            return this.filteredEstadosFactura.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+        },
+
+        totalPages() {
+            return Math.ceil(this.filteredEstadosFactura.length / this.perPage);
+        },
+
+        nextPage() {
+            if (this.currentPage < this.totalPages()) {
+                this.currentPage++;
+            }
+        },
+
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+
+        goToPage(page) {
+            this.currentPage = page;
+        },
+
+        get filteredEstadosFactura() {
+            const term = String(this.filtroEstadoFactura || '').toLowerCase().trim();
+            let list = Array.from(this.estadosFactura || []);
+            if (term) {
+                list = list.filter((ef) => {
+                    const codigo = String(ef?.codigo || '').toLowerCase();
+                    const nombre = String(ef?.nombre_estado || '').toLowerCase();
+                    const desc = String(ef?.descripcion_estado_factura || '').toLowerCase();
+                    const orden = String(ef?.orden ?? '').toLowerCase();
+                    return (
+                        codigo.includes(term) ||
+                        nombre.includes(term) ||
+                        desc.includes(term) ||
+                        orden.includes(term)
+                    );
+                });
+            }
+            const key = this.ordenarPor || 'nombre';
+            const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true });
+            const getVal = (ef) => {
+                if (key === 'codigo') return String(ef?.codigo || '');
+                if (key === 'orden') return Number(ef?.orden) || 0;
+                return String(ef?.nombre_estado || '');
+            };
+            list.sort((a, b) => {
+                const va = getVal(a);
+                const vb = getVal(b);
+                if (key === 'orden') return (va - vb);
+                return collator.compare(va, vb);
+            });
+            return list;
         },
 
         async fetchEstadosFactura() {
@@ -32,8 +106,11 @@ document.addEventListener('alpine:init', () => {
                 this.estadosFactura = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                    ? data
-                    : [];
+                        ? data
+                        : [];
+                // synchronize aliases for reusable pagination components
+                this.categorias = this.estadosFactura;
+                this.numbers = this.estadosFactura;
             } catch (error) {
                 console.error("Error fetching estados factura:", error);
                 window.showToast &&
@@ -50,7 +127,7 @@ document.addEventListener('alpine:init', () => {
             const nombreTrim = String(this.nombre || "").trim();
             const descripcionTrim = String(this.descripcion || "").trim();
             const codigoTrim = String(this.codigo || "").trim();
-            
+
             if (!nombreTrim) {
                 window.showToast &&
                     window.showToast(
@@ -59,19 +136,13 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
-            if (
-                this.estadosFactura.some(
-                    (ef) =>
-                        ef.nombre_estado.toLowerCase() ===
-                        nombreTrim.toLowerCase()
-                )
-            ) {
+
+            if (this.estadosFactura.some((ef) => String(ef?.nombre_estado || '').toLowerCase() === nombreTrim.toLowerCase())) {
                 window.showToast &&
                     window.showToast("El estado de factura ya existe", "error");
                 return;
             }
-            
+
             try {
                 const payload = {
                     nombre: nombreTrim,
@@ -103,6 +174,9 @@ document.addEventListener('alpine:init', () => {
                 this.orden = 0;
                 this.isEstadoFacturaModalOpen = false;
                 await this.fetchEstadosFactura();
+                this.categorias = this.estadosFactura;
+                this.numbers = this.estadosFactura;
+                this.currentPage = 1;
             } catch (error) {
                 console.error("Error creating estado factura:", error);
                 window.showToast &&
@@ -122,7 +196,7 @@ document.addEventListener('alpine:init', () => {
             const codigoTrim = String(document.getElementById('edit_codigo')?.value || "").trim();
             const esFinal = document.getElementById('edit_es_final')?.checked || false;
             const orden = parseInt(document.getElementById('edit_orden')?.value) || 0;
-            
+
             if (!nombreTrim) {
                 window.showToast &&
                     window.showToast(
@@ -131,15 +205,8 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
-            if (
-                this.estadosFactura.some(
-                    (ef) =>
-                        ef.nombre && 
-                        ef.nombre.toLowerCase() === nombreTrim.toLowerCase() &&
-                        ef.id_estado_factura_pk !== this.itemToEdit.id_estado_factura_pk
-                )
-            ) {
+
+            if (this.estadosFactura.some((ef) => String(ef?.nombre_estado || '').toLowerCase() === nombreTrim.toLowerCase() && ef.id_estado_factura_pk !== this.itemToEdit.id_estado_factura_pk)) {
                 window.showToast &&
                     window.showToast(
                         "Ya existe otro estado con ese nombre",
@@ -149,10 +216,10 @@ document.addEventListener('alpine:init', () => {
             }
 
             if (
-                codigoTrim && 
+                codigoTrim &&
                 this.estadosFactura.some(
                     (ef) =>
-                        ef.codigo && 
+                        ef.codigo &&
                         ef.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
                         ef.id_estado_factura_pk !== this.itemToEdit.id_estado_factura_pk
                 )
@@ -164,7 +231,7 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
+
             try {
                 const payload = {
                     nombre: nombreTrim,
@@ -212,8 +279,17 @@ document.addEventListener('alpine:init', () => {
                         "success"
                     );
                 this.isEditEstadoFacturaModalOpen = false;
-                this.itemToEdit = null;
+                this.itemToEdit = {
+                    id_estado_factura_pk: null,
+                    codigo: '',
+                    nombre: '',
+                    descripcion: '',
+                    es_final: false,
+                    orden: 0,
+                };
                 await this.fetchEstadosFactura();
+                this.categorias = this.estadosFactura;
+                this.numbers = this.estadosFactura;
             } catch (error) {
                 console.error("Error updating estado factura:", error);
             }
@@ -241,6 +317,8 @@ document.addEventListener('alpine:init', () => {
                 this.isDeleteEstadoFacturaModalOpen = false;
                 this.itemToDelete = null;
                 await this.fetchEstadosFactura();
+                this.categorias = this.estadosFactura;
+                this.numbers = this.estadosFactura;
             } catch (error) {
                 console.error("Error deleting estado factura:", error);
                 const errorMessage =
@@ -250,8 +328,8 @@ document.addEventListener('alpine:init', () => {
         },
 
         handleModalSubmit(event) {
-            if(event.detail.formId === 'formEstadoFactura') this.submitEstadoFactura();
-            if(event.detail.formId === 'formEditEstadoFactura') this.updateEstadoFactura();
+            if (event.detail.formId === 'formEstadoFactura') this.submitEstadoFactura();
+            if (event.detail.formId === 'formEditEstadoFactura') this.updateEstadoFactura();
         },
 
         handleDelete() {

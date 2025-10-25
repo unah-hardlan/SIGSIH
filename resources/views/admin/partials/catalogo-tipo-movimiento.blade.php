@@ -33,6 +33,11 @@
     }
 }"
 x-init="fetchTipoMovimientos()"
+{{-- AÑADIDO: Este bloque observa los cambios y llama a la API automáticamente --}}
+x-effect="
+    $watch('filtroTipoMovimiento', () => fetchTipoMovimientos());
+    $watch('ordenarPor', () => fetchTipoMovimientos());
+"
 @keydown.escape.window="
     isTipoMovimientoModalOpen = false;
     isTipoMovimientoEditModalOpen = false;
@@ -48,6 +53,7 @@ x-init="fetchTipoMovimientos()"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroTipoMovimiento',
+                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento --}}
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Tipo'
@@ -145,13 +151,13 @@ x-init="fetchTipoMovimientos()"
                 <div>
                     <label for="nombre_tipo_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="nombre_tipo_movimiento" x-model="nombre_tipo_movimiento" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion_tipo_movimiento"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="descripcion_tipo_movimiento" x-model="descripcion_tipo_movimiento" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -163,13 +169,13 @@ x-init="fetchTipoMovimientos()"
                 <div>
                     <label for="edit_nombre_tipo_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
                     <input type="text" id="edit_nombre_tipo_movimiento" x-model="itemToEdit.nombre_tipo_movimiento" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="col-span-2">
                     <label for="edit_descripcion_tipo_movimiento"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
                     <textarea id="edit_descripcion_tipo_movimiento" x-model="itemToEdit.descripcion_tipo_movimiento" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>

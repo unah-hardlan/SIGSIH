@@ -3,17 +3,79 @@ document.addEventListener('alpine:init', () => {
         isServicioModalOpen: false,
         isEditServicioModalOpen: false,
         isDeleteServicioModalOpen: false,
-        itemToEdit: null,
+        itemToEdit: {
+            id_servicio_pk: null,
+            nombre_servicio: '',
+            tarifa: 0,
+        },
         itemToDelete: null,
         servicios: [],
+        categorias: [],
+        numbers: [],
         loadingServicios: false,
         nombre_servicio: '',
         tarifa: '',
         filtroServicio: '',
-        ordenarPor: '',
+        ordenarPor: 'nombre_servicio',
+        currentPage: 1,
+        perPage: 10,
 
         async init() {
             await this.fetchServicios();
+            this.$watch('filtroServicio', () => {
+                this.currentPage = 1;
+            });
+            this.$watch('ordenarPor', () => {
+                this.currentPage = 1;
+            });
+        },
+
+        paginatedServicios() {
+            return this.filteredServicios.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+        },
+
+        totalPages() {
+            return Math.ceil(this.filteredServicios.length / this.perPage);
+        },
+
+        nextPage() {
+            if (this.currentPage < this.totalPages()) {
+                this.currentPage++;
+            }
+        },
+
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+
+        goToPage(page) {
+            this.currentPage = page;
+        },
+
+        get filteredServicios() {
+            const term = (this.filtroServicio || '').toString().toLowerCase().trim();
+            let list = this.servicios.filter((s) => {
+                if (!term) return true;
+                const nombre = (s.nombre_servicio || '').toString().toLowerCase();
+                const tarifaStr = (s.tarifa != null ? String(s.tarifa) : '').toLowerCase();
+                return nombre.includes(term) || tarifaStr.includes(term);
+            });
+
+            const key = this.ordenarPor || 'nombre_servicio';
+            list = list.sort((a, b) => {
+                if (key === 'tarifa') {
+                    const an = Number(a.tarifa ?? 0);
+                    const bn = Number(b.tarifa ?? 0);
+                    return an - bn;
+                }
+                const av = (a[key] ?? '').toString().toLowerCase();
+                const bv = (b[key] ?? '').toString().toLowerCase();
+                return av.localeCompare(bv);
+            });
+
+            return list;
         },
 
         async fetchServicios() {
@@ -29,8 +91,11 @@ document.addEventListener('alpine:init', () => {
                 this.servicios = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                    ? data
-                    : [];
+                        ? data
+                        : [];
+                // synchronize aliases for reusable pagination components
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error fetching servicios:", error);
                 window.showToast &&
@@ -48,7 +113,7 @@ document.addEventListener('alpine:init', () => {
                 this.nombre_servicio || ""
             ).trim();
             const tarifa = parseFloat(this.tarifa || 0);
-            
+
             if (!nombreTrim) {
                 window.showToast &&
                     window.showToast(
@@ -57,7 +122,7 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
+
             if (tarifa < 0) {
                 window.showToast &&
                     window.showToast(
@@ -66,7 +131,7 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
+
             if (
                 this.servicios.some(
                     (s) =>
@@ -78,7 +143,7 @@ document.addEventListener('alpine:init', () => {
                     window.showToast("El servicio ya existe", "error");
                 return;
             }
-            
+
             try {
                 const payload = {
                     nombre_servicio: nombreTrim,
@@ -104,6 +169,9 @@ document.addEventListener('alpine:init', () => {
                 this.tarifa = "";
                 this.isServicioModalOpen = false;
                 await this.fetchServicios();
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
+                this.currentPage = 1;
             } catch (error) {
                 console.error("Error creating servicio:", error);
                 window.showToast &&
@@ -124,7 +192,7 @@ document.addEventListener('alpine:init', () => {
                 this.itemToEdit.nombre_servicio || ""
             ).trim();
             const tarifa = parseFloat(this.itemToEdit.tarifa || 0);
-            
+
             if (!nombreTrim) {
                 window.showToast &&
                     window.showToast(
@@ -133,7 +201,7 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
+
             if (tarifa < 0) {
                 window.showToast &&
                     window.showToast(
@@ -142,14 +210,14 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
+
             if (
                 this.servicios.some(
                     (s) =>
                         s.nombre_servicio.toLowerCase() ===
-                            nombreTrim.toLowerCase() &&
+                        nombreTrim.toLowerCase() &&
                         s.id_servicio_pk !==
-                            this.itemToEdit.id_servicio_pk
+                        this.itemToEdit.id_servicio_pk
                 )
             ) {
                 window.showToast &&
@@ -159,7 +227,7 @@ document.addEventListener('alpine:init', () => {
                     );
                 return;
             }
-            
+
             try {
                 const payload = {
                     nombre_servicio: nombreTrim,
@@ -204,8 +272,14 @@ document.addEventListener('alpine:init', () => {
                         "success"
                     );
                 this.isEditServicioModalOpen = false;
-                this.itemToEdit = null;
+                this.itemToEdit = {
+                    id_servicio_pk: null,
+                    nombre_servicio: '',
+                    tarifa: 0,
+                };
                 await this.fetchServicios();
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error updating servicio:", error);
             }
@@ -236,6 +310,8 @@ document.addEventListener('alpine:init', () => {
                 this.isDeleteServicioModalOpen = false;
                 this.itemToDelete = null;
                 await this.fetchServicios();
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error deleting servicio:", error);
                 const errorMessage =
@@ -245,8 +321,8 @@ document.addEventListener('alpine:init', () => {
         },
 
         handleModalSubmit(event) {
-            if(event.detail.formId === 'formServicio') this.submitServicio();
-            if(event.detail.formId === 'formEditServicio') this.updateServicio();
+            if (event.detail.formId === 'formServicio') this.submitServicio();
+            if (event.detail.formId === 'formEditServicio') this.updateServicio();
         },
 
         handleDelete() {

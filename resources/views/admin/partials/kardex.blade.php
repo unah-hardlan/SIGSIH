@@ -25,7 +25,8 @@
     
     // --- Filtros ---
     filtroKardex: '',
-    ordenarPor: '',
+    ordenarPor: 'fecha_movimiento', // Default a fecha
+    ordenarDirection: 'desc', // AÑADIDO: 'asc' o 'desc'. Default a descendente para ver lo más nuevo primero.
 
     // --- Lógica de la API ---
     async fetchKardex() {
@@ -57,6 +58,12 @@
     }
 }"
 x-init="fetchKardex(); fetchCatalogos();"
+{{-- MODIFICADO: Se añade el watch para la dirección del ordenamiento --}}
+x-effect="
+    $watch('filtroKardex', () => fetchKardex());
+    $watch('ordenarPor', () => fetchKardex());
+    $watch('ordenarDirection', () => fetchKardex());
+"
 @keydown.escape.window="
     isKardexModalOpen = false;
     isKardexEditModalOpen = false;
@@ -73,6 +80,8 @@ x-init="fetchKardex(); fetchCatalogos();"
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroKardex',
+                'ordenarModel' => 'ordenarPor',
+                'ordenarDirectionModel' => 'ordenarDirection', // {{-- AÑADIDO: Pasa el modelo de dirección --}}
                 'ordenarOptions' => [
                     'fecha_movimiento' => 'Fecha',
                     'cantidad' => 'Cantidad'
@@ -187,7 +196,7 @@ x-init="fetchKardex(); fetchCatalogos();"
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label for="new_id_producto_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Producto</label>
-                    <select id="new_id_producto_fk" x-model="newMovimiento.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="new_id_producto_fk" x-model="newMovimiento.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione un Producto...</option>
                         <template x-for="producto in catalogoProductos" :key="producto.id_producto_pk">
                             <option :value="producto.id_producto_pk" x-text="producto.nombre_producto"></option>
@@ -196,7 +205,7 @@ x-init="fetchKardex(); fetchCatalogos();"
                 </div>
                 <div>
                     <label for="new_id_tipo_movimiento_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Movimiento</label>
-                    <select id="new_id_tipo_movimiento_fk" x-model="newMovimiento.id_tipo_movimiento_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="new_id_tipo_movimiento_fk" x-model="newMovimiento.id_tipo_movimiento_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione un Tipo...</option>
                         <template x-for="tipo in catalogoTiposMovimiento" :key="tipo.id_tipo_movimiento_pk">
                             <option :value="tipo.id_tipo_movimiento_pk" x-text="tipo.nombre_tipo_movimiento"></option>
@@ -205,7 +214,7 @@ x-init="fetchKardex(); fetchCatalogos();"
                 </div>
                 <div>
                     <label for="new_id_origen_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Origen (Opcional)</label>
-                    <select id="new_id_origen_fk" x-model="newMovimiento.id_origen_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="new_id_origen_fk" x-model="newMovimiento.id_origen_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option :value="null">Ninguno</option>
                         <template x-for="origen in catalogoOrigenes" :key="origen.id_origen_pk">
                             <option :value="origen.id_origen_pk" x-text="origen.nombre_origen"></option>
@@ -214,15 +223,15 @@ x-init="fetchKardex(); fetchCatalogos();"
                 </div>
                 <div>
                     <label for="new_cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
-                    <input type="number" step="0.001" id="new_cantidad" x-model="newMovimiento.cantidad" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="number" step="0.001" id="new_cantidad" x-model="newMovimiento.cantidad" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="new_fecha_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Movimiento</label>
-                    <input type="date" id="new_fecha_movimiento" x-model="newMovimiento.fecha_movimiento" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" id="new_fecha_movimiento" x-model="newMovimiento.fecha_movimiento" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="md:col-span-2">
                     <label for="new_motivo" class="block text-sm font-medium text-gray-700 nunito-bold">Motivo / Razón</label>
-                    <textarea id="new_motivo" x-model="newMovimiento.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea id="new_motivo" x-model="newMovimiento.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -233,7 +242,7 @@ x-init="fetchKardex(); fetchCatalogos();"
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label for="edit_id_producto_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Producto</label>
-                    <select id="edit_id_producto_fk" x-model="itemToEdit.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="edit_id_producto_fk" x-model="itemToEdit.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="producto in catalogoProductos" :key="producto.id_producto_pk">
                             <option :value="producto.id_producto_pk" x-text="producto.nombre_producto"></option>
@@ -242,7 +251,7 @@ x-init="fetchKardex(); fetchCatalogos();"
                 </div>
                 <div>
                     <label for="edit_id_tipo_movimiento_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Movimiento</label>
-                    <select id="edit_id_tipo_movimiento_fk" x-model="itemToEdit.id_tipo_movimiento_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="edit_id_tipo_movimiento_fk" x-model="itemToEdit.id_tipo_movimiento_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="tipo in catalogoTiposMovimiento" :key="tipo.id_tipo_movimiento_pk">
                             <option :value="tipo.id_tipo_movimiento_pk" x-text="tipo.nombre_tipo_movimiento"></option>
@@ -251,7 +260,7 @@ x-init="fetchKardex(); fetchCatalogos();"
                 </div>
                 <div>
                     <label for="edit_id_origen_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Origen (Opcional)</label>
-                    <select id="edit_id_origen_fk" x-model="itemToEdit.id_origen_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <select id="edit_id_origen_fk" x-model="itemToEdit.id_origen_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option :value="null">Ninguno</option>
                         <template x-for="origen in catalogoOrigenes" :key="origen.id_origen_pk">
                             <option :value="origen.id_origen_pk" x-text="origen.nombre_origen"></option>
@@ -260,15 +269,15 @@ x-init="fetchKardex(); fetchCatalogos();"
                 </div>
                 <div>
                     <label for="edit_cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
-                    <input type="number" step="0.001" id="edit_cantidad" x-model="itemToEdit.cantidad" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="number" step="0.001" id="edit_cantidad" x-model="itemToEdit.cantidad" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div>
                     <label for="edit_fecha_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Movimiento</label>
-                    <input type="date" id="edit_fecha_movimiento" x-model="itemToEdit.fecha_movimiento" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2">
+                    <input type="date" id="edit_fecha_movimiento" x-model="itemToEdit.fecha_movimiento" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 </div>
                 <div class="md:col-span-2">
                     <label for="edit_motivo" class="block text-sm font-medium text-gray-700 nunito-bold">Motivo / Razón</label>
-                    <textarea id="edit_motivo" x-model="itemToEdit.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 nunito-regular px-2"></textarea>
+                    <textarea id="edit_motivo" x-model="itemToEdit.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 </div>
             </div>
             </template>

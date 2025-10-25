@@ -90,6 +90,14 @@ class PaisesController extends Controller
             ], 404);
         }
 
+        // Verificar si el país tiene departamentos asociados
+        if ($pais->departamentos()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar el país porque tiene departamentos asociados'
+            ], 400);
+        }
+
         $pais->delete();
 
         return response()->json([

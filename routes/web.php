@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SessionTokenController;
 use App\Http\Controllers\ProfileController;
+// use App\Notifications\SystemNotification;
 use App\Services\PermissionService;
 use App\Support\AdminModuleRegistry;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +44,8 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::get('/session/token', [SessionTokenController::class, 'issue'])
     ->middleware(['auth.jwt.web','jwt.refresh'])
     ->name('session.token');
+
+
 
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
 Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
@@ -450,7 +453,11 @@ Route::prefix('admin')
         Route::get('detalle-cotizacion', fn() => view('admin.detalle-cotizacion'))->name('detalle-cotizacion');
         Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
         Route::get('formato-factura', fn() => view('admin.formato-factura'))->name('formato-factura');
-        Route::get('proyecto-pdf', fn() => view('admin.proyecto-pdf'))->name('proyecto-pdf');
+        Route::get('reporte-proyecto', function (Request $request) {
+            $fecha = $request->query('fecha', now()->format('d-M-Y'));
+            $modulo = $request->query('modulo', 'Proyecto BAC');
+            return view('admin.reporte-proyecto', compact('fecha', 'modulo'));
+        })->name('reporte-proyecto');
         Route::get('formato-reporte', fn() => view('admin.formato-reporte'))->name('formato-reporte');
     });
 

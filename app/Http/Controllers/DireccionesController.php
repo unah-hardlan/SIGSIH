@@ -242,11 +242,26 @@ class DireccionesController extends Controller
             ], 404);
         }
 
-        $direccion->delete();
+        // Verificar si la dirección está asociada a agencias
+        if ($direccion->agencias()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar la dirección porque está asociada a una o más agencias'
+            ], 400);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Dirección eliminada exitosamente'
-        ]);
+        try {
+            $direccion->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Dirección eliminada exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la dirección: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
