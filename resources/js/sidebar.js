@@ -1,12 +1,16 @@
 document.addEventListener("alpine:init", () => {
     window.sidebarDropdown = (key, active = false) => ({
         open:
-            localStorage.getItem(`sidebar-${key}`) !== null
-                ? JSON.parse(localStorage.getItem(`sidebar-${key}`))
+            sessionStorage.getItem(`sidebar-${key}`) !== null
+                ? JSON.parse(sessionStorage.getItem(`sidebar-${key}`))
                 : active,
         toggle() {
             this.open = !this.open;
-            localStorage.setItem(`sidebar-${key}`, this.open);
+            sessionStorage.setItem(`sidebar-${key}`, this.open);
+        },
+        close() {
+            this.open = false;
+            sessionStorage.setItem(`sidebar-${key}`, false);
         },
         init() {
             document.addEventListener("update-sidebar-dropdown", (event) => {
@@ -23,7 +27,6 @@ document.addEventListener("alpine:init", () => {
             if (!sidebar) return;
 
             this.restoreScrollPosition(sidebar);
-
             this.setupScrollListener(sidebar);
         },
 
@@ -73,16 +76,33 @@ window.initResponsiveSidebar = function (scope) {
         scope.sidebarOpen = true;
     }
 
+    function toggleBodyOverflow(sidebarOpen, isMobile) {
+        if (isMobile && sidebarOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+    }
+
+    scope.$watch("sidebarOpen", (newValue) => {
+        toggleBodyOverflow(newValue, scope.isMobile);
+    });
+
     function checkMobile() {
         var wasMobile = scope.isMobile;
         scope.isMobile = window.innerWidth < 768;
 
         if (wasMobile && !scope.isMobile) {
             scope.sidebarOpen = true;
+            document.body.style.overflow = "";
         } else if (!wasMobile && scope.isMobile) {
             scope.sidebarOpen = false;
+            document.body.style.overflow = "";
         }
     }
 
     window.addEventListener("resize", checkMobile);
+
+    // Aplicar el estado inicial
+    toggleBodyOverflow(scope.sidebarOpen, scope.isMobile);
 };
