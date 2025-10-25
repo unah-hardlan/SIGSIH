@@ -186,7 +186,14 @@ window.estadosCaiApiHandlers = {
                     "success"
                 );
             component.isEditEstadoCaiModalOpen = false;
-            component.itemToEdit = null;
+            component.itemToEdit = {
+                id_estado_cai_pk: null,
+                codigo_estado_cai: '',
+                nombre_estado_cai: '',
+                descripcion_estado_cai: '',
+                es_final: false,
+                orden: 0
+            };
             await this.fetchEstadosCai(component);
         } catch (error) {
             console.error("Error updating estado cai:", error);
