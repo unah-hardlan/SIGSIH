@@ -13,6 +13,7 @@ Homestead.json
 /.idea
 /.vscode
 /.phpunit.cache
+hot
 
 # Docker
 docker-compose.override.yml
