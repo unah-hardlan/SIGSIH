@@ -9,9 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class AgenciasController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+  
     public function index(Request $request): JsonResponse
     {
         $query = Agencia::with(['direccion.ciudad.departamento.pais']);
@@ -40,7 +38,6 @@ class AgenciasController extends Controller
         }
         if ($request->filled('id_pais_pk')) {
             $query->whereHas('direccion.ciudad.departamento', function ($q) use ($request) {
-                // En la tabla departamento la FK hacia país es id_pais_pk
                 $q->where('id_pais_pk', $request->integer('id_pais_pk'));
             });
         }
@@ -76,23 +73,24 @@ class AgenciasController extends Controller
                       ->orderBy('dep.nombre_departamento', $direction)
                       ->select('tbl_agencias.*');
                 break;
-        case 'pais':
-            $query->join('tbl_direccion as d', 'd.id_direccion_pk', '=', 'tbl_agencias.id_direccion_fk')
-                ->join('tbl_ciudad as c', 'c.id_ciudad_pk', '=', 'd.id_ciudad_fk')
-                ->join('tbl_departamento as dep', 'dep.id_departamento_pk', '=', 'c.id_departamento_fk')
-                // Nota: la FK en departamento hacia país es id_pais_pk
-                ->join('tbl_pais as p', 'p.id_pais_pk', '=', 'dep.id_pais_pk')
-                ->orderBy('p.nombre_pais', $direction)
-                ->select('tbl_agencias.*');
-            break;
+            case 'pais':
+                $query->join('tbl_direccion as d', 'd.id_direccion_pk', '=', 'tbl_agencias.id_direccion_fk')
+                    ->join('tbl_ciudad as c', 'c.id_ciudad_pk', '=', 'd.id_ciudad_fk')
+                    ->join('tbl_departamento as dep', 'dep.id_departamento_pk', '=', 'c.id_departamento_fk')
+                    ->join('tbl_pais as p', 'p.id_pais_pk', '=', 'dep.id_pais_pk')
+                    ->orderBy('p.nombre_pais', $direction)
+                    ->select('tbl_agencias.*');
+                break;
             case 'nombre':
             default:
                 $query->orderBy('nombre_agencia', $direction);
                 break;
         }
 
+        // Se reemplaza paginate() por get() para obtener todos los registros
         $agencias = $query->get();
 
+        // Se elimina el objeto 'pagination' de la respuesta
         return response()->json([
             'success' => true,
             'data' => AgenciaResource::collection($agencias),
@@ -192,7 +190,6 @@ class AgenciasController extends Controller
                 'message' => 'Agencia eliminada exitosamente'
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // MySQL error code for foreign key constraint failure is 1451
             if ((int)($e->errorInfo[1] ?? 0) === 1451) {
                 return response()->json([
                     'success' => false,
