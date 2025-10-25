@@ -46,34 +46,36 @@
                     </template>
                 </button>
                 <div x-show="open" x-cloak @click.away="open = false"
-                    class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md">
+                    class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md max-h-[32rem] overflow-hidden">
                     <div
                         class="flex items-center justify-between px-4 py-2 border-b text-gray-700 dark:text-gray-300 serif-bold text-sm">
                         <span>Notificaciones</span>
                         <button class="text-xs text-blue-600 hover:underline" @click="markAll()"
                             x-show="unread>0">Marcar todas</button>
                     </div>
-                    <ul>
-                        <template x-if="items.length === 0">
-                            <li class="px-4 py-3 text-sm text-gray-500">Sin notificaciones</li>
-                        </template>
-                        <template x-for="n in items" :key="n.id">
-                            <li @click="go(n)"
-                                class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
-                                <div class="flex gap-2">
-                                    <i
-                                        :class="['fas', n.icon || 'fa-bell', 'mt-0.5', n.severity==='critical'?'text-red-600':(n.severity==='warn'?'text-yellow-500':'text-blue-500')]"></i>
-                                    <div class="flex-1">
-                                        <div class="serif-bold" x-text="n.title"></div>
-                                        <div class="text-xs text-gray-600 dark:text-gray-400" x-text="n.body"></div>
-                                        <div class="text-[10px] text-gray-400" x-text="formatTime(n.created_at)"></div>
+                    <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                        <ul>
+                            <template x-if="items.length === 0">
+                                <li class="px-4 py-3 text-sm text-gray-500">Sin notificaciones</li>
+                            </template>
+                            <template x-for="n in items" :key="n.id">
+                                <li @click="go(n)"
+                                    class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
+                                    <div class="flex gap-2">
+                                        <i
+                                            :class="['fas', n.icon || 'fa-bell', 'mt-0.5', n.severity==='critical'?'text-red-600':(n.severity==='warn'?'text-yellow-500':'text-blue-500')]"></i>
+                                        <div class="flex-1">
+                                            <div class="serif-bold" x-text="n.title"></div>
+                                            <div class="text-xs text-gray-600 dark:text-gray-400" x-text="n.body"></div>
+                                            <div class="text-[10px] text-gray-400" x-text="formatTime(n.created_at)"></div>
+                                        </div>
+                                        <span class="w-2 h-2 rounded-full bg-blue-500 mt-1" x-show="!n.read_at"></span>
                                     </div>
-                                    <span class="w-2 h-2 rounded-full bg-blue-500 mt-1" x-show="!n.read_at"></span>
-                                </div>
-                            </li>
-                        </template>
-                    </ul>
-                    <div class="px-4 py-2 text-xs nunito-regular text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    <div class="px-4 py-3 mt-2 text-xs nunito-regular text-blue-600 dark:text-blue-400 hover:underline cursor-pointer border-t"
                         @click="$dispatch('navigate', {url:'/admin/notificaciones', viewName:'notificaciones'})">Ver
                         todas</div>
                 </div>
