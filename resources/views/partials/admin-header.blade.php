@@ -107,8 +107,9 @@
                     </div>
                     <!-- Inline logout confirmation modal (Alpine-only, avoids Blade component issues) -->
                     <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms
-                        class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-300 ease-in-out bg-black/70 dark:bg-black/80"
-                        style="background:rgba(0,0,0,0.65);" @click.self="logoutConfirm=false"
+                        class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-300 ease-in-out bg-black/60 dark:bg-black/80 backdrop-blur-md"
+                        style="-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); background:rgba(0,0,0,0.65);"
+                        @click.self="logoutConfirm=false"
                         @keydown.window.escape="logoutConfirm=false">
                         <div x-show="logoutConfirm" x-transition:enter="transition ease-out duration-300"
                             x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
