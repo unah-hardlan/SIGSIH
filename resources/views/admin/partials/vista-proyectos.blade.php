@@ -1,6 +1,7 @@
 <div class="container mx-auto space-y-6" x-data="VistaProyectosData(@json($initial ?? []))" x-init="init()">
     <div class="flex justify-between items-center">
-        <div class="flex items-center space-x-2">
+        <!-- Desktop header -->
+        <div class="hidden sm:flex items-center space-x-2">
             <button @click="previousProyecto()" :disabled="proyectos.length === 0 || loading" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left"></i></button>
             <div class="flex items-center space-x-2">
                 <h2 @click="openProjectListModal()" class="text-xl nunito-bold text-gray-800 dark:text-white cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" x-text="loading ? 'Cargando...' : (currentProyecto ? currentProyecto.nombre_proyecto : 'No hay proyectos')"></h2>
@@ -9,12 +10,40 @@
             </div>
             <button @click="nextProyecto()" :disabled="proyectos.length === 0 || loading" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-right"></i></button>
         </div>
-       <div class="bg-transparent items-center justify-center flex">
+
+        <!-- Mobile header: compact, centered title and large nav buttons -->
+        <div class="flex sm:hidden items-center justify-between w-full space-x-2">
+            <button @click="previousProyecto()" :disabled="proyectos.length === 0 || loading" class="p-3 rounded-full bg-white/90 dark:bg-gray-800 shadow text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="flex-1 text-center">
+                <h2 @click="openProjectListModal()" class="text-base nunito-bold text-gray-800 dark:text-white cursor-pointer truncate" x-text="loading ? 'Cargando...' : (currentProyecto ? currentProyecto.nombre_proyecto : 'No hay proyectos')"></h2>
+                <div class="text-xs text-gray-500 dark:text-gray-400" x-text="(!loading && proyectos.length > 0) ? '(' + (currentProyectoIndex + 1) + ' de ' + proyectos.length + ')' : ''"></div>
+            </div>
+
+            <button @click="nextProyecto()" :disabled="proyectos.length === 0 || loading" class="p-3 rounded-full bg-white/90 dark:bg-gray-800 shadow text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+       <!-- PDF button desktop -->
+    <div class="hidden sm:flex bg-transparent items-center justify-center">
         <a href="{{ route('admin.reporte-proyecto') }}" target="_blank" class="flex items-center gap-2 px-6 py-2 border-2 border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors duration-300 w-full min-w-[170px] justify-center">
             <i class="fas fa-file-pdf"></i>
             Generar PDF
         </a>
-</div>
+       </div>
+
+       <!-- Mobile actions: small PDF button + list button -->
+       <div class="flex sm:hidden items-center space-x-2">
+           <a href="{{ route('admin.reporte-proyecto') }}" target="_blank" class="px-3 py-2 border border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors">
+               <i class="fas fa-file-pdf"></i>
+           </a>
+           <button @click="openProjectListModal()" class="p-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+               <i class="fas fa-list"></i>
+           </button>
+       </div>
 
     </div>
     <div class="top-4 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-800 -mx-6 px-6 py-4 rounded-lg" x-show="currentProyecto" x-transition>
