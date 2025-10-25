@@ -321,7 +321,6 @@ import {
     faSortUp,
     faIdCard,
     faFolderOpen,
-    faFolderOpen,
     faConciergeBell,
     faFlag,
     faTags,
