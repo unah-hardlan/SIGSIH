@@ -10,14 +10,48 @@ document.addEventListener('alpine:init', () => {
         },
         itemToDelete: null,
         servicios: [],
+        categorias: [],
+        numbers: [],
         loadingServicios: false,
         nombre_servicio: '',
         tarifa: '',
         filtroServicio: '',
         ordenarPor: 'nombre_servicio',
+        currentPage: 1,
+        perPage: 10,
 
         async init() {
             await this.fetchServicios();
+            this.$watch('filtroServicio', () => {
+                this.currentPage = 1;
+            });
+            this.$watch('ordenarPor', () => {
+                this.currentPage = 1;
+            });
+        },
+
+        paginatedServicios() {
+            return this.filteredServicios.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+        },
+
+        totalPages() {
+            return Math.ceil(this.filteredServicios.length / this.perPage);
+        },
+
+        nextPage() {
+            if (this.currentPage < this.totalPages()) {
+                this.currentPage++;
+            }
+        },
+
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+
+        goToPage(page) {
+            this.currentPage = page;
         },
 
         get filteredServicios() {
@@ -59,6 +93,9 @@ document.addEventListener('alpine:init', () => {
                     : Array.isArray(data)
                         ? data
                         : [];
+                // synchronize aliases for reusable pagination components
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error fetching servicios:", error);
                 window.showToast &&
@@ -132,6 +169,9 @@ document.addEventListener('alpine:init', () => {
                 this.tarifa = "";
                 this.isServicioModalOpen = false;
                 await this.fetchServicios();
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
+                this.currentPage = 1;
             } catch (error) {
                 console.error("Error creating servicio:", error);
                 window.showToast &&
@@ -238,6 +278,8 @@ document.addEventListener('alpine:init', () => {
                     tarifa: 0,
                 };
                 await this.fetchServicios();
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error updating servicio:", error);
             }
@@ -268,6 +310,8 @@ document.addEventListener('alpine:init', () => {
                 this.isDeleteServicioModalOpen = false;
                 this.itemToDelete = null;
                 await this.fetchServicios();
+                this.categorias = this.servicios;
+                this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error deleting servicio:", error);
                 const errorMessage =
