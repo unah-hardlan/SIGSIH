@@ -420,7 +420,7 @@ library.add(
     faSortDown,
     faSortUp,
     faIdCard,
-    faFolderOpen
+    faFolderOpen,
     faIdCard,
     faFolderOpen,
     faSort,
