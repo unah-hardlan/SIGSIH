@@ -317,7 +317,6 @@ import {
     faBalanceScale,
     faInbox,
     faSortDown,
-    faS,
     faSort,
     faSortUp,
     faIdCard,
@@ -417,7 +416,8 @@ library.add(
     faSortDown,
     faSortUp,
     faIdCard,
-    faFolderOpen
+    faFolderOpen,
+    faSort
 );
 dom.watch();
 

@@ -9,6 +9,10 @@
     lastLoadedProjectId: null,
     // Modal de lista de proyectos
     showProjectListModal: false,
+    searchQuery: '',
+    filterEstado: 'todos', // todos, activos, completados, deficit
+    filterBalance: 'todos', // todos, positivo, negativo, cero
+    sortBy: 'nombre', // nombre, fecha, balance, ingresos, gastos
 
     async init() {
         await this.fetchProyectos();
@@ -217,6 +221,82 @@
             console.error('Error combinando movimientos:', e);
         }
         return items;
+    },
+
+    filteredProyectos() {
+        let filtered = [...this.proyectos];
+
+        // Aplicar búsqueda
+        if (this.searchQuery.trim()) {
+            const query = this.searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(p => {
+                const nombre = (p.nombre_proyecto || '').toLowerCase();
+                const desc = (p.descripcion_proyecto || p.descripcion || '').toLowerCase();
+                return nombre.includes(query) || desc.includes(query);
+            });
+        }
+
+        // Aplicar filtro de estado
+        if (this.filterEstado !== 'todos') {
+            filtered = filtered.filter(p => {
+                const balance = (p.total_ingresos || 0) - (p.total_gastos || 0);
+                const tieneMovimientos = (p.total_ingresos > 0 || p.total_gastos > 0);
+                
+                if (this.filterEstado === 'activos') {
+                    return balance > 0 || !tieneMovimientos;
+                } else if (this.filterEstado === 'completados') {
+                    return balance === 0 && tieneMovimientos;
+                } else if (this.filterEstado === 'deficit') {
+                    return balance < 0;
+                }
+                return true;
+            });
+        }
+
+        // Aplicar filtro de balance
+        if (this.filterBalance !== 'todos') {
+            filtered = filtered.filter(p => {
+                const balance = (p.total_ingresos || 0) - (p.total_gastos || 0);
+                
+                if (this.filterBalance === 'positivo') {
+                    return balance > 0;
+                } else if (this.filterBalance === 'negativo') {
+                    return balance < 0;
+                } else if (this.filterBalance === 'cero') {
+                    return balance === 0;
+                }
+                return true;
+            });
+        }
+
+        // Aplicar ordenamiento
+        filtered.sort((a, b) => {
+            if (this.sortBy === 'nombre') {
+                return (a.nombre_proyecto || '').localeCompare(b.nombre_proyecto || '');
+            } else if (this.sortBy === 'fecha') {
+                const fechaA = new Date(a.created_at || a.fecha_creacion || 0);
+                const fechaB = new Date(b.created_at || b.fecha_creacion || 0);
+                return fechaB - fechaA; // más recientes primero
+            } else if (this.sortBy === 'balance') {
+                const balanceA = (a.total_ingresos || 0) - (a.total_gastos || 0);
+                const balanceB = (b.total_ingresos || 0) - (b.total_gastos || 0);
+                return balanceB - balanceA; // mayor balance primero
+            } else if (this.sortBy === 'ingresos') {
+                return (b.total_ingresos || 0) - (a.total_ingresos || 0); // mayores ingresos primero
+            } else if (this.sortBy === 'gastos') {
+                return (b.total_gastos || 0) - (a.total_gastos || 0); // mayores gastos primero
+            }
+            return 0;
+        });
+
+        return filtered;
+    },
+
+    clearFilters() {
+        this.searchQuery = '';
+        this.filterEstado = 'todos';
+        this.filterBalance = 'todos';
+        this.sortBy = 'nombre';
     }
 }" x-init="init()">
     {{-- Header con navegación de proyecto y botón de nuevo proyecto --}}
@@ -351,7 +431,7 @@
 
     {{-- Modal de Lista de Proyectos --}}
     <div x-show="showProjectListModal" x-cloak @click.self="closeProjectListModal()" style="z-index: 10001; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);" class="fixed inset-0 -top-10 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center p-4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-        <div @click.stop class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
+        <div @click.stop class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
             {{-- Header del Modal --}}
             <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -369,23 +449,100 @@
             </div>
 
             {{-- Contenido del Modal --}}
-            <div class="overflow-y-auto max-h-[calc(80vh-120px)] p-6">
+            <div class="overflow-y-auto max-h-[calc(80vh-120px)]">
+                {{-- Barra de búsqueda y filtros --}}
+                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 space-y-4 z-10">
+                    {{-- Buscador --}}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input x-model="searchQuery" type="text" placeholder="Buscar proyectos por nombre o descripción..." class="w-full pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 focus:border-black transition-all">
+                        <button x-show="searchQuery" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    {{-- Filtros --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {{-- Filtro de Estado --}}
+                        <div>
+                            <label class="block text-sm nunito-bold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tasks mr-1"></i>Estado del Proyecto
+                            </label>
+                            <select x-model="filterEstado" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:border-black text-sm">
+                                <option value="todos">Todos los estados</option>
+                                <option value="activos">🟢 Activos (Balance +)</option>
+                                <option value="completados">⚪ Equilibrados (Balance 0)</option>
+                                <option value="deficit">🔴 En Déficit (Balance -)</option>
+                            </select>
+                        </div>
+
+                        {{-- Filtro de Balance --}}
+                        <div>
+                            <label class="block text-sm nunito-bold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-chart-line mr-1"></i>Tipo de Balance
+                            </label>
+                            <select x-model="filterBalance" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:border-black text-sm">
+                                <option value="todos">Todos los balances</option>
+                                <option value="positivo">Positivo (Ingresos > Gastos)</option>
+                                <option value="negativo">Negativo (Gastos > Ingresos)</option>
+                                <option value="cero">Equilibrado (Ingresos = Gastos)</option>
+                            </select>
+                        </div>
+
+                        {{-- Filtro de Ordenamiento --}}
+                        <div>
+                            <label class="block text-sm nunito-bold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-sort mr-1"></i>Ordenar por
+                            </label>
+                            <select x-model="sortBy" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:border-black text-sm">
+                                <option value="nombre">Nombre (A-Z)</option>
+                                <option value="fecha">Fecha (Más recientes)</option>
+                                <option value="balance">Balance (Mayor primero)</option>
+                                <option value="ingresos">Ingresos (Mayor primero)</option>
+                                <option value="gastos">Gastos (Mayor primero)</option>
+                            </select>
+                        </div>
+
+                        {{-- Botón limpiar filtros --}}
+                        <div class="flex items-end">
+                            <button @click="clearFilters()" class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded-lg transition-colors nunito-bold text-sm">
+                                <i class="fas fa-redo mr-1"></i>Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Contador de resultados --}}
+                    <div class="text-sm text-gray-600 dark:text-gray-400 nunito-regular">
+                        <span x-text="filteredProyectos().length"></span> proyecto<span x-show="filteredProyectos().length !== 1">s</span> encontrado<span x-show="filteredProyectos().length !== 1">s</span>
+                    </div>
+                </div>
+
+                {{-- Lista de proyectos --}}
+                <div class="p-6">
                 <div class="space-y-3">
-                    <template x-for="(proyecto, index) in proyectos" :key="proyecto.id_proyecto_pk || index">
-                        <div @click="selectProyecto(index)" :class="index === currentProyectoIndex ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500' : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-emerald-400 dark:hover:border-emerald-500'" class="border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md">
+                    <template x-for="(proyecto, index) in filteredProyectos()" :key="proyecto.id_proyecto_pk || index">
+                        <div @click="selectProyecto(proyectos.indexOf(proyecto))" :class="proyectos.indexOf(proyecto) === currentProyectoIndex ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500' : 'bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-emerald-400 dark:hover:border-emerald-500'" class="border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4 flex-1">
-                                    <div :class="index === currentProyectoIndex ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-gray-500'" class="w-12 h-12 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <div :class="proyectos.indexOf(proyecto) === currentProyectoIndex ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-gray-500'" class="w-12 h-12 rounded-lg flex items-center justify-center text-white flex-shrink-0">
                                         <i class="fas fa-project-diagram text-xl"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2">
                                             <h4 class="nunito-bold text-gray-800 dark:text-white truncate" x-text="proyecto.nombre_proyecto"></h4>
-                                            <span x-show="index === currentProyectoIndex" class="bg-emerald-500 text-white text-xs px-2 py-1 rounded-full nunito-bold flex-shrink-0">
+                                            <span x-show="proyectos.indexOf(proyecto) === currentProyectoIndex" class="bg-emerald-500 text-white text-xs px-2 py-1 rounded-full nunito-bold flex-shrink-0">
                                                 Actual
                                             </span>
                                         </div>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate" x-text="proyecto.descripcion || 'Sin descripción'"></p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate" x-text="proyecto.descripcion_proyecto || proyecto.descripcion || 'Sin descripción'"></p>
+                                        {{-- Mostrar balance --}}
+                                        <div class="mt-2 flex items-center gap-3">
+                                            <span class="text-xs nunito-bold" :class="((proyecto.total_ingresos || 0) - (proyecto.total_gastos || 0)) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
+                                                Balance: <span x-text="formatCurrency((proyecto.total_ingresos || 0) - (proyecto.total_gastos || 0))"></span>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -394,12 +551,14 @@
                     </template>
                 </div>
 
-                <template x-if="proyectos.length === 0">
+                <template x-if="filteredProyectos().length === 0">
                     <div class="text-center py-12">
-                        <i class="fas fa-folder-open text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400">No hay proyectos disponibles</p>
+                        <i class="fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400 nunito-bold mb-2">No se encontraron proyectos</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500">Intenta ajustar los filtros de búsqueda</p>
                     </div>
                 </template>
+                </div>
             </div>
         </div>
     </div>
