@@ -91,21 +91,11 @@ class AgenciasController extends Controller
                 break;
         }
 
-        $perPage = (int) $request->get('per_page', 10);
-        $perPage = max(1, min($perPage, 100));
-        $agencias = $query->paginate($perPage);
+        $agencias = $query->get();
 
         return response()->json([
             'success' => true,
-            'data' => AgenciaResource::collection($agencias->items()),
-            'pagination' => [
-                'current_page' => $agencias->currentPage(),
-                'per_page' => $agencias->perPage(),
-                'total' => $agencias->total(),
-                'last_page' => $agencias->lastPage(),
-                'from' => $agencias->firstItem(),
-                'to' => $agencias->lastItem(),
-            ],
+            'data' => AgenciaResource::collection($agencias),
         ]);
     }
 
