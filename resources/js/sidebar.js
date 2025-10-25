@@ -1,12 +1,16 @@
 document.addEventListener("alpine:init", () => {
     window.sidebarDropdown = (key, active = false) => ({
         open:
-            localStorage.getItem(`sidebar-${key}`) !== null
-                ? JSON.parse(localStorage.getItem(`sidebar-${key}`))
+            sessionStorage.getItem(`sidebar-${key}`) !== null
+                ? JSON.parse(sessionStorage.getItem(`sidebar-${key}`))
                 : active,
         toggle() {
             this.open = !this.open;
-            localStorage.setItem(`sidebar-${key}`, this.open);
+            sessionStorage.setItem(`sidebar-${key}`, this.open);
+        },
+        close() {
+            this.open = false;
+            sessionStorage.setItem(`sidebar-${key}`, false);
         },
         init() {
             document.addEventListener("update-sidebar-dropdown", (event) => {
