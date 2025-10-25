@@ -40,9 +40,7 @@
            <a href="{{ route('admin.reporte-proyecto') }}" target="_blank" class="px-3 py-2 border border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors">
                <i class="fas fa-file-pdf"></i>
            </a>
-           <button @click="openProjectListModal()" class="p-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-               <i class="fas fa-list"></i>
-           </button>
+          
        </div>
 
     </div>
