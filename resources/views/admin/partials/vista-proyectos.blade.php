@@ -168,7 +168,7 @@
                 </button>
             </div>
             <div class="overflow-y-auto max-h-[calc(80vh-120px)]">
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 space-y-4 z-10">
+                <div class="sm:sticky sm:top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 space-y-4 z-10">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
