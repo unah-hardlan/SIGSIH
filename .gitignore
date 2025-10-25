@@ -13,6 +13,7 @@ Homestead.json
 /.idea
 /.vscode
 /.phpunit.cache
+#file that is generated every time the local server runs
 hot
 
 # Docker
