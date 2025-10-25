@@ -260,7 +260,6 @@ No hay tipos de visita registrados
             </template>
         </x-admin.edit-modal>
 
-andrez sabillon, [25/10/2025 15:59]
 <!-- Modal Confirmar Eliminación -->
         <x-admin.confirmation-modal class="nunito-regular" modalName="isTipoVisitaDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar este tipo de visita?" />
