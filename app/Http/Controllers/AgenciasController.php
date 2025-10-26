@@ -12,7 +12,7 @@ class AgenciasController extends Controller
   
     public function index(Request $request): JsonResponse
     {
-        $query = Agencia::with(['direccion.ciudad.departamento.pais']);
+    $query = Agencia::with(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas']);
 
         // Filtro por dirección exacta
         if ($request->filled('id_direccion_fk')) {
@@ -105,11 +105,18 @@ class AgenciasController extends Controller
         $validated = $request->validate([
             'nombre_agencia' => 'required|string|max:100|unique:tbl_agencias,nombre_agencia',
             'horario_agencia' => 'required|string|max:50',
-            'id_direccion_fk' => 'required|exists:tbl_direccion,id_direccion_pk'
+            'id_direccion_fk' => 'required|exists:tbl_direccion,id_direccion_pk',
+            'clientes' => 'sometimes|array',
+            'clientes.*' => 'integer|exists:tbl_cliente,id_cliente_pk'
         ]);
 
-        $agencia = Agencia::create($validated);
-        $agencia->load(['direccion.ciudad.departamento.pais']);
+        $agencia = Agencia::create($request->only(['nombre_agencia','horario_agencia','id_direccion_fk']));
+
+        if (!empty($validated['clientes'])) {
+            $agencia->clientes()->sync($validated['clientes']);
+        }
+
+        $agencia->load(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas']);
 
         return response()->json([
             'success' => true,
@@ -123,7 +130,7 @@ class AgenciasController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $agencia = Agencia::with(['direccion.ciudad.departamento.pais'])->find($id);
+        $agencia = Agencia::with(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas'])->find($id);
 
         if (!$agencia) {
             return response()->json([
@@ -155,11 +162,18 @@ class AgenciasController extends Controller
         $validated = $request->validate([
             'nombre_agencia' => 'sometimes|required|string|max:100|unique:tbl_agencias,nombre_agencia,' . $id . ',id_agencias_pk',
             'horario_agencia' => 'sometimes|required|string|max:50',
-            'id_direccion_fk' => 'sometimes|required|exists:tbl_direccion,id_direccion_pk'
+            'id_direccion_fk' => 'sometimes|required|exists:tbl_direccion,id_direccion_pk',
+            'clientes' => 'sometimes|array',
+            'clientes.*' => 'integer|exists:tbl_cliente,id_cliente_pk'
         ]);
 
-        $agencia->update($validated);
-        $agencia->load(['direccion.ciudad.departamento.pais']);
+        $agencia->update($request->only(['nombre_agencia','horario_agencia','id_direccion_fk']));
+
+        if (array_key_exists('clientes', $validated)) {
+            $agencia->clientes()->sync($validated['clientes'] ?? []);
+        }
+
+        $agencia->load(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas']);
 
         return response()->json([
             'success' => true,

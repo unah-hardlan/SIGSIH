@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Persona;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePersonaRequest;
+use Illuminate\Support\Facades\DB;
+use App\Models\Cliente;
 use App\Http\Requests\UpdatePersonaRequest;
 use App\Http\Resources\PersonaResource;
 
@@ -50,8 +52,50 @@ class PersonaController extends Controller
 
     public function store(StorePersonaRequest $request)
     {
-    $persona = Persona::create($request->validated());
-    $persona->load(['genero']);
+    $data = $request->validated();
+    // Crear persona y, si viene id_cliente_fk, insertar vínculo en pivot tbl_cliente_persona
+    $persona = null;
+    DB::transaction(function () use ($data, &$persona) {
+        $persona = Persona::create($data);
+        // Determinar cliente a enlazar
+        $clienteToLink = null;
+        if (!empty($data['id_cliente_fk'])) {
+            // Se proporcionó explícitamente un cliente (por ejemplo: empresa seleccionada)
+            $clienteToLink = (int) $data['id_cliente_fk'];
+        } elseif (!empty($data['id_usuario_fk'])) {
+            // Si no se pasó id_cliente_fk pero la persona está vinculada a un usuario
+            // y existe un Cliente cuyo PK coincide con ese usuario (flujo de cliente persona),
+            // enlazamos automáticamente.
+                try {
+                    $cliente = Cliente::firstOrCreate(
+                        ['id_cliente_pk' => (int) $data['id_usuario_fk']],
+                        [
+                            'tipo_cliente' => 'persona',
+                            'estado_cliente' => 'activo',
+                            'fecha_registro' => now(),
+                        ]
+                    );
+                    $clienteToLink = $cliente->id_cliente_pk;
+                } catch (\Throwable $e) {
+                    // silencioso: no interrumpir la creación de la persona por problemas de mapeo
+                    $clienteToLink = null;
+                }
+        }
+
+        if ($clienteToLink) {
+            $exists = DB::table('tbl_cliente_persona')
+                ->where('id_cliente_fk', $clienteToLink)
+                ->where('id_persona_fk', $persona->id_persona_pk)
+                ->exists();
+            if (!$exists) {
+                DB::table('tbl_cliente_persona')->insert([
+                    'id_cliente_fk' => $clienteToLink,
+                    'id_persona_fk' => $persona->id_persona_pk,
+                ]);
+            }
+        }
+    });
+    if ($persona) { $persona->load(['genero']); }
         return (new PersonaResource($persona))->response()->setStatusCode(201);
     }
 

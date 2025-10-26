@@ -21,7 +21,24 @@ class AgenciaResource extends JsonResource
             'id_direccion_fk' => $this->id_direccion_fk,
             
             // Relaciones
-            'direccion' => $this->whenLoaded('direccion')
+            'direccion' => $this->whenLoaded('direccion'),
+
+            // Clientes asociados (cuando estén cargados). Se expone un arreglo simple {id,nombre}
+            'clientes' => $this->whenLoaded('clientes', function () {
+                return $this->clientes->map(function ($c) {
+                    $nombre = '';
+                    if (isset($c->tipo_cliente) && $c->tipo_cliente === 'empresa' && isset($c->empresa)) {
+                        $nombre = $c->empresa->nombre_comercial ?? $c->empresa->razon_social ?? ('Cliente ' . $c->id_cliente_pk);
+                    } else {
+                        $p = $c->personas->first();
+                        if ($p) {
+                            $nombre = trim(($p->primer_nombre ?? '') . ' ' . ($p->segundo_nombre ?? '') . ' ' . ($p->primer_apellido ?? '') . ' ' . ($p->segundo_apellido ?? ''));
+                        }
+                        if (!$nombre) $nombre = 'Cliente ' . $c->id_cliente_pk;
+                    }
+                    return [ 'id' => $c->id_cliente_pk, 'nombre' => $nombre ];
+                })->values();
+            })
         ];
     }
 }

@@ -56,6 +56,14 @@ class Cliente extends Model
     }
 
     /**
+     * Relación many-to-many con Agencias a través de la tabla pivote tbl_agencia_cliente
+     */
+    public function agencias()
+    {
+        return $this->belongsToMany(\App\Models\Agencia::class, 'tbl_agencia_cliente', 'id_cliente_fk', 'id_agencia_fk', 'id_cliente_pk', 'id_agencias_pk');
+    }
+
+    /**
      * Relación con contactos
      */
     public function contactos()

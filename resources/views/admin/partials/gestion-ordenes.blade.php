@@ -63,22 +63,24 @@
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Inicio</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Fin</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Cotización</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Repuestos</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Observaciones</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Cliente</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Técnico</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Calificación</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-if="loadingOrdenes">
                             <tr>
-                                <td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300"><i
+                                <td colspan="14" class="py-2 text-center text-gray-600 dark:text-gray-300"><i
                                         class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                             </tr>
                         </template>
                         <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
                             <tr>
-                                <td colspan="13" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
+                                <td colspan="14" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
                                     encontraron órdenes.</td>
                             </tr>
                         </template>
@@ -102,6 +104,12 @@
                                     x-text="orden.fecha_finalizacion || '—'"></td>
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
                                     x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></td>
+
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.repuestos_summary ? orden.repuestos_summary : '—'"></td>
+
+
+
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[12rem] truncate"
                                     :title="orden.observaciones || ''" x-text="orden.observaciones || '—'"></td>
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate"
@@ -110,6 +118,8 @@
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate"
                                     :title="orden.diagnostico_tecnico || ''" x-text="orden.diagnostico_tecnico || '—'">
                                 </td>
+                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
+                                    x-text="orden.calificacion_servicio || '—'"></td>
                                 <td class="py-1 px-2">
                                     <div class="flex gap-2 items-center">
                                         <a :href="detalleUrl(orden.id)" target="_blank"
@@ -222,7 +232,8 @@
             <div>
                 <label for="fecha_recepcion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Recepción</label>
-                <input type="date" id="fecha_recepcion" name="fecha_recepcion" x-model="formOrden.fecha_recepcion"
+                <input type="datetime-local" id="fecha_recepcion" name="fecha_recepcion"
+                    x-model="formOrden.fecha_recepcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_recepcion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_recepcion[0]"></p>
@@ -250,7 +261,7 @@
             <div>
                 <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Inicio</label>
-                <input type="date" id="fecha_inicio" name="fecha_inicio" x-model="formOrden.fecha_inicio"
+                <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" x-model="formOrden.fecha_inicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
@@ -259,7 +270,7 @@
             <div>
                 <label for="fecha_finalizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Finalización</label>
-                <input type="date" id="fecha_finalizacion" name="fecha_finalizacion"
+                <input type="datetime-local" id="fecha_finalizacion" name="fecha_finalizacion"
                     x-model="formOrden.fecha_finalizacion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
@@ -316,6 +327,66 @@
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_cotizacion_fk[0]"></p>
                 </template>
             </div>
+            <!-- removed duplicate edit selector from New modal; keep single calificacion below -->
+            <div>
+                <label for="calificacion_servicio"
+                    class="block text-sm font-medium text-gray-700 nunito-bold">Calificación del Servicio</label>
+                <select id="calificacion_servicio" name="calificacion_servicio"
+                    x-model="formOrden.calificacion_servicio"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <option value="" selected>Sin calificar</option>
+                    <option value="excelente">Excelente</option>
+                    <option value="bueno">Bueno</option>
+                    <option value="regular">Regular</option>
+                    <option value="deficiente">Deficiente</option>
+                </select>
+                <template x-if="errors.calificacion_servicio">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.calificacion_servicio[0]"></p>
+                </template>
+            </div>
+            <!-- Repuestos (inline en modal Nueva) -->
+            <div class="col-span-2 border-t pt-4">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Repuestos</label>
+                <div class="flex gap-2 items-end mt-2">
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-500">Producto</label>
+                        <select x-model="repuestosForm.id_producto_fk" @focus="fetchProducts()"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                            <option value="" disabled selected hidden>Seleccione...</option>
+                            <template x-for="p in productsOptions" :key="p.value">
+                                <option :value="p.value" x-text="p.label"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="w-28">
+                        <label class="text-xs text-gray-500">Cantidad</label>
+                        <input type="number" min="1" x-model.number="repuestosForm.cantidad"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    </div>
+                    <div>
+                        <button type="button" @click.prevent="addRepuestoToForm()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Agregar</button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <template x-if="(formOrden.repuestos || []).length === 0">
+                        <p class="text-xs text-gray-500">No hay repuestos agregados.</p>
+                    </template>
+                    <template x-for="(r, idx) in formOrden.repuestos || []" :key="idx">
+                        <div
+                            class="flex items-center justify-between gap-3 mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                            <div class="text-sm">
+                                <div x-text="r.producto_nombre || ('#' + (r.id_producto_fk || ''))"></div>
+                                <div class="text-xs text-gray-500">Cantidad: <span x-text="r.cantidad"></span></div>
+                            </div>
+                            <div>
+                                <button type="button" @click.prevent="removeRepuestoFromForm(idx)"
+                                    class="text-red-600 hover:text-red-800 text-sm">Eliminar</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
     </x-admin.form-modal>
 
@@ -367,7 +438,7 @@
             <div>
                 <label for="edit_fecha_recepcion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Recepción</label>
-                <input type="date" id="edit_fecha_recepcion" name="edit_fecha_recepcion"
+                <input type="datetime-local" id="edit_fecha_recepcion" name="edit_fecha_recepcion"
                     x-model="formOrden.fecha_recepcion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_recepcion">
@@ -397,7 +468,8 @@
             <div>
                 <label for="edit_fecha_inicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Inicio</label>
-                <input type="date" id="edit_fecha_inicio" name="edit_fecha_inicio" x-model="formOrden.fecha_inicio"
+                <input type="datetime-local" id="edit_fecha_inicio" name="edit_fecha_inicio"
+                    x-model="formOrden.fecha_inicio"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
@@ -406,7 +478,7 @@
             <div>
                 <label for="edit_fecha_finalizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Finalización</label>
-                <input type="date" id="edit_fecha_finalizacion" name="edit_fecha_finalizacion"
+                <input type="datetime-local" id="edit_fecha_finalizacion" name="edit_fecha_finalizacion"
                     x-model="formOrden.fecha_finalizacion"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
@@ -462,6 +534,65 @@
                 <template x-if="errors.id_cotizacion_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_cotizacion_fk[0]"></p>
                 </template>
+            </div>
+            <div>
+                <label for="edit_calificacion_servicio"
+                    class="block text-sm font-medium text-gray-700 nunito-bold">Calificación del Servicio</label>
+                <select id="edit_calificacion_servicio" name="edit_calificacion_servicio"
+                    x-model="formOrden.calificacion_servicio"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <option value="" selected>Sin calificar</option>
+                    <option value="excelente">Excelente</option>
+                    <option value="bueno">Bueno</option>
+                    <option value="regular">Regular</option>
+                    <option value="deficiente">Deficiente</option>
+                </select>
+                <template x-if="errors.calificacion_servicio">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.calificacion_servicio[0]"></p>
+                </template>
+            </div>
+            <!-- Repuestos (inline en modal Editar) -->
+            <div class="col-span-2 border-t pt-4">
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Repuestos</label>
+                <div class="flex gap-2 items-end mt-2">
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-500">Producto</label>
+                        <select x-model="repuestosForm.id_producto_fk" @focus="fetchProducts()"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                            <option value="" disabled selected hidden>Seleccione...</option>
+                            <template x-for="p in productsOptions" :key="p.value">
+                                <option :value="p.value" x-text="p.label"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="w-28">
+                        <label class="text-xs text-gray-500">Cantidad</label>
+                        <input type="number" min="1" x-model.number="repuestosForm.cantidad"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    </div>
+                    <div>
+                        <button type="button" @click.prevent="addRepuestoToForm()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Agregar</button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <template x-if="(formOrden.repuestos || []).length === 0">
+                        <p class="text-xs text-gray-500">No hay repuestos agregados.</p>
+                    </template>
+                    <template x-for="(r, idx) in formOrden.repuestos || []" :key="idx">
+                        <div
+                            class="flex items-center justify-between gap-3 mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                            <div class="text-sm">
+                                <div x-text="r.producto_nombre || ('#' + (r.id_producto_fk || ''))"></div>
+                                <div class="text-xs text-gray-500">Cantidad: <span x-text="r.cantidad"></span></div>
+                            </div>
+                            <div>
+                                <button type="button" @click.prevent="removeRepuestoFromForm(idx)"
+                                    class="text-red-600 hover:text-red-800 text-sm">Eliminar</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
     </x-admin.edit-modal>

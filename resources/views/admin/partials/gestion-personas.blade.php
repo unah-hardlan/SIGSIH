@@ -10,7 +10,8 @@
     filtroGenero: '',
     // catálogos dinámicos
     catalogoGeneros: [],      // [{id, genero}]
-    catalogoUsuarios: [],     // [{id, usuario}]
+    catalogoUsuarios: [],     // [{id, usuario, rol}]
+    empresas: [],             // [{id, nombre}]
     catalogosError: '',
     _catalogosPromise: null,
     catalogosTTLms: 300000, // 5 min (ya no se usa localStorage)
@@ -43,7 +44,7 @@
         // forms
         addForm: {
             primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
-            dni: '', id_genero_fk: '', id_usuario_fk: ''
+            dni: '', id_genero_fk: '', id_usuario_fk: '', as_contacto_empresa: false, id_cliente_fk: ''
         },
 
         init(){
@@ -55,6 +56,13 @@
                 this.sortLocal();
             });
             this.$watch('ordenarDir', () => { this.sortLocal(); });
+            // Si cambia el usuario seleccionado en el formulario de agregar, marcar la casilla
+            // de asociación a empresa si el usuario tiene rol CLIENTE (por conveniencia).
+            this.$watch('addForm.id_usuario_fk', (val) => {
+                try{
+                    if(this.isUsuarioCliente(val) && !this.addForm.as_contacto_empresa){ this.addForm.as_contacto_empresa = true; }
+                }catch(_){ /* ignore */ }
+            });
             // Orden fijo, no watchers para orden
             // No observar perPage automáticamente para evitar loops; se recarga solo desde UI explícita
         },
@@ -89,9 +97,14 @@
                     const [gData, uData] = await Promise.all([ gRes.json(), uRes.json() ]);
                     this.catalogoGeneros = (gData.data||[]).map(x=>({id:x.id, genero:x.genero}));
                     const usuariosArr = Array.isArray(uData?.data) ? uData.data : (Array.isArray(uData) ? uData : []);
-                    this.catalogoUsuarios = usuariosArr.map(u=>({ id: u.id ?? u.id_usuario_pk ?? u.id_user ?? u.usuario_id ?? '', usuario: u.usuario ?? u.username ?? u.nombre_usuario ?? '' })).filter(x=>x.id!=='' && x.usuario);
+                    this.catalogoUsuarios = usuariosArr.map(u=>({ id: u.id ?? u.id_usuario_pk ?? u.id_user ?? u.usuario_id ?? '', usuario: u.usuario ?? u.username ?? u.nombre_usuario ?? '', rol: u.rol ?? '' })).filter(x=>x.id!=='' && x.usuario);
                     // índice para lookup O(1)
                     this._usuariosById = Object.fromEntries(this.catalogoUsuarios.map(u=>[String(u.id), u.usuario]));
+                    // cargar empresas para el modal (si el endpoint existe)
+                    try{
+                        const eRes = await fetch('/api/empresas-cliente?per_page=200',{ credentials: 'same-origin' });
+                        if(eRes.ok){ const eJson = await eRes.json(); const eArr = Array.isArray(eJson?.data) ? eJson.data : (Array.isArray(eJson) ? eJson : []); this.empresas = eArr.map(ec=>({ id: ec.id_cliente_fk ?? ec.id_cliente_pk ?? ec.id, nombre: ec.nombre_comercial || ec.razon_social || ('Cliente #'+(ec.id_cliente_fk||ec.id_cliente_pk||ec.id)) })); }
+                    }catch(_){ /* ignore empresas load errors */ }
                 }catch(e){ this.catalogosError = e.message || 'Error catálogos'; this.notify(this.catalogosError,'error'); }
                 finally { this._catalogosPromise=null; }
             })();
@@ -158,6 +171,7 @@
             };
         },
         usuarioNombreById(id){ try{ return this._usuariosById[String(id||'')] || ''; }catch(_){ return ''; } },
+    isUsuarioCliente(id){ try{ const u = this.catalogoUsuarios.find(x=>String(x.id)===String(id)); return !!(u && (String(u.rol||'').toLowerCase()==='cliente')); }catch(_){ return false; } },
         sortLocal(){
             const map = { nombre: 'primer_nombre', dni: 'dni' };
             const key = map[this.ordenarPor] || 'primer_nombre';
@@ -183,17 +197,29 @@
             }catch(_){ return this.catalogoUsuarios; }
         },
         openAdd(){
-            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '', id_usuario_fk: '' };
+            this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '', id_usuario_fk: '', as_contacto_empresa: false, id_cliente_fk: '' };
             this.isModalOpenPersonas = true;
         },
         async createPersona(){
             try{
                 if(!this.addForm.id_usuario_fk){ this.notify('Seleccione un usuario','error'); return; }
+                // construir payload: enviar id_cliente_fk solo si se solicitó asociación a empresa
+                const payload = {
+                    primer_nombre: this.addForm.primer_nombre,
+                    segundo_nombre: this.addForm.segundo_nombre,
+                    primer_apellido: this.addForm.primer_apellido,
+                    segundo_apellido: this.addForm.segundo_apellido,
+                    dni: this.addForm.dni,
+                    id_genero_fk: this.addForm.id_genero_fk,
+                    id_usuario_fk: this.addForm.id_usuario_fk
+                };
+                if(this.addForm.as_contacto_empresa && this.addForm.id_cliente_fk){ payload.id_cliente_fk = this.addForm.id_cliente_fk; }
+
                 const res = await fetch('/api/personas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify(this.addForm)
+                    body: JSON.stringify(payload)
                 });
                 if(!res.ok){
                     const err = await res.json().catch(()=>({message:'Error al crear persona'}));
@@ -451,6 +477,22 @@
                         <option :value="u.id" x-text="u.usuario"></option>
                     </template>
                 </select>
+            </div>
+
+            <div x-show="isUsuarioCliente(addForm.id_usuario_fk)" class="sm:col-span-2">
+                <label class="inline-flex items-center text-sm">
+                    <input type="checkbox" class="mr-2" x-model="addForm.as_contacto_empresa"> Asociar esta persona como contacto de la empresa del usuario seleccionado
+                </label>
+            </div>
+            <div x-show="addForm.as_contacto_empresa" class="sm:col-span-2">
+                <label class="block text-sm font-medium mb-1 nunito-bold">Empresa a asociar</label>
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_cliente_fk">
+                    <option value="">Seleccione una empresa</option>
+                    <template x-for="e in empresas" :key="'empresa-'+e.id">
+                        <option :value="e.id" x-text="e.nombre"></option>
+                    </template>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Si no seleccionas empresa, la asociación no se llevará a cabo.</p>
             </div>
 
         </div>

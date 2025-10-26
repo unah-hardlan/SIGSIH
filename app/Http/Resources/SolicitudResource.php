@@ -23,7 +23,7 @@ class SolicitudResource extends JsonResource
             'descripcion_problema' => $this->descripcion_problema,
             'id_estado_solicitud_fk' => $this->id_estado_solicitud_fk,
             'id_contacto_fk' => $this->id_contacto_fk,
-            
+
             // Relaciones
             'cliente' => $this->whenLoaded('cliente', function () {
                 return [
@@ -36,6 +36,17 @@ class SolicitudResource extends JsonResource
                             'nombre_comercial' => $this->cliente->empresa->nombre_comercial,
                             'razon_social' => $this->cliente->empresa->razon_social,
                             'rtn' => $this->cliente->empresa->rtn,
+                        ]
+                        : null,
+                    // Persona: puede venir como una colección 'personas' (belongsToMany).
+                    // Exponer el primer registro si existe para que el frontend pueda construir el nombre.
+                    'persona' => $this->cliente->relationLoaded('personas') && $this->cliente->personas && $this->cliente->personas->count() > 0
+                        ? [
+                            'id_persona_pk' => $this->cliente->personas->first()->id_persona_pk ?? null,
+                            'primer_nombre' => $this->cliente->personas->first()->primer_nombre ?? null,
+                            'segundo_nombre' => $this->cliente->personas->first()->segundo_nombre ?? null,
+                            'primer_apellido' => $this->cliente->personas->first()->primer_apellido ?? null,
+                            'segundo_apellido' => $this->cliente->personas->first()->segundo_apellido ?? null,
                         ]
                         : null,
                 ];
