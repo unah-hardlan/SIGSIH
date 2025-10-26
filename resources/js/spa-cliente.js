@@ -1,8 +1,3 @@
-/**
- * Sistema de navegación SPA para el portal del cliente
- * Gestiona la carga dinámica de contenido sin recargar la página completa
- */
-
 class ClienteSPA {
     constructor() {
         this.currentRoute = window.location.pathname;
@@ -14,7 +9,6 @@ class ClienteSPA {
     }
 
     init() {
-        // Esperar a que el DOM esté listo
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", () => this.setup());
         } else {
@@ -28,19 +22,14 @@ class ClienteSPA {
             console.warn("[ClienteSPA] No se encontró el contenedor principal");
             return;
         }
-
         this.createLoadingOverlay();
         this.setupEventListeners();
         this.interceptLinks();
-
-        // Manejar navegación del historial (botones adelante/atrás)
         window.addEventListener("popstate", (e) => {
             if (e.state && e.state.path) {
                 this.loadPage(e.state.path, false);
             }
         });
-
-        // Guardar estado inicial
         history.replaceState(
             { path: this.currentRoute },
             "",
@@ -48,35 +37,14 @@ class ClienteSPA {
         );
     }
 
-    createLoadingOverlay() {
-        // Overlay deshabilitado para transición más fluida
-        // Si quieres reactivarlo, descomenta el código a continuación
-        /*
-        this.loadingOverlay = document.createElement("div");
-        this.loadingOverlay.className =
-            "fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-[9998] hidden items-center justify-center";
-        this.loadingOverlay.innerHTML = `
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 flex items-center gap-4">
-                <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="text-gray-700 dark:text-gray-200 font-medium">Cargando...</span>
-            </div>
-        `;
-        document.body.appendChild(this.loadingOverlay);
-        */
-    }
+    createLoadingOverlay() {}
 
     setupEventListeners() {
-        // Escuchar evento personalizado para navegación programática
         document.addEventListener("spa:navigate", (e) => {
             if (e.detail && e.detail.path) {
                 this.navigateTo(e.detail.path);
             }
         });
-
-        // Escuchar evento para limpiar caché
         document.addEventListener("spa:clearCache", () => {
             this.cache.clear();
             console.log("[ClienteSPA] Caché limpiado");
@@ -84,19 +52,14 @@ class ClienteSPA {
     }
 
     interceptLinks() {
-        // Interceptar clicks en links del sidebar
         document.addEventListener(
             "click",
             (e) => {
-                // Buscar el enlace más cercano con data-spa-link o que empiece con /cliente/
                 const link = e.target.closest(
                     'a[data-spa-link], a[href^="/cliente/"]'
                 );
-
                 if (link && !link.hasAttribute("data-no-spa")) {
                     const href = link.getAttribute("href");
-
-                    // Solo interceptar si es una URL relativa del cliente
                     if (
                         href &&
                         (href.startsWith("/cliente/") ||
@@ -104,10 +67,7 @@ class ClienteSPA {
                     ) {
                         e.preventDefault();
                         e.stopPropagation();
-
                         this.navigateTo(href);
-
-                        // Cerrar sidebar móvil si está abierto
                         if (window.innerWidth < 768) {
                             window.dispatchEvent(
                                 new CustomEvent("closemobilesidebar")
@@ -117,27 +77,21 @@ class ClienteSPA {
                 }
             },
             true
-        ); // Usar capturing phase para interceptar antes
+        );
     }
 
     async navigateTo(path) {
         if (this.isLoading || path === this.currentRoute) {
             return;
         }
-
-        // Actualizar historial
         history.pushState({ path }, "", path);
         await this.loadPage(path, true);
     }
 
     async loadPage(path, updateHistory = false) {
         if (this.isLoading) return;
-
         this.isLoading = true;
-        // this.showLoading(); // Deshabilitado para transición más fluida
-
         try {
-            // Verificar si está en caché
             let html;
             if (this.cache.has(path)) {
                 html = this.cache.get(path);
@@ -145,18 +99,10 @@ class ClienteSPA {
                 html = await this.fetchPage(path);
                 this.cache.set(path, html);
             }
-
-            // Actualizar contenido
             this.updateContent(html);
             this.currentRoute = path;
-
-            // Actualizar estado activo del sidebar
             this.updateActiveLink(path);
-
-            // Scroll al inicio
             window.scrollTo({ top: 0, behavior: "smooth" });
-
-            // Emitir evento de navegación completada
             document.dispatchEvent(
                 new CustomEvent("spa:loaded", { detail: { path } })
             );
@@ -165,14 +111,11 @@ class ClienteSPA {
             this.showError(
                 "Error al cargar el contenido. Por favor, intenta de nuevo."
             );
-
-            // En caso de error, recargar la página completa
             setTimeout(() => {
                 window.location.href = path;
             }, 2000);
         } finally {
             this.isLoading = false;
-            // this.hideLoading(); // Deshabilitado para transición más fluida
         }
     }
 
@@ -184,83 +127,33 @@ class ClienteSPA {
                 Accept: "text/html",
             },
         });
-
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-
         const html = await response.text();
         return html;
     }
 
     updateContent(html) {
-        // Crear un contenedor temporal para parsear el HTML
         const temp = document.createElement("div");
         temp.innerHTML = html;
-
-        // Extraer solo el contenido principal
-        const newContent = temp.querySelector("main > *:last-child");
-
-        if (!newContent) {
-            throw new Error("No se encontró contenido válido en la respuesta");
-        }
-
-        // Actualizar el contenido del último elemento de main (el div con el @yield('content'))
-        const currentContent = this.contentContainer.querySelector(
-            ":scope > *:last-child"
-        );
-        if (currentContent) {
-            // Fade out
-            currentContent.style.opacity = "0";
-            currentContent.style.transform = "translateY(10px)";
-
-            setTimeout(() => {
-                currentContent.replaceWith(newContent);
-
-                // PRIMERO: Ejecutar scripts inline ANTES de inicializar Alpine
-                this.reinitializeScripts(newContent);
-
-                // Fade in
-                newContent.style.opacity = "0";
-                newContent.style.transform = "translateY(10px)";
-                newContent.style.transition =
-                    "opacity 0.3s ease, transform 0.3s ease";
-
-                setTimeout(() => {
-                    newContent.style.opacity = "1";
-                    newContent.style.transform = "translateY(0)";
-                }, 10);
-
-                // DESPUÉS: Reinicializar Alpine.js después de que los scripts se ejecuten
-                setTimeout(() => {
-                    if (
-                        window.Alpine &&
-                        typeof window.Alpine.initTree === "function"
-                    ) {
-                        window.Alpine.initTree(newContent);
-                    }
-                }, 50);
-            }, 200);
-        }
+        this.contentContainer.innerHTML = temp.querySelector("main").innerHTML;
+        this.reinitializeScripts(this.contentContainer);
+        try {
+            document.dispatchEvent(new CustomEvent("app:view-loaded"));
+        } catch (_) {}
     }
 
     reinitializeScripts(container) {
-        // Ejecutar scripts inline si existen
         const scripts = container.querySelectorAll("script");
-
         scripts.forEach((script, index) => {
             if (script.textContent && script.textContent.trim()) {
                 try {
-                    // Crear un nuevo script element para asegurar la ejecución
                     const newScript = document.createElement("script");
                     newScript.textContent = script.textContent;
-
-                    // Copiar atributos si existen
                     Array.from(script.attributes).forEach((attr) => {
                         newScript.setAttribute(attr.name, attr.value);
                     });
-
-                    // Reemplazar el script antiguo con el nuevo
                     script.parentNode.replaceChild(newScript, script);
                 } catch (e) {
                     console.error(
@@ -273,111 +166,34 @@ class ClienteSPA {
     }
 
     updateActiveLink(path) {
-        // Normalizar path
         let targetPath = path || window.location.pathname;
         try {
             targetPath = new URL(targetPath, window.location.origin).pathname;
-        } catch (e) {
-            // keep original if URL parsing fails
-        }
+        } catch (e) {}
 
-        const links = document.querySelectorAll("aside nav a");
-
-        // Clases activas
+        const links = document.querySelectorAll("aside nav a[data-spa-link]");
         const activeClasses = [
-            "text-white",
             "bg-blue-600",
+            "text-white",
             "shadow-md",
             "font-bold",
         ];
-
-        // Clases inactivas - SIN HOVER
         const inactiveClasses = ["text-gray-800", "dark:text-gray-200"];
 
-        // Colores de iconos
-        const iconActive = ["text-white", "dark:text-white"];
-        const iconInactive = ["text-gray-600", "dark:text-gray-400"];
-
-        // Colores de texto
-        const textActive = ["text-white"];
-        const textInactive = ["text-gray-800", "dark:text-gray-200"];
-
         links.forEach((link) => {
-            // Limpiar todas las clases posibles
-            link.classList.remove(...activeClasses, ...inactiveClasses);
-
             let href = link.getAttribute("href") || "";
             try {
                 href = new URL(href, window.location.origin).pathname;
-            } catch (e) {
-                // ignore
-            }
+            } catch (e) {}
 
-            const isActive = href === targetPath;
+            const isActive = targetPath.startsWith(href) && href !== "/";
 
             if (isActive) {
+                link.classList.remove(...inactiveClasses);
                 link.classList.add(...activeClasses);
-
-                // Icon: rebuild classes keeping non-color base classes
-                const icon = link.querySelector("i");
-                if (icon) {
-                    const base = Array.from(icon.classList).filter(
-                        (c) =>
-                            !c.startsWith("text-") &&
-                            !c.startsWith("dark:") &&
-                            !c.startsWith("group-hover:")
-                    );
-                    icon.className =
-                        base.join(" ") + " " + iconActive.join(" ");
-                    try {
-                        icon.style.removeProperty("color");
-                    } catch (e) {}
-                }
-
-                // Span/text: rebuild classes keeping base except color utilities
-                const span = link.querySelector("span");
-                if (span) {
-                    const baseSpan = Array.from(span.classList).filter(
-                        (c) =>
-                            !c.startsWith("text-") &&
-                            !c.startsWith("dark:") &&
-                            !c.startsWith("group-hover:")
-                    );
-                    span.className =
-                        baseSpan.join(" ") + " " + textActive.join(" ");
-                }
             } else {
-                // INACTIVO - SIN HOVER
+                link.classList.remove(...activeClasses);
                 link.classList.add(...inactiveClasses);
-
-                const icon = link.querySelector("i");
-                if (icon) {
-                    const base = Array.from(icon.classList).filter(
-                        (c) =>
-                            !c.startsWith("text-") &&
-                            !c.startsWith("dark:") &&
-                            !c.startsWith("group-hover:") &&
-                            !c.startsWith("hover:")
-                    );
-                    icon.className =
-                        base.join(" ") + " " + iconInactive.join(" ");
-                    try {
-                        icon.style.removeProperty("color");
-                    } catch (e) {}
-                }
-
-                const span = link.querySelector("span");
-                if (span) {
-                    const baseSpan = Array.from(span.classList).filter(
-                        (c) =>
-                            !c.startsWith("text-") &&
-                            !c.startsWith("dark:") &&
-                            !c.startsWith("group-hover:") &&
-                            !c.startsWith("hover:")
-                    );
-                    span.className =
-                        baseSpan.join(" ") + " " + textInactive.join(" ");
-                }
             }
         });
     }
@@ -397,7 +213,6 @@ class ClienteSPA {
     }
 
     showError(message) {
-        // Mostrar toast de error si existe la función
         if (window.showToast) {
             window.showToast(message, "error");
         } else {
@@ -405,12 +220,10 @@ class ClienteSPA {
         }
     }
 
-    // Método público para limpiar caché de una ruta específica
     clearCacheForRoute(path) {
         this.cache.delete(path);
     }
 
-    // Método público para precargar una ruta
     async preloadRoute(path) {
         if (!this.cache.has(path)) {
             try {
@@ -424,19 +237,13 @@ class ClienteSPA {
     }
 }
 
-// Inicializar SPA cuando el script se cargue
 let clienteSPA;
 
-// Asegurar que solo se inicialice una vez
 if (typeof window !== "undefined" && !window.clienteSPA) {
-    // Esperar a que el DOM esté completamente cargado
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
             clienteSPA = new ClienteSPA();
             window.clienteSPA = clienteSPA;
-            console.log(
-                "[ClienteSPA] Inicializado después de DOMContentLoaded"
-            );
         });
     } else {
         clienteSPA = new ClienteSPA();

@@ -1,6 +1,7 @@
 import "./bootstrap";
 import "./toast";
 import "./cliente/perfil";
+import DOMPurify from "dompurify";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -130,7 +131,7 @@ Alpine.store("navigation", {
 
     setContent(html) {
         const mainEl = document.querySelector("main");
-        mainEl.innerHTML = html;
+        mainEl.innerHTML = DOMPurify.sanitize(html);
         try {
             document.dispatchEvent(new CustomEvent("app:view-loaded"));
         } catch (_) {}
