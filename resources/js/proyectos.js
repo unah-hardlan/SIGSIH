@@ -193,6 +193,451 @@ window.proyectosApiHandlers = {
     },
 };
 
+// Fábrica para usar como x-data en la vista de proyectos
+window.VistaProyectosData = function (initial = {}) {
+    return {
+        proyectos: Array.isArray(initial.proyectos) ? initial.proyectos : [],
+        currentProyectoIndex: 0,
+        loading: false,
+        // Movimientos del proyecto actual
+        ingresosProyecto: [],
+        gastosProyecto: [],
+        loadingMovimientos: false,
+        lastLoadedProjectId: null,
+        // Modal de lista de proyectos
+        showProjectListModal: false,
+        searchQuery: "",
+        filterEstado: "todos", // todos, activos, completados, deficit
+        filterBalance: "todos", // todos, positivo, negativo, cero
+        sortBy: "nombre", // nombre, fecha, balance, ingresos, gastos
+
+        // Persistencia en session por id (no por índice)
+        SESSION_KEY: "vista_proyectos_selected_id",
+        selectedProjectId: null,
+
+        async init() {
+            try {
+                const saved = sessionStorage.getItem(this.SESSION_KEY);
+                if (saved) this.selectedProjectId = String(saved);
+            } catch (e) {
+                console.warn("No se pudo leer sessionStorage", e);
+            }
+
+            // si el servidor proveyó proyectos iniciales, úsalos; si no, busca
+            if (!this.proyectos || this.proyectos.length === 0) {
+                await this.fetchProyectos();
+            }
+
+            if (this.proyectos.length > 0) {
+                if (this.selectedProjectId) {
+                    const idx = this.proyectos.findIndex(
+                        (p) =>
+                            String(p.id_proyecto_pk) ===
+                            String(this.selectedProjectId)
+                    );
+                    if (idx !== -1) {
+                        this.currentProyectoIndex = idx;
+                    } else {
+                        this.selectedProjectId = null;
+                        try {
+                            sessionStorage.removeItem(this.SESSION_KEY);
+                        } catch (e) {}
+                        this.currentProyectoIndex = 0;
+                    }
+                } else {
+                    if (this.currentProyectoIndex === -1)
+                        this.currentProyectoIndex = 0;
+                }
+                await this.loadMovimientosForCurrent();
+            }
+        },
+
+        async fetchProyectos() {
+            this.loading = true;
+            try {
+                const response = await fetch("/api/proyectos", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw data;
+                this.proyectos = Array.isArray(data?.data) ? data.data : [];
+                if (this.proyectos.length === 0) this.currentProyectoIndex = -1;
+            } catch (error) {
+                console.error("Error fetching proyectos:", error);
+                window.showToast &&
+                    window.showToast("Error al cargar proyectos", "error");
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        get currentProyecto() {
+            return this.proyectos[this.currentProyectoIndex] || null;
+        },
+
+        async previousProyecto() {
+            if (this.proyectos.length === 0) return;
+            this.ingresosProyecto = [];
+            this.gastosProyecto = [];
+            this.currentProyectoIndex =
+                this.currentProyectoIndex > 0
+                    ? this.currentProyectoIndex - 1
+                    : this.proyectos.length - 1;
+            this.saveSelectedProject(this.currentProyecto);
+            await this.loadMovimientosForCurrent();
+        },
+
+        async nextProyecto() {
+            if (this.proyectos.length === 0) return;
+            this.ingresosProyecto = [];
+            this.gastosProyecto = [];
+            this.currentProyectoIndex =
+                this.currentProyectoIndex < this.proyectos.length - 1
+                    ? this.currentProyectoIndex + 1
+                    : 0;
+            this.saveSelectedProject(this.currentProyecto);
+            await this.loadMovimientosForCurrent();
+        },
+
+        async loadMovimientosForCurrent() {
+            const proyecto = this.currentProyecto;
+            if (!proyecto || !proyecto.id_proyecto_pk) {
+                this.ingresosProyecto = [];
+                this.gastosProyecto = [];
+                this.lastLoadedProjectId = null;
+                return;
+            }
+
+            const proyectoId = String(proyecto.id_proyecto_pk);
+            if (
+                this.lastLoadedProjectId &&
+                this.lastLoadedProjectId === proyectoId
+            )
+                return;
+
+            this.loadingMovimientos = true;
+            this.ingresosProyecto = [];
+            this.gastosProyecto = [];
+            try {
+                const respI = await fetch(
+                    `/api/ingresos?proyecto=${proyectoId}`,
+                    {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                    }
+                );
+                const dataI = await respI.json().catch(() => ({}));
+                let rawIngresos =
+                    respI.ok && Array.isArray(dataI?.data) ? dataI.data : [];
+                const filteredIngresos = rawIngresos.filter((i) => {
+                    const candidates = [
+                        i.id_proyecto_fk,
+                        i.id_proyecto_pk,
+                        i.id_proyecto,
+                        i.proyecto && i.proyecto.id_proyecto_pk,
+                        i.proyecto && i.proyecto.id_proyecto_fk,
+                        i.proyecto && i.proyecto.id_proyecto,
+                        i.proyecto && i.proyecto.id,
+                        i.proyecto && i.proyecto.id_proyecto,
+                    ];
+                    return candidates.some(
+                        (c) =>
+                            c !== undefined &&
+                            c !== null &&
+                            String(c) === proyectoId
+                    );
+                });
+                this.ingresosProyecto = filteredIngresos;
+
+                const respG = await fetch(
+                    `/api/gastos?proyecto=${proyectoId}`,
+                    {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                    }
+                );
+                const dataG = await respG.json().catch(() => ({}));
+                let rawGastos =
+                    respG.ok && Array.isArray(dataG?.data) ? dataG.data : [];
+                const filteredGastos = rawGastos.filter((g) => {
+                    const candidates = [
+                        g.id_proyecto_fk,
+                        g.id_proyecto_pk,
+                        g.id_proyecto,
+                        g.proyecto && g.proyecto.id_proyecto_pk,
+                        g.proyecto && g.proyecto.id_proyecto_fk,
+                        g.proyecto && g.proyecto.id_proyecto,
+                        g.proyecto && g.proyecto.id,
+                        g.proyecto && g.proyecto.id_proyecto,
+                    ];
+                    return candidates.some(
+                        (c) =>
+                            c !== undefined &&
+                            c !== null &&
+                            String(c) === proyectoId
+                    );
+                });
+                this.gastosProyecto = filteredGastos;
+
+                try {
+                    const ingresosTotal = this.ingresosProyecto.reduce(
+                        (s, it) => {
+                            const monto =
+                                parseFloat(it.monto_ingreso ?? it.monto ?? 0) ||
+                                0;
+                            return s + monto;
+                        },
+                        0
+                    );
+                    const gastosTotal = this.gastosProyecto.reduce((s, it) => {
+                        const monto =
+                            parseFloat(it.monto ?? it.monto_ingreso ?? 0) || 0;
+                        return s + monto;
+                    }, 0);
+                    proyecto.total_ingresos = ingresosTotal;
+                    proyecto.total_gastos = gastosTotal;
+                } catch (errTotals) {
+                    console.warn("Error calculando totales:", errTotals);
+                }
+
+                this.lastLoadedProjectId = proyectoId;
+            } catch (e) {
+                console.error("Error cargando movimientos del proyecto:", e);
+                window.showToast &&
+                    window.showToast("Error al cargar movimientos", "error");
+                this.ingresosProyecto = [];
+                this.gastosProyecto = [];
+                this.lastLoadedProjectId = null;
+            } finally {
+                this.loadingMovimientos = false;
+            }
+        },
+
+        formatCurrency(amount) {
+            return new Intl.NumberFormat("es-HN", {
+                style: "currency",
+                currency: "HNL",
+            }).format(amount || 0);
+        },
+
+        formatDate(date) {
+            if (!date) return "N/A";
+            try {
+                const d = new Date(date);
+                if (isNaN(d.getTime())) return date;
+                return d.toLocaleDateString("es-ES", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                });
+            } catch (e) {
+                return date;
+            }
+        },
+
+        openProjectListModal() {
+            this.showProjectListModal = true;
+        },
+        closeProjectListModal() {
+            this.showProjectListModal = false;
+        },
+
+        async selectProyecto(index) {
+            if (index >= 0 && index < this.proyectos.length) {
+                this.ingresosProyecto = [];
+                this.gastosProyecto = [];
+                this.currentProyectoIndex = index;
+                this.saveSelectedProject(this.currentProyecto);
+                this.closeProjectListModal();
+                await this.loadMovimientosForCurrent();
+            }
+        },
+
+        combinedMovimientos() {
+            const items = [];
+            try {
+                this.ingresosProyecto.forEach((i) => {
+                    const fecha =
+                        i.fecha_ingreso ||
+                        i.created_at ||
+                        i.fecha ||
+                        i.createdAt ||
+                        null;
+                    items.push(
+                        Object.assign({}, i, {
+                            __tipo: "ingreso",
+                            __fecha: fecha,
+                        })
+                    );
+                });
+                this.gastosProyecto.forEach((g) => {
+                    const fecha =
+                        g.fecha ||
+                        g.created_at ||
+                        g.fecha_gasto ||
+                        g.createdAt ||
+                        null;
+                    items.push(
+                        Object.assign({}, g, {
+                            __tipo: "gasto",
+                            __fecha: fecha,
+                        })
+                    );
+                });
+                items.sort((a, b) => {
+                    const da = a.__fecha ? new Date(a.__fecha) : null;
+                    const db = b.__fecha ? new Date(b.__fecha) : null;
+                    if (da === null && db === null) return 0;
+                    if (da === null) return 1;
+                    if (db === null) return -1;
+                    return db - da;
+                });
+            } catch (e) {
+                console.error("Error combinando movimientos:", e);
+            }
+            return items;
+        },
+
+        filteredProyectos() {
+            let filtered = [...this.proyectos];
+            if (this.searchQuery.trim()) {
+                const query = this.searchQuery.toLowerCase().trim();
+                filtered = filtered.filter((p) => {
+                    const nombre = (p.nombre_proyecto || "").toLowerCase();
+                    const desc = (
+                        p.descripcion_proyecto ||
+                        p.descripcion ||
+                        ""
+                    ).toLowerCase();
+                    return nombre.includes(query) || desc.includes(query);
+                });
+            }
+
+            if (this.filterEstado !== "todos") {
+                filtered = filtered.filter((p) => {
+                    const balance =
+                        (p.total_ingresos || 0) - (p.total_gastos || 0);
+                    const tieneMovimientos =
+                        p.total_ingresos > 0 || p.total_gastos > 0;
+                    if (this.filterEstado === "activos") {
+                        return balance > 0 || !tieneMovimientos;
+                    } else if (this.filterEstado === "completados") {
+                        return balance === 0 && tieneMovimientos;
+                    } else if (this.filterEstado === "deficit") {
+                        return balance < 0;
+                    }
+                    return true;
+                });
+            }
+
+            if (this.filterBalance !== "todos") {
+                filtered = filtered.filter((p) => {
+                    const balance =
+                        (p.total_ingresos || 0) - (p.total_gastos || 0);
+                    if (this.filterBalance === "positivo") return balance > 0;
+                    if (this.filterBalance === "negativo") return balance < 0;
+                    if (this.filterBalance === "cero") return balance === 0;
+                    return true;
+                });
+            }
+
+            filtered.sort((a, b) => {
+                if (this.sortBy === "nombre")
+                    return (a.nombre_proyecto || "").localeCompare(
+                        b.nombre_proyecto || ""
+                    );
+                if (this.sortBy === "fecha") {
+                    const fechaA = new Date(
+                        a.created_at || a.fecha_creacion || 0
+                    );
+                    const fechaB = new Date(
+                        b.created_at || b.fecha_creacion || 0
+                    );
+                    return fechaB - fechaA;
+                }
+                if (this.sortBy === "balance") {
+                    const balanceA =
+                        (a.total_ingresos || 0) - (a.total_gastos || 0);
+                    const balanceB =
+                        (b.total_ingresos || 0) - (b.total_gastos || 0);
+                    return balanceB - balanceA;
+                }
+                if (this.sortBy === "ingresos")
+                    return (b.total_ingresos || 0) - (a.total_ingresos || 0);
+                if (this.sortBy === "gastos")
+                    return (b.total_gastos || 0) - (a.total_gastos || 0);
+                return 0;
+            });
+
+            return filtered;
+        },
+
+        clearFilters() {
+            this.searchQuery = "";
+            this.filterEstado = "todos";
+            this.filterBalance = "todos";
+            this.sortBy = "nombre";
+        },
+
+        scrollToCurrentInModal() {
+            const proyecto = this.currentProyecto;
+            if (!proyecto) {
+                window.showToast &&
+                    window.showToast("No hay proyecto seleccionado", "info");
+                return;
+            }
+            if (!this.showProjectListModal) {
+                this.openProjectListModal();
+                if (this.$nextTick)
+                    return this.$nextTick(() => this.scrollToCurrentInModal());
+                setTimeout(() => this.scrollToCurrentInModal(), 150);
+                return;
+            }
+            const id =
+                proyecto.id_proyecto_pk !== undefined &&
+                proyecto.id_proyecto_pk !== null
+                    ? proyecto.id_proyecto_pk
+                    : this.currentProyectoIndex;
+            const el = document.getElementById("proj_" + id);
+            if (!el) {
+                window.showToast &&
+                    window.showToast(
+                        "El proyecto actual no coincide con los filtros o no está visible",
+                        "info"
+                    );
+                return;
+            }
+            try {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                el.classList.add("transition-all");
+                setTimeout(() => el.classList.remove("transition-all"), 1500);
+            } catch (e) {
+                console.warn("scrollToCurrentInModal error", e);
+            }
+        },
+
+        saveSelectedProject(proyecto) {
+            try {
+                if (
+                    proyecto &&
+                    proyecto.id_proyecto_pk !== undefined &&
+                    proyecto.id_proyecto_pk !== null
+                ) {
+                    const id = String(proyecto.id_proyecto_pk);
+                    sessionStorage.setItem(this.SESSION_KEY, id);
+                    this.selectedProjectId = id;
+                } else {
+                    sessionStorage.removeItem(this.SESSION_KEY);
+                    this.selectedProjectId = null;
+                }
+            } catch (e) {
+                console.warn("No se pudo escribir en sessionStorage", e);
+            }
+        },
+    };
+};
+
 window.ingresosApiHandlers = {
     authHeaders() {
         return {

@@ -56,15 +56,15 @@
                         </tr>
                     </template>
                     <template x-if="!loadingServicios && filteredServicios.length > 0">
-                        <template x-for="(servicio, index) in filteredServicios" :key="servicio.id_servicio_pk">
+                        <template x-for="(servicio, index) in paginatedServicios()" :key="servicio.id_servicio_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === filteredServicios.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedServicios().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="servicio.nombre_servicio"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="'L ' + Number(servicio.tarifa ?? 0).toFixed(2)"></td>
                                 <td class="py-2 px-4 flex gap-2"
-                                    :class="{ 'last:rounded-br-lg': index === filteredServicios.length - 1 }">
+                                    :class="{ 'last:rounded-br-lg': index === paginatedServicios().length - 1 }">
                                     <a href="#"
                                         @click.prevent="isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
@@ -93,7 +93,7 @@
                 </div>
             </template>
             <template x-if="!loadingServicios && filteredServicios.length > 0">
-                <template x-for="servicio in filteredServicios" :key="servicio.id_servicio_pk">
+                <template x-for="servicio in paginatedServicios()" :key="servicio.id_servicio_pk">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
@@ -121,6 +121,9 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- Paginación del lado del cliente -->
+    <x-pagination />
 
     <!-- Modales -->
     <div>

@@ -6,6 +6,12 @@
     itemToDelete: null,
     estadosSolicitud: [],
     loadingEstadosSolicitud: false,
+
+    // 1️⃣ Variables de Paginación
+    numbersEstadosSolicitud: [],
+    currentPageEstadosSolicitud: 1,
+    perPageEstadosSolicitud: 10,
+
     // Campos para el formulario de 'Nuevo'
     codigo: '',
     nombre: '',
@@ -24,7 +30,6 @@
 
         let items = Array.isArray(this.estadosSolicitud) ? [...this.estadosSolicitud] : [];
 
-        // Filtro por término (nombre, código, descripción, orden y es_final)
         if (term) {
             items = items.filter((e) => {
                 const parts = [
@@ -38,7 +43,6 @@
             });
         }
 
-        // Ordenamiento dinámico
         items.sort((a, b) => {
             let va = a?.[sortKey];
             let vb = b?.[sortKey];
@@ -56,28 +60,52 @@
 
             if (va < vb) return -1 * dir;
             if (va > vb) return 1 * dir;
-            // Criterio secundario estable
             const sa = String(a?.nombre ?? '').toLowerCase();
             const sb = String(b?.nombre ?? '').toLowerCase();
             if (sa < sb) return -1 * dir;
             if (sa > sb) return 1 * dir;
             return 0;
         });
-
         return items;
     },
-    // Funciones que llaman a los handlers de la API
+
+    // 2️⃣ Métodos de Paginación (operan sobre la lista filtrada)
+    paginatedEstadosSolicitud() {
+        return this.filteredEstadosSolicitud.slice(
+            (this.currentPageEstadosSolicitud - 1) * this.perPageEstadosSolicitud,
+            this.currentPageEstadosSolicitud * this.perPageEstadosSolicitud
+        );
+    },
+    totalPagesEstadosSolicitud() {
+        return Math.ceil(this.filteredEstadosSolicitud.length / this.perPageEstadosSolicitud);
+    },
+    nextPageEstadosSolicitud() {
+        if (this.currentPageEstadosSolicitud < this.totalPagesEstadosSolicitud()) {
+            this.currentPageEstadosSolicitud++;
+        }
+    },
+    prevPageEstadosSolicitud() {
+        if (this.currentPageEstadosSolicitud > 1) {
+            this.currentPageEstadosSolicitud--;
+        }
+    },
+
+    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchEstadosSolicitud() {
         await window.estadosSolicitudApiHandlers.fetchEstadosSolicitud(this);
+        this.numbersEstadosSolicitud = this.estadosSolicitud; // ← LÍNEA AGREGADA
     },
     async submitEstadoSolicitud() {
         await window.estadosSolicitudApiHandlers.submitEstadoSolicitud(this);
+        this.fetchEstadosSolicitud(); // Refrescar datos
     },
     async updateEstadoSolicitud() {
         await window.estadosSolicitudApiHandlers.updateEstadoSolicitud(this);
+        this.fetchEstadosSolicitud(); // Refrescar datos
     },
     async deleteEstadoSolicitud() {
         await window.estadosSolicitudApiHandlers.deleteEstadoSolicitud(this);
+        this.fetchEstadosSolicitud(); // Refrescar datos
     },
     // Manejadores de eventos de los modales
     handleModalSubmit(event) {
@@ -89,7 +117,15 @@
             this.deleteEstadoSolicitud();
         }
     }
-}" x-init="fetchEstadosSolicitud()" @keydown.escape.window="
+}" 
+x-init="fetchEstadosSolicitud()" 
+x-effect="
+    // 4️⃣ Reset de página en filtros
+    $watch('filtroEstadoSolicitud', () => currentPageEstadosSolicitud = 1);
+    $watch('ordenarPor', () => currentPageEstadosSolicitud = 1);
+    $watch('ordenarDireccion', () => currentPageEstadosSolicitud = 1);
+"
+@keydown.escape.window="
     isEstadoSolicitudModalOpen = false;
     isEstadoSolicitudEditModalOpen = false;
     isEstadoSolicitudDeleteModalOpen = false;
@@ -148,7 +184,8 @@
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosSolicitud && filteredEstadosSolicitud.length > 0">
-                        <template x-for="(estado, index) in filteredEstadosSolicitud"
+                        <!-- 5️⃣ Usar paginatedEstadosSolicitud() en el template -->
+                        <template x-for="(estado, index) in paginatedEstadosSolicitud()"
                             :key="estado.id_estado_solicitud_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="estado.nombre"></td>
@@ -187,8 +224,8 @@
                 </div>
             </template>
             <template x-if="!loadingEstadosSolicitud && filteredEstadosSolicitud.length > 0">
-                <template x-for="estado in filteredEstadosSolicitud" :key="estado.id_estado_solicitud_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border p-4 space-y-2">
+                <template x-for="estado in paginatedEstadosSolicitud()" :key="estado.id_estado_solicitud_pk">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border p-4 space-y-2 border-black dark:border-gray-800">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estado.nombre">
                         </h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400" x-text="'Código: ' + estado.codigo"></p>
@@ -209,6 +246,48 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- 6️⃣ Componente de Paginación -->
+    <div x-show="filteredEstadosSolicitud.length > perPageEstadosSolicitud" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageEstadosSolicitud - 1) * perPageEstadosSolicitud + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageEstadosSolicitud * perPageEstadosSolicitud, filteredEstadosSolicitud.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="filteredEstadosSolicitud.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageEstadosSolicitud()" :disabled="currentPageEstadosSolicitud === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesEstadosSolicitud()}, (_, i) => i + 1).slice(Math.max(0, currentPageEstadosSolicitud - 3), currentPageEstadosSolicitud + 2)" :key="page">
+                    <button @click="currentPageEstadosSolicitud = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageEstadosSolicitud ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageEstadosSolicitud()" :disabled="currentPageEstadosSolicitud === totalPagesEstadosSolicitud()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
+
 
     <div>
         <x-admin.form-modal modalName="isEstadoSolicitudModalOpen" title="Nuevo Estado de Solicitud"

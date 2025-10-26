@@ -6,24 +6,57 @@
     itemToDelete: null,
     estadosCalendario: [],
     loadingEstadosCalendario: false,
+
+    //  Variables de Paginación
+    numbersEstadosCalendario: [],
+    currentPageEstadosCalendario: 1,
+    perPageEstadosCalendario: 10,
+
     codigo: '',
     nombre: '',
     descripcion: '',
     es_final: false,
     orden: '',
     filtroEstadoCalendario: '',
-    ordenarPor: '',
+    ordenarPor: 'nombre',
+
+    //  Métodos de Paginación
+    paginatedEstadosCalendario() {
+        return this.estadosCalendario.slice(
+            (this.currentPageEstadosCalendario - 1) * this.perPageEstadosCalendario, 
+            this.currentPageEstadosCalendario * this.perPageEstadosCalendario
+        );
+    },
+    totalPagesEstadosCalendario() {
+        return Math.ceil(this.estadosCalendario.length / this.perPageEstadosCalendario);
+    },
+    nextPageEstadosCalendario() {
+        if (this.currentPageEstadosCalendario < this.totalPagesEstadosCalendario()) {
+            this.currentPageEstadosCalendario++;
+        }
+    },
+    prevPageEstadosCalendario() {
+        if (this.currentPageEstadosCalendario > 1) {
+            this.currentPageEstadosCalendario--;
+        }
+    },
+
+    //  Sincronizar Alias en cada operación CRUD
     async fetchEstadosCalendario() {
         await window.estadosCalendarioApiHandlers.fetchEstadosCalendario(this);
+        this.numbersEstadosCalendario = this.estadosCalendario; // ← LÍNEA AGREGADA
     },
     async submitEstadoCalendario() {
         await window.estadosCalendarioApiHandlers.submitEstadoCalendario(this);
+        this.fetchEstadosCalendario(); // Refrescar datos
     },
     async updateEstadoCalendario() {
         await window.estadosCalendarioApiHandlers.updateEstadoCalendario(this);
+        this.fetchEstadosCalendario(); // Refrescar datos
     },
     async deleteEstadoCalendario() {
         await window.estadosCalendarioApiHandlers.deleteEstadoCalendario(this);
+        this.fetchEstadosCalendario(); // Refrescar datos
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formEstadoCalendario') this.submitEstadoCalendario();
@@ -36,10 +69,10 @@
     }
 }"
 x-init="fetchEstadosCalendario()"
-{{-- AÑADIDO: Este bloque observa los cambios y llama a la API para actualizar los datos en tiempo real. --}}
 x-effect="
-    $watch('filtroEstadoCalendario', () => fetchEstadosCalendario());
-    $watch('ordenarPor', () => fetchEstadosCalendario());
+    // 4️⃣ Reset de página en filtros
+    $watch('filtroEstadoCalendario', () => { fetchEstadosCalendario(); currentPageEstadosCalendario = 1; });
+    $watch('ordenarPor', () => { fetchEstadosCalendario(); currentPageEstadosCalendario = 1; });
 "
 @keydown.escape.window="
     isEstadoCalendarioModalOpen = false;
@@ -56,7 +89,7 @@ x-effect="
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroEstadoCalendario',
-                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento a la variable 'ordenarPor'. --}}
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Estado'
@@ -100,9 +133,10 @@ x-effect="
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosCalendario && estadosCalendario.length > 0">
-                        <template x-for="(estadoCalendario, index) in estadosCalendario" :key="estadoCalendario.id_estado_calendario_pk">
+                        <!--  Usar paginatedEstadosCalendario() en el template -->
+                        <template x-for="(estadoCalendario, index) in paginatedEstadosCalendario()" :key="estadoCalendario.id_estado_calendario_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === estadosCalendario.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedEstadosCalendario().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoCalendario.nombre"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoCalendario.codigo"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoCalendario.descripcion"></td>
@@ -110,7 +144,7 @@ x-effect="
                                     <span x-text="estadoCalendario.es_final ? 'Sí' : 'No'"></span>
                                 </td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoCalendario.orden"></td>
-                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === estadosCalendario.length - 1 }">
+                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === paginatedEstadosCalendario().length - 1 }">
                                     <a href="#" @click.prevent="isEstadoCalendarioEditModalOpen = true; itemToEdit = { ...estadoCalendario }" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isEstadoCalendarioDeleteModalOpen = true; itemToDelete = {id_estado_calendario_pk: estadoCalendario.id_estado_calendario_pk, nombre: estadoCalendario.nombre}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
@@ -133,7 +167,7 @@ x-effect="
                 </div>
             </template>
             <template x-if="!loadingEstadosCalendario && estadosCalendario.length > 0">
-                <template x-for="estadoCalendario in estadosCalendario" :key="estadoCalendario.id_estado_calendario_pk">
+                <template x-for="estadoCalendario in paginatedEstadosCalendario()" :key="estadoCalendario.id_estado_calendario_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estadoCalendario.nombre"></h3>
@@ -155,6 +189,47 @@ x-effect="
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!--  Componente de Paginación -->
+    <div x-show="estadosCalendario.length > perPageEstadosCalendario" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageEstadosCalendario - 1) * perPageEstadosCalendario + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageEstadosCalendario * perPageEstadosCalendario, estadosCalendario.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="estadosCalendario.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageEstadosCalendario()" :disabled="currentPageEstadosCalendario === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesEstadosCalendario()}, (_, i) => i + 1).slice(Math.max(0, currentPageEstadosCalendario - 3), currentPageEstadosCalendario + 2)" :key="page">
+                    <button @click="currentPageEstadosCalendario = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageEstadosCalendario ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageEstadosCalendario()" :disabled="currentPageEstadosCalendario === totalPagesEstadosCalendario()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div>

@@ -158,7 +158,7 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
             </template>
             <template x-if="!loadingCategorias && categorias.length > 0">
                 <template x-for="categoria in paginatedCategorias()" :key="categoria.id_categoria_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2 border dark:border-gray-800 border-black">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="categoria.nombre_categoria"></h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="categoria.descripcion_categoria"></p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="categoria.tipo_categoria"></p>

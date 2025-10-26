@@ -7,6 +7,8 @@
     itemToDelete: null,
     cais: [],
     estadosCai: [],
+    categorias: [],
+    numbers: [],
     loadingCai: false,
     async fetchCai() {
         await window.caiApiHandlers.fetchCai(this);
@@ -30,6 +32,28 @@
     searchCai: '',
     estadoCaiFiltro: '',
     ordenarPor: 'fecha_limite',
+    // Paginación
+    currentPage: 1,
+    perPage: 10,
+    paginatedCais() {
+        return this.filteredCais().slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.filteredCais().length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
+    },
     // Helpers para filtrar/ordenar en cliente
     normalizeStr(v){
         try{ return (v ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim(); }catch(_){ return (v ?? '').toString().toLowerCase().trim(); }
@@ -73,15 +97,24 @@
     },
     async fetchCai() {
         await window.caiApiHandlers.fetchCai(this);
+        // synchronize aliases for reusable pagination components
+        this.categorias = this.cais;
+        this.numbers = this.cais;
     },
     async submitCai() {
         await window.caiApiHandlers.submitCai(this);
+        this.categorias = this.cais;
+        this.numbers = this.cais;
     },
     async updateCai() {
         await window.caiApiHandlers.updateCai(this);
+        this.categorias = this.cais;
+        this.numbers = this.cais;
     },
     async deleteCai() {
         await window.caiApiHandlers.deleteCai(this);
+        this.categorias = this.cais;
+        this.numbers = this.cais;
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formCai') this.submitCai();
@@ -92,7 +125,13 @@
             this.deleteCai();
         }
     }
-}" x-init="fetchCai()" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
+}" x-init="fetchCai()"
+x-effect="
+$watch('searchCai', () => { currentPage = 1; });
+$watch('estadoCaiFiltro', () => { currentPage = 1; });
+$watch('ordenarPor', () => { currentPage = 1; });
+"
+@modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
 
     <div x-show="tab==='cai'" class="overflow-x-auto">
         <x-admin.tabla-crud class="nunito-bold">
@@ -147,7 +186,7 @@
                     </thead>
                     <tbody>
                         <template x-if="filteredCais().length > 0">
-                            <template x-for="cai in filteredCais()" :key="cai.id_cai_pk || cai.id">
+                            <template x-for="cai in paginatedCais()" :key="cai.id_cai_pk || cai.id">
                                 <tr class="border-b dark:border-gray-700 nunito-regular">
                                     <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white"
                                         x-text="cai.codigo"></td>
@@ -201,6 +240,9 @@
                 </table>
             </div>
 
+            <!-- Paginación del lado del cliente -->
+            <x-pagination />
+
             <x-slot name="cards">
                 <template x-if="loadingCai">
                     <div class="p-8 text-center text-gray-500 nunito-regular">
@@ -210,7 +252,7 @@
                 <template x-if="!loadingCai && cais.length === 0">
                     <div class="p-8 text-center text-gray-500 nunito-regular">No hay registros CAI</div>
                 </template>
-                <template x-for="cai in filteredCais()" :key="'card-cai-'+(cai.id_cai_pk || cai.id)">
+                <template x-for="cai in paginatedCais()" :key="'card-cai-'+(cai.id_cai_pk || cai.id)">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
                         <div class="flex justify-between items-start">
                             <div>
