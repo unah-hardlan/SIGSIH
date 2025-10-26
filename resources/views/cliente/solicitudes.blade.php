@@ -4,11 +4,16 @@
 <div class="max-w-7xl mx-auto space-y-6 mt-12" x-data="solicitudesCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold serif tracking-tight text-gray-900 dark:text-gray-100">Solicitudes de Soporte</h1>
-        <button @click="modalNueva = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+    </div>
+
+    <div class="text-gray-700 dark:text-gray-300 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        Las solicitudes de soporte le permiten reportar problemas técnicos de su empresa u organización. Nuestro equipo de soporte está comprometido a resolver sus inquietudes de manera efectiva. Por favor, proporcione detalles claros y específicos al crear una solicitud. Una vez sea aprobada se lo notificaremos para propocionarle una cotización de su solicitud.
+    </div>
+
+     <button @click="modalNueva = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
             <i class="fas fa-plus"></i>
             Nueva Solicitud
         </button>
-    </div>
 
     <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">

@@ -45,7 +45,7 @@
                             x-text="unread"></span>
                     </template>
                 </button>
-                <div x-show="open" x-cloak @click.away="open = false"
+                <div x-show="notifOpen" x-cloak @click.away="notifOpen = false"
                     class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md max-h-[32rem] overflow-hidden">
                     <div
                         class="flex items-center justify-between px-4 py-2 border-b text-gray-700 dark:text-gray-300 serif-bold text-sm">
