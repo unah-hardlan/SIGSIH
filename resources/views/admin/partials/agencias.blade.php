@@ -1,4 +1,3 @@
-{{-- 1. Se consolidaron todos los atributos (x-data, x-init, listeners) en el div principal. --}}
 <div x-data="{
   // listado
   agencias: [], loading: false,
@@ -169,7 +168,6 @@ x-init="
             <tr><td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">No hay agencias registradas</td></tr>
           </template>
           <template x-if="!loading && agencias.length > 0">
-            {{-- 2. Se eliminó la sección de la tabla duplicada. Esta es la versión correcta y única. --}}
             <template x-for="(ag, index) in paginatedAgencias()" :key="ag.id_agencias_pk">
               <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular" :class="{ 'last:border-b-0': index === paginatedAgencias().length - 1 }">
                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.nombre_agencia"></td>
@@ -218,7 +216,6 @@ x-init="
     </x-slot>
   </x-responsive-table>
 
-  {{-- 4. Se eliminó el componente de paginación duplicado. --}}
   <div x-show="totalPagesAgencias() > 1" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
       <div class="mb-2">
           <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
@@ -251,7 +248,6 @@ x-init="
   </div>
 
   <!-- Modal Nueva/Editar Agencia -->
-  {{-- 5. Se eliminó el modal duplicado. --}}
   <x-admin.form-modal class="nunito-bold" modalName="isAgenciaModalOpen" title="Agencia" submitLabel="Guardar Agencia" maxWidth="max-w-3xl" formId="form-agencia" noScroll="true">
     <div x-effect="composeHorario()"></div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -334,4 +330,3 @@ x-init="
   <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteAgenciaModalOpen" itemToDelete="agenciaToDelete" message="¿Estás seguro de que quieres eliminar la agencia?" />
 
 </div>
-{{-- 6. Se eliminaron los <div> de cierre extra y el div con listeners duplicados. --}}
