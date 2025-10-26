@@ -15,7 +15,9 @@ class SolicitudController extends Controller
      */
     public function index(Request $request)
     {
-    $query = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto']);
+        // Eager-load cliente.empresa y cliente.personas para garantizar que la API devuelva
+        // información tanto de empresa como de persona cuando exista.
+        $query = Solicitud::with(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']);
 
         // Filtros opcionales
         if ($request->filled('id_cliente_fk')) {
@@ -40,7 +42,7 @@ class SolicitudController extends Controller
                 $sub->where('descripcion_problema', 'like', "%{$search}%")
                     ->orWhereHas('cliente.empresa', function ($empresaQuery) use ($search) {
                         $empresaQuery->where('nombre_comercial', 'like', "%{$search}%")
-                                     ->orWhere('razon_social', 'like', "%{$search}%");
+                            ->orWhere('razon_social', 'like', "%{$search}%");
                     });
             });
         }
@@ -110,7 +112,7 @@ class SolicitudController extends Controller
             return $sol;
         });
 
-        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']));
     }
 
     /**
@@ -118,7 +120,7 @@ class SolicitudController extends Controller
      */
     public function show($id)
     {
-    $solicitud = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto'])->findOrFail($id);
+        $solicitud = Solicitud::with(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto'])->findOrFail($id);
         return new SolicitudResource($solicitud);
     }
 
@@ -127,14 +129,16 @@ class SolicitudController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $solicitud = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto'])->findOrFail($id);
+        $solicitud = Solicitud::with(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto'])->findOrFail($id);
 
         $validatedData = $request->validate([
             'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
             'descripcion_problema' => 'sometimes|required|string|max:500',
             'id_estado_solicitud_fk' => 'sometimes|required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
             'id_contacto_fk' => [
-                'sometimes', 'required', 'integer',
+                'sometimes',
+                'required',
+                'integer',
                 Rule::exists('tbl_contacto', 'id_contacto_pk')->where(function ($q) use ($request) {
                     $clienteId = $request->input('id_cliente_fk');
                     if ($clienteId === null) return $q; // if cliente not provided in this update, skip client filter
@@ -144,7 +148,7 @@ class SolicitudController extends Controller
         ]);
 
         $solicitud->update($validatedData);
-        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']));
     }
 
     /**

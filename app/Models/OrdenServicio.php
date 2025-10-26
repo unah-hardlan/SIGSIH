@@ -27,8 +27,17 @@ class OrdenServicio extends Model
         'observaciones',
         'diagnostico_tecnico',
         'diagnostico_cliente',
+        'calificacion_servicio',
         'id_estado_orden_servicio_fk',
         'id_cotizacion_fk',
+        'repuestos',
+    ];
+
+    /**
+     * Casts
+     */
+    protected $casts = [
+        'repuestos' => 'array',
     ];
 
     protected static function boot()
@@ -90,5 +99,13 @@ class OrdenServicio extends Model
     public function estado()
     {
         return $this->belongsTo(EstadoOrdenServicio::class, 'id_estado_orden_servicio_fk', 'id_estado_orden_servicio_pk');
+    }
+
+    /**
+     * Detalles de repuestos/productos usados en la orden
+     */
+    public function detallesProducto()
+    {
+        return $this->hasMany(DetalleOrdenProducto::class, 'id_orden_servicio_fk', 'id_orden_servicio_pk');
     }
 }
