@@ -7,6 +7,12 @@
         reporteToDelete: null,
         reportes: [],
         loadingReportes: false,
+        
+        // 1️⃣ Variables de Paginación
+        numbersReportes: [],
+        currentPageReportes: 1,
+        perPageReportes: 10,
+
         // catálogos
         tiposVisita: [], serviciosRealizados: [], accionesRealizadas: [], ordenesServicio: [],
         // filtros
@@ -17,12 +23,48 @@
         new_fecha_reporte: '', new_observaciones: '', new_id_tipo_visita_fk: '', new_id_servicio_realizado_fk: '', new_id_accion_realizada_fk: '', new_id_orden_servicio_fk: '',
         // editar (campos locales)
         edit_fecha_reporte: '', edit_observaciones: '', edit_id_tipo_visita_fk: '', edit_id_servicio_realizado_fk: '', edit_id_accion_realizada_fk: '', edit_id_orden_servicio_fk: '',
+        
+        // 2️⃣ Métodos de Paginación
+        paginatedReportes() {
+            return this.reportes.slice(
+                (this.currentPageReportes - 1) * this.perPageReportes, 
+                this.currentPageReportes * this.perPageReportes
+            );
+        },
+        totalPagesReportes() {
+            return Math.ceil(this.reportes.length / this.perPageReportes);
+        },
+        nextPageReportes() {
+            if (this.currentPageReportes < this.totalPagesReportes()) {
+                this.currentPageReportes++;
+            }
+        },
+        prevPageReportes() {
+            if (this.currentPageReportes > 1) {
+                this.currentPageReportes--;
+            }
+        },
+
         // métodos
         async fetchCatalogs(){ await window.reportesVisitaApiHandlers.fetchCatalogs(this); },
-        async fetchReportes(){ await window.reportesVisitaApiHandlers.fetchReportes(this); },
-        async storeReporte(){ await window.reportesVisitaApiHandlers.storeReporte(this); },
-        async updateReporte(){ await window.reportesVisitaApiHandlers.updateReporte(this); },
-        async deleteReporte(){ await window.reportesVisitaApiHandlers.deleteReporte(this); },
+        
+        // 3️⃣ Sincronizar Alias en cada operación CRUD
+        async fetchReportes(){ 
+            await window.reportesVisitaApiHandlers.fetchReportes(this); 
+            this.numbersReportes = this.reportes; // ← LÍNEA AGREGADA
+        },
+        async storeReporte(){ 
+            await window.reportesVisitaApiHandlers.storeReporte(this); 
+            this.fetchReportes(); // Refrescar datos
+        },
+        async updateReporte(){ 
+            await window.reportesVisitaApiHandlers.updateReporte(this); 
+            this.fetchReportes(); // Refrescar datos
+        },
+        async deleteReporte(){ 
+            await window.reportesVisitaApiHandlers.deleteReporte(this); 
+            this.fetchReportes(); // Refrescar datos
+        },
         handleModalSubmit(e){ if(e.detail.formId==='form-reporte-visita-add') this.storeReporte(); if(e.detail.formId==='form-reporte-visita-edit') this.updateReporte(); },
         handleDelete(){ if(this.isReporteDeleteModalOpen) this.deleteReporte(); },
         openAdd(){ this.isReporteModalOpen = true; },
@@ -38,7 +80,20 @@
         },
         openDelete(rep){ this.reporteToDelete = rep; this.isReporteDeleteModalOpen = true; }
 }"
-x-init="(async()=>{ await fetchCatalogs(); await fetchReportes(); $watch('searchReportes', ()=> fetchReportes()); $watch('filtroTipoVisita', ()=> fetchReportes()); $watch('filtroServicioRealizado', ()=> fetchReportes()); $watch('filtroAccionRealizada', ()=> fetchReportes()); $watch('filtroOrdenServicio', ()=> fetchReportes()); $watch('desde', ()=> fetchReportes()); $watch('hasta', ()=> fetchReportes()); $watch('ordenarPor', ()=> fetchReportes()); $watch('ordenarDirection', ()=> fetchReportes()); })()"
+x-init="(async()=>{ 
+    await fetchCatalogs(); 
+    await fetchReportes(); 
+    // 4️⃣ Reset de página en filtros
+    $watch('searchReportes', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('filtroTipoVisita', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('filtroServicioRealizado', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('filtroAccionRealizada', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('filtroOrdenServicio', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('desde', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('hasta', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('ordenarPor', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+    $watch('ordenarDirection', ()=> { fetchReportes(); currentPageReportes = 1; }); 
+})()"
 @keydown.escape.window="isReporteModalOpen=false; isReporteEditModalOpen=false; isReporteDeleteModalOpen=false;"
 @modal-submit.window="handleModalSubmit($event)"
 @confirm-delete.window="handleDelete()"
@@ -103,7 +158,8 @@ class="overflow-x-auto">
                         <tr><td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">No hay reportes registrados</td></tr>
                     </template>
                     <template x-if="!loadingReportes && reportes.length>0">
-                        <template x-for="rep in reportes" :key="rep.id_reportes_pk">
+                        <!-- 5️⃣ Usar paginatedReportes() en el template -->
+                        <template x-for="rep in paginatedReportes()" :key="rep.id_reportes_pk">
                             <tr class="border-b dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4" x-text="rep.fecha_reporte"></td>
                                 <td class="py-2 px-4" x-text="rep.observaciones"></td>
@@ -112,7 +168,7 @@ class="overflow-x-auto">
                                 <td class="py-2 px-4" x-text="rep.accion_realizada"></td>
                                 <td class="py-2 px-4" x-text="rep.orden_servicio"></td>
                                                 <td class="py-2 px-4 flex items-center gap-2">
-                                                            <a :href="`{{ route('admin.formato-reporte') }}?id_reporte=${rep.id_reportes_pk}&fecha_reporte=${encodeURIComponent(rep.fecha_reporte||'')}&observaciones=${encodeURIComponent(rep.observaciones||'')}&tipo_visita=${encodeURIComponent(rep.tipo_visita||'')}&servicio_realizado=${encodeURIComponent(rep.servicio_realizado||'')}&accion_realizada=${encodeURIComponent(rep.accion_realizada||'')}&orden_servicio=${encodeURIComponent(rep.orden_servicio||'')}`"
+                                                            <a :href="{{ route('admin.formato-reporte') }}?id_reporte=${rep.id_reportes_pk}&fecha_reporte=${encodeURIComponent(rep.fecha_reporte||'')}&observaciones=${encodeURIComponent(rep.observaciones||'')}&tipo_visita=${encodeURIComponent(rep.tipo_visita||'')}&servicio_realizado=${encodeURIComponent(rep.servicio_realizado||'')}&accion_realizada=${encodeURIComponent(rep.accion_realizada||'')}&orden_servicio=${encodeURIComponent(rep.orden_servicio||'')}"
                                                          target="_blank"
                                                          class="inline-flex items-center justify-center text-xs h-9 px-3 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
                                                         <i class="fas fa-eye mr-1"></i> Ver detalles
@@ -135,7 +191,7 @@ class="overflow-x-auto">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 nunito-regular">No hay reportes registrados</div>
             </template>
             <template x-if="!loadingReportes && reportes.length>0">
-                <template x-for="rep in reportes" :key="rep.id_reportes_pk">
+                <template x-for="rep in paginatedReportes()" :key="rep.id_reportes_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
                         <div class="flex justify-between items-start mb-2">
                             <div class="space-y-1">
@@ -151,7 +207,7 @@ class="overflow-x-auto">
                             <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Orden de Servicio:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular" x-text="rep.orden_servicio"></span></div>
                         </div>
                         <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                              <a :href="`{{ route('admin.formato-reporte') }}?id_reporte=${rep.id_reportes_pk}&fecha_reporte=${encodeURIComponent(rep.fecha_reporte||'')}&observaciones=${encodeURIComponent(rep.observaciones||'')}&tipo_visita=${encodeURIComponent(rep.tipo_visita||'')}&servicio_realizado=${encodeURIComponent(rep.servicio_realizado||'')}&accion_realizada=${encodeURIComponent(rep.accion_realizada||'')}&orden_servicio=${encodeURIComponent(rep.orden_servicio||'')}`"
+                                              <a :href="{{ route('admin.formato-reporte') }}?id_reporte=${rep.id_reportes_pk}&fecha_reporte=${encodeURIComponent(rep.fecha_reporte||'')}&observaciones=${encodeURIComponent(rep.observaciones||'')}&tipo_visita=${encodeURIComponent(rep.tipo_visita||'')}&servicio_realizado=${encodeURIComponent(rep.servicio_realizado||'')}&accion_realizada=${encodeURIComponent(rep.accion_realizada||'')}&orden_servicio=${encodeURIComponent(rep.orden_servicio||'')}"
                                              target="_blank"
                                              class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-eye"></i> Ver detalles
@@ -168,6 +224,47 @@ class="overflow-x-auto">
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- 6️⃣ Componente de Paginación -->
+    <div x-show="reportes.length > perPageReportes" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageReportes - 1) * perPageReportes + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageReportes * perPageReportes, reportes.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="reportes.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageReportes()" :disabled="currentPageReportes === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesReportes()}, (_, i) => i + 1).slice(Math.max(0, currentPageReportes - 3), currentPageReportes + 2)" :key="page">
+                    <button @click="currentPageReportes = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageReportes ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageReportes()" :disabled="currentPageReportes === totalPagesReportes()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modal Nuevo Reporte -->
     <x-admin.form-modal class="nunito-bold" modalName="isReporteModalOpen" title="Nuevo Reporte" submitLabel="Guardar Reporte" maxWidth="max-w-2xl" formId="form-reporte-visita-add">

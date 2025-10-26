@@ -6,17 +6,57 @@
     itemToDelete: null,
     items: [],
     loading: false,
+
+    // 1️⃣ Variables de Paginación
+    numbersItems: [],
+    currentPageItems: 1,
+    perPageItems: 10,
+
     tipo_mantenimiento: '',
     descripcion_mantenimiento: '',
-    // Campos locales para edición (evitan acceder a itemToEdit cuando es null)
     edit_tipo_mantenimiento: '',
     edit_descripcion_mantenimiento: '',
     filtroTipoMantenimiento: '',
     ordenarPor: 'nombre',
-    async fetchItems(){ await window.tipoMantenimientoApiHandlers.fetchTipos(this); },
-    async submit(){ await window.tipoMantenimientoApiHandlers.submitTipo(this); },
-    async update(){ await window.tipoMantenimientoApiHandlers.updateTipo(this); },
-    async remove(){ await window.tipoMantenimientoApiHandlers.deleteTipo(this); },
+
+    // 2️⃣ Métodos de Paginación
+    paginatedItems() {
+        return this.items.slice(
+            (this.currentPageItems - 1) * this.perPageItems, 
+            this.currentPageItems * this.perPageItems
+        );
+    },
+    totalPagesItems() {
+        return Math.ceil(this.items.length / this.perPageItems);
+    },
+    nextPageItems() {
+        if (this.currentPageItems < this.totalPagesItems()) {
+            this.currentPageItems++;
+        }
+    },
+    prevPageItems() {
+        if (this.currentPageItems > 1) {
+            this.currentPageItems--;
+        }
+    },
+
+    // 3️⃣ Sincronizar Alias en cada operación CRUD
+    async fetchItems(){ 
+        await window.tipoMantenimientoApiHandlers.fetchTipos(this); 
+        this.numbersItems = this.items; // ← LÍNEA AGREGADA
+    },
+    async submit(){ 
+        await window.tipoMantenimientoApiHandlers.submitTipo(this);
+        this.fetchItems(); // Refrescar datos
+    },
+    async update(){ 
+        await window.tipoMantenimientoApiHandlers.updateTipo(this);
+        this.fetchItems(); // Refrescar datos
+    },
+    async remove(){ 
+        await window.tipoMantenimientoApiHandlers.deleteTipo(this);
+        this.fetchItems(); // Refrescar datos
+    },
     handleModalSubmit(e){
         if(e.detail.formId === 'formTipoMantenimiento') this.submit();
         if(e.detail.formId === 'formEditTipoMantenimiento') this.update();
@@ -24,8 +64,9 @@
     handleDelete(){ this.remove(); }
 }" x-init="
     fetchItems();
-    $watch('filtroTipoMantenimiento', () => fetchItems());
-    $watch('ordenarPor', () => fetchItems());
+    // 4️⃣ Reset de página en filtros
+    $watch('filtroTipoMantenimiento', () => { fetchItems(); currentPageItems = 1; });
+    $watch('ordenarPor', () => { fetchItems(); currentPageItems = 1; });
 " @keydown.escape.window="isModalOpen=false; isEditModalOpen=false; isDeleteModalOpen=false;"
     @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
 
@@ -72,11 +113,12 @@
                             <td colspan="3" class="py-8 text-center text-gray-500">Sin resultados</td>
                         </tr>
                     </template>
-                    <template x-for="(item, index) in items" :key="item.id_tipo_mantenimiento_pk">
-                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular" :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === items.length - 1 }">
+                    <!-- 5️⃣ Usar paginatedItems() en el template -->
+                    <template x-for="(item, index) in paginatedItems()" :key="item.id_tipo_mantenimiento_pk">
+                        <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular" :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedItems().length - 1 }">
                             <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="item.tipo_mantenimiento"></td>
                             <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="item.descripcion_mantenimiento"></td>
-                            <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === items.length - 1 }">
+                            <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === paginatedItems().length - 1 }">
                                 <a href="#"
                                     @click.prevent="itemToEdit = {...item}; edit_tipo_mantenimiento = item.tipo_mantenimiento || ''; edit_descripcion_mantenimiento = item.descripcion_mantenimiento || ''; isEditModalOpen=true"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
@@ -98,7 +140,7 @@
                 <template x-if="!loading && items.length === 0">
                     <div class="p-4 text-center text-gray-500">Sin resultados</div>
                 </template>
-                <template x-for="item in items" :key="item.id_tipo_mantenimiento_pk">
+                <template x-for="item in paginatedItems()" :key="item.id_tipo_mantenimiento_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
                         <div class="flex justify-between items-start">
                             <h3 class="font-semibold text-gray-900 dark:text-white" x-text="item.tipo_mantenimiento">
@@ -122,6 +164,47 @@
             </div>
         </x-slot>
     </x-responsive-table>
+
+    <!-- 6️⃣ Componente de Paginación -->
+    <div x-show="items.length > perPageItems" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageItems - 1) * perPageItems + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageItems * perPageItems, items.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="items.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageItems()" :disabled="currentPageItems === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesItems()}, (_, i) => i + 1).slice(Math.max(0, currentPageItems - 3), currentPageItems + 2)" :key="page">
+                    <button @click="currentPageItems = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageItems ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageItems()" :disabled="currentPageItems === totalPagesItems()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div>
