@@ -69,6 +69,9 @@
     @stack('styles')
 </head>
 
+<div id="spa-loading-overlay" class="hidden fixed inset-0 z-[9999] items-center justify-center bg-gray-200/60 dark:bg-gray-900/60 backdrop-blur-sm">
+    <div class="w-16 h-16 border-4 border-gray-300 dark:border-gray-600 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin"></div>
+</div>
 <body class="font-sans bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col"
     x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}"
     x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile"
