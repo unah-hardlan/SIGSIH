@@ -155,7 +155,7 @@
                     <div class="p-4 text-center text-gray-500">Sin resultados</div>
                 </template>
                 <template x-for="item in paginatedOrigenes()" :key="item.id_origen_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border dark:border-gray-800 border-black">
                         <div class="flex justify-between items-start">
                             <h3 class="font-semibold text-gray-900 dark:text-white" x-text="item.nombre_origen"></h3>
                             <span class="px-2 py-1 rounded-full text-xs font-semibold"

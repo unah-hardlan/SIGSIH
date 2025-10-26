@@ -225,7 +225,7 @@ x-effect="
             </template>
             <template x-if="!loadingEstadosSolicitud && filteredEstadosSolicitud.length > 0">
                 <template x-for="estado in paginatedEstadosSolicitud()" :key="estado.id_estado_solicitud_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border p-4 space-y-2">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border p-4 space-y-2 border-black dark:border-gray-800">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estado.nombre">
                         </h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400" x-text="'Código: ' + estado.codigo"></p>

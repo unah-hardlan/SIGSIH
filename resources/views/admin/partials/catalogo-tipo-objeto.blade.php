@@ -140,7 +140,7 @@ x-init="fetchTipoObjetos()"
                 </template>
                 <template x-if="!loadingTipos && getFilteredTipos().length > 0">
                     <template x-for="tipo in getFilteredTipos()" :key="tipo.id || tipo.nombre">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-gray-800 p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
                                     <div class="flex items-center gap-2 mb-1">
