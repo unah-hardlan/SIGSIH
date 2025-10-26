@@ -148,13 +148,13 @@
                                  alt="Avatar de {{ $persona->primer_nombre }}" 
                                  class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300">
                         @else
-                            <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-blue-200 dark:border-blue-300">
+                            <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-200 flex items-center justify-center">
                                 @if($empresa)
                                     <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                     </svg>
                                 @else
-                                    <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
                                 @endif
@@ -262,7 +262,7 @@
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <a href="{{ route('cliente.facturas') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las facturas →</a>
+                                <a href="{{ route('cliente.facturas') }}" data-spa-link class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las facturas →</a>
                             </div>
                         </div>
 
@@ -293,7 +293,7 @@
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <a href="{{ route('cliente.cotizaciones') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las cotizaciones →</a>
+                                <a href="{{ route('cliente.cotizaciones') }}" data-spa-link class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las cotizaciones →</a>
                             </div>
                         </div>
 
@@ -324,7 +324,7 @@
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <a href="{{ route('cliente.ordenes') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las órdenes →</a>
+                                <a href="{{ route('cliente.ordenes') }}" data-spa-link class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las órdenes →</a>
                             </div>
                         </div>
                     </div>
@@ -339,7 +339,7 @@
                     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No hay información personal</h3>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Tu información personal no está disponible.</p>
                     <div class="mt-6">
-                        <a href="{{ route('cliente.configurar-perfil') }}" 
+                        <a href="{{ route('cliente.configurar-perfil') }}" data-spa-link
                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                             Configurar Perfil
                         </a>
@@ -351,40 +351,28 @@
 
     <!-- Modal de Edición de Perfil Personal -->
     @if($persona && !$empresa)
-    <template x-if="showEditModal">
-    <div x-cloak
-        class="fixed inset-0 z-[12000] overflow-y-auto overscroll-none" 
-        x-transition.opacity.duration.250ms
-        @keydown.escape.window="closeEditModal()"
-        @click.self="closeEditModal()"
-        role="dialog" aria-modal="true">
-        <!-- Overlay mejorado -->
-        <div class="fixed inset-0 bg-black/70 transition-opacity" @click="closeEditModal()" aria-hidden="true"></div>
-        <!-- Contenedor modal -->
-    <div class="modal-content relative flex min-h-full items-center justify-center p-4" @click.self="closeEditModal()">
-            <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform"
-                 x-transition:enter="ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave="ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 @click.stop>
+    <template x-teleport="body">
+        <div x-show="showEditModal" x-cloak x-transition.opacity.duration.300ms
+            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
+            @click.self="closeEditModal()" @keydown.window.escape="closeEditModal()"
+            style="margin: 0;">
+            <div x-transition:enter="transition ease-out duration-300" 
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto" 
+                @click.stop>
                 
                 <!-- Header -->
-                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
                         Editar Información Personal
                     </h3>
-                    <button @click="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
+                    <button @click="closeEditModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
 
                 <!-- Formulario -->
-                <form @submit.prevent="updateProfile()" class="p-6 space-y-6">
+                <form @submit.prevent="updateProfile()" class="space-y-6">
                     <!-- Avatar -->
                     <div class="flex items-center space-x-6">
                         <div class="flex-shrink-0">
@@ -477,11 +465,9 @@
                     </div>
 
                     <!-- Botones -->
-                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-end gap-3 pt-4">
                         <button type="button" @click="closeEditModal()" 
-                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
-                            Cancelar
-                        </button>
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
                         <button type="submit" :disabled="loading"
                                 class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
                             <span x-show="!loading">Guardar Cambios</span>
@@ -497,145 +483,135 @@
                 </form>
             </div>
         </div>
-    </div>
     </template>
     @endif
 
     @if($empresa)
-    <template x-if="showEmpresaModal">
-        <div x-cloak class="fixed inset-0 z-[12000] overflow-y-auto" x-transition.opacity.duration.250ms @keydown.escape.window="closeEmpresaModal()" @click.self="closeEmpresaModal()" role="dialog" aria-modal="true">
-            <div class="fixed inset-0 bg-black/70" x-transition:enter="transition-opacity ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closeEmpresaModal()" aria-hidden="true"></div>
-            <div class="modal-content relative flex min-h-full items-center justify-center p-4" @click.self="closeEmpresaModal()">
-                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" @click.stop>
-                    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Editar Empresa</h3>
-                        <button @click="closeEmpresaModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <form @submit.prevent="updateEmpresa()" class="p-6 space-y-6">
-                        <div class="flex items-center space-x-6">
-                            <div class="flex-shrink-0">
-                                <div class="relative">
-                                    @if($empresa->avatar)
-                                        <img src="{{ asset('storage/' . $empresa->avatar) }}" alt="Logo actual" class="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600" />
-                                    @else
-                                        <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-gray-300 dark:border-gray-600">
-                                            <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M5 21H3m2 0h5m4 0h5M9 7h1m4 0h1M9 11h1m4 0h1"/></svg>
-                                        </div>
-                                    @endif
-                                    <label class="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-1 cursor-pointer shadow-sm">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                        <input type="file" x-ref="empresaAvatar" @change="handleEmpresaAvatar($event)" accept="image/*" class="hidden" />
-                                    </label>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Logo</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">JPEG, PNG, WEBP. Máx 2MB.</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre Comercial *</label>
-                                <input type="text" x-model="empresaForm.nombre_comercial" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Razón Social</label>
-                                <input type="text" x-model="empresaForm.razon_social" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RTN</label>
-                                <input type="text" x-model="empresaForm.rtn" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Horario de Atención</label>
-                                <input type="text" x-model="empresaForm.horario_atencion" placeholder="L-V 8:00-17:00" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+    <template x-teleport="body">
+        <div x-show="showEmpresaModal" x-cloak x-transition.opacity.duration.300ms
+            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
+            @click.self="closeEmpresaModal()" @keydown.window.escape="closeEmpresaModal()"
+            style="margin: 0;">
+            <div x-transition:enter="transition ease-out duration-300" 
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-3xl mx-auto max-h-[90vh] overflow-y-auto" 
+                @click.stop>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Editar Empresa</h3>
+                    <button @click="closeEmpresaModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form @submit.prevent="updateEmpresa()" class="space-y-6">
+                    <div class="flex items-center space-x-6">
+                        <div class="flex-shrink-0">
+                            <div class="relative">
+                                @if($empresa->avatar)
+                                    <img src="{{ asset('storage/' . $empresa->avatar) }}" alt="Logo actual" class="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600" />
+                                @else
+                                    <div class="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center border border-gray-300 dark:border-gray-600">
+                                        <svg class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M5 21H3m2 0h5m4 0h5M9 7h1m4 0h1M9 11h1m4 0h1"/></svg>
+                                    </div>
+                                @endif
+                                <label class="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-1 cursor-pointer shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <input type="file" x-ref="empresaAvatar" @change="handleEmpresaAvatar($event)" accept="image/*" class="hidden" />
+                                </label>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción de la Empresa</label>
-                            <textarea x-model="empresaForm.descripcion_empresa" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Logo</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">JPEG, PNG, WEBP. Máx 2MB.</p>
                         </div>
-                        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <button type="button" @click="closeEmpresaModal()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Cancelar</button>
-                            <button type="submit" :disabled="empresaLoading" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
-                                <span x-show="!empresaLoading">Guardar Cambios</span>
-                                <span x-show="empresaLoading" class="flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                    Guardando...
-                                </span>
-                            </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre Comercial *</label>
+                            <input type="text" x-model="empresaForm.nombre_comercial" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
                         </div>
-                    </form>
-                </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Razón Social</label>
+                            <input type="text" x-model="empresaForm.razon_social" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RTN</label>
+                            <input type="text" x-model="empresaForm.rtn" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Horario de Atención</label>
+                            <input type="text" x-model="empresaForm.horario_atencion" placeholder="L-V 8:00-17:00" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción de la Empresa</label>
+                        <textarea x-model="empresaForm.descripcion_empresa" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" @click="closeEmpresaModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
+                        <button type="submit" :disabled="empresaLoading" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+                            <span x-show="!empresaLoading">Guardar Cambios</span>
+                            <span x-show="empresaLoading" class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Guardando...
+                            </span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </template>
     @endif
 
     {{-- Modal de contraseña actual (2FA) --}}
-    <template x-if="showPasswordModal">
-        <div x-cloak 
-             class="fixed inset-0 overflow-y-auto bg-black/70" 
-             x-transition.opacity.duration.250ms 
-             @keydown.escape.window="closePasswordModal()" 
-             @click.self="closePasswordModal()" 
-             role="dialog" aria-modal="true"
-             style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 2147483647 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important;">
-            
-            <div class="modal-content relative flex min-h-full items-center justify-center p-4" @click.self="closePasswordModal()">
-                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform"
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="ease-in duration-200"
-                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     @click.stop>
+    <template x-teleport="body">
+        <div x-show="showPasswordModal" x-cloak x-transition.opacity.duration.300ms
+            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
+            @click.self="closePasswordModal()" @keydown.window.escape="closePasswordModal()"
+            style="margin: 0;">
+            <div x-transition:enter="transition ease-out duration-300" 
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-md mx-auto" 
+                @click.stop>
+                
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100" x-text="passwordModal.title || 'Confirmación requerida'"></h3>
+                    <button @click="closePasswordModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Contenido -->
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4" x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
                     
-                    <!-- Header -->
-                    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100" x-text="passwordModal.title || 'Confirmación requerida'"></h3>
-                        <button @click="closePasswordModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña actual</label>
+                            <input type="password"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                   placeholder="••••••••"
+                                   x-model="passwordModal.password"
+                                   @keydown.enter.prevent="submitPasswordModal()"
+                                   autofocus />
+                            <p class="mt-2 text-xs text-red-600" x-show="modalError" x-text="modalError"></p>
+                        </div>
 
-                    <!-- Contenido -->
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4" x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña actual</label>
-                                <input type="password"
-                                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                                       placeholder="••••••••"
-                                       x-model="passwordModal.password"
-                                       @keydown.enter.prevent="submitPasswordModal()"
-                                       autofocus />
-                                <p class="mt-2 text-xs text-red-600" x-show="modalError" x-text="modalError"></p>
-                            </div>
-
-                            <div class="flex space-x-3">
-                                <button type="button" 
-                                        @click="closePasswordModal()" 
-                                        class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg">
-                                    Cancelar
-                                </button>
-                                <button type="button" 
-                                        @click="submitPasswordModal()" 
-                                        :disabled="passwordModal.loading || !passwordModal.password.trim()"
-                                        class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                                    <span x-show="!passwordModal.loading">Confirmar</span>
-                                    <span x-show="passwordModal.loading">Procesando...</span>
-                                </button>
-                            </div>
+                        <div class="flex gap-3">
+                            <button type="button" 
+                                    @click="closePasswordModal()" 
+                                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                Cancelar
+                            </button>
+                            <button type="button" 
+                                    @click="submitPasswordModal()" 
+                                    :disabled="passwordModal.loading || !passwordModal.password.trim()"
+                                    class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <span x-show="!passwordModal.loading">Confirmar</span>
+                                <span x-show="passwordModal.loading">Procesando...</span>
+                            </button>
                         </div>
                     </div>
                 </div>

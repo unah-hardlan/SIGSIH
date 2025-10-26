@@ -56,14 +56,13 @@
         </div>
     </div>
 
-    <!-- Teleport para modales - Los coloca fuera del contenedor principal -->
     <template x-teleport="body">
         <!-- Modal Nueva Solicitud -->
         <div x-show="modalNueva" x-cloak x-transition.opacity.duration.300ms
             class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
             @click.self="modalNueva = false" @keydown.window.escape="modalNueva = false"
             style="margin: 0;">
-            <div x-show="modalNueva" x-transition:enter="transition ease-out duration-300" 
+            <div x-transition:enter="transition ease-out duration-300" 
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto" 
                 @click.stop>
@@ -102,7 +101,7 @@
             class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/70 dark:bg-black/80"
             @click.self="modalDetalle = false" @keydown.window.escape="modalDetalle = false"
             style="margin: 0;">
-            <div x-show="modalDetalle" x-transition:enter="transition ease-out duration-300" 
+            <div x-transition:enter="transition ease-out duration-300" 
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto" 
                 @click.stop>
