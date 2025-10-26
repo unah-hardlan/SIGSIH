@@ -5,6 +5,7 @@ class ClienteSPA {
         this.loadingOverlay = null;
         this.cache = new Map();
         this.isLoading = false;
+        this.preloading = new Set();
         this.init();
     }
 
@@ -18,6 +19,7 @@ class ClienteSPA {
 
     setup() {
         this.contentContainer = document.querySelector("main");
+        this.loadingOverlay = document.getElementById("spa-loading-overlay");
         if (!this.contentContainer) {
             console.warn("[ClienteSPA] No se encontró el contenedor principal");
             return;
@@ -25,6 +27,7 @@ class ClienteSPA {
         this.createLoadingOverlay();
         this.setupEventListeners();
         this.interceptLinks();
+        this.setupPreloading();
         window.addEventListener("popstate", (e) => {
             if (e.state && e.state.path) {
                 this.loadPage(e.state.path, false);
@@ -34,6 +37,28 @@ class ClienteSPA {
             { path: this.currentRoute },
             "",
             this.currentRoute
+        );
+    }
+
+    setupPreloading() {
+        document.addEventListener(
+            "mouseover",
+            (e) => {
+                const link = e.target.closest(
+                    'a[data-spa-link], a[href^="/cliente/"]'
+                );
+                if (link && !link.hasAttribute("data-no-spa")) {
+                    const href = link.getAttribute("href");
+                    if (
+                        href &&
+                        (href.startsWith("/cliente/") ||
+                            link.hasAttribute("data-spa-link"))
+                    ) {
+                        this.preloadRoute(href);
+                    }
+                }
+            },
+            { passive: true }
         );
     }
 
@@ -91,9 +116,15 @@ class ClienteSPA {
     async loadPage(path, updateHistory = false) {
         if (this.isLoading) return;
         this.isLoading = true;
+
+        let contentFromCache = this.cache.has(path);
+        if (!contentFromCache) {
+            this.showLoading();
+        }
+
         try {
             let html;
-            if (this.cache.has(path)) {
+            if (contentFromCache) {
                 html = this.cache.get(path);
             } else {
                 html = await this.fetchPage(path);
@@ -106,16 +137,9 @@ class ClienteSPA {
             document.dispatchEvent(
                 new CustomEvent("spa:loaded", { detail: { path } })
             );
-        } catch (error) {
-            console.error("[ClienteSPA] Error al cargar página:", error);
-            this.showError(
-                "Error al cargar el contenido. Por favor, intenta de nuevo."
-            );
-            setTimeout(() => {
-                window.location.href = path;
-            }, 2000);
         } finally {
             this.isLoading = false;
+            this.hideLoading();
         }
     }
 
@@ -225,14 +249,20 @@ class ClienteSPA {
     }
 
     async preloadRoute(path) {
-        if (!this.cache.has(path)) {
-            try {
-                const html = await this.fetchPage(path);
-                this.cache.set(path, html);
-                console.log(`[ClienteSPA] Ruta precargada: ${path}`);
-            } catch (error) {
-                console.warn(`[ClienteSPA] Error al precargar: ${path}`, error);
-            }
+        if (this.cache.has(path) || this.preloading.has(path)) {
+            return;
+        }
+
+        this.preloading.add(path);
+
+        try {
+            const html = await this.fetchPage(path);
+            this.cache.set(path, html);
+            console.log(`[ClienteSPA] Ruta precargada: ${path}`);
+        } catch (error) {
+            console.warn(`[ClienteSPA] Error al precargar: ${path}`, error);
+        } finally {
+            this.preloading.delete(path);
         }
     }
 }
