@@ -11,6 +11,8 @@
         .card { max-width:560px; margin:0 auto; background:#ffffff; border-radius:18px; box-shadow:0 14px 48px rgba(15,23,42,.1); overflow:hidden; }
           .card-header { background:linear-gradient(135deg,#1d4ed8,#2563eb); padding:56px 32px; text-align:center; }
           .brand { display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; font-weight:600; letter-spacing:.3px; }
+    /* Use text-align as a fallback for email clients that strip flexbox */
+    .brand { display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-size:20px; font-weight:600; letter-spacing:.3px; }
           .brand img { max-height:80px; display:block; background:#ffffff; border-radius:20px; padding:20px 30px; }
         .brand-placeholder { font-size:24px; font-weight:700; }
         .card-body { padding:32px; }
@@ -32,14 +34,20 @@
         <tr><td>
             <div class="card">
                 <div class="card-header">
-                    <div class="brand">
-                        @if ($logoUrl)
-                            <img src="{{ $logoUrl }}" alt="{{ $appName }}" style="max-height:80px; display:block; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                            <span class="brand-placeholder" style="display:none;">{{ $appName }}</span>
-                        @else
-                            <span class="brand-placeholder">{{ $appName }}</span>
-                        @endif
-                    </div>
+                    <!-- Table wrapper ensures consistent centering across email clients -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                        <tr>
+                            <td align="center" style="padding:0;">
+                                @if ($logoUrl)
+                                    {{-- Inline styles help ensure rendering in clients that strip CSS --}}
+                                    <img src="{{ $logoUrl }}" alt="{{ $appName }}" style="max-height:80px; display:block; margin:0 auto; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='block';">
+                                    <div id="brand-fallback" style="display:none; font-size:24px; font-weight:700; color:#ffffff;">{{ $appName }}</div>
+                                @else
+                                    <div style="font-size:24px; font-weight:700; color:#ffffff;">{{ $appName }}</div>
+                                @endif
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <div class="card-body">
                     <h1>
