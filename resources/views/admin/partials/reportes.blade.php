@@ -192,7 +192,7 @@ class="overflow-x-auto">
             </template>
             <template x-if="!loadingReportes && reportes.length>0">
                 <template x-for="rep in paginatedReportes()" :key="rep.id_reportes_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-gray-800 p-4">
                         <div class="flex justify-between items-start mb-2">
                             <div class="space-y-1">
                                 <div class="text-sm text-gray-600 dark:text-gray-300 nunito-bold">Fecha</div>

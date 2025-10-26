@@ -141,7 +141,7 @@
                     <div class="p-4 text-center text-gray-500">Sin resultados</div>
                 </template>
                 <template x-for="item in paginatedItems()" :key="item.id_tipo_mantenimiento_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-800">
                         <div class="flex justify-between items-start">
                             <h3 class="font-semibold text-gray-900 dark:text-white" x-text="item.tipo_mantenimiento">
                             </h3>
