@@ -225,7 +225,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
             </template>
             <template x-if="!loadingEstadosCai && filteredEstadosCai.length > 0">
                 <template x-for="estadoCai in paginatedEstadosCai()" :key="estadoCai.id_estado_cai_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2 border border-black dark:border-gray-800">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold"

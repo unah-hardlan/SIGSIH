@@ -4,11 +4,16 @@
 <div class="max-w-7xl mx-auto space-y-6 mt-12" x-data="solicitudesCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold serif tracking-tight text-gray-900 dark:text-gray-100">Solicitudes de Soporte</h1>
-        <button @click="modalNueva = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+    </div>
+
+    <div class="text-gray-700 dark:text-gray-300 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        Las solicitudes de soporte le permiten reportar problemas técnicos de su empresa u organización. Nuestro equipo de soporte está comprometido a resolver sus inquietudes de manera efectiva. Por favor, proporcione detalles claros y específicos al crear una solicitud. Una vez sea aprobada se lo notificaremos para propocionarle una cotización de su solicitud.
+    </div>
+
+     <button @click="modalNueva = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
             <i class="fas fa-plus"></i>
             Nueva Solicitud
         </button>
-    </div>
 
     <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -56,14 +61,13 @@
         </div>
     </div>
 
-    <!-- Teleport para modales - Los coloca fuera del contenedor principal -->
     <template x-teleport="body">
         <!-- Modal Nueva Solicitud -->
         <div x-show="modalNueva" x-cloak x-transition.opacity.duration.300ms
             class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
             @click.self="modalNueva = false" @keydown.window.escape="modalNueva = false"
             style="margin: 0;">
-            <div x-show="modalNueva" x-transition:enter="transition ease-out duration-300" 
+            <div x-transition:enter="transition ease-out duration-300" 
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto" 
                 @click.stop>
@@ -102,7 +106,7 @@
             class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/70 dark:bg-black/80"
             @click.self="modalDetalle = false" @keydown.window.escape="modalDetalle = false"
             style="margin: 0;">
-            <div x-show="modalDetalle" x-transition:enter="transition ease-out duration-300" 
+            <div x-transition:enter="transition ease-out duration-300" 
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto" 
                 @click.stop>

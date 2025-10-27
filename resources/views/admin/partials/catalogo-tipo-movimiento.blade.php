@@ -6,21 +6,54 @@
     itemToDelete: null,
     tipoMovimientos: [],
     loadingTipoMovimientos: false,
+    
+    // 1️⃣ Variables de Paginación
+    numbersTipoMovimientos: [],
+    currentPageTipoMovimientos: 1,
+    perPageTipoMovimientos: 10,
+
     nombre_tipo_movimiento: '',
     descripcion_tipo_movimiento: '',
     filtroTipoMovimiento: '',
-    ordenarPor: '',
+    ordenarPor: 'nombre',
+
+    // 2️⃣ Métodos de Paginación
+    paginatedTipoMovimientos() {
+        return this.tipoMovimientos.slice(
+            (this.currentPageTipoMovimientos - 1) * this.perPageTipoMovimientos, 
+            this.currentPageTipoMovimientos * this.perPageTipoMovimientos
+        );
+    },
+    totalPagesTipoMovimientos() {
+        return Math.ceil(this.tipoMovimientos.length / this.perPageTipoMovimientos);
+    },
+    nextPageTipoMovimientos() {
+        if (this.currentPageTipoMovimientos < this.totalPagesTipoMovimientos()) {
+            this.currentPageTipoMovimientos++;
+        }
+    },
+    prevPageTipoMovimientos() {
+        if (this.currentPageTipoMovimientos > 1) {
+            this.currentPageTipoMovimientos--;
+        }
+    },
+
+    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchTipoMovimientos() {
         await window.tipoMovimientosApiHandlers.fetchTipoMovimientos(this);
+        this.numbersTipoMovimientos = this.tipoMovimientos; // ← LÍNEA AGREGADA
     },
     async submitTipoMovimiento() {
         await window.tipoMovimientosApiHandlers.submitTipoMovimiento(this);
+        this.fetchTipoMovimientos(); // Refrescar datos
     },
     async updateTipoMovimiento() {
         await window.tipoMovimientosApiHandlers.updateTipoMovimiento(this);
+        this.fetchTipoMovimientos(); // Refrescar datos
     },
     async deleteTipoMovimiento() {
         await window.tipoMovimientosApiHandlers.deleteTipoMovimiento(this);
+        this.fetchTipoMovimientos(); // Refrescar datos
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formTipoMovimiento') this.submitTipoMovimiento();
@@ -33,10 +66,10 @@
     }
 }"
 x-init="fetchTipoMovimientos()"
-{{-- AÑADIDO: Este bloque observa los cambios y llama a la API automáticamente --}}
 x-effect="
-    $watch('filtroTipoMovimiento', () => fetchTipoMovimientos());
-    $watch('ordenarPor', () => fetchTipoMovimientos());
+    // 4️⃣ Reset de página en filtros
+    $watch('filtroTipoMovimiento', () => { fetchTipoMovimientos(); currentPageTipoMovimientos = 1; });
+    $watch('ordenarPor', () => { fetchTipoMovimientos(); currentPageTipoMovimientos = 1; });
 "
 @keydown.escape.window="
     isTipoMovimientoModalOpen = false;
@@ -53,7 +86,7 @@ x-effect="
         <x-slot name="filters">
             @include('partials.filtros-generales', [
                 'searchModel' => 'filtroTipoMovimiento',
-                'ordenarModel' => 'ordenarPor', // {{-- AÑADIDO: Conecta el select de ordenamiento --}}
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
                     'nombre' => 'Nombre',
                     'id' => 'ID Tipo'
@@ -94,12 +127,13 @@ x-effect="
                         </tr>
                     </template>
                     <template x-if="!loadingTipoMovimientos && tipoMovimientos.length > 0">
-                        <template x-for="(tipoMovimiento, index) in tipoMovimientos" :key="tipoMovimiento.id_tipo_movimiento_pk">
+                        <!-- 5️⃣ Usar paginatedTipoMovimientos() en el template -->
+                        <template x-for="(tipoMovimiento, index) in paginatedTipoMovimientos()" :key="tipoMovimiento.id_tipo_movimiento_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === tipoMovimientos.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedTipoMovimientos().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoMovimiento.nombre_tipo_movimiento"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="tipoMovimiento.descripcion_tipo_movimiento"></td>
-                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === tipoMovimientos.length - 1 }">
+                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === paginatedTipoMovimientos().length - 1 }">
                                     <a href="#" @click.prevent="isTipoMovimientoEditModalOpen = true; itemToEdit = {id_tipo_movimiento_pk: tipoMovimiento.id_tipo_movimiento_pk, nombre_tipo_movimiento: tipoMovimiento.nombre_tipo_movimiento, descripcion_tipo_movimiento: tipoMovimiento.descripcion_tipo_movimiento}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isTipoMovimientoDeleteModalOpen = true; itemToDelete = {id_tipo_movimiento_pk: tipoMovimiento.id_tipo_movimiento_pk, nombre: tipoMovimiento.nombre_tipo_movimiento}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
@@ -122,7 +156,7 @@ x-effect="
                 </div>
             </template>
             <template x-if="!loadingTipoMovimientos && tipoMovimientos.length > 0">
-                <template x-for="tipoMovimiento in tipoMovimientos" :key="tipoMovimiento.id_tipo_movimiento_pk">
+                <template x-for="tipoMovimiento in paginatedTipoMovimientos()" :key="tipoMovimiento.id_tipo_movimiento_pk">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="tipoMovimiento.nombre_tipo_movimiento"></h3>
@@ -141,6 +175,47 @@ x-effect="
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- 6️⃣ Componente de Paginación -->
+    <div x-show="tipoMovimientos.length > perPageTipoMovimientos" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageTipoMovimientos - 1) * perPageTipoMovimientos + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageTipoMovimientos * perPageTipoMovimientos, tipoMovimientos.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="tipoMovimientos.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageTipoMovimientos()" :disabled="currentPageTipoMovimientos === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesTipoMovimientos()}, (_, i) => i + 1).slice(Math.max(0, currentPageTipoMovimientos - 3), currentPageTipoMovimientos + 2)" :key="page">
+                    <button @click="currentPageTipoMovimientos = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageTipoMovimientos ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageTipoMovimientos()" :disabled="currentPageTipoMovimientos === totalPagesTipoMovimientos()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div>

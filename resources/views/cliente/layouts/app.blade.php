@@ -22,7 +22,7 @@
     'resources/js/session.js',
     'resources/js/toast.js',
     'resources/js/tabla-responsive.js',
-    'resources/js/spa-cliente.js'
+    'resources/js/spa-cliente.js',
     ])
 
     <script>
@@ -69,15 +69,15 @@
     @stack('styles')
 </head>
 
+<div id="spa-loading-overlay" class="hidden fixed inset-0 z-[9999] items-center justify-center bg-gray-200/60 dark:bg-gray-900/60 backdrop-blur-sm">
+    <div class="w-16 h-16 border-4 border-gray-300 dark:border-gray-600 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin"></div>
+</div>
 <body class="font-sans bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col"
     x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}"
     x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile"
     @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
     <div class="flex min-h-screen relative bg-gray-50 dark:bg-gray-900">
-        <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" @click="sidebarOpen=false" class="fixed inset-0 bg-black bg-opacity-50"
+        <div x-show="sidebarOpen && isMobile"
             style="z-index:9990"></div>
 
         @include('cliente.partials.sidebar')

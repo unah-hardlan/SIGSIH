@@ -45,7 +45,7 @@
                     <template x-if="!loading && users.length === 0">
                         <tr><td colspan="6" class="py-8 text-center text-gray-500 nunito-regular">Sin resultados</td></tr>
                     </template>
-                    <template x-for="u in users" :key="u.id">
+                    <template x-for="u in paginatedUsuarios()" :key="u.id">
                         <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                             <td class="py-2 px-4" x-text="u.nombre_usuario"></td>
                             <td class="py-2 px-4" x-text="u.usuario"></td>
@@ -71,15 +71,6 @@
         </x-slot>
         
         <x-slot name="pagination">
-            <div class="mt-4 flex items-center justify-between" x-show="pagination.total > 0">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
-                    Página <span x-text="pagination.page"></span> de <span x-text="pagination.last_page"></span>
-                </div>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-700" :disabled="pagination.page <= 1" @click="changePage(pagination.page - 1)">Anterior</button>
-                    <button class="px-3 py-1 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-700" :disabled="pagination.page >= pagination.last_page" @click="changePage(pagination.page + 1)">Siguiente</button>
-                </div>
-            </div>
             <div class="mt-2 text-red-500 text-sm" x-show="error" x-text="error"></div>
         </x-slot>
 
@@ -90,7 +81,7 @@
             <template x-if="!loading && users.length === 0">
                 <div class="p-8 text-center text-gray-500 dark:text-gray-400">Sin resultados</div>
             </template>
-            <template x-for="u in users" :key="u.id">
+                            <template x-for="u in paginatedUsuarios()" :key="u.id">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                     <div class="flex justify-between items-start">
                         <div>
@@ -119,6 +110,41 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <div x-show="numbers.length > perPage" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPage - 1) * perPage + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPage * perPage, numbers.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="numbers.length"></strong>
+                resultados
+            </span>
+        </div>
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPage()" :disabled="currentPage === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPages()}, (_, i) => i + 1).slice(Math.max(0, currentPage - 3), currentPage + 2)" :key="page">
+                    <button @click="goToPage(page)"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPage ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+            <button @click="nextPage()" :disabled="currentPage === totalPages()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div>

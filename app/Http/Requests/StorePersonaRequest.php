@@ -29,6 +29,8 @@ class StorePersonaRequest extends FormRequest
             'dni' => 'required|string|max:20|' . $dniRule . '|unique:tbl_persona,dni',
             'id_genero_fk' => 'required|integer|exists:tbl_genero,id_genero_pk',
             'id_usuario_fk' => 'nullable|integer|exists:tbl_ms_usuario,id_usuario_pk',
+            // Si se envía, asociar la persona al cliente (empresa)
+            'id_cliente_fk' => 'sometimes|integer|exists:tbl_cliente,id_cliente_pk',
         ];
     }
 

@@ -6,6 +6,12 @@
     itemToDelete: null,
     serviciosRealizados: [],
     loadingServiciosRealizados: false,
+    
+    // 1️⃣ Variables de Paginación
+    numbersServiciosRealizados: [],
+    currentPageServiciosRealizados: 1,
+    perPageServiciosRealizados: 10,
+
     nombre_servicio: '',
     descripcion_servicio: '',
     // Filtros y ordenamiento
@@ -40,17 +46,44 @@
 
         return items;
     },
+
+    // 2️⃣ Métodos de Paginación (operan sobre la lista filtrada)
+    paginatedServiciosRealizados() {
+        return this.filteredServiciosRealizados.slice(
+            (this.currentPageServiciosRealizados - 1) * this.perPageServiciosRealizados,
+            this.currentPageServiciosRealizados * this.perPageServiciosRealizados
+        );
+    },
+    totalPagesServiciosRealizados() {
+        return Math.ceil(this.filteredServiciosRealizados.length / this.perPageServiciosRealizados);
+    },
+    nextPageServiciosRealizados() {
+        if (this.currentPageServiciosRealizados < this.totalPagesServiciosRealizados()) {
+            this.currentPageServiciosRealizados++;
+        }
+    },
+    prevPageServiciosRealizados() {
+        if (this.currentPageServiciosRealizados > 1) {
+            this.currentPageServiciosRealizados--;
+        }
+    },
+    
+    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchServiciosRealizados() {
         await window.serviciosRealizadosApiHandlers.fetchServiciosRealizados(this);
+        this.numbersServiciosRealizados = this.serviciosRealizados; // ← LÍNEA AGREGADA
     },
     async submitServicioRealizado() {
         await window.serviciosRealizadosApiHandlers.submitServicioRealizado(this);
+        this.fetchServiciosRealizados(); // Refrescar datos
     },
     async updateServicioRealizado() {
         await window.serviciosRealizadosApiHandlers.updateServicioRealizado(this);
+        this.fetchServiciosRealizados(); // Refrescar datos
     },
     async deleteServicioRealizado() {
         await window.serviciosRealizadosApiHandlers.deleteServicioRealizado(this);
+        this.fetchServiciosRealizados(); // Refrescar datos
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formServicioRealizado') this.submitServicioRealizado();
@@ -61,7 +94,14 @@
             this.deleteServicioRealizado();
         }
     }
-}" x-init="fetchServiciosRealizados()" @keydown.escape.window="
+}" 
+x-init="fetchServiciosRealizados()" 
+x-effect="
+    // 4️⃣ Reset de página en filtros
+    $watch('filtroServicioRealizado', () => currentPageServiciosRealizados = 1);
+    $watch('ordenarPor', () => currentPageServiciosRealizados = 1);
+"
+@keydown.escape.window="
     isServicioRealizadoModalOpen = false;
     isServicioRealizadoEditModalOpen = false;
     isServicioRealizadoDeleteModalOpen = false;
@@ -120,16 +160,17 @@
                         </tr>
                     </template>
                     <template x-if="!loadingServiciosRealizados && filteredServiciosRealizados.length > 0">
-                        <template x-for="(servicioRealizado, index) in filteredServiciosRealizados"
+                        <!-- 5️⃣ Usar paginatedServiciosRealizados() en el template -->
+                        <template x-for="(servicioRealizado, index) in paginatedServiciosRealizados()"
                             :key="servicioRealizado.id_servicio_realizado_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === filteredServiciosRealizados.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedServiciosRealizados().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="servicioRealizado.nombre_servicio"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="servicioRealizado.descripcion_servicio"></td>
                                 <td class="py-2 px-4 flex gap-2"
-                                    :class="{ 'last:rounded-br-lg': index === filteredServiciosRealizados.length - 1 }">
+                                    :class="{ 'last:rounded-br-lg': index === paginatedServiciosRealizados().length - 1 }">
                                     <a href="#"
                                         @click.prevent="isServicioRealizadoEditModalOpen = true; itemToEdit = {id_servicio_realizado_pk: servicioRealizado.id_servicio_realizado_pk, nombre_servicio: servicioRealizado.nombre_servicio, descripcion_servicio: servicioRealizado.descripcion_servicio}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
@@ -158,7 +199,7 @@
                 </div>
             </template>
             <template x-if="!loadingServiciosRealizados && filteredServiciosRealizados.length > 0">
-                <template x-for="servicioRealizado in filteredServiciosRealizados"
+                <template x-for="servicioRealizado in paginatedServiciosRealizados()"
                     :key="servicioRealizado.id_servicio_realizado_pk">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
@@ -185,6 +226,47 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- 6️⃣ Componente de Paginación -->
+    <div x-show="filteredServiciosRealizados.length > perPageServiciosRealizados" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageServiciosRealizados - 1) * perPageServiciosRealizados + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageServiciosRealizados * perPageServiciosRealizados, filteredServiciosRealizados.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="filteredServiciosRealizados.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageServiciosRealizados()" :disabled="currentPageServiciosRealizados === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesServiciosRealizados()}, (_, i) => i + 1).slice(Math.max(0, currentPageServiciosRealizados - 3), currentPageServiciosRealizados + 2)" :key="page">
+                    <button @click="currentPageServiciosRealizados = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageServiciosRealizados ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageServiciosRealizados()" :disabled="currentPageServiciosRealizados === totalPagesServiciosRealizados()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div>

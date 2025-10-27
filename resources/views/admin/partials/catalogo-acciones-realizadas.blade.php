@@ -158,7 +158,7 @@ x-effect="
             </template>
             <template x-if="!loadingAccionesRealizadas && accionesRealizadas.length > 0">
                 <template x-for="accion in paginatedAccionesRealizadas()" :key="accion.id_accion_realizada_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2 border border-black dark:border-gray-800">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="accion.nombre"></h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="accion.descripcion"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
