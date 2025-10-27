@@ -189,7 +189,13 @@
     },
 
     openReporte() {
-        window.open('/admin/reportes-header?modulo=proyectos', '_blank');
+        const params = new URLSearchParams({
+            q: this.filtroProyecto || '',
+            sort: this.ordenarPorProyecto || '',
+            direction: 'asc',
+            all: '1'
+        });
+        window.open('/admin/reportes-header?modulo=proyectos&' + params.toString(), '_blank');
     },
 
     formatDate(date) {
