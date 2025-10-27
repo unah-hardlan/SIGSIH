@@ -229,6 +229,12 @@ Route::prefix('admin')
             if ($moduloLower === 'tickets') {
                 return app(\App\Http\Controllers\TicketController::class)->reporte($request);
             }
+            if ($moduloLower === 'agencias') {
+                return app(\App\Http\Controllers\AgenciasController::class)->reporte($request);
+            }
+            if ($moduloLower === 'calendario') {
+                return app(\App\Http\Controllers\CalendarioController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,

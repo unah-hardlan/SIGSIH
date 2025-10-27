@@ -267,13 +267,6 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">
                     Calendario</h2>
-                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}"
-                        target="_blank"
-                        class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
-                        <i class="fas fa-file-alt"></i> Generar Reporte
-                    </a>
-                </div>
             </div>
             <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 overflow-x-auto">
                 <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-6">

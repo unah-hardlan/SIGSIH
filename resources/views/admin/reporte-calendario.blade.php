@@ -16,38 +16,56 @@
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">ID</th>
-                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Título</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Descripción</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Fecha/Hora</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Cliente</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Agencia</th>
+                            <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Tipo Mantenimiento</th>
                             <th class="border border-gray-300 py-2 px-3 text-left nunito-bold text-gray-700">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($calendarios as $calendario)
                         <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">1</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Mantenimiento Servidor Principal</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">10/08/2025 09:00</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Agencia Central</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Programado</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $calendario->id_calendario_pk }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $calendario->descripcion_calendario }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ \Carbon\Carbon::parse($calendario->fecha)->format('d/m/Y H:i') }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $calendario->cliente ? $calendario->cliente->nombre : '-' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $calendario->agencia ? $calendario->agencia->nombre_agencia : '-' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $calendario->tipoMantenimiento ? $calendario->tipoMantenimiento->tipo_mantenimiento : '-' }}</td>
+                            <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $calendario->estado ? $calendario->estado->nombre : '-' }}</td>
                         </tr>
+                        @empty
                         <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">2</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Capacitación Personal Técnico</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">15/08/2025 14:00</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Agencia Norte</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Confirmado</td>
+                            <td colspan="7" class="border border-gray-300 py-4 px-3 text-center nunito-regular text-gray-500">No hay eventos que coincidan con los filtros aplicados.</td>
                         </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">3</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Revisión Equipos de Seguridad</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">20/08/2025 08:30</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Agencia Sur</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Completado</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">4</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">Instalación Nuevo Software</td>
-                            <td class="border border-gray-300 py-2 px-3 nunito-regular">25/08/2025 10:00</td>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="mb-8">
+                <h3 class="text-lg nunito-bold text-gray-800 mb-4">Estadísticas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-blue-600">{{ $total }}</div>
+                        <div class="text-sm text-blue-800 nunito-regular">Total de Eventos</div>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-yellow-600">{{ $pendientes }}</div>
+                        <div class="text-sm text-yellow-800 nunito-regular">Pendientes</div>
+                    </div>
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-orange-600">{{ $enEjecucion }}</div>
+                        <div class="text-sm text-orange-800 nunito-regular">En progreso</div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-green-600">{{ $completados }}</div>
+                        <div class="text-sm text-green-800 nunito-regular">Completados</div>
+                    </div>
+                </div>
+            </div>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">Agencia Central</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">Pendiente</td>
                         </tr>
