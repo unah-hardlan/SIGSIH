@@ -226,6 +226,9 @@ Route::prefix('admin')
             if ($moduloLower === 'movimientos-proyecto') {
                 return app(\App\Http\Controllers\ProyectoController::class)->reporteMovimientos($request);
             }
+            if ($moduloLower === 'tickets') {
+                return app(\App\Http\Controllers\TicketController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,
