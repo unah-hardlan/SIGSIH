@@ -17,6 +17,7 @@ import {
     faHouseChimney,
     faClipboardQuestion,
     faPlus,
+    faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -31,7 +32,8 @@ library.add(
     faSun,
     faHouseChimney,
     faClipboardQuestion,
-    faPlus
+    faPlus,
+    faTimes
 );
 
 dom.watch();

@@ -1,9 +1,9 @@
 @extends('cliente.layouts.app')
 @section('title','Perfil - Cliente')
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6 mt-12" x-data="perfilData($el)" x-init="init()" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
+<div class="max-w-4xl mx-auto space-y-6 mt-12 font-nunito" x-data="perfilData($el)" x-init="init()" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
     <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Mi Perfil</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 font-serif">Mi Perfil</h1>
         @if($persona && !$empresa)
         <button @click="openEditModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@
     <!-- Sección de Seguridad (2FA) - Igual que admin -->
     <div class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 font-serif">
                 Autenticación en Dos Pasos (2FA)
             </h2>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -125,7 +125,7 @@
 
     <div class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+            <h2 class="text-lg font-bold serif text-gray-900 dark:text-gray-100 font-serif">
                 @if($empresa)
                     Información de la Empresa
                 @else
@@ -163,18 +163,18 @@
                     </div>
                     <div>
                         @if($empresa)
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                            <h3 class="text-xl font-medium serif text-gray-900 dark:text-gray-100">
                                 {{ $empresa->nombre_comercial }}
                             </h3>
-                            <p class="text-gray-600 dark:text-gray-400">{{ auth()->user()->correo_electronico }}</p>
+                            <p class="text-gray-600 dark:text-gray-400 serif">{{ auth()->user()->correo_electronico }}</p>
                             @if($empresa->razon_social)
                                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $empresa->razon_social }}</p>
                             @endif
                         @else
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                            <h3 class="text-xl font-medium serif text-gray-900 dark:text-gray-100">
                                 {{ trim($persona->primer_nombre . ' ' . ($persona->segundo_nombre ?? '') . ' ' . $persona->primer_apellido . ' ' . ($persona->segundo_apellido ?? '')) }}
                             </h3>
-                            <p class="text-gray-600 dark:text-gray-400">{{ auth()->user()->correo_electronico }}</p>
+                            <p class="text-gray-600 dark:text-gray-400 serif">{{ auth()->user()->correo_electronico }}</p>
                         @endif
                     </div>
                 </div>
@@ -209,11 +209,42 @@
                         <p class="text-sm text-gray-900 dark:text-gray-100">{{ $empresa->descripcion_empresa }}</p>
                     </div>
                     @endif
+
+                    <!-- Información de Contacto -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Tipo
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">Empresa</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                                Correo de Contacto
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ auth()->user()->correo_electronico }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Teléfono Fijo de Contacto
+                            </label>
+                            <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Teléfono Móvil de Contacto
+                            </label>
+                            <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
+                        </div>
+                    </div>
                 @else
                     <!-- Información Personal -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
                                 DNI
                             </label>
                             <p class="text-sm text-gray-900 dark:text-gray-100">{{ $persona->dni }}</p>
@@ -221,17 +252,48 @@
 
                         @if($persona->genero)
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
                                 Género
                             </label>
                             <p class="text-sm text-gray-900 dark:text-gray-100">{{ $persona->genero->genero }}</p>
                         </div>
                         @endif
                     </div>
+
+                    <!-- Información de Contacto -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Tipo
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">Persona</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Correo de Contacto
+                            </label>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ auth()->user()->correo_electronico }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Teléfono Fijo de Contacto
+                            </label>
+                            <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                                Teléfono Móvil de Contacto
+                            </label>
+                            <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
+                        </div>
+                    </div>
                 @endif
 
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Mi Actividad</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 font-serif">Mi Actividad</h3>
                     
                     <!-- Grid de estadísticas -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -244,7 +306,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
                                     </div>
-                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Tus Facturas</h4>
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 font-serif">Tus Facturas</h4>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -275,7 +337,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                         </svg>
                                     </div>
-                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Tus Cotizaciones</h4>
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 font-serif">Tus Cotizaciones</h4>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -306,7 +368,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                         </svg>
                                     </div>
-                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Órdenes de Servicio</h4>
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 font-serif">Órdenes de Servicio</h4>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -363,7 +425,7 @@
                 
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 font-serif">
                         Editar Información Personal
                     </h3>
                     <button @click="closeEditModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
@@ -398,7 +460,7 @@
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Foto de perfil</h4>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 font-serif">Foto de perfil</h4>
                             <p class="text-sm text-gray-500 dark:text-gray-400">JPG, PNG o GIF. Máximo 2MB.</p>
                         </div>
                     </div>
@@ -406,62 +468,85 @@
                     <!-- Nombres -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 Primer Nombre *
                             </label>
                             <input type="text" x-model="formData.primer_nombre" required
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 Segundo Nombre
                             </label>
                             <input type="text" x-model="formData.segundo_nombre"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                         </div>
                     </div>
 
                     <!-- Apellidos -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 Primer Apellido *
                             </label>
                             <input type="text" x-model="formData.primer_apellido" required
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 Segundo Apellido
                             </label>
                             <input type="text" x-model="formData.segundo_apellido"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                         </div>
                     </div>
 
                     <!-- DNI y Género -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 DNI *
                             </label>
                             <input type="text" x-model="formData.dni" required maxlength="15"
                                    placeholder="0000-0000-00000"
                                    @input="formatDNI($event)"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 Género
                             </label>
                             <select x-model="formData.id_genero_fk"
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100">
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                                 <option value="">Seleccionar género</option>
                                 @foreach($generos as $genero)
                                     <option value="{{ $genero->id_genero_pk }}">{{ $genero->genero }}</option>
                                 @endforeach
                             </select>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
+                                Correo de Contacto *
+                            </label>
+                            <input type="email" x-model="formData.correo_contacto" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
+                                Teléfono Fijo de Contacto
+                            </label>
+                            <input type="tel" x-model="formData.telefono_contacto" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
+                                Teléfono Móvil de Contacto
+                            </label>
+                            <input type="tel" x-model="formData.celular_contacto"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                     </div>
 
                     <!-- Botones -->
@@ -497,7 +582,7 @@
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-3xl mx-auto max-h-[90vh] overflow-y-auto" 
                 @click.stop>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Editar Empresa</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 font-serif">Editar Empresa</h3>
                     <button @click="closeEmpresaModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                         <i class="fas fa-times"></i>
                     </button>
@@ -520,7 +605,7 @@
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Logo</h4>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 font-serif">Logo</h4>
                             <p class="text-sm text-gray-500 dark:text-gray-400">JPEG, PNG, WEBP. Máx 2MB.</p>
                         </div>
                     </div>
@@ -547,6 +632,28 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción de la Empresa</label>
                         <textarea x-model="empresaForm.descripcion_empresa" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
+                                Correo de Contacto *
+                            </label>
+                            <input type="email" x-model="formData.correo_contacto" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
+                                Teléfono Fijo de Contacto
+                            </label>
+                            <input type="tel" x-model="formData.telefono_contacto" required
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
+                                Teléfono Móvil de Contacto
+                            </label>
+                            <input type="tel" x-model="formData.celular_contacto"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
                     </div>
                     <div class="flex justify-end gap-3 pt-4">
                         <button type="button" @click="closeEmpresaModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
@@ -577,7 +684,7 @@
                 
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100" x-text="passwordModal.title || 'Confirmación requerida'"></h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 font-serif" x-text="passwordModal.title || 'Confirmación requerida'"></h3>
                     <button @click="closePasswordModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                         <i class="fas fa-times"></i>
                     </button>
