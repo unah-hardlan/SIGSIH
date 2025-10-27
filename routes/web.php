@@ -220,6 +220,9 @@ Route::prefix('admin')
             if ($moduloLower === 'parametros') {
                 return app(\App\Http\Controllers\ParametroController::class)->reporte($request);
             }
+            if ($moduloLower === 'proyectos') {
+                return app(\App\Http\Controllers\ProyectoController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,

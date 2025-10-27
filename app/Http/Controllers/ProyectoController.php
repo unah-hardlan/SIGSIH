@@ -137,4 +137,49 @@ class ProyectoController extends Controller
             'message' => 'Proyecto eliminado correctamente'
         ], Response::HTTP_OK);
     }
+
+    // Reporte web (HTML) dinámico
+    public function reporte(Request $request)
+    {
+        $query = Proyecto::with(['ordenServicio', 'estadoProyecto']);
+
+        // Por defecto mostrar todos los proyectos para el reporte
+        if ($estado = $request->input('estado')) {
+            $query->whereHas('estadoProyecto', function($q) use ($estado) {
+                $q->where('codigo', $estado);
+            });
+        }
+        if ($q = $request->input('q')) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('nombre_proyecto', 'like', "%$q%")
+                    ->orWhere('descripcion_proyecto', 'like', "%$q%")
+                    ->orWhereHas('ordenServicio', function($subQuery) use ($q) {
+                        $subQuery->where('numero_orden_servicio', 'like', "%$q%");
+                    });
+            });
+        }
+        // Orden
+        $sortable = [
+            'nombre' => 'nombre_proyecto',
+            'fecha_inicio' => 'fecha_inicio_proyecto',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        if ($sort && isset($sortable[$sort])) {
+            $query->orderBy($sortable[$sort], $direction);
+        } else {
+            $query->orderBy('id_proyecto_pk', 'desc');
+        }
+
+        $proyectos = $query->get();
+        $total = $proyectos->count();
+        $activos = $proyectos->filter(function($p) { return $p->estadoProyecto && $p->estadoProyecto->codigo === 'ACTIVO'; })->count();
+        $finalizados = $proyectos->filter(function($p) { return $p->estadoProyecto && $p->estadoProyecto->codigo === 'FINALIZADO'; })->count();
+        $inactivos = $proyectos->filter(function($p) { return $p->estadoProyecto && $p->estadoProyecto->codigo === 'INACTIVO'; })->count();
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'proyectos';
+
+        return view('admin.reporte-proyectos', compact('proyectos', 'total', 'activos', 'finalizados', 'inactivos', 'fecha', 'modulo', 'sort', 'direction'));
+    }
 }
