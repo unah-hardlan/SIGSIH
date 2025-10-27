@@ -45,6 +45,10 @@ document.addEventListener("alpine:init", () => {
         },
         userToEdit: null,
         userToInactivate: null,
+        // Variables de Paginación
+        numbers: [],
+        currentPage: 1,
+        perPage: 10,
         apiBase: "/api/usuarios",
         canAccess() {
             return hasGestionUsuariosAccess();
@@ -61,6 +65,29 @@ document.addEventListener("alpine:init", () => {
             }, 2500);
             setTimeout(() => el.remove(), 3000);
         },
+        // Métodos de Paginación
+        paginatedUsuarios() {
+            return this.numbers.slice(
+                (this.currentPage - 1) * this.perPage,
+                this.currentPage * this.perPage
+            );
+        },
+        totalPages() {
+            return Math.ceil(this.numbers.length / this.perPage);
+        },
+        nextPage() {
+            if (this.currentPage < this.totalPages()) {
+                this.currentPage++;
+            }
+        },
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+        goToPage(page) {
+            this.currentPage = page;
+        },
         init() {
             if (!this.canAccess()) {
                 this.error = "No tienes permisos para ver los usuarios.";
@@ -76,7 +103,7 @@ document.addEventListener("alpine:init", () => {
             });
             this.$watch("search", () => this.debounceFetch());
             this.$watch("filtroPerfil", () => {
-                this.pagination.page = 1;
+                this.currentPage = 1;
                 this.fetchUsers();
             });
             this.$watch("ordenarPor", (val, old) => {
@@ -87,6 +114,7 @@ document.addEventListener("alpine:init", () => {
                 } else {
                     this.ordenDirection = "asc";
                 }
+                this.currentPage = 1;
                 this.fetchUsers();
             });
             this.$watch("showDeleteModal", (val) => {
@@ -135,7 +163,7 @@ document.addEventListener("alpine:init", () => {
         debounceFetch() {
             clearTimeout(this.debounceTimer);
             this.debounceTimer = setTimeout(() => {
-                this.pagination.page = 1;
+                this.currentPage = 1;
                 this.fetchUsers();
             }, 400);
         },
@@ -158,8 +186,8 @@ document.addEventListener("alpine:init", () => {
             this.loading = true;
             this.error = "";
             const params = new URLSearchParams({
-                per_page: this.pagination.per_page,
-                page: this.pagination.page,
+                per_page: 10000,
+                page: 1,
             });
             if (this.search) params.append("q", this.search);
             if (this.filtroPerfil) {
@@ -190,14 +218,7 @@ document.addEventListener("alpine:init", () => {
                 if (!r.ok) throw await r.json();
                 const data = await r.json();
                 this.users = data.data;
-                if (data.meta) {
-                    Object.assign(this.pagination, {
-                        page: data.meta.page,
-                        per_page: data.meta.per_page,
-                        total: data.meta.total,
-                        last_page: data.meta.last_page,
-                    });
-                }
+                this.numbers = this.users;
             } catch (e) {
                 this.error = e.error || e.message || "Error";
             } finally {
@@ -246,12 +267,9 @@ document.addEventListener("alpine:init", () => {
                 if (!r.ok) throw await r.json();
                 const data = await r.json();
                 this.isModalOpen = false;
-                if (this.pagination.page === 1 && !this.ordenarPor) {
+                if (this.currentPage === 1 && !this.ordenarPor) {
                     this.users.unshift(data.data || data);
-                    if (this.users.length > this.pagination.per_page) {
-                        this.users.pop();
-                    }
-                    this.pagination.total += 1;
+                    this.numbers = this.users;
                 } else {
                     this.fetchUsers();
                 }
@@ -310,6 +328,7 @@ document.addEventListener("alpine:init", () => {
                 if (idx > -1) {
                     this.users[idx] = data.data || data;
                 }
+                this.numbers = this.users;
                 if (this.ordenarPor) this.fetchUsers();
                 this.notify("Usuario actualizado");
             } catch (e) {
@@ -360,23 +379,38 @@ document.addEventListener("alpine:init", () => {
                     this.users[idx].estado_usuario = "INACTIVO";
                     if (this.filtroPerfil === "ACTIVO") {
                         this.users.splice(idx, 1);
-                        this.pagination.total = Math.max(
-                            0,
-                            this.pagination.total - 1
-                        );
-                        if (
-                            this.users.length < this.pagination.per_page &&
-                            this.pagination.page < this.pagination.last_page
-                        ) {
-                            this.fetchUsers();
-                        }
                     }
                 }
+                this.numbers = this.users;
                 if (this.ordenarPor) this.fetchUsers();
                 this.notify("Usuario inactivado");
             } catch (e) {
                 console.error(e);
                 this.notify(e.message || "Error al inactivar", "error");
+            }
+        },
+        // Métodos de paginación del lado del cliente
+        paginatedUsuarios() {
+            const start = (this.currentPage - 1) * this.perPage;
+            const end = start + this.perPage;
+            return this.numbers.slice(start, end);
+        },
+        totalPages() {
+            return Math.ceil(this.numbers.length / this.perPage);
+        },
+        nextPage() {
+            if (this.currentPage < this.totalPages()) {
+                this.currentPage++;
+            }
+        },
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+        goToPage(page) {
+            if (page >= 1 && page <= this.totalPages()) {
+                this.currentPage = page;
             }
         },
     }));

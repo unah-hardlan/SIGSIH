@@ -23,12 +23,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         "Authorization"
                     ]; // ensure cleared
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 document.dispatchEvent(
                     new CustomEvent("auth:updated", { detail: { token: null } })
                 );
-            } catch (_) { }
+            } catch (_) {}
         }
 
         async function fetchSessionToken(force = false) {
@@ -76,7 +76,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return { Accept: "application/json" };
                 },
             };
-        } catch (_) { }
+        } catch (_) {}
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -131,8 +131,8 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const delay = isDashboard
                     ? Math.floor(Math.random() * 180) + 60
                     : isApi
-                        ? Math.floor(Math.random() * 80)
-                        : 0;
+                    ? Math.floor(Math.random() * 80)
+                    : 0;
 
                 if (!isApi) return origFetch(...args);
 
@@ -164,12 +164,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                                                 "warning",
                                                 { duration: 4000 }
                                             );
-                                    } catch (_) { }
+                                    } catch (_) {}
                                     try {
                                         window.appLogout && window.appLogout();
-                                    } catch (_) { }
+                                    } catch (_) {}
                                 }
-                            } catch (_) { }
+                            } catch (_) {}
                         }
                         return res;
                     };
@@ -439,7 +439,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) { }
+    } catch (_) {}
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -529,13 +529,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) { }
+            } catch (_) {}
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) { }
+            } catch (_) {}
 
             let sanitized = html;
             try {
@@ -543,30 +543,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) { }
+            } catch (_) {}
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) { }
+                    } catch (_) {}
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) { }
+                    } catch (_) {}
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) { }
+                        } catch (_) {}
                     }
                 }
-            } catch (_) { }
+            } catch (_) {}
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -576,7 +576,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 if (
                     window.Livewire &&
@@ -584,10 +584,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) { }
+            } catch (_) {}
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) { }
+            } catch (_) {}
 
             this.restoreSidebarScrollPosition();
 
@@ -603,7 +603,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) { }
+            } catch (_) {}
         },
 
         saveSidebarScrollPosition() {
@@ -635,7 +635,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) { }
+            } catch (_) {}
             this.updateActiveLinks(url);
         },
 
@@ -722,7 +722,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) { }
+                } catch (_) {}
                 this.updateActiveLinks(path);
             }
         },
@@ -1026,17 +1026,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) { }
+    } catch (_) {}
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1064,7 +1064,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) { }
+    } catch (_) {}
     initializeDashboardChartsWithRetry();
 });
 
@@ -1073,7 +1073,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) { }
+    } catch (_) {}
 
     return { Accept: "application/json" };
 }
@@ -1155,7 +1155,7 @@ if (typeof window !== "undefined") {
                         this.adminPassword =
                             data.adminPassword || this.adminPassword;
                     }
-                } catch (_) { }
+                } catch (_) {}
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
@@ -1210,7 +1210,7 @@ if (typeof window !== "undefined") {
                         if (this.nombreSistema) {
                             document.title = this.nombreSistema;
                         }
-                    } catch (_) { }
+                    } catch (_) {}
                     setTimeout(
                         () => (this.savedMessagePersonalizacion = ""),
                         2500
@@ -1437,44 +1437,75 @@ if (typeof window !== "undefined") {
             productsOptions: [],
             repuestosList: [],
             repuestosForm: {
-                id_producto_fk: '',
+                id_producto_fk: "",
                 cantidad: 1,
             },
             async fetchProducts() {
                 if (this.productsOptions && this.productsOptions.length) return;
                 try {
                     const params = new URLSearchParams();
-                    params.set('per_page', '200');
-                    const res = await fetch('/api/productos?' + params.toString(), { headers: this.apiHeaders() });
-                    if (res.status === 401) { this.handleUnauthorized(); return; }
-                    if (!res.ok) throw new Error('Error al cargar productos');
+                    params.set("per_page", "200");
+                    const res = await fetch(
+                        "/api/productos?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al cargar productos");
                     const json = await res.json();
-                    this.productsOptions = (json.data || []).map(p => ({ value: String(p.id_producto_pk), label: p.nombre_producto || p.nombre || ('#' + p.id_producto_pk) }));
+                    this.productsOptions = (json.data || []).map((p) => ({
+                        value: String(p.id_producto_pk),
+                        label:
+                            p.nombre_producto ||
+                            p.nombre ||
+                            "#" + p.id_producto_pk,
+                    }));
                 } catch (e) {
                     console.error(e);
-                    this.showToast('No se pudieron cargar los productos', 'error');
+                    this.showToast(
+                        "No se pudieron cargar los productos",
+                        "error"
+                    );
                 }
             },
             async openRepuestosModal(orden) {
                 this.repuestosModalOrder = orden;
                 this.repuestosList = [];
-                this.repuestosForm = { id_producto_fk: '', cantidad: 1 };
+                this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
                 await this.fetchProducts();
                 // Try to load detalles existentes for this order
                 try {
                     const params = new URLSearchParams();
-                    params.set('per_page', '200');
-                    params.set('id_orden_servicio_fk', String(orden.id));
-                    const res = await fetch('/api/detalles-orden-producto?' + params.toString(), { headers: this.apiHeaders() });
-                    if (res.status === 401) { this.handleUnauthorized(); return; }
-                    if (!res.ok) throw new Error('Error al cargar detalles');
+                    params.set("per_page", "200");
+                    params.set("id_orden_servicio_fk", String(orden.id));
+                    const res = await fetch(
+                        "/api/detalles-orden-producto?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al cargar detalles");
                     const json = await res.json();
-                    const items = (json.data || []).filter(i => String(i.id_orden_servicio_fk) === String(orden.id)).map(i => ({
-                        id: i.id_detalle_pk || i.id || null,
-                        id_producto_fk: i.id_producto_fk,
-                        producto_nombre: i.producto?.nombre_producto || i.producto?.nombre || i.producto_nombre || '',
-                        cantidad: i.cantidad || 1,
-                    }));
+                    const items = (json.data || [])
+                        .filter(
+                            (i) =>
+                                String(i.id_orden_servicio_fk) ===
+                                String(orden.id)
+                        )
+                        .map((i) => ({
+                            id: i.id_detalle_pk || i.id || null,
+                            id_producto_fk: i.id_producto_fk,
+                            producto_nombre:
+                                i.producto?.nombre_producto ||
+                                i.producto?.nombre ||
+                                i.producto_nombre ||
+                                "",
+                            cantidad: i.cantidad || 1,
+                        }));
                     this.repuestosList = items;
                 } catch (e) {
                     console.error(e);
@@ -1489,36 +1520,59 @@ if (typeof window !== "undefined") {
                     cantidad: Number(this.repuestosForm.cantidad) || 1,
                 };
                 try {
-                    const res = await fetch('/api/detalles-orden-producto', { method: 'POST', headers: this.apiHeaders(), body: JSON.stringify(payload) });
-                    if (res.status === 401) { this.handleUnauthorized(); return; }
-                    if (!res.ok) throw new Error('Error al agregar repuesto');
+                    const res = await fetch("/api/detalles-orden-producto", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al agregar repuesto");
                     const json = await res.json();
                     const item = json.data || json;
-                    this.repuestosList.push({ id: item.id_detalle_pk || item.id || null, id_producto_fk: item.id_producto_fk, producto_nombre: item.producto?.nombre_producto || item.producto?.nombre || '', cantidad: item.cantidad });
-                    this.repuestosForm = { id_producto_fk: '', cantidad: 1 };
+                    this.repuestosList.push({
+                        id: item.id_detalle_pk || item.id || null,
+                        id_producto_fk: item.id_producto_fk,
+                        producto_nombre:
+                            item.producto?.nombre_producto ||
+                            item.producto?.nombre ||
+                            "",
+                        cantidad: item.cantidad,
+                    });
+                    this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
                     // Refresh orders to update summary column
                     this.fetchOrdenes();
                 } catch (e) {
                     console.error(e);
-                    this.showToast('No se pudo agregar el repuesto', 'error');
+                    this.showToast("No se pudo agregar el repuesto", "error");
                 }
             },
             // Add repuesto to the current order form (used inside create/edit modal)
             addRepuestoToForm() {
                 try {
                     if (!this.repuestosForm.id_producto_fk) {
-                        this.showToast('Seleccione un producto', 'error');
+                        this.showToast("Seleccione un producto", "error");
                         return;
                     }
                     const prodId = String(this.repuestosForm.id_producto_fk);
-                    const label = (this.productsOptions || []).find(p => String(p.value) === prodId)?.label || ('#' + prodId);
-                    const item = { id_producto_fk: Number(prodId), cantidad: Number(this.repuestosForm.cantidad) || 1, producto_nombre: label };
-                    if (!Array.isArray(this.formOrden.repuestos)) this.formOrden.repuestos = [];
+                    const label =
+                        (this.productsOptions || []).find(
+                            (p) => String(p.value) === prodId
+                        )?.label || "#" + prodId;
+                    const item = {
+                        id_producto_fk: Number(prodId),
+                        cantidad: Number(this.repuestosForm.cantidad) || 1,
+                        producto_nombre: label,
+                    };
+                    if (!Array.isArray(this.formOrden.repuestos))
+                        this.formOrden.repuestos = [];
                     this.formOrden.repuestos.push(item);
-                    this.repuestosForm = { id_producto_fk: '', cantidad: 1 };
+                    this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
                 } catch (e) {
                     console.error(e);
-                    this.showToast('No se pudo agregar el repuesto', 'error');
+                    this.showToast("No se pudo agregar el repuesto", "error");
                 }
             },
             removeRepuestoFromForm(idx) {
@@ -1528,14 +1582,22 @@ if (typeof window !== "undefined") {
             async removeRepuesto(item) {
                 if (!item || !item.id) return;
                 try {
-                    const res = await fetch('/api/detalles-orden-producto/' + item.id, { method: 'DELETE', headers: this.apiHeaders() });
-                    if (res.status === 401) { this.handleUnauthorized(); return; }
-                    if (!res.ok) throw new Error('Error al eliminar repuesto');
-                    this.repuestosList = this.repuestosList.filter(r => r.id !== item.id);
+                    const res = await fetch(
+                        "/api/detalles-orden-producto/" + item.id,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al eliminar repuesto");
+                    this.repuestosList = this.repuestosList.filter(
+                        (r) => r.id !== item.id
+                    );
                     this.fetchOrdenes();
                 } catch (e) {
                     console.error(e);
-                    this.showToast('No se pudo eliminar el repuesto', 'error');
+                    this.showToast("No se pudo eliminar el repuesto", "error");
                 }
             },
             formatDate(value) {
@@ -1570,7 +1632,8 @@ if (typeof window !== "undefined") {
                     if (!t.includes(":")) return d + " 00:00:00";
                     // ensure seconds
                     const parts = t.split(":");
-                    if (parts.length === 2) return `${d} ${parts[0]}:${parts[1]}:00`;
+                    if (parts.length === 2)
+                        return `${d} ${parts[0]}:${parts[1]}:00`;
                     return `${d} ${t}`;
                 }
                 // Handle ISO-like with T
@@ -1578,7 +1641,8 @@ if (typeof window !== "undefined") {
                     const [d, time] = v.split("T");
                     if (!time) return `${d} 00:00:00`;
                     const parts = time.split(":");
-                    if (parts.length === 2) return `${d} ${parts[0]}:${parts[1]}:00`;
+                    if (parts.length === 2)
+                        return `${d} ${parts[0]}:${parts[1]}:00`;
                     // if time already has seconds
                     return `${d} ${time}`;
                 }
@@ -1596,7 +1660,8 @@ if (typeof window !== "undefined") {
                     const [d, t] = v.split("T");
                     if (!t) return `${d}T00:00`;
                     const parts = t.split(":");
-                    if (parts.length >= 2) return `${d}T${parts[0]}:${parts[1]}`;
+                    if (parts.length >= 2)
+                        return `${d}T${parts[0]}:${parts[1]}`;
                     return `${d}T00:00`;
                 }
                 // If space separated datetime like 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD HH:MM'
@@ -1604,7 +1669,8 @@ if (typeof window !== "undefined") {
                     const [d, t] = v.split(" ");
                     if (!t) return `${d}T00:00`;
                     const parts = t.split(":");
-                    if (parts.length >= 2) return `${d}T${parts[0]}:${parts[1]}`;
+                    if (parts.length >= 2)
+                        return `${d}T${parts[0]}:${parts[1]}`;
                     return `${d}T00:00`;
                 }
                 // If only date
@@ -1629,13 +1695,25 @@ if (typeof window !== "undefined") {
                 const persona = cliente.persona || {};
                 const contacto = solicitud.contacto || {};
                 const tecnico = orden.tecnico || {};
-                const calificacionValor = orden.calificacion_servicio ?? orden.raw?.calificacion_servicio ?? null;
+                const calificacionValor =
+                    orden.calificacion_servicio ??
+                    orden.raw?.calificacion_servicio ??
+                    null;
                 const estado = orden.estado || {};
                 const cotizacion =
                     orden.cotizacion || orden.cotizacion_generada || {};
-                const fechaRecepcion = orden.fecha_recepcion_formatted || orden.fecha_recepcion || this.formatDate(orden.fecha_recepcion);
-                const fechaInicio = orden.fecha_inicio_formatted || orden.fecha_inicio || this.formatDate(orden.fecha_inicio);
-                const fechaFinalizacion = orden.fecha_finalizacion_formatted || orden.fecha_finalizacion || this.formatDate(orden.fecha_finalizacion);
+                const fechaRecepcion =
+                    orden.fecha_recepcion_formatted ||
+                    orden.fecha_recepcion ||
+                    this.formatDate(orden.fecha_recepcion);
+                const fechaInicio =
+                    orden.fecha_inicio_formatted ||
+                    orden.fecha_inicio ||
+                    this.formatDate(orden.fecha_inicio);
+                const fechaFinalizacion =
+                    orden.fecha_finalizacion_formatted ||
+                    orden.fecha_finalizacion ||
+                    this.formatDate(orden.fecha_finalizacion);
                 // calificacionValor already resolved from orden or raw payload above
                 // Estado: derive name even if relation missing, using FK + options
                 const estadoIdFromRel =
@@ -1652,8 +1730,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                (o) => String(o.value) === String(estadoId)
-                            )
+                                  (o) => String(o.value) === String(estadoId)
+                              )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1676,16 +1754,22 @@ if (typeof window !== "undefined") {
                         empresa.nombre_comercial ||
                         empresa.razon_social ||
                         // If no empresa name, try persona fields (first person)
-                        ([persona.primer_nombre, persona.segundo_nombre, persona.primer_apellido, persona.segundo_apellido]
+                        [
+                            persona.primer_nombre,
+                            persona.segundo_nombre,
+                            persona.primer_apellido,
+                            persona.segundo_apellido,
+                        ]
                             .filter(Boolean)
-                            .join(" ") || ""),
+                            .join(" ") ||
+                        "",
                     contacto_valor: contacto.valor_contacto || "",
                     contacto_tipo: contacto.tipo_contacto || "",
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                            .filter(Boolean)
-                            .join(" ")
+                              .filter(Boolean)
+                              .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -1701,16 +1785,39 @@ if (typeof window !== "undefined") {
                     estado_id: estadoId ? Number(estadoId) : null,
                     estado_codigo: estado.codigo || "",
                     calificacion_servicio: calificacionValor || null,
-                    repuestos_count: (orden.repuestos_count !== undefined) ? orden.repuestos_count : (Array.isArray(orden.repuestos || orden.raw?.repuestos) ? (orden.repuestos || orden.raw?.repuestos).length : null),
+                    repuestos_count:
+                        orden.repuestos_count !== undefined
+                            ? orden.repuestos_count
+                            : Array.isArray(
+                                  orden.repuestos || orden.raw?.repuestos
+                              )
+                            ? (orden.repuestos || orden.raw?.repuestos).length
+                            : null,
                     repuestos_summary: (function () {
                         try {
-                            const arr = orden.repuestos || orden.raw?.repuestos || null;
+                            const arr =
+                                orden.repuestos || orden.raw?.repuestos || null;
                             if (Array.isArray(arr) && arr.length) {
-                                const names = arr.map(r => r.nombre || r.producto_nombre || r.repuesto || (r.id_producto ? ('#' + r.id_producto) : '')).filter(Boolean);
-                                if (names.length <= 3) return names.join(', ');
-                                return names.slice(0, 3).join(', ') + ' +' + (names.length - 3);
+                                const names = arr
+                                    .map(
+                                        (r) =>
+                                            r.nombre ||
+                                            r.producto_nombre ||
+                                            r.repuesto ||
+                                            (r.id_producto
+                                                ? "#" + r.id_producto
+                                                : "")
+                                    )
+                                    .filter(Boolean);
+                                if (names.length <= 3) return names.join(", ");
+                                return (
+                                    names.slice(0, 3).join(", ") +
+                                    " +" +
+                                    (names.length - 3)
+                                );
                             }
-                            if (orden.repuestos_count) return String(orden.repuestos_count) + ' rep.';
+                            if (orden.repuestos_count)
+                                return String(orden.repuestos_count) + " rep.";
                         } catch (e) {
                             return null;
                         }
@@ -1982,7 +2089,7 @@ if (typeof window !== "undefined") {
             openCreateOrden() {
                 this.resetForm();
                 // Ensure product options available for repuestos
-                this.fetchProducts().catch(() => { });
+                this.fetchProducts().catch(() => {});
                 this.isModalOpen = true;
             },
             openEditOrden(orden) {
@@ -2014,20 +2121,47 @@ if (typeof window !== "undefined") {
                             id_estado_orden_servicio_fk: mapped.estado_id
                                 ? String(mapped.estado_id)
                                 : "",
-                            fecha_recepcion: this.toInputDatetime(mapped.fecha_recepcion || mapped.fecha_recepcion_formatted || mapped.fecha_recepcion_formatted),
-                            fecha_inicio: this.toInputDatetime(mapped.fecha_inicio || mapped.fecha_inicio_formatted),
-                            fecha_finalizacion: this.toInputDatetime(mapped.fecha_finalizacion || mapped.fecha_finalizacion_formatted),
+                            fecha_recepcion: this.toInputDatetime(
+                                mapped.fecha_recepcion ||
+                                    mapped.fecha_recepcion_formatted ||
+                                    mapped.fecha_recepcion_formatted
+                            ),
+                            fecha_inicio: this.toInputDatetime(
+                                mapped.fecha_inicio ||
+                                    mapped.fecha_inicio_formatted
+                            ),
+                            fecha_finalizacion: this.toInputDatetime(
+                                mapped.fecha_finalizacion ||
+                                    mapped.fecha_finalizacion_formatted
+                            ),
                             observaciones: mapped.observaciones || "",
                             diagnostico_tecnico:
                                 mapped.diagnostico_tecnico || "",
                             diagnostico_cliente:
                                 mapped.diagnostico_cliente || "",
                             id_cotizacion_fk: mapped.id_cotizacion ?? "",
-                            calificacion_servicio: full.calificacion_servicio ?? mapped.calificacion_servicio ?? "",
-                            repuestos: (full.repuestos && Array.isArray(full.repuestos)) ? full.repuestos.map(r => ({ id_producto_fk: r.id_producto_fk || r.id_producto || r.id_producto_fk, cantidad: r.cantidad || r.cant || 1, producto_nombre: r.nombre || r.producto_nombre || r.repuesto || '' })) : (mapped.raw?.repuestos || []),
+                            calificacion_servicio:
+                                full.calificacion_servicio ??
+                                mapped.calificacion_servicio ??
+                                "",
+                            repuestos:
+                                full.repuestos && Array.isArray(full.repuestos)
+                                    ? full.repuestos.map((r) => ({
+                                          id_producto_fk:
+                                              r.id_producto_fk ||
+                                              r.id_producto ||
+                                              r.id_producto_fk,
+                                          cantidad: r.cantidad || r.cant || 1,
+                                          producto_nombre:
+                                              r.nombre ||
+                                              r.producto_nombre ||
+                                              r.repuesto ||
+                                              "",
+                                      }))
+                                    : mapped.raw?.repuestos || [],
                         };
                         // Ensure product catalog loaded so product labels can be shown
-                        this.fetchProducts().catch(() => { });
+                        this.fetchProducts().catch(() => {});
                     } catch (e) {
                         console.error(e);
                         // Fallback a datos en memoria si falla la carga
@@ -2038,17 +2172,29 @@ if (typeof window !== "undefined") {
                             id_estado_orden_servicio_fk: orden.estado_id
                                 ? String(orden.estado_id)
                                 : "",
-                            fecha_recepcion: this.toInputDatetime(orden.raw?.fecha_recepcion || orden.fecha_recepcion),
-                            fecha_inicio: this.toInputDatetime(orden.raw?.fecha_inicio || orden.fecha_inicio),
-                            fecha_finalizacion: this.toInputDatetime(orden.raw?.fecha_finalizacion || orden.fecha_finalizacion),
+                            fecha_recepcion: this.toInputDatetime(
+                                orden.raw?.fecha_recepcion ||
+                                    orden.fecha_recepcion
+                            ),
+                            fecha_inicio: this.toInputDatetime(
+                                orden.raw?.fecha_inicio || orden.fecha_inicio
+                            ),
+                            fecha_finalizacion: this.toInputDatetime(
+                                orden.raw?.fecha_finalizacion ||
+                                    orden.fecha_finalizacion
+                            ),
                             observaciones: orden.observaciones || "",
                             diagnostico_tecnico:
                                 orden.diagnostico_tecnico || "",
                             diagnostico_cliente:
                                 orden.diagnostico_cliente || "",
                             id_cotizacion_fk: orden.id_cotizacion ?? "",
-                            calificacion_servicio: orden.raw?.calificacion_servicio ?? "",
-                            repuestos: (orden.raw && orden.raw.repuestos) ? orden.raw.repuestos : [],
+                            calificacion_servicio:
+                                orden.raw?.calificacion_servicio ?? "",
+                            repuestos:
+                                orden.raw && orden.raw.repuestos
+                                    ? orden.raw.repuestos
+                                    : [],
                         };
                     } finally {
                         this.isEditModalOpen = true;
@@ -2077,8 +2223,12 @@ if (typeof window !== "undefined") {
                         .id_estado_orden_servicio_fk
                         ? Number(this.formOrden.id_estado_orden_servicio_fk)
                         : null,
-                    fecha_recepcion: this.normalizeDateTime(this.formOrden.fecha_recepcion),
-                    fecha_inicio: this.normalizeDateTime(this.formOrden.fecha_inicio),
+                    fecha_recepcion: this.normalizeDateTime(
+                        this.formOrden.fecha_recepcion
+                    ),
+                    fecha_inicio: this.normalizeDateTime(
+                        this.formOrden.fecha_inicio
+                    ),
                     fecha_finalizacion: this.normalizeDateTime(
                         this.formOrden.fecha_finalizacion
                     ),
@@ -2090,9 +2240,18 @@ if (typeof window !== "undefined") {
                     id_cotizacion_fk: this.formOrden.id_cotizacion_fk
                         ? Number(this.formOrden.id_cotizacion_fk)
                         : null,
-                    calificacion_servicio: this.formOrden.calificacion_servicio || null,
+                    calificacion_servicio:
+                        this.formOrden.calificacion_servicio || null,
                     // Include repuestos array if present; send minimal shape expected by backend
-                    repuestos: Array.isArray(this.formOrden.repuestos) ? this.formOrden.repuestos.map(r => ({ id_producto_fk: Number(r.id_producto_fk || r.id_producto || 0) || null, cantidad: Number(r.cantidad) || 1 })) : [],
+                    repuestos: Array.isArray(this.formOrden.repuestos)
+                        ? this.formOrden.repuestos.map((r) => ({
+                              id_producto_fk:
+                                  Number(
+                                      r.id_producto_fk || r.id_producto || 0
+                                  ) || null,
+                              cantidad: Number(r.cantidad) || 1,
+                          }))
+                        : [],
                 };
             },
             async fetchEstadosOrden() {
@@ -2515,8 +2674,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                            ? "bg-yellow-600 text-white"
-                            : "bg-green-600 text-white");
+                        ? "bg-yellow-600 text-white"
+                        : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -2617,10 +2776,10 @@ if (typeof window !== "undefined") {
                     const raw = Array.isArray(data?.data)
                         ? data.data
                         : Array.isArray(data?.data?.data)
-                            ? data.data.data
-                            : Array.isArray(data)
-                                ? data
-                                : [];
+                        ? data.data.data
+                        : Array.isArray(data)
+                        ? data
+                        : [];
                     const mapped = (raw || [])
                         .map((c) => {
                             let nombre;
@@ -2846,7 +3005,7 @@ if (typeof window !== "undefined") {
                         try {
                             const errText = await res.text();
                             if (errText) msg += `: ${errText.slice(0, 300)}`;
-                        } catch (_) { }
+                        } catch (_) {}
                         throw new Error(msg);
                     }
                     const json = await res.json();
@@ -3240,10 +3399,10 @@ if (typeof window !== "undefined") {
                                     ""
                                 ).localeCompare(
                                     b.cliente_nombre ||
-                                    this.clienteLabelById(
-                                        b.id_cliente_fk
-                                    ) ||
-                                    "",
+                                        this.clienteLabelById(
+                                            b.id_cliente_fk
+                                        ) ||
+                                        "",
                                     "es"
                                 );
                             case "solicitud_acf":
