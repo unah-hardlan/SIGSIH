@@ -235,6 +235,9 @@ Route::prefix('admin')
             if ($moduloLower === 'calendario') {
                 return app(\App\Http\Controllers\CalendarioController::class)->reporte($request);
             }
+            if ($moduloLower === 'cai') {
+                return app(\App\Http\Controllers\CaiController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,
