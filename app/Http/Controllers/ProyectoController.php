@@ -182,4 +182,78 @@ class ProyectoController extends Controller
 
         return view('admin.reporte-proyectos', compact('proyectos', 'total', 'activos', 'finalizados', 'inactivos', 'fecha', 'modulo', 'sort', 'direction'));
     }
+
+    // Reporte web (HTML) dinámico para movimientos (ingresos y gastos)
+    public function reporteMovimientos(Request $request)
+    {
+        // Obtener ingresos
+        $queryIngresos = \App\Models\Ingresos::with(['proyecto', 'categoria']);
+        if ($q = $request->input('q_ingreso')) {
+            $queryIngresos->where(function ($sub) use ($q) {
+                $sub->where('nombre_ingreso', 'like', "%$q%")
+                    ->orWhere('descripcion_ingreso', 'like', "%$q%")
+                    ->orWhereHas('proyecto', function($subQuery) use ($q) {
+                        $subQuery->where('nombre_proyecto', 'like', "%$q%");
+                    })
+                    ->orWhereHas('categoria', function($subQuery) use ($q) {
+                        $subQuery->where('nombre_categoria', 'like', "%$q%");
+                    });
+            });
+        }
+        $sortableIngresos = [
+            'proyecto' => 'proyecto.nombre_proyecto',
+            'fecha' => 'fecha_ingreso',
+            'monto' => 'monto_ingreso',
+        ];
+        $sortIngreso = $request->input('sort_ingreso');
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        if ($sortIngreso && isset($sortableIngresos[$sortIngreso])) {
+            $queryIngresos->orderBy($sortableIngresos[$sortIngreso], $direction);
+        } else {
+            $queryIngresos->orderBy('id_ingresos_pk', 'desc');
+        }
+        $ingresos = $queryIngresos->get();
+
+        // Obtener gastos
+        $queryGastos = \App\Models\Gastos::with(['proyecto', 'categoria']);
+        if ($q = $request->input('q_gasto')) {
+            $queryGastos->where(function ($sub) use ($q) {
+                $sub->where('nombre_gasto', 'like', "%$q%")
+                    ->orWhere('descripcion_gasto', 'like', "%$q%")
+                    ->orWhereHas('proyecto', function($subQuery) use ($q) {
+                        $subQuery->where('nombre_proyecto', 'like', "%$q%");
+                    })
+                    ->orWhereHas('categoria', function($subQuery) use ($q) {
+                        $subQuery->where('nombre_categoria', 'like', "%$q%");
+                    });
+            });
+        }
+        $sortableGastos = [
+            'proyecto' => 'proyecto.nombre_proyecto',
+            'fecha' => 'fecha_gasto',
+            'monto' => 'monto_gasto',
+        ];
+        $sortGasto = $request->input('sort_gasto');
+        if ($sortGasto && isset($sortableGastos[$sortGasto])) {
+            $queryGastos->orderBy($sortableGastos[$sortGasto], $direction);
+        } else {
+            $queryGastos->orderBy('id_gasto_pk', 'desc');
+        }
+        $gastos = $queryGastos->get();
+
+        // Estadísticas
+        $totalIngresos = $ingresos->count();
+        $totalGastos = $gastos->count();
+        $sumaIngresos = $ingresos->sum('monto_ingreso');
+        $sumaGastos = $gastos->sum('monto_gasto');
+        $balance = $sumaIngresos - $sumaGastos;
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'movimientos-proyecto';
+
+        return view('admin.reporte-movimientos-proyecto', compact(
+            'ingresos', 'gastos', 'totalIngresos', 'totalGastos', 
+            'sumaIngresos', 'sumaGastos', 'balance', 'fecha', 'modulo'
+        ));
+    }
 }

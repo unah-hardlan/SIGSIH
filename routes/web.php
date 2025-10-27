@@ -223,6 +223,9 @@ Route::prefix('admin')
             if ($moduloLower === 'proyectos') {
                 return app(\App\Http\Controllers\ProyectoController::class)->reporte($request);
             }
+            if ($moduloLower === 'movimientos-proyecto') {
+                return app(\App\Http\Controllers\ProyectoController::class)->reporteMovimientos($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,
