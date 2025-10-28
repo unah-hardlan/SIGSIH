@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\Usuario;
+use App\Models\Rol;
+use App\Notifications\SystemNotification;
 use App\Http\Resources\TicketResource;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
@@ -48,7 +52,7 @@ class TicketController extends Controller
         }
 
         $tickets = $query->orderBy('fecha_creacion', 'desc')
-                        ->paginate($request->get('per_page', 15));
+            ->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
@@ -72,6 +76,44 @@ class TicketController extends Controller
         $validated = $request->validated();
         $ticket = Ticket::create($validated);
         $ticket->load(['estado', 'tecnico', 'cliente']);
+
+        // Enviar notificación a técnicos (rol que contenga 'tecn' en su nombre)
+        try {
+            $rols = Rol::where('rol', 'like', '%tecn%')->get();
+            if ($rols->isNotEmpty()) {
+                $roleIds = $rols->pluck('id_rol_pk')->all();
+                $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+                $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+                    ->whereIn('id_rol_fk', $roleIds)
+                    ->pluck('id_usuario_fk')
+                    ->all();
+
+                $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+                if (!empty($userIds)) {
+                    $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                    $clienteNombre = $ticket->cliente->nombre ?? ($ticket->cliente->nombre_comercial ?? 'Cliente');
+                    $payload = [
+                        'title' => 'Nuevo ticket',
+                        'body' => "Nuevo ticket #{$ticket->id_ticket_pk} para {$clienteNombre}",
+                        'url' => '/admin/tickets',
+                        'icon' => 'fa-ticket',
+                        'severity' => 'info',
+                        'module' => 'tickets',
+                        'meta' => ['id_ticket_pk' => $ticket->getKey()]
+                    ];
+
+                    foreach ($users as $u) {
+                        try {
+                            $u->notify(new SystemNotification($payload));
+                        } catch (\Throwable $t) {
+                            Log::warning('Failed to notify user ' . $u->id_usuario_pk . ' about new ticket: ' . $t->getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error sending new-ticket notifications: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
@@ -153,16 +195,16 @@ class TicketController extends Controller
     public function reporte(Request $request)
     {
         $query = Ticket::with([
-            'estado', 
-            'tecnico', 
-            'cliente' => function($q) {
+            'estado',
+            'tecnico',
+            'cliente' => function ($q) {
                 $q->with(['empresa', 'personas']);
             }
         ]);
 
         // Filtro por estado del ticket
         if ($estado = $request->input('estado')) {
-            $query->whereHas('estado', function($q) use ($estado) {
+            $query->whereHas('estado', function ($q) use ($estado) {
                 $q->where('codigo', $estado);
             });
         }
@@ -208,9 +250,15 @@ class TicketController extends Controller
 
         $tickets = $query->get();
         $total = $tickets->count();
-        $pendientes = $tickets->filter(function($t) { return $t->estado && strtolower($t->estado->nombre) === 'pendiente'; })->count();
-        $enProceso = $tickets->filter(function($t) { return $t->estado && strtolower($t->estado->nombre) === 'en proceso'; })->count();
-        $finalizados = $tickets->filter(function($t) { return $t->estado && strtolower($t->estado->nombre) === 'finalizado'; })->count();
+        $pendientes = $tickets->filter(function ($t) {
+            return $t->estado && strtolower($t->estado->nombre) === 'pendiente';
+        })->count();
+        $enProceso = $tickets->filter(function ($t) {
+            return $t->estado && strtolower($t->estado->nombre) === 'en proceso';
+        })->count();
+        $finalizados = $tickets->filter(function ($t) {
+            return $t->estado && strtolower($t->estado->nombre) === 'finalizado';
+        })->count();
 
         $fecha = now()->format('d/m/Y');
         $modulo = 'tickets';

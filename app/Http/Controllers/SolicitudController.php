@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Solicitud;
+use App\Models\Usuario;
+use App\Models\Rol;
+use App\Notifications\SystemNotification;
 use Illuminate\Validation\Rule;
 use App\Http\Resources\SolicitudResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class SolicitudController extends Controller
 {
@@ -111,6 +115,49 @@ class SolicitudController extends Controller
 
             return $sol;
         });
+
+        // Enviar notificación a técnicos (rol que contenga 'tecn' en su nombre) — tanto técnicos con rol principal
+        // como técnicos en la tabla pivot (roles secundarios)
+        try {
+            $solicitud->load(['cliente']);
+            $rols = Rol::where('rol', 'like', '%tecn%')->get();
+            if ($rols->isNotEmpty()) {
+                $roleIds = $rols->pluck('id_rol_pk')->all();
+
+                $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+                $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+                    ->whereIn('id_rol_fk', $roleIds)
+                    ->pluck('id_usuario_fk')
+                    ->all();
+
+                $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+                if (!empty($userIds)) {
+                    $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                    $clienteNombre = $solicitud->cliente->nombre ?? ($solicitud->cliente->nombre_comercial ?? 'Cliente');
+                    $payload = [
+                        'title' => 'Nueva solicitud',
+                        'body' => "Nueva solicitud #{$solicitud->numero_solicitud_acf} para {$clienteNombre}",
+                        'url' => '/admin/solicitudes',
+                        'icon' => 'fa-ticket-alt',
+                        'severity' => 'info',
+                        'module' => 'solicitudes',
+                        'meta' => ['id_solicitud_pk' => $solicitud->getKey()]
+                    ];
+
+                    foreach ($users as $u) {
+                        try {
+                            $u->notify(new SystemNotification($payload));
+                        } catch (\Throwable $t) {
+                            // No detener la creación por fallos en notificaciones
+                            Log::warning('Failed to notify user ' . $u->id_usuario_pk . ' about new solicitud: ' . $t->getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Registrar y continuar
+            Log::error('Error sending new-solicitud notifications: ' . $e->getMessage());
+        }
 
         return new SolicitudResource($solicitud->load(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']));
     }
