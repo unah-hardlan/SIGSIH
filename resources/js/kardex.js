@@ -4,9 +4,12 @@ window.kardexApiHandlers = {
         try {
             // Construir query string con filtros y ordenamiento
             const params = new URLSearchParams();
-            if (component.filtroKardex) params.append('filtroKardex', component.filtroKardex);
-            if (component.ordenarPor) params.append('ordenarPor', component.ordenarPor);
-            if (component.ordenarDirection) params.append('ordenarDirection', component.ordenarDirection);
+            if (component.filtroKardex)
+                params.append("filtroKardex", component.filtroKardex);
+            if (component.ordenarPor)
+                params.append("ordenarPor", component.ordenarPor);
+            if (component.ordenarDirection)
+                params.append("ordenarDirection", component.ordenarDirection);
             const response = await fetch(`/api/kardex?${params.toString()}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
@@ -16,8 +19,8 @@ window.kardexApiHandlers = {
             component.kardex = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                    ? data
-                    : [];
+                ? data
+                : [];
         } catch (error) {
             console.error("Error fetching kardex:", error);
             window.showToast &&
@@ -223,7 +226,6 @@ window.kardexApiHandlers = {
                 }
             );
 
-            // El controller retorna 204 sin contenido, así que no parsear JSON
             if (!response.ok) {
                 throw new Error("Error al eliminar");
             }
@@ -244,11 +246,10 @@ window.kardexApiHandlers = {
     },
 };
 
-// Handlers para cargar catálogos
 window.catalogosKardexHandlers = {
     async fetchProductos(component) {
         try {
-            const response = await fetch("/api/productos", {
+            const response = await fetch("/api/productos?per_page=1000", {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
@@ -257,8 +258,8 @@ window.catalogosKardexHandlers = {
             component.catalogoProductos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                    ? data
-                    : [];
+                ? data
+                : [];
         } catch (error) {
             console.error("Error fetching productos:", error);
         }
@@ -266,17 +267,20 @@ window.catalogosKardexHandlers = {
 
     async fetchTiposMovimiento(component) {
         try {
-            const response = await fetch("/api/tipos-movimiento", {
-                headers: { Accept: "application/json" },
-                credentials: "same-origin",
-            });
+            const response = await fetch(
+                "/api/tipos-movimiento?per_page=1000",
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                }
+            );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
             component.catalogoTiposMovimiento = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                    ? data
-                    : [];
+                ? data
+                : [];
         } catch (error) {
             console.error("Error fetching tipos movimiento:", error);
         }
@@ -284,7 +288,8 @@ window.catalogosKardexHandlers = {
 
     async fetchOrigenes(component) {
         try {
-            const response = await fetch("/api/origenes", {
+            // MODIFICADO: Agregar parámetro para traer todos los registros
+            const response = await fetch("/api/origenes?per_page=1000", {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
@@ -293,10 +298,11 @@ window.catalogosKardexHandlers = {
             component.catalogoOrigenes = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                    ? data
-                    : [];
+                ? data
+                : [];
         } catch (error) {
             console.error("Error fetching origenes:", error);
         }
     },
 };
+

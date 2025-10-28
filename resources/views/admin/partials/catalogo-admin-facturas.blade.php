@@ -66,10 +66,10 @@
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosFactura && filteredEstadosFactura.length > 0">
-                        <template x-for="(estadoFactura, index) in filteredEstadosFactura"
+                        <template x-for="(estadoFactura, index) in paginatedEstadosFactura()"
                             :key="estadoFactura.id_estado_factura_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === filteredEstadosFactura.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedEstadosFactura().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="estadoFactura.codigo || '-'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
@@ -85,7 +85,7 @@
                                         class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:ring-1 dark:ring-gray-500/40">No</span>
                                 </td>
                                 <td class="py-2 px-4 flex gap-2"
-                                    :class="{ 'last:rounded-br-lg': index === filteredEstadosFactura.length - 1 }">
+                                    :class="{ 'last:rounded-br-lg': index === paginatedEstadosFactura().length - 1 }">
                                     <a href="#"
                                         @click.prevent="isEditEstadoFacturaModalOpen = true; itemToEdit = {id_estado_factura_pk: estadoFactura.id_estado_factura_pk, codigo: estadoFactura.codigo, nombre: estadoFactura.nombre_estado, descripcion: estadoFactura.descripcion_estado_factura, es_final: estadoFactura.es_final, orden: estadoFactura.orden}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
@@ -114,7 +114,7 @@
                 </div>
             </template>
             <template x-if="!loadingEstadosFactura && filteredEstadosFactura.length > 0">
-                <template x-for="estadoFactura in filteredEstadosFactura" :key="estadoFactura.id_estado_factura_pk">
+                <template x-for="estadoFactura in paginatedEstadosFactura()" :key="estadoFactura.id_estado_factura_pk">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
@@ -140,6 +140,9 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- Paginación del lado del cliente -->
+    <x-pagination />
 
     <!-- Modales -->
     <div>

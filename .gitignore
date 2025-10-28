@@ -13,6 +13,8 @@ Homestead.json
 /.idea
 /.vscode
 /.phpunit.cache
+#file that is generated every time the local server runs
+hot
 
 # Docker
 docker-compose.override.yml
@@ -29,4 +31,4 @@ yarn-error.log
 Thumbs.db
 
 # Vite
-/public/hot
+/public/hot/public/build/

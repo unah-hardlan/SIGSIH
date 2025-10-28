@@ -9,6 +9,7 @@
     itemToEdit: null,
     itemToDelete: null,
     proyectos: [],
+    numbersProyectos: [], // Alias para paginación
     loadingProyectos: false,
     nombre_proyecto: '',
     fecha_inicio_proyecto: '',
@@ -19,7 +20,8 @@
     id_estado_proyecto_fk: '',
     filtroProyecto: '',
     ordenarPorProyecto: '',
-    ordenarPor: '',
+    currentPageProyectos: 1,
+    perPageProyectos: 10,
 
     // --- Estado para INGRESOS ---
     isIngresoModalOpen: false,
@@ -28,6 +30,7 @@
     ingresoToEdit: null,
     ingresoToDelete: null,
     ingresos: [],
+    numbersIngresos: [], // Alias para paginación
     loadingIngresos: false,
     nombre_ingreso: '',
     fecha_ingreso: '',
@@ -37,6 +40,8 @@
     id_categoria_fk_ingreso: '',
     filtroIngreso: '',
     ordenarPorIngreso: '',
+    currentPageIngresos: 1,
+    perPageIngresos: 10,
 
     // --- Estado para GASTOS ---
     isGastoModalOpen: false,
@@ -45,6 +50,7 @@
     gastoToEdit: null,
     gastoToDelete: null,
     gastos: [],
+    numbersGastos: [], // Alias para paginación
     loadingGastos: false,
     nombre_gasto: '',
     fecha_gasto: '',
@@ -54,6 +60,8 @@
     id_categoria_fk_gasto: '',
     filtroGasto: '',
     ordenarPorGasto: '',
+    currentPageGastos: 1,
+    perPageGastos: 10,
     
     // --- Catálogos (para los <select>) ---
     catalogoEstadosProyecto: [],
@@ -61,19 +69,109 @@
     catalogoProyectos: [],
     catalogoCategorias: [],
 
+    // --- Métodos de Paginación para PROYECTOS ---
+    paginatedProyectos() {
+        return this.proyectos.slice((this.currentPageProyectos - 1) * this.perPageProyectos, this.currentPageProyectos * this.perPageProyectos);
+    },
+    totalPagesProyectos() {
+        return Math.ceil(this.proyectos.length / this.perPageProyectos);
+    },
+    nextPageProyectos() {
+        if (this.currentPageProyectos < this.totalPagesProyectos()) {
+            this.currentPageProyectos++;
+        }
+    },
+    prevPageProyectos() {
+        if (this.currentPageProyectos > 1) {
+            this.currentPageProyectos--;
+        }
+    },
+
+    // --- Métodos de Paginación para INGRESOS ---
+    paginatedIngresos() {
+        return this.ingresos.slice((this.currentPageIngresos - 1) * this.perPageIngresos, this.currentPageIngresos * this.perPageIngresos);
+    },
+    totalPagesIngresos() {
+        return Math.ceil(this.ingresos.length / this.perPageIngresos);
+    },
+    nextPageIngresos() {
+        if (this.currentPageIngresos < this.totalPagesIngresos()) {
+            this.currentPageIngresos++;
+        }
+    },
+    prevPageIngresos() {
+        if (this.currentPageIngresos > 1) {
+            this.currentPageIngresos--;
+        }
+    },
+
+    // --- Métodos de Paginación para GASTOS ---
+    paginatedGastos() {
+        return this.gastos.slice((this.currentPageGastos - 1) * this.perPageGastos, this.currentPageGastos * this.perPageGastos);
+    },
+    totalPagesGastos() {
+        return Math.ceil(this.gastos.length / this.perPageGastos);
+    },
+    nextPageGastos() {
+        if (this.currentPageGastos < this.totalPagesGastos()) {
+            this.currentPageGastos++;
+        }
+    },
+    prevPageGastos() {
+        if (this.currentPageGastos > 1) {
+            this.currentPageGastos--;
+        }
+    },
+
     // --- Lógica de la API ---
-    async fetchProyectos() { await window.proyectosApiHandlers.fetchProyectos(this); },
-    async submitProyecto() { await window.proyectosApiHandlers.submitProyecto(this); },
-    async updateProyecto() { await window.proyectosApiHandlers.updateProyecto(this); },
-    async deleteProyecto() { await window.proyectosApiHandlers.deleteProyecto(this); },
-    async fetchIngresos() { await window.ingresosApiHandlers.fetchIngresos(this); },
-    async submitIngreso() { await window.ingresosApiHandlers.submitIngreso(this); },
-    async updateIngreso() { await window.ingresosApiHandlers.updateIngreso(this); },
-    async deleteIngreso() { await window.ingresosApiHandlers.deleteIngreso(this); },
-    async fetchGastos() { await window.gastosApiHandlers.fetchGastos(this); },
-    async submitGasto() { await window.gastosApiHandlers.submitGasto(this); },
-    async updateGasto() { await window.gastosApiHandlers.updateGasto(this); },
-    async deleteGasto() { await window.gastosApiHandlers.deleteGasto(this); },
+    async fetchProyectos() { 
+        await window.proyectosApiHandlers.fetchProyectos(this); 
+        this.numbersProyectos = this.proyectos;
+    },
+    async submitProyecto() { 
+        await window.proyectosApiHandlers.submitProyecto(this); 
+        this.numbersProyectos = this.proyectos;
+    },
+    async updateProyecto() { 
+        await window.proyectosApiHandlers.updateProyecto(this); 
+        this.numbersProyectos = this.proyectos;
+    },
+    async deleteProyecto() { 
+        await window.proyectosApiHandlers.deleteProyecto(this); 
+        this.numbersProyectos = this.proyectos;
+    },
+    async fetchIngresos() { 
+        await window.ingresosApiHandlers.fetchIngresos(this); 
+        this.numbersIngresos = this.ingresos;
+    },
+    async submitIngreso() { 
+        await window.ingresosApiHandlers.submitIngreso(this); 
+        this.numbersIngresos = this.ingresos;
+    },
+    async updateIngreso() { 
+        await window.ingresosApiHandlers.updateIngreso(this); 
+        this.numbersIngresos = this.ingresos;
+    },
+    async deleteIngreso() { 
+        await window.ingresosApiHandlers.deleteIngreso(this); 
+        this.numbersIngresos = this.ingresos;
+    },
+    async fetchGastos() { 
+        await window.gastosApiHandlers.fetchGastos(this); 
+        this.numbersGastos = this.gastos;
+    },
+    async submitGasto() { 
+        await window.gastosApiHandlers.submitGasto(this); 
+        this.numbersGastos = this.gastos;
+    },
+    async updateGasto() { 
+        await window.gastosApiHandlers.updateGasto(this); 
+        this.numbersGastos = this.gastos;
+    },
+    async deleteGasto() { 
+        await window.gastosApiHandlers.deleteGasto(this); 
+        this.numbersGastos = this.gastos;
+    },
     async fetchCatalogos() {
         await window.catalogosApiHandlers.fetchEstadosProyecto(this);
         await window.catalogosApiHandlers.fetchOrdenesServicio(this);
@@ -81,24 +179,19 @@
         await window.catalogosApiHandlers.fetchCategorias(this);
     },
 
-    // Open Nuevo Proyecto modal ensuring catalogs (ordenes) are loaded first
     async openNuevoProyecto() {
         try {
             if (!this.catalogoOrdenesServicio || this.catalogoOrdenesServicio.length === 0) {
                 await window.catalogosApiHandlers.fetchOrdenesServicio(this);
             }
-        } catch (e) {
-            // ignore - modal will still open
-        }
+        } catch (e) {}
         this.isProyectoModalOpen = true;
     },
 
-    // Utility: formato de fecha legible para tablas y campos (YYYY-MM-DD)
     formatDate(date) {
         if (!date) return 'N/A';
         try {
             if (typeof date === 'string' && date.indexOf('/') !== -1) {
-                // formato dd/mm/yyyy
                 const parts = date.split('/').map(s => s.trim());
                 if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
             }
@@ -110,7 +203,6 @@
         }
     },
 
-    // --- Manejadores de Eventos Globales ---
     handleModalSubmit(event) {
         if (event.detail.formId === 'formProyecto') this.submitProyecto();
         if (event.detail.formId === 'formEditProyecto') this.updateProyecto();
@@ -127,12 +219,12 @@
 }"
 x-init="fetchProyectos(); fetchIngresos(); fetchGastos(); fetchCatalogos();"
 x-effect="
-$watch('filtroProyecto', () => fetchProyectos());
-$watch('ordenarPorProyecto', () => fetchProyectos());
-$watch('filtroIngreso', () => fetchIngresos());
-$watch('ordenarPorIngreso', () => fetchIngresos());
-$watch('filtroGasto', () => fetchGastos());
-$watch('ordenarPorGasto', () => fetchGastos());
+$watch('filtroProyecto', () => { fetchProyectos(); currentPageProyectos = 1; });
+$watch('ordenarPorProyecto', () => { fetchProyectos(); currentPageProyectos = 1; });
+$watch('filtroIngreso', () => { fetchIngresos(); currentPageIngresos = 1; });
+$watch('ordenarPorIngreso', () => { fetchIngresos(); currentPageIngresos = 1; });
+$watch('filtroGasto', () => { fetchGastos(); currentPageGastos = 1; });
+$watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
 "
 @keydown.escape.window="
     isProyectoModalOpen = false;
@@ -198,22 +290,22 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     <tbody>
                         <template x-if="loadingProyectos">
                             <tr>
-                                <td colspan="5" class="text-center p-4 text-gray-500 nunito-regular">
+                                <td colspan="8" class="text-center p-4 text-gray-500 nunito-regular">
                                     <i class="fas fa-spinner fa-spin mr-2"></i>Cargando proyectos...
                                 </td>
                             </tr>
                         </template>
                         <template x-if="!loadingProyectos && proyectos.length === 0">
                             <tr>
-                                <td colspan="5" class="text-center p-4 text-gray-500 nunito-regular">
+                                <td colspan="8" class="text-center p-4 text-gray-500 nunito-regular">
                                     No hay proyectos registrados
                                 </td>
                             </tr>
                         </template>
                         <template x-if="!loadingProyectos && proyectos.length > 0">
-                            <template x-for="(proyecto, index) in proyectos" :key="proyecto.id_proyecto_pk">
+                            <template x-for="(proyecto, index) in paginatedProyectos()" :key="proyecto.id_proyecto_pk">
                                 <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                    :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === proyectos.length - 1 }">
+                                    :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedProyectos().length - 1 }">
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="proyecto.nombre_proyecto"></td>
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="formatDate(proyecto.fecha_inicio_proyecto)"></td>
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="formatDate(proyecto.fecha_estimada_fin_proyecto)"></td>
@@ -246,7 +338,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     </div>
                 </template>
                 <template x-if="!loadingProyectos && proyectos.length > 0">
-                    <template x-for="proyecto in proyectos" :key="proyecto.id_proyecto_pk">
+                    <template x-for="proyecto in paginatedProyectos()" :key="proyecto.id_proyecto_pk">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="proyecto.nombre_proyecto"></h3>
@@ -266,6 +358,42 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <!-- Paginación para Proyectos -->
+        <div x-show="numbersProyectos.length > perPageProyectos" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+            <div class="mb-2">
+                <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                    Mostrando
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageProyectos - 1) * perPageProyectos + 1"></strong>
+                    a
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageProyectos * perPageProyectos, numbersProyectos.length)"></strong>
+                    de
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="numbersProyectos.length"></strong>
+                    resultados
+                </span>
+            </div>
+            <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+                <button @click="prevPageProyectos()" :disabled="currentPageProyectos === 1"
+                        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <span>Anterior</span>
+                </button>
+                <div class="flex items-center gap-1">
+                    <template x-for="page in Array.from({length: totalPagesProyectos()}, (_, i) => i + 1).slice(Math.max(0, currentPageProyectos - 3), currentPageProyectos + 2)" :key="page">
+                        <button @click="currentPageProyectos = page"
+                                class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                :class="page === currentPageProyectos ? 'bg-blue-600 text-white' : ''">
+                            <span x-text="page"></span>
+                        </button>
+                    </template>
+                </div>
+                <button @click="nextPageProyectos()" :disabled="currentPageProyectos === totalPagesProyectos()"
+                        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                    <span>Siguiente</span>
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </div>
     </div>
 
     {{-- ==================== PESTAÑA DE MOVIMIENTOS ==================== --}}
@@ -277,7 +405,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     'searchModel' => 'filtroIngreso',
                     'ordenarModel' => 'ordenarPorIngreso',
                     'ordenarOptions' => [
-                        'nombre' => 'Nombre',
+                        'proyecto' => 'Proyecto',
                         'fecha' => 'Fecha',
                         'monto' => 'Monto'
                     ]
@@ -315,9 +443,9 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                             </tr>
                         </template>
                         <template x-if="!loadingIngresos && ingresos.length > 0">
-                            <template x-for="(ingreso, index) in ingresos" :key="ingreso.id_ingresos_pk">
+                            <template x-for="(ingreso, index) in paginatedIngresos()" :key="ingreso.id_ingresos_pk">
                                 <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                    :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === ingresos.length - 1 }">
+                                    :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedIngresos().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ingreso.nombre_ingreso"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ingreso.proyecto ? ingreso.proyecto.nombre_proyecto : 'N/A'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="formatDate(ingreso.fecha_ingreso)"></td>
@@ -345,7 +473,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     </div>
                 </template>
                 <template x-if="!loadingIngresos && ingresos.length > 0">
-                    <template x-for="ingreso in ingresos" :key="ingreso.id_ingresos_pk">
+                    <template x-for="ingreso in paginatedIngresos()" :key="ingreso.id_ingresos_pk">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="ingreso.nombre_ingreso"></h3>
@@ -366,6 +494,42 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <!-- Paginación para Ingresos -->
+        <div x-show="numbersIngresos.length > perPageIngresos" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+            <div class="mb-2">
+                <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                    Mostrando
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageIngresos - 1) * perPageIngresos + 1"></strong>
+                    a
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageIngresos * perPageIngresos, numbersIngresos.length)"></strong>
+                    de
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="numbersIngresos.length"></strong>
+                    resultados
+                </span>
+            </div>
+            <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+                <button @click="prevPageIngresos()" :disabled="currentPageIngresos === 1"
+                        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <span>Anterior</span>
+                </button>
+                <div class="flex items-center gap-1">
+                    <template x-for="page in Array.from({length: totalPagesIngresos()}, (_, i) => i + 1).slice(Math.max(0, currentPageIngresos - 3), currentPageIngresos + 2)" :key="page">
+                        <button @click="currentPageIngresos = page"
+                                class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                :class="page === currentPageIngresos ? 'bg-blue-600 text-white' : ''">
+                            <span x-text="page"></span>
+                        </button>
+                    </template>
+                </div>
+                <button @click="nextPageIngresos()" :disabled="currentPageIngresos === totalPagesIngresos()"
+                        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                    <span>Siguiente</span>
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </div>
         
         <!-- CRUD de Gastos -->
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
@@ -412,9 +576,9 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                             </tr>
                         </template>
                         <template x-if="!loadingGastos && gastos.length > 0">
-                            <template x-for="(gasto, index) in gastos" :key="gasto.id_gasto_pk">
+                            <template x-for="(gasto, index) in paginatedGastos()" :key="gasto.id_gasto_pk">
                                 <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                    :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === gastos.length - 1 }">
+                                    :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedGastos().length - 1 }">
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="gasto.nombre"></td>
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="gasto.proyecto ? gasto.proyecto.nombre_proyecto : 'N/A'"></td>
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="formatDate(gasto.fecha)"></td>
@@ -442,7 +606,7 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     </div>
                 </template>
                 <template x-if="!loadingGastos && gastos.length > 0">
-                    <template x-for="gasto in gastos" :key="gasto.id_gasto_pk">
+                    <template x-for="gasto in paginatedGastos()" :key="gasto.id_gasto_pk">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="gasto.nombre"></h3>
@@ -463,6 +627,42 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <!-- Paginación para Gastos -->
+        <div x-show="numbersGastos.length > perPageGastos" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+            <div class="mb-2">
+                <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                    Mostrando
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageGastos - 1) * perPageGastos + 1"></strong>
+                    a
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageGastos * perPageGastos, numbersGastos.length)"></strong>
+                    de
+                    <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="numbersGastos.length"></strong>
+                    resultados
+                </span>
+            </div>
+            <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+                <button @click="prevPageGastos()" :disabled="currentPageGastos === 1"
+                        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <span>Anterior</span>
+                </button>
+                <div class="flex items-center gap-1">
+                    <template x-for="page in Array.from({length: totalPagesGastos()}, (_, i) => i + 1).slice(Math.max(0, currentPageGastos - 3), currentPageGastos + 2)" :key="page">
+                        <button @click="currentPageGastos = page"
+                                class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                                :class="page === currentPageGastos ? 'bg-blue-600 text-white' : ''">
+                            <span x-text="page"></span>
+                        </button>
+                    </template>
+                </div>
+                <button @click="nextPageGastos()" :disabled="currentPageGastos === totalPagesGastos()"
+                        class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                    <span>Siguiente</span>
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </div>
     </div>
 
     {{-- ==================== MODALES ==================== --}}

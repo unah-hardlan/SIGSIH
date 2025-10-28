@@ -72,7 +72,7 @@
                         </tr>
                     </template>
                     <template x-if="!loadingEmpresas && empresas.length > 0">
-                        <template x-for="e in empresas" :key="e.id">
+                        <template x-for="e in paginatedEmpresas()" :key="e.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4" x-text="e.nombre_comercial"></td>
                                 <td class="py-2 px-4" x-text="e.razon_social"></td>
@@ -104,8 +104,8 @@
             <template x-if="!loadingEmpresas && empresas.length === 0">
                 <div class="p-8 text-center text-gray-500 nunito-regular">No hay empresas registradas</div>
             </template>
-            <template x-for="e in empresas" :key="'card-emp-'+(e.id || e.raw?.id_cliente_fk || Math.random())">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+            <template x-for="e in paginatedEmpresas()" :key="'card-emp-'+(e.id || e.raw?.id_cliente_fk || Math.random())">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-gray-600 dark:border-gray-500">
                     <div class="flex justify-between items-start gap-3">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-white" x-text="e.nombre_comercial"></h3>
@@ -133,6 +133,8 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <x-pagination />
 
     <!-- Modal Empresas Cliente -->
     <x-admin.form-modal modalName="isEmpresaModalOpen" title="Empresa" submitLabel="Guardar Empresa"

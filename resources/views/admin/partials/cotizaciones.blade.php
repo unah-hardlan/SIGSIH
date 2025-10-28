@@ -11,6 +11,11 @@
     clientes:[],
     filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
     ordenarPor:'',
+    // pagination properties
+    currentPage: 1,
+    perPage: 10,
+    // alias expected by the pagination component (component checks `numbers.length`)
+    numbers: [],
     // Items manager (por cotización)
     itemsModal:false, currentCotizacionId:null, itemsLoading:false, itemsSearch:'', items:[],
     itemMode:'list', itemForm:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }, itemEditId:null, itemErrors:{},
@@ -188,6 +193,8 @@
     async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('order_by', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
             .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
             .filter(c=>c.id!=null);
+            // keep the pagination component's alias in sync
+            this.numbers = this.cotizaciones;
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
     async fetchClientes(){ try{ const r=await this.doFetch('/api/empresas-cliente?per_page=200'); if(!r.ok) throw new Error(); const j=await r.json(); const data=j.data||j||[]; this.clientes = data.map(e=>({ id:e.id_cliente_fk, nombre:(e.nombre_comercial||e.razon_social||('Cliente #'+e.id_cliente_fk)) })); }catch(e){ this.clientes=[]; } },
     async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
@@ -200,15 +207,36 @@
         catch(e){ this.showToast('No se creó','error'); }
         finally{ this.saving=false; } },
     async updateCotizacion(){ if(!this.editForm) return; this.saving=true; try{ this.calcTotals(this.editForm); const payload={ valido_hasta:this.editForm.valido_hasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk }; const r=await this.doFetch('/api/cotizaciones/'+this.editForm.id,{ method:'PUT', body:JSON.stringify(payload) }); if(!r.ok) throw new Error(); this.showToast('Actualizada'); this.editModal=false; this.fetchCotizaciones(); }catch(e){ this.showToast('No se actualizó','error'); } finally{ this.saving=false; } },
-    async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await this.doFetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE' }); if(!r.ok) throw new Error(); this.cotizaciones=this.cotizaciones.filter(c=>c.id!==this.selectedItem); this.showToast('Eliminada'); }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
+    async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await this.doFetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE' }); if(!r.ok) throw new Error(); this.cotizaciones=this.cotizaciones.filter(c=>c.id!==this.selectedItem); this.showToast('Eliminada'); // ensure numbers reflects the latest cotizaciones after delete
+        this.numbers = this.cotizaciones; }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
+    // pagination methods
+    paginatedCotizaciones() {
+        return this.cotizaciones.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.cotizaciones.length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
+    },
     init(){
         // Proactively ensure API auth from web session
         this.ensureAuth();
         this.fetchClientes(); this.fetchCotizaciones();
         const debounce=(fn,ms=400)=>{let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms);};};
-        this.$watch('filters.search',debounce(()=>this.fetchCotizaciones()));
-        this.$watch('ordenarPor',debounce(()=>this.fetchCotizaciones()));
-        this.$watch('filters.cliente',debounce(()=>this.fetchCotizaciones()));
+        this.$watch('filters.search',debounce(()=> { this.fetchCotizaciones(); this.currentPage = 1; }));
+        this.$watch('ordenarPor',debounce(()=> { this.fetchCotizaciones(); this.currentPage = 1; }));
+        this.$watch('filters.cliente',debounce(()=> { this.fetchCotizaciones(); this.currentPage = 1; }));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
     }
         
@@ -284,7 +312,7 @@
                         </tr>
                     </thead>
                     <tbody class="nunito-regular">
-                        <template x-for="c in cotizaciones" :key="c.id">
+                        <template x-for="c in paginatedCotizaciones()" :key="c.id">
                             <tr class="text-[10px]">
                                 <td class="px-4 py-2 border-t border-gray-200" x-text="formatCotId(c)"></td>
                                 <td class="px-4 py-2 border-t border-gray-200"
@@ -343,7 +371,7 @@
                 <template x-if="!loading && cotizaciones.length === 0">
                     <div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div>
                 </template>
-                <template x-for="c in cotizaciones" :key="c.id">
+                <template x-for="c in paginatedCotizaciones()" :key="c.id">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
@@ -384,6 +412,8 @@
         </x-slot>
 
     </x-responsive-table>
+
+    <x-pagination />
 
     <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la Cotización" submitLabel="Guardar"
         formId="items-manager" maxWidth="max-w-5xl">

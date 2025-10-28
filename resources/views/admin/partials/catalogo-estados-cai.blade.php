@@ -2,9 +2,18 @@
     isEstadoCaiModalOpen: false,
     isEditEstadoCaiModalOpen: false,
     isDeleteEstadoCaiModalOpen: false,
-    itemToEdit: null,
+    itemToEdit: {
+        id_estado_cai_pk: null,
+        codigo_estado_cai: '',
+        nombre_estado_cai: '',
+        descripcion_estado_cai: '',
+        es_final: false,
+        orden: 0
+    },
     itemToDelete: null,
     estadosCai: [],
+    categorias: [],
+    numbers: [],
     loadingEstadosCai: false,
     codigo_estado_cai: '',
     nombre_estado_cai: '',
@@ -13,6 +22,27 @@
     orden: 0,
     filtroEstadoCai: '',
     ordenarPor: 'nombre_estado_cai',
+    currentPage: 1,
+    perPage: 10,
+    paginatedEstadosCai() {
+        return this.filteredEstadosCai.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.filteredEstadosCai.length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
+    },
     get filteredEstadosCai() {
         const term = String(this.filtroEstadoCai || '').toLowerCase().trim();
         let list = Array.from(this.estadosCai || []);
@@ -47,15 +77,24 @@
     },
     async fetchEstadosCai() {
         await window.estadosCaiApiHandlers.fetchEstadosCai(this);
+        // synchronize aliases for reusable pagination components
+        this.categorias = this.estadosCai;
+        this.numbers = this.estadosCai;
     },
     async submitEstadoCai() {
         await window.estadosCaiApiHandlers.submitEstadoCai(this);
+        this.categorias = this.estadosCai;
+        this.numbers = this.estadosCai;
     },
     async updateEstadoCai() {
         await window.estadosCaiApiHandlers.updateEstadoCai(this);
+        this.categorias = this.estadosCai;
+        this.numbers = this.estadosCai;
     },
     async deleteEstadoCai() {
         await window.estadosCaiApiHandlers.deleteEstadoCai(this);
+        this.categorias = this.estadosCai;
+        this.numbers = this.estadosCai;
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formEstadoCai') this.submitEstadoCai();
@@ -66,7 +105,12 @@
             this.deleteEstadoCai();
         }
     }
-}" x-init="fetchEstadosCai()" @keydown.escape.window="
+}" x-init="fetchEstadosCai()"
+x-effect="
+$watch('filtroEstadoCai', () => { currentPage = 1; });
+$watch('ordenarPor', () => { currentPage = 1; });
+"
+@keydown.escape.window="
     isEstadoCaiModalOpen = false;
     isEditEstadoCaiModalOpen = false;
     isDeleteEstadoCaiModalOpen = false;
@@ -135,9 +179,9 @@
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosCai && filteredEstadosCai.length > 0">
-                        <template x-for="(estadoCai, index) in filteredEstadosCai" :key="estadoCai.id_estado_cai_pk">
+                        <template x-for="(estadoCai, index) in paginatedEstadosCai()" :key="estadoCai.id_estado_cai_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
-                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === filteredEstadosCai.length - 1 }">
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedEstadosCai().length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="estadoCai.codigo_estado_cai || '-'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular"
@@ -153,7 +197,7 @@
                                         class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:ring-1 dark:ring-gray-500/40">No</span>
                                 </td>
                                 <td class="py-2 px-4 flex gap-2"
-                                    :class="{ 'last:rounded-br-lg': index === filteredEstadosCai.length - 1 }">
+                                    :class="{ 'last:rounded-br-lg': index === paginatedEstadosCai().length - 1 }">
                                     <a href="#"
                                         @click.prevent="isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
@@ -180,8 +224,8 @@
                 </div>
             </template>
             <template x-if="!loadingEstadosCai && filteredEstadosCai.length > 0">
-                <template x-for="estadoCai in filteredEstadosCai" :key="estadoCai.id_estado_cai_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                <template x-for="estadoCai in paginatedEstadosCai()" :key="estadoCai.id_estado_cai_pk">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2 border border-black dark:border-gray-800">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold"
@@ -219,6 +263,9 @@
             </template>
         </x-slot>
     </x-responsive-table>
+
+    <!-- Paginación del lado del cliente -->
+    <x-pagination />
 
     <!-- Modales -->
     <div>

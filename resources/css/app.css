@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom scrollbar for notifications */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(55, 113, 194) rgb(241 245 249);
+}
+
+.dark .custom-scrollbar {
+    scrollbar-color: rgb(55, 113, 194) rgb(30 41 59);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgb(241 245 249);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(203 213 225);
+    border-radius: 4px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgb(30 41 59);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(100 116 139);
+}

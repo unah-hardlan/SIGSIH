@@ -6,23 +6,62 @@
     itemToDelete: null,
     origenes: [],
     loading: false,
+
+    // 1️⃣ Variables de Paginación
+    numbersOrigenes: [],
+    currentPageOrigenes: 1,
+    perPageOrigenes: 10,
+
     nombre_origen: '',
     descripcion_origen: '',
     activo: true,
-    // Campos locales para edición para evitar acceder a itemToEdit cuando es null
     edit_nombre_origen: '',
     edit_descripcion_origen: '',
     edit_activo: true,
     filtroOrigen: '',
     ordenarPor: 'nombre',
-    async fetchItems(){ await window.origenKardexApiHandlers.fetchOrigenes(this); },
-    async submit(){ await window.origenKardexApiHandlers.submitOrigen(this); },
-    async update(){ await window.origenKardexApiHandlers.updateOrigen(this); },
-    async remove(){ await window.origenKardexApiHandlers.deleteOrigen(this); },
+
+    // 2️⃣ Métodos de Paginación
+    paginatedOrigenes() {
+        return this.origenes.slice(
+            (this.currentPageOrigenes - 1) * this.perPageOrigenes, 
+            this.currentPageOrigenes * this.perPageOrigenes
+        );
+    },
+    totalPagesOrigenes() {
+        return Math.ceil(this.origenes.length / this.perPageOrigenes);
+    },
+    nextPageOrigenes() {
+        if (this.currentPageOrigenes < this.totalPagesOrigenes()) {
+            this.currentPageOrigenes++;
+        }
+    },
+    prevPageOrigenes() {
+        if (this.currentPageOrigenes > 1) {
+            this.currentPageOrigenes--;
+        }
+    },
+
+    // 3️⃣ Sincronizar Alias en cada operación CRUD
+    async fetchItems(){ 
+        await window.origenKardexApiHandlers.fetchOrigenes(this); 
+        this.numbersOrigenes = this.origenes; // ← LÍNEA AGREGADA
+    },
+    async submit(){ 
+        await window.origenKardexApiHandlers.submitOrigen(this);
+        this.fetchItems(); // Refrescar datos
+    },
+    async update(){ 
+        await window.origenKardexApiHandlers.updateOrigen(this);
+        this.fetchItems(); // Refrescar datos
+    },
+    async remove(){ 
+        await window.origenKardexApiHandlers.deleteOrigen(this);
+        this.fetchItems(); // Refrescar datos
+    },
     handleModalSubmit(e){
         if(e.detail.formId === 'formOrigen') this.submit();
         if(e.detail.formId === 'formEditOrigen') {
-            // Sincronizar campos locales al objeto antes de enviar
             if (this.itemToEdit) {
                 this.itemToEdit.nombre_origen = this.edit_nombre_origen ?? '';
                 this.itemToEdit.descripcion_origen = this.edit_descripcion_origen ?? '';
@@ -34,8 +73,9 @@
     handleDelete(){ this.remove(); }
 }" x-init="
     fetchItems();
-    $watch('filtroOrigen', () => fetchItems());
-    $watch('ordenarPor', () => fetchItems());
+    // 4️⃣ Reset de página en filtros
+    $watch('filtroOrigen', () => { fetchItems(); currentPageOrigenes = 1; });
+    $watch('ordenarPor', () => { fetchItems(); currentPageOrigenes = 1; });
 " @keydown.escape.window="isModalOpen=false; isEditModalOpen=false; isDeleteModalOpen=false;"
     @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
 
@@ -80,7 +120,8 @@
                             <td colspan="4" class="py-8 text-center text-gray-500">Sin resultados</td>
                         </tr>
                     </template>
-                    <template x-for="item in origenes" :key="item.id_origen_pk">
+                    <!-- 5️⃣ Usar paginatedOrigenes() en el template -->
+                    <template x-for="item in paginatedOrigenes()" :key="item.id_origen_pk">
                         <tr class="border-b dark:border-gray-700">
                             <td class="py-2 px-4" x-text="item.nombre_origen"></td>
                             <td class="py-2 px-4" x-text="item.descripcion_origen"></td>
@@ -113,8 +154,8 @@
                 <template x-if="!loading && origenes.length === 0">
                     <div class="p-4 text-center text-gray-500">Sin resultados</div>
                 </template>
-                <template x-for="item in origenes" :key="item.id_origen_pk">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                <template x-for="item in paginatedOrigenes()" :key="item.id_origen_pk">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border dark:border-gray-800 border-black">
                         <div class="flex justify-between items-start">
                             <h3 class="font-semibold text-gray-900 dark:text-white" x-text="item.nombre_origen"></h3>
                             <span class="px-2 py-1 rounded-full text-xs font-semibold"
@@ -141,6 +182,47 @@
             </div>
         </x-slot>
     </x-responsive-table>
+
+    <!-- 6️⃣ Componente de Paginación -->
+    <div x-show="origenes.length > perPageOrigenes" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+        <!-- Mostrando (centered, supports light/dark) -->
+        <div class="mb-2">
+            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+                Mostrando
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPageOrigenes - 1) * perPageOrigenes + 1"></strong>
+                a
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPageOrigenes * perPageOrigenes, origenes.length)"></strong>
+                de
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="origenes.length"></strong>
+                resultados
+            </span>
+        </div>
+
+        <!-- Controls (light/dark) -->
+        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+            <button @click="prevPageOrigenes()" :disabled="currentPageOrigenes === 1"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span>Anterior</span>
+            </button>
+
+            <div class="flex items-center gap-1">
+                <template x-for="page in Array.from({length: totalPagesOrigenes()}, (_, i) => i + 1).slice(Math.max(0, currentPageOrigenes - 3), currentPageOrigenes + 2)" :key="page">
+                    <button @click="currentPageOrigenes = page"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            :class="page === currentPageOrigenes ? 'bg-blue-600 text-white' : ''">
+                        <span x-text="page"></span>
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPageOrigenes()" :disabled="currentPageOrigenes === totalPagesOrigenes()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <span>Siguiente</span>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div>
