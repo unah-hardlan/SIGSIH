@@ -47,4 +47,21 @@ class NotificationController extends Controller
         $request->user()->unreadNotifications->markAsRead();
         return response()->json(['ok' => true]);
     }
+
+    /**
+     * Delete a notification (soft-delete or hard delete depending on DB mapping).
+     */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        $n = $request->user()->notifications()->where('id_notificacion', $id)->first();
+        if (!$n) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+        try {
+            $n->delete();
+            return response()->json(['ok' => true]);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Failed to delete', 'message' => $e->getMessage()], 500);
+        }
+    }
 }

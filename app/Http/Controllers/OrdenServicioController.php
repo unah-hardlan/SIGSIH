@@ -9,6 +9,10 @@ use Illuminate\Http\Response;
 use App\Models\Direccion;
 use App\Models\OficinaEmpresa;
 use App\Models\DetalleOrdenProducto;
+use App\Models\Usuario;
+use App\Models\Rol;
+use App\Notifications\SystemNotification;
+use Illuminate\Support\Facades\Log;
 
 class OrdenServicioController extends Controller
 {
@@ -172,7 +176,9 @@ class OrdenServicioController extends Controller
             'repuestos.*.cantidad' => 'required_with:repuestos|integer|min:1',
         ]);
 
-        $ordenServicio->update($validatedData);
+    // Detectar cambio de estado para notificar después de aplicar la actualización
+    $oldEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
+    $ordenServicio->update($validatedData);
         $ordenServicio->load([
             'solicitudServicio.cliente.empresa',
             'solicitudServicio.cliente.personas',
@@ -228,6 +234,56 @@ class OrdenServicioController extends Controller
         } catch (\Throwable $e) {
             // Ignorar errores de sincronización de repuestos
         }
+
+        // Si el estado cambió, notificar a técnicos
+        try {
+            $newEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
+            if (isset($validatedData['id_estado_orden_servicio_fk']) && $newEstadoId != $oldEstadoId) {
+                // obtener nombres de estado
+                $oldName = null;
+                try {
+                    $oldName = \App\Models\EstadoOrdenServicio::find($oldEstadoId)?->nombre;
+                } catch (\Throwable $_) {
+                    $oldName = null;
+                }
+                $newName = $ordenServicio->estado?->nombre ?? null;
+
+                // Obtener técnicos (roles que contengan 'tecn')
+                $rols = Rol::where('rol', 'like', '%tecn%')->get();
+                $roleIds = $rols->pluck('id_rol_pk')->all();
+                $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+                $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+                    ->whereIn('id_rol_fk', $roleIds)
+                    ->pluck('id_usuario_fk')
+                    ->all();
+
+                $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+                if (!empty($userIds)) {
+                    $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                    $clienteNombre = $ordenServicio->solicitudServicio?->cliente->nombre ?? ($ordenServicio->solicitudServicio?->cliente->nombre_comercial ?? 'Cliente');
+                    $payload = [
+                        'title' => 'Cambio de estado de Orden de Servicio',
+                        'body' => "Orden de Servicio #{$ordenServicio->id_orden_servicio_pk} — Cliente: {$clienteNombre} cambió de " . ($oldName ?? 'N/A') . " a " . ($newName ?? 'N/A'),
+                        'url' => '/admin/orden-servicio',
+                        'icon' => 'fa-tools',
+                        'severity' => 'info',
+                        'module' => 'orden_servicio',
+                        'meta' => ['id_orden_servicio_pk' => $ordenServicio->getKey(), 'old_estado' => $oldName, 'new_estado' => $newName]
+                    ];
+
+                    foreach ($users as $u) {
+                        try {
+                            $u->notify(new SystemNotification($payload));
+                        } catch (\Throwable $e) {
+                            Log::warning('Failed to notify user ' . $u->id_usuario_pk . ' about orden servicio state change: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error sending orden servicio state-change notifications: ' . $e->getMessage());
+        }
+
 
         return new OrdenServicioResource($ordenServicio);
     }
