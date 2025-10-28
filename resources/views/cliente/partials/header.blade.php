@@ -16,7 +16,6 @@
 <div class="header-fixed">
 <header class="relative flex items-center justify-center h-16 px-3 sm:px-6 bg-gray-50 dark:bg-gray-900 top-3">
     
-    <!-- Lado Izquierdo: botón móvil (posición absoluta en móvil) -->
     <div class="absolute left-3 md:static md:mr-auto">
         <button @click="sidebarOpen = !sidebarOpen"
             class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
@@ -26,22 +25,18 @@
         </button>
     </div>
 
-    <!-- Logo centrado -->
     <div class="flex-shrink-0">
         <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" 
              class="app-logo h-12 md:h-auto mx-auto"
              style="--app-logo-max: {{ ($appLogoHeight ?? 72) }}px;">
     </div>
 
-    <!-- Lado Derecho: Acciones (sin cambios en su contenido) -->
     <div class="absolute right-3 md:static md:ml-auto flex items-center gap-3 md:gap-6 z-30" x-data="{ profileOpen:false, logoutConfirm:false }" x-init="$store.clienteLogout = { modalOpen: false }" x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm); $store.clienteLogout.modalOpen = logoutConfirm">
-        <!-- Switch de tema -->
         <label class="switch">
             <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
             <span class="slider"></span>
         </label>
 
-        <!-- Notificaciones -->
         <div x-data="notificationsDropdown()" x-init="init()" class="relative">
             <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600">
                 <i class="fas fa-bell text-base sm:text-lg"></i>
@@ -49,7 +44,6 @@
                     <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-4 px-1 bg-red-600 text-white text-[10px] rounded-full" x-text="unread"></span>
                 </template>
             </button>
-            {{-- ... Dropdown de notificaciones sin cambios ... --}}
             <div x-show="notifOpen" x-cloak @click.away="notifOpen = false" class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md">
                 <div class="flex items-center justify-between px-4 py-2 border-b text-gray-700 dark:text-gray-300 serif-bold text-sm">
                     <span>Notificaciones</span>
@@ -60,7 +54,6 @@
             </div>
         </div>
 
-        <!-- Usuario -->
         <div class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
             <div class="relative">
         <button @click="profileOpen = !profileOpen"
