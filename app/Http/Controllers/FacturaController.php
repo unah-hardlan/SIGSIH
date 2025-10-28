@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Factura;
 use App\Models\Cliente;
+use App\Models\DetalleFactura;
 use App\Http\Resources\FacturaResource;
 use App\Http\Requests\StoreFacturaRequest;
 use App\Http\Requests\UpdateFacturaRequest;
@@ -79,13 +80,33 @@ class FacturaController extends Controller
     }
 
     /**
+     * Renderiza la vista de formato de factura (PDF/Impresión) con datos completos
+     */
+    public function formatoFactura($id)
+    {
+        $factura = Factura::with([
+            'estadoFactura',
+            'cai',
+            'cliente.persona',
+            'cliente.empresa',
+            'cliente.agencias.direccion',
+            'cliente.contactos',
+            'cotizacion'
+        ])->findOrFail($id);
+
+        $detalles = DetalleFactura::where('id_factura_fk', $id)->get();
+
+        return view('admin.formato-factura', compact('factura', 'detalles'));
+    }
+
+    /**
      * Obtener clientes para el dropdown
      */
     public function getClientes()
     {
         try {
             $clientes = Cliente::with(['empresa', 'persona'])->get();
-
+ 
             // Filtrar solo clientes que tienen datos válidos
             $clientesValidos = $clientes->filter(function ($cliente) {
                 if ($cliente->tipo_cliente === 'empresa') {
@@ -104,7 +125,7 @@ class FacturaController extends Controller
                 if ($cliente->tipo_cliente === 'empresa' && $cliente->empresa) {
                     $nombre = $cliente->empresa->nombre_comercial ?? $cliente->empresa->razon_social ?? 'Empresa sin nombre';
                 } elseif ($cliente->type === 'persona' || $cliente->tipo_cliente === 'persona') {
-                    // cliente->persona puede ser una colección; tomar el primer elemento si es necesario
+                   
                     $persona = $cliente->persona;
                     if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
                         $persona = $persona->first();

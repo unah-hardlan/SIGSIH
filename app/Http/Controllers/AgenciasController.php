@@ -213,4 +213,68 @@ class AgenciasController extends Controller
             throw $e;
         }
     }
+
+    /**
+     * Generate agencias report
+     */
+    public function reporte(Request $request)
+    {
+        $query = Agencia::with(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas']);
+
+        // Filtro por ciudad
+        if ($ciudad = $request->input('ciudad')) {
+            $query->whereHas('direccion.ciudad', function($q) use ($ciudad) {
+                $q->where('nombre_ciudad', 'like', "%$ciudad%");
+            });
+        }
+
+        // Filtro por departamento
+        if ($departamento = $request->input('departamento')) {
+            $query->whereHas('direccion.ciudad.departamento', function($q) use ($departamento) {
+                $q->where('nombre_departamento', 'like', "%$departamento%");
+            });
+        }
+
+        // Filtro por país
+        if ($pais = $request->input('pais')) {
+            $query->whereHas('direccion.ciudad.departamento.pais', function($q) use ($pais) {
+                $q->where('nombre_pais', 'like', "%$pais%");
+            });
+        }
+
+        // Filtro de búsqueda por nombre/horario/dirección
+        if ($q = $request->input('q')) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('nombre_agencia', 'like', "%$q%")
+                    ->orWhere('horario_agencia', 'like', "%$q%")
+                    ->orWhereHas('direccion', function($qq) use ($q) {
+                        $qq->where('calle', 'like', "%$q%")
+                           ->orWhere('colonia', 'like', "%$q%");
+                    });
+            });
+        }
+
+        // Orden
+        $sortable = [
+            'nombre' => 'nombre_agencia',
+            'ciudad' => 'direccion.ciudad.nombre_ciudad',
+            'departamento' => 'direccion.ciudad.departamento.nombre_departamento',
+            'pais' => 'direccion.ciudad.departamento.pais.nombre_pais',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        if ($sort && isset($sortable[$sort])) {
+            $query->orderBy($sortable[$sort], $direction);
+        } else {
+            $query->orderBy('nombre_agencia', 'asc');
+        }
+
+        $agencias = $query->get();
+        $total = $agencias->count();
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'agencias';
+
+        return view('admin.reporte-agencias', compact('agencias', 'total', 'fecha', 'modulo', 'sort', 'direction'));
+    }
 }

@@ -9,7 +9,7 @@
         </div>
     </div>
     <div class="flex-1 flex flex-col items-end">
-        <div class="text-3xl text-blue-900 nunito-bold tracking-wide mb-2 border-b-4 border-blue-900 pb-1 pr-1">
+        <div class="text-2xl text-blue-900 nunito-bold tracking-wide mb-2 border-b-4 border-blue-900 pb-1 pr-1">
             REPORTE{{ isset($titulo) && $titulo ? ' - ' . strtoupper($titulo) : '' }}
         </div>
         <div class="bg-gray-200 rounded p-3 w-full max-w-xs flex flex-col gap-2">

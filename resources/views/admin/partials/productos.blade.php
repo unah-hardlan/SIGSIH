@@ -98,6 +98,10 @@ x-effect="
             <button @click="isProductoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Producto
             </button>
+            <a href="/admin/reportes-header?modulo=Productos&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+               class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </a>
         </x-slot>
         <x-slot name="table">
             <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">

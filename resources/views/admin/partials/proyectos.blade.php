@@ -188,6 +188,27 @@
         this.isProyectoModalOpen = true;
     },
 
+    openReporte() {
+        const params = new URLSearchParams({
+            q: this.filtroProyecto || '',
+            sort: this.ordenarPorProyecto || '',
+            direction: 'asc',
+            all: '1'
+        });
+        window.open('/admin/reportes-header?modulo=proyectos&' + params.toString(), '_blank');
+    },
+
+    openReporteMovimientos() {
+        const params = new URLSearchParams({
+            q_ingreso: this.filtroIngreso || '',
+            sort_ingreso: this.ordenarPorIngreso || '',
+            q_gasto: this.filtroGasto || '',
+            sort_gasto: this.ordenarPorGasto || '',
+            direction: 'asc'
+        });
+        window.open('/admin/reportes-header?modulo=movimientos-proyecto&' + params.toString(), '_blank');
+    },
+
     formatDate(date) {
         if (!date) return 'N/A';
         try {
@@ -269,9 +290,14 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 ])
             </x-slot>
             <x-slot name="actions">
-                <button @click.prevent="openNuevoProyecto()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
-                    Nuevo Proyecto
-                </button>
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                    <button @click.prevent="openNuevoProyecto()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> Nuevo Proyecto
+                    </button>
+                    <button @click="openReporte()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-file-alt"></i> Generar Reporte
+                    </button>
+                </div>
             </x-slot>
             <x-slot name="table">
                 <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
@@ -398,6 +424,13 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
 
     {{-- ==================== PESTAÑA DE MOVIMIENTOS ==================== --}}
     <div x-show="tab==='movimientos'" x-cloak class="space-y-8">
+        <!-- Botón de reporte para movimientos -->
+        <div class="flex justify-end mb-4">
+            <button @click="openReporteMovimientos()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center gap-2">
+                <i class="fas fa-file-alt"></i> Generar Reporte de Movimientos
+            </button>
+        </div>
+
         <!-- CRUD de Ingresos -->
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">

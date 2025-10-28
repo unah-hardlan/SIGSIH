@@ -101,9 +101,9 @@
                 <tbody>
                     <tr>
                         <td>ABIERTA</td>
-                        <td class="checkbox-cell"><input id="estado-abierta" type="checkbox"></td>
+                        <td class="checkbox-cell"><input id="estado-abierta" type="checkbox" disabled></td>
                         <td>CERRADA</td>
-                        <td class="checkbox-cell"><input id="estado-cerrada" type="checkbox"></td>
+                        <td class="checkbox-cell"><input id="estado-cerrada" type="checkbox" disabled></td>
                     </tr>
                 </tbody>
             </table>
@@ -166,7 +166,54 @@
         $clienteNombre = $clienteNombre ?: '—';
 
         // Contacto principal (de la solicitud)
-        $contactoNombre = data_get($o, 'solicitudServicio.contacto.valor_contacto') ?: '—';
+        // Preferir nombre completo si está disponible; si no, intentar persona ligada al cliente;
+        // si aún no hay, buscar en los contactos del cliente un valor textual (no teléfono).
+        $contactoNombre = '—';
+        $solContacto = data_get($o, 'solicitudServicio.contacto', []);
+        if (!empty($solContacto)) {
+        // intentar campos explícitos de nombre primero
+        $nombreFromContacto = data_get($solContacto, 'nombre') ?: data_get($solContacto, 'valor_contacto');
+        if ($nombreFromContacto && preg_match('/[A-Za-zÁÉÍÓÚáéíóúÑñ]/', (string) $nombreFromContacto)) {
+        $contactoNombre = trim((string) $nombreFromContacto);
+        }
+        }
+
+        // Si todavía no existe un nombre significativo, intentar con las personas del cliente
+        if (empty($contactoNombre) || $contactoNombre === '—') {
+        $personasTmp = data_get($o, 'solicitudServicio.cliente.personas', []);
+        $personaCandidate = null;
+        if (!empty($personasTmp)) {
+        if (is_array($personasTmp)) {
+        $personaCandidate = $personasTmp[0] ?? null;
+        } else {
+        $personaCandidate = count($personasTmp) ? $personasTmp->first() : null;
+        }
+        }
+        if ($personaCandidate) {
+        $pn = trim(implode(' ', array_filter([
+        data_get($personaCandidate, 'primer_nombre'),
+        data_get($personaCandidate, 'segundo_nombre'),
+        data_get($personaCandidate, 'primer_apellido'),
+        data_get($personaCandidate, 'segundo_apellido'),
+        ])));
+        if ($pn) $contactoNombre = $pn;
+        }
+        }
+
+        // Último recurso: recorrer los contactos del cliente y elegir el primer valor textual (no teléfono)
+        if (empty($contactoNombre) || $contactoNombre === '—') {
+        $ct = data_get($o, 'solicitudServicio.cliente.contactos', []);
+        if (!empty($ct)) {
+        foreach ($ct as $c) {
+        $valor = trim((string) data_get($c, 'valor_contacto', ''));
+        if ($valor !== '' && preg_match('/[A-Za-zÁÉÍÓÚáéíóúÑñ]/', $valor)) {
+        $contactoNombre = $valor;
+        break;
+        }
+        }
+        }
+        }
+        $contactoNombre = $contactoNombre ?: '—';
 
         // Teléfonos desde contactos del cliente (soportar colección o array)
         $telefonosVal = '—';
@@ -236,7 +283,10 @@
         // Preparar valores para la sección de firma del cliente
         $firmaNombre = $clienteNombre ?: '—';
         // intentar RTN/CI desde empresa, si no, desde la primera persona (dni, identificacion, ci)
-        $firmaCi = data_get($o, 'solicitudServicio.cliente.empresa.rtn') ?: data_get($o, 'solicitudServicio.cliente.personas.0.dni') ?: data_get($o, 'solicitudServicio.cliente.personas.0.identificacion') ?: data_get($o, 'solicitudServicio.cliente.personas.0.ci') ?: '—';
+        $firmaCi = data_get($o, 'solicitudServicio.cliente.empresa.rtn') ?: data_get($o,
+        'solicitudServicio.cliente.personas.0.dni') ?: data_get($o,
+        'solicitudServicio.cliente.personas.0.identificacion') ?: data_get($o,
+        'solicitudServicio.cliente.personas.0.ci') ?: '—';
         // Calificación del servicio (campo nuevo en la tabla)
         $calificacionServicio = data_get($o, 'calificacion_servicio') ?: null;
         // Repuestos: preferir campo JSON 'repuestos' si existe, si no, armar desde la relación detallesProducto
@@ -246,14 +296,16 @@
         $tmp = is_array($o->repuestos) ? $o->repuestos : json_decode($o->repuestos, true);
         if (is_array($tmp)) {
         foreach ($tmp as $r) {
-        $label = data_get($r, 'nombre') ?? data_get($r, 'repuesto') ?? data_get($r, 'producto_nombre') ?? data_get($r, 'id_producto');
+        $label = data_get($r, 'nombre') ?? data_get($r, 'repuesto') ?? data_get($r, 'producto_nombre') ?? data_get($r,
+        'id_producto');
         $cant = data_get($r, 'cantidad');
         $repuestosList[] = $label . ($cant ? ' x' . $cant : '');
         }
         }
         } elseif (!empty($o->detallesProducto)) {
         foreach ($o->detallesProducto as $d) {
-        $prodName = data_get($d, 'producto.nombre_producto') ?? data_get($d, 'producto.nombre') ?? data_get($d, 'id_producto_fk');
+        $prodName = data_get($d, 'producto.nombre_producto') ?? data_get($d, 'producto.nombre') ?? data_get($d,
+        'id_producto_fk');
         $repuestosList[] = ($prodName ?: 'Producto') . ' x' . ($d->cantidad ?? 1);
         }
         }
@@ -349,10 +401,13 @@
                 <th style="width: 30%;">SE INSTALO ALGUN REPUESTO:</th>
                 <td>
                     <span class="checkbox-label">SI <input id="repuesto-si" type="checkbox"
-                            style="vertical-align: middle;" @if(!empty($repuestosList) && count($repuestosList)> 0) checked @endif></span>
+                            style="vertical-align: middle;" @if(!empty($repuestosList) && count($repuestosList)> 0)
+                        checked="checked" @endif disabled></span>
                     <span class="checkbox-label">NO <input id="repuesto-no" type="checkbox"
-                            style="vertical-align: middle;" @if(empty($repuestosList) || count($repuestosList)===0) checked @endif></span>
-                    <span>CUAL: <span id="repuesto-cual" style="display: inline-block; width: 70%;">{{ count($repuestosList) ? implode(', ', $repuestosList) : '—' }}</span></span>
+                            style="vertical-align: middle;" @if(empty($repuestosList) || count($repuestosList)===0)
+                            checked="checked" @endif disabled></span>
+                    <span>CUAL: <span id="repuesto-cual"
+                            style="display: inline-block; width: 70%;">{{ count($repuestosList) ? implode(', ', $repuestosList) : '—' }}</span></span>
                 </td>
             </tr>
         </table>
@@ -363,10 +418,22 @@
             <tr>
                 <th style="width: 30%;">CALIFICACION DEL SERVICIO</th>
                 <td>
-                    <label class="checkbox-label">EXCELENTE <input id="calificacion-excelente" name="calificacion_servicio" value="excelente" type="checkbox" style="vertical-align: middle;" @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='excelente' ) checked @endif></label>
-                    <label class="checkbox-label">BUENO <input id="calificacion-bueno" name="calificacion_servicio" value="bueno" type="checkbox" style="vertical-align: middle;" @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='bueno' ) checked @endif></label>
-                    <label class="checkbox-label">REGULAR <input id="calificacion-regular" name="calificacion_servicio" value="regular" type="checkbox" style="vertical-align: middle;" @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='regular' ) checked @endif></label>
-                    <label class="checkbox-label">DEFICIENTE <input id="calificacion-deficiente" name="calificacion_servicio" value="deficiente" type="checkbox" style="vertical-align: middle;" @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='deficiente' ) checked @endif></label>
+                    <label class="checkbox-label">EXCELENTE <input id="calificacion-excelente"
+                            name="calificacion_servicio" value="excelente" type="checkbox"
+                            style="vertical-align: middle;" @if(!empty($calificacionServicio) &&
+                            strtolower($calificacionServicio)==='excelente' ) checked @endif disabled></label>
+                    <label class="checkbox-label">BUENO <input id="calificacion-bueno" name="calificacion_servicio"
+                            value="bueno" type="checkbox" style="vertical-align: middle;"
+                            @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='bueno' ) checked
+                            @endif disabled></label>
+                    <label class="checkbox-label">REGULAR <input id="calificacion-regular" name="calificacion_servicio"
+                            value="regular" type="checkbox" style="vertical-align: middle;"
+                            @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='regular' ) checked
+                            @endif disabled></label>
+                    <label class="checkbox-label">DEFICIENTE <input id="calificacion-deficiente"
+                            name="calificacion_servicio" value="deficiente" type="checkbox"
+                            style="vertical-align: middle;" @if(!empty($calificacionServicio) &&
+                            strtolower($calificacionServicio)==='deficiente' ) checked @endif disabled></label>
                 </td>
             </tr>
         </table>
@@ -398,30 +465,30 @@
                 <tr>
                     <td style="padding: 0;">
                         <div class="firma-label">NOMBRE Y APELLIDO</div>
-    
-    <!-- Script: asegurar que los checkboxes SI/NO para repuestos reflejen el texto 'CUAL' -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                var cualEl = document.getElementById('repuesto-cual');
-                var siEl = document.getElementById('repuesto-si');
-                var noEl = document.getElementById('repuesto-no');
-                if (!cualEl || !siEl || !noEl) return;
-                var text = (cualEl.textContent || '').trim();
-                // Considerar '—' o cadena vacía como no hay repuestos
-                if (text && text !== '—') {
-                    siEl.checked = true;
-                    noEl.checked = false;
-                } else {
-                    siEl.checked = false;
-                    noEl.checked = true;
-                }
-            } catch (e) {
-                // no bloquear la vista por errores de JS
-                console.error(e);
-            }
-        });
-    </script>
+
+                        <!-- Script: asegurar que los checkboxes SI/NO para repuestos reflejen el texto 'CUAL' -->
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                try {
+                                    var cualEl = document.getElementById('repuesto-cual');
+                                    var siEl = document.getElementById('repuesto-si');
+                                    var noEl = document.getElementById('repuesto-no');
+                                    if (!cualEl || !siEl || !noEl) return;
+                                    var text = (cualEl.textContent || '').trim();
+                                    // Considerar '—' o cadena vacía como no hay repuestos
+                                    if (text && text !== '—') {
+                                        siEl.checked = true;
+                                        noEl.checked = false;
+                                    } else {
+                                        siEl.checked = false;
+                                        noEl.checked = true;
+                                    }
+                                } catch (e) {
+                                    // no bloquear la vista por errores de JS
+                                    console.error(e);
+                                }
+                            });
+                        </script>
                         <div id="firma-tecnico-nombre" class="firma-space">—</div>
                         <div class="firma-label">C.I.</div>
                         <div id="firma-tecnico-ci" class="firma-space">—</div>
@@ -607,23 +674,36 @@
 
                     // Repuestos (si se expone un array detalles_orden_producto)
                     const detalles = data.detalles_producto || data.detalle_orden_producto || [];
+                    const si = $('repuesto-si');
+                    const no = $('repuesto-no');
+                    const cualEl = $('repuesto-cual');
                     if (Array.isArray(detalles) && detalles.length) {
-                        const si = $('repuesto-si');
-                        const no = $('repuesto-no');
+                        // API provides explicit repuestos -> update checkbox and list
                         if (si) si.checked = true;
                         if (no) no.checked = false;
                         const nombres = detalles.map(d => d.producto_nombre || d.nombre || d.repuesto || '')
                             .filter(Boolean);
                         setText('repuesto-cual', nombres.join(', '));
                     } else {
-                        const si = $('repuesto-si');
-                        const no = $('repuesto-no');
-                        if (si) si.checked = false;
-                        if (no) no.checked = true;
+                        // API does not provide repuestos. Preserve server-rendered value when present.
+                        // Only mark NO if the server-side 'CUAL' is empty or a placeholder '—'.
+                        try {
+                            const current = (cualEl && (cualEl.textContent || '') || '').trim();
+                            if (!current || current === '—') {
+                                if (si) si.checked = false;
+                                if (no) no.checked = true;
+                            } else {
+                                // leave existing checkbox state as rendered server-side
+                            }
+                        } catch (e) {
+                            if (si) si.checked = false;
+                            if (no) no.checked = true;
+                        }
                     }
 
                     // Calificacion del servicio (si la API la expone)
-                    const calFromApi = (data.calificacion_servicio || data.calificacionServicio || data.calificacion || '').toString().toLowerCase();
+                    const calFromApi = (data.calificacion_servicio || data.calificacionServicio || data
+                        .calificacion || '').toString().toLowerCase();
                     if (calFromApi && calFromApi.trim() !== '') {
                         const cel = $('calificacion-excelente');
                         const cbu = $('calificacion-bueno');

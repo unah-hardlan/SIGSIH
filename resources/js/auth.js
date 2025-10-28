@@ -109,7 +109,8 @@ function createAuthPage() {
                 [field]: [message], // Ensure it's an array of messages
             };
             if (!this.formError) {
-                this.formError = "Hay errores de validación.";
+                this.formError =
+                    "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
             }
         },
 
@@ -334,7 +335,8 @@ function createAuthPage() {
                     // Validation errors
                     this.fieldErrors = resp.data?.errors || {};
                     this.formError =
-                        resp.data?.message || "Hay errores de validación.";
+                        resp.data?.message ||
+                        "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
                 } else if (resp?.status === 401) {
                     // Unauthorized (incorrect credentials)
                     this.formError =

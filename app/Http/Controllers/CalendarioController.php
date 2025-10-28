@@ -162,4 +162,81 @@ class CalendarioController extends Controller
             'message' => 'Evento de calendario eliminado exitosamente'
         ]);
     }
+
+    /**
+     * Generate calendario report
+     */
+    public function reporte(Request $request)
+    {
+        $query = Calendario::with([
+            'estado',
+            'agencia.direccion.ciudad.departamento.pais',
+            'ordenServicio',
+            'tipoMantenimiento',
+            'cliente.empresa',
+            'cliente.personas'
+        ]);
+
+        // Filtro por estado del calendario
+        if ($estado = $request->input('estado')) {
+            $query->whereHas('estado', function($q) use ($estado) {
+                $q->where('codigo', $estado);
+            });
+        }
+
+        // Filtro por agencia
+        if ($agencia = $request->input('agencia')) {
+            $query->where('id_agencias_fk', $agencia);
+        }
+
+        // Filtro por cliente
+        if ($cliente = $request->input('cliente')) {
+            $query->where('id_cliente_fk', $cliente);
+        }
+
+        // Filtro por tipo de mantenimiento
+        if ($tipo = $request->input('tipo_mantenimiento')) {
+            $query->where('id_tipo_mantenimiento_fk', $tipo);
+        }
+
+        // Filtro de búsqueda por descripción
+        if ($q = $request->input('q')) {
+            $query->where('descripcion_calendario', 'like', "%$q%");
+        }
+
+        // Filtro por rango de fechas
+        if ($desde = $request->input('desde')) {
+            $query->where('fecha', '>=', $desde);
+        }
+
+        if ($hasta = $request->input('hasta')) {
+            $query->where('fecha', '<=', $hasta);
+        }
+
+        // Orden
+        $sortable = [
+            'fecha' => 'fecha',
+            'estado' => 'id_estado_calendario_fk',
+            'cliente' => 'id_cliente_fk',
+            'agencia' => 'id_agencias_fk',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'desc')) === 'desc' ? 'desc' : 'asc';
+        if ($sort && isset($sortable[$sort])) {
+            $query->orderBy($sortable[$sort], $direction);
+        } else {
+            $query->orderBy('fecha', 'desc');
+        }
+
+        $calendarios = $query->get();
+        $total = $calendarios->count();
+        $pendientes = $calendarios->filter(function($c) { return $c->estado && $c->estado->codigo === 'PEND'; })->count();
+        $enEjecucion = $calendarios->filter(function($c) { return $c->estado && $c->estado->codigo === 'CAL-EJE'; })->count();
+        $completados = $calendarios->filter(function($c) { return $c->estado && $c->estado->codigo === 'COMP'; })->count();
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'calendario';
+
+        return view('admin.reporte-calendario', compact('calendarios', 'total', 'pendientes', 'enEjecucion', 'completados', 'fecha', 'modulo', 'sort', 'direction'));
+    }
 }

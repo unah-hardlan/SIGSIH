@@ -2,12 +2,58 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('facturasCrud', () => ({
         // Tab state
         tab: 'facturas',
-        // Al cambiar a la pestaña 'detalle', cargar detalles de la primera factura
+        // Al cambiar a la pestaña 'detalle', cargar todos los detalles (sin filtrar por defecto)
         async setTab(tabName) {
             this.tab = tabName;
-            if (tabName === 'detalle' && this.facturas.length > 0) {
-                const firstFacturaId = this.facturas[0].id || this.facturas[0].id_factura_pk;
-                await this.fetchDetallesFactura(firstFacturaId);
+            if (tabName === 'detalle') {
+                await this.fetchDetallesFactura();
+            }
+        },
+
+        async fetchServicios() {
+            try {
+                // Try to fetch all servicios and avoid paginated/cached responses
+                const ts = Date.now() + Math.random();
+                const url = `/api/servicios?all=true&_t=${ts}`;
+                console.log('Fetching servicios from', url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        Accept: "application/json",
+                        "Cache-Control": "no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache",
+                        "Expires": "0"
+                    },
+                    credentials: "same-origin",
+                    cache: 'no-store'
+                });
+
+                console.log('Servicios response status:', response.status, response.statusText);
+                const data = await response.json().catch((err) => {
+                    console.warn('Could not parse servicios JSON:', err);
+                    return {};
+                });
+
+                console.log('Servicios response payload:', data);
+
+                if (!response.ok) {
+                    // Log and fallback to empty list
+                    console.error('Servicios fetch returned non-ok status', response.status, data);
+                    this.servicios = [];
+                    return;
+                }
+
+                // Accept multiple shapes: { data: [...] } or plain array
+                this.servicios = Array.isArray(data?.data)
+                    ? data.data
+                    : Array.isArray(data)
+                        ? data
+                        : [];
+
+                console.log('Servicios processed count:', this.servicios.length);
+            } catch (error) {
+                console.error("Error fetching servicios:", error);
+                this.servicios = [];
             }
         },
 
@@ -15,12 +61,14 @@ document.addEventListener('alpine:init', () => {
         isFacturaModalOpen: false,
         isEditFacturaModalOpen: false,
         isDeleteFacturaModalOpen: false,
-        itemToEdit: null,
+        // initialize as object to avoid reactive "cannot read property" errors in templates
+        itemToEdit: {},
         itemToDelete: null,
 
         // Data arrays
         facturas: [],
         detalles: [],
+        servicios: [],
         estadosFactura: [],
         clientes: [],
         cais: [],
@@ -43,9 +91,18 @@ document.addEventListener('alpine:init', () => {
                     );
                 });
             }
-            // Filtro estado
+            // Filtro estado (acepta nombre o id; comparación case-insensitive para nombres)
             if (this.estadoFacturaFiltro && this.estadoFacturaFiltro !== '') {
-                result = result.filter(f => (f.estado_factura === this.estadoFacturaFiltro));
+                const filtro = String(this.estadoFacturaFiltro).toLowerCase();
+                result = result.filter(f => {
+                    try {
+                        const nombre = (f.estado_factura || '').toString().toLowerCase();
+                        const fk = (f.id_estado_factura_fk || f.id_estado_factura || f.estado_factura_id || '').toString();
+                        return nombre === filtro || fk === filtro;
+                    } catch (e) {
+                        return false;
+                    }
+                });
             }
             // Filtro cliente
             if (this.clienteFacturaFiltro && this.clienteFacturaFiltro !== '') {
@@ -89,8 +146,9 @@ document.addEventListener('alpine:init', () => {
         isDetalleModalOpen: false,
         isEditDetalleModalOpen: false,
         isDeleteDetalleModalOpen: false,
-        detalleToEdit: null,
-        detalleToDelete: null,
+        // initialize as empty objects so bindings like detalleToEdit.id_factura don't throw
+        detalleToEdit: {},
+        detalleToDelete: {},
 
         // Filtros
         filtroFactura: '',
@@ -104,12 +162,164 @@ document.addEventListener('alpine:init', () => {
         searchDetalleFactura: '',
         servicioDetalleFiltro: '',
         facturaDetalleFiltro: '',
+        // Si se abrió la vista Detalle filtrada por una factura, guardar su id
+        currentFacturaFilter: null,
 
         async init() {
             await this.fetchFacturas();
             await this.fetchEstadosFactura();
             await this.fetchClientes();
             await this.fetchCais();
+            // Cargar servicios para los selectores de detalle
+            await this.fetchServicios();
+
+            // Cargar todos los detalles una sola vez y recalcular totales por factura
+            // Esto asegura que al entrar a la vista principal los subtotales y totales
+            // ya estén reflejados sin necesidad de abrir la pestaña de Detalle.
+            try {
+                await this.fetchAllDetallesAndRecompute();
+            } catch (e) {
+                console.warn('fetchAllDetallesAndRecompute failed on init', e);
+            }
+
+            // Exponer helper simple para conversión de número a letras (útil en HTML inline)
+            try {
+                window.numberToSpanishWords = (val) => {
+                    try {
+                        return this.totalToLetras2(val);
+                    } catch (e) {
+                        return '';
+                    }
+                };
+            } catch (e) { /* ignore if not possible */ }
+
+            // Watch modal open/close to clear create forms when they close
+            try {
+                // Clear Nueva Factura modal when it closes
+                this.$watch && this.$watch('isFacturaModalOpen', (val) => {
+                    if (!val) {
+                        try {
+                            this.clearForm();
+                            // clear DOM inputs too
+                            ['fecha_factura', 'oc_factura', 'impuesto_factura', 'estado_factura_id', 'cai_factura', 'cliente_id'].forEach(id => {
+                                const el = document.getElementById(id);
+                                if (el) el.value = '';
+                            });
+                        } catch (e) { /* ignore */ }
+                    }
+                });
+
+                // Clear Nuevo Detalle modal when it closes
+                this.$watch && this.$watch('isDetalleModalOpen', (val) => {
+                    if (!val) {
+                        try {
+                            this.clearDetalleForm();
+                            ['id_factura_fk', 'id_servicio_fk', 'descripcion', 'precio_unitario', 'cantidad', 'impuesto', 'fecha_servicio', 'horas', 'descuento'].forEach(id => {
+                                const el = document.getElementById(id);
+                                if (el) el.value = '';
+                            });
+                        } catch (e) { /* ignore */ }
+                    }
+                });
+            } catch (e) { /* ignore */ }
+
+            // If the UI was restored with the Detalle tab active (persisted), ensure detalles are loaded
+            // This handles the case where the user lands directly on the Detalle tab after login
+            if (this.tab === 'detalle') {
+                await this.fetchDetallesFactura();
+            }
+        },
+
+        // Fetch all detalles once and compute subtotal/total per factura so the list shows correct values on first render
+        async fetchAllDetallesAndRecompute() {
+            try {
+                const ts = Date.now() + Math.random();
+                const url = `/api/detalles-factura?all=true&_t=${ts}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        Pragma: 'no-cache',
+                        Expires: '0'
+                    },
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    console.warn('fetchAllDetallesAndRecompute: non-ok response', payload);
+                    return;
+                }
+
+                const allDetalles = Array.isArray(payload?.data)
+                    ? payload.data
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
+
+                if (!Array.isArray(allDetalles) || allDetalles.length === 0) {
+                    // nothing to do
+                    return;
+                }
+
+                // Group totals by factura id
+                const totalsMap = {};
+                allDetalles.forEach(d => {
+                    const fid = d.id_factura_fk || d.id_factura || d.id_factura_pk || d.factura_id || null;
+                    if (!fid) return;
+                    // Calculate line total
+                    let line = 0;
+                    if (d.total_linea !== undefined && d.total_linea !== null) {
+                        line = parseFloat(d.total_linea) || 0;
+                    } else {
+                        const pu = parseFloat(d.precio_unitario) || 0;
+                        const qty = parseFloat(d.cantidad) || 0;
+                        const impuesto = parseFloat(d.impuesto) || 0;
+                        const descuento = parseFloat(d.descuento) || 0;
+                        line = pu * qty + impuesto - descuento;
+                    }
+                    totalsMap[fid] = (totalsMap[fid] || 0) + line;
+                });
+
+                // Apply computed subtotals/totales to facturas list
+                (this.facturas || []).forEach((f) => {
+                    const fid = f.id_factura_pk || f.id || f.numero || null;
+                    if (!fid) return;
+                    const subtotal = Number((totalsMap[fid] || 0).toFixed(2));
+                    // Calcular impuesto como 15% del subtotal (política de negocio fija)
+                    const impuestoVal = Number((subtotal * 0.15).toFixed(2));
+                    const total = Number((subtotal + impuestoVal).toFixed(2));
+                    const letras = this.totalToLetras2(total);
+                    // assign back to the factura object so bindings update
+                    f.subtotal = subtotal;
+                    f.impuesto = impuestoVal;
+                    f.total = total;
+                    f.total_letras = letras;
+                });
+
+                // If an itemToEdit is present (modal open), and its factura is in map, update it too
+                try {
+                    const editFid = this.itemToEdit?.id_factura_pk || this.itemToEdit?.id || null;
+                    if (editFid && totalsMap[editFid] !== undefined) {
+                        const subtotal = Number((totalsMap[editFid] || 0).toFixed(2));
+                        const impuestoVal = parseFloat(this.itemToEdit.impuesto) || 0;
+                        const total = Number((subtotal + impuestoVal).toFixed(2));
+                        const letras = this.totalToLetras2(total);
+                        this.itemToEdit.subtotal = subtotal;
+                        this.itemToEdit.total = total;
+                        this.itemToEdit.total_letras = letras;
+                        // reflect in DOM if open
+                        try { document.getElementById('edit_subtotal_factura') && (document.getElementById('edit_subtotal_factura').value = subtotal); } catch (e) { }
+                        try { document.getElementById('edit_total_factura') && (document.getElementById('edit_total_factura').value = total); } catch (e) { }
+                        try { document.getElementById('edit_total_letras_factura') && (document.getElementById('edit_total_letras_factura').value = letras); } catch (e) { }
+                    }
+                } catch (e) { /* ignore */ }
+
+            } catch (error) {
+                console.error('Error fetching all detalles for recompute:', error);
+            }
         },
 
         async fetchFacturas() {
@@ -252,65 +462,104 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-            async fetchDetallesFactura(facturaId) {
-                this.loadingDetalles = true;
-                try {
-                    if (!facturaId) {
-                        this.detalles = [];
-                        return;
-                    }
-                    const response = await fetch(`/api/detalles-factura?factura=${facturaId}`, {
-                        headers: { Accept: "application/json" },
-                        credentials: "same-origin"
-                    });
-                    const data = await response.json().catch(() => ({}));
-                    if (!response.ok) throw data;
-                    this.detalles = Array.isArray(data?.data)
-                        ? data.data
-                        : Array.isArray(data)
-                            ? data
-                            : [];
-                    console.log('Detalles de factura loaded:', this.detalles);
-                } catch (error) {
-                    console.error("Error fetching detalles de factura:", error);
-                    this.detalles = [];
-                } finally {
-                    this.loadingDetalles = false;
+        async fetchDetallesFactura() {
+            this.loadingDetalles = true;
+            try {
+                // Allow optional factura id as first arg
+                let url = '/api/detalles-factura?all=true';
+                if (arguments.length > 0 && arguments[0]) {
+                    const fid = arguments[0];
+                    url = `/api/detalles-factura?factura=${encodeURIComponent(fid)}&all=true`;
                 }
-            },
+                const timestamp = Date.now() + Math.random();
+                url += `&_t=${timestamp}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        Accept: "application/json",
+                        "Cache-Control": "no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache",
+                        "Expires": "0"
+                    },
+                    credentials: "same-origin",
+                    cache: 'no-store'
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw data;
+
+                this.detalles = Array.isArray(data?.data)
+                    ? data.data
+                    : Array.isArray(data)
+                        ? data
+                        : [];
+
+                console.log('Todos los detalles de factura:', this.detalles);
+                // Recalcular subtotal/total cuando cambian los detalles mostrados
+                try {
+                    this.recomputeFacturaTotals();
+                } catch (e) { console.warn('recomputeFacturaTotals failed', e); }
+            } catch (error) {
+                console.error("Error al obtener todos los detalles de factura:", error);
+                this.detalles = [];
+            } finally {
+                this.loadingDetalles = false;
+            }
+        },
+
+        async openDetalleForFactura(factura) {
+            // Set tab then fetch detalles filtered to this factura
+            try {
+                const fid = factura.id || factura.id_factura_pk;
+                this.currentFacturaFilter = fid;
+                this.tab = 'detalle';
+                // small delay to ensure UI tab change renders if needed
+                await this.fetchDetallesFactura(fid);
+            } catch (e) {
+                console.error('Error opening detalle for factura', e);
+            }
+        },
+
+        async openEditFactura(factura) {
+            try {
+                this.itemToEdit = factura;
+                const fid = factura.id || factura.id_factura_pk;
+                if (fid) {
+                    await this.fetchDetallesFactura(fid);
+                }
+                // ensure totals reflect the detalles
+                try { this.recomputeFacturaTotals(); } catch (e) { }
+                this.isEditFacturaModalOpen = true;
+            } catch (e) {
+                console.error('Error opening edit factura modal', e);
+                // fallback: open modal anyway
+                this.itemToEdit = factura;
+                this.isEditFacturaModalOpen = true;
+            }
+        },
+
 
         async submitFactura() {
             console.log('submitFactura called');
-            // Leer valores directamente desde los campos del formulario
-            const numeroTrim = String(document.getElementById('numero_factura')?.value || "").trim();
+
             const fechaTrim = String(document.getElementById('fecha_factura')?.value || "").trim();
+            // For creation, subtotal/total/total_letras are sent automatically as zeros.
+            const subtotal = 0;
+            const total = 0;
+            // Send total_letras as textual 'cero' form so DB non-null constraint is satisfied
+            const totalLetrasTrim = this.totalToLetras2(0);
             const ocTrim = String(document.getElementById('oc_factura')?.value || "").trim();
-            const subtotalValue = document.getElementById('subtotal_factura')?.value;
-            const totalValue = document.getElementById('total_factura')?.value;
-            const subtotal = subtotalValue ? parseFloat(subtotalValue) : null;
-            const total = totalValue ? parseFloat(totalValue) : null;
-            const totalLetrasTrim = String(document.getElementById('total_letras_factura')?.value || "").trim();
             const estadoFacturaId = parseInt(document.getElementById('estado_factura_id')?.value) || null;
             const caiId = parseInt(document.getElementById('cai_factura')?.value) || null;
             const clienteId = parseInt(document.getElementById('cliente_id')?.value) || null;
 
             console.log('Form data:', {
-                numeroTrim, fechaTrim, ocTrim, subtotal, total, totalLetrasTrim,
+                fecha: fechaTrim, subtotal, total, total_letras: totalLetrasTrim,
                 estadoFacturaId, caiId, clienteId
             });
 
             console.log('Estado field element:', document.getElementById('estado_factura_id'));
             console.log('Estado field value:', document.getElementById('estado_factura_id')?.value);
             console.log('Estado parsed:', estadoFacturaId);
-
-            if (!numeroTrim) {
-                window.showToast &&
-                    window.showToast(
-                        "El número de factura es obligatorio",
-                        "error"
-                    );
-                return;
-            }
 
             if (!fechaTrim) {
                 window.showToast &&
@@ -321,29 +570,14 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
 
-            if (subtotal === null || subtotal < 0) {
-                window.showToast &&
-                    window.showToast(
-                        "El subtotal es obligatorio y debe ser mayor o igual a 0",
-                        "error"
-                    );
-                return;
-            }
-
-            if (total === null || total < 0) {
-                window.showToast &&
-                    window.showToast(
-                        "El total es obligatorio y debe ser mayor o igual a 0",
-                        "error"
-                    );
-                return;
-            }
+            // Note: subtotal/total/total_letras are not required on creation; backend will compute authoritative values.
 
             try {
                 const payload = {
-                    numero: numeroTrim,
+                    // Numero auto-genera en cliente; OC debe ingresarse por el cliente (si no se proporcionó, dejar vacío)
+                    numero: this.generateFacturaNumero(),
                     fecha: fechaTrim,
-                    oc: ocTrim,
+                    oc: ocTrim || null,
                     subtotal: subtotal,
                     total: total,
                     total_letras: totalLetrasTrim,
@@ -420,26 +654,18 @@ document.addEventListener('alpine:init', () => {
         async updateFactura() {
             if (!this.itemToEdit || (!this.itemToEdit.id && !this.itemToEdit.id_factura_pk))
                 return;
-
             // Leer valores directamente desde los campos del formulario
-            const numeroTrim = String(document.getElementById('edit_numero_factura')?.value || "").trim();
+            // numero y oc no son editables por modal: si no existen, mantener los actuales
             const fechaTrim = String(document.getElementById('edit_fecha_factura')?.value || "").trim();
-            const ocTrim = String(document.getElementById('edit_oc_factura')?.value || "").trim();
             const subtotal = parseFloat(document.getElementById('edit_subtotal_factura')?.value) || 0;
-            const total = parseFloat(document.getElementById('edit_total_factura')?.value) || 0;
-            const totalLetrasTrim = String(document.getElementById('edit_total_letras_factura')?.value || "").trim();
+
+            const impuestoCalculated = Number((subtotal * 0.15).toFixed(2));
+            const total = Number((subtotal + impuestoCalculated).toFixed(2));
+            const totalLetrasTrim = String(document.getElementById('edit_total_letras_factura')?.value || "").trim() || this.totalToLetras2(total);
+            const ocEditTrim = String(document.getElementById('edit_oc_factura')?.value || "").trim();
             const estadoFacturaId = parseInt(document.getElementById('edit_estado_factura_id')?.value) || null;
             const caiId = parseInt(document.getElementById('edit_cai_factura')?.value) || null;
             const clienteId = parseInt(document.getElementById('edit_cliente_id')?.value) || null;
-
-            if (!numeroTrim) {
-                window.showToast &&
-                    window.showToast(
-                        "El número de factura es obligatorio",
-                        "error"
-                    );
-                return;
-            }
 
             if (!fechaTrim) {
                 window.showToast &&
@@ -453,10 +679,12 @@ document.addEventListener('alpine:init', () => {
             try {
                 const facturaId = this.itemToEdit.id_factura_pk || this.itemToEdit.id;
                 const payload = {
-                    numero: numeroTrim,
+                    // Mantener numero actual si existe; OC se toma del formulario si el usuario la proporcionó
+                    numero: this.itemToEdit?.numero || this.generateFacturaNumero(),
                     fecha: fechaTrim,
-                    oc: ocTrim,
+                    oc: ocEditTrim || this.itemToEdit?.oc || null,
                     subtotal: subtotal,
+                    impuesto: impuestoCalculated,
                     total: total,
                     total_letras: totalLetrasTrim,
                     id_estado_factura_fk: estadoFacturaId,
@@ -551,6 +779,231 @@ document.addEventListener('alpine:init', () => {
             this.id_cliente_fk = '';
         },
 
+        // Helpers: generar número de factura, OC y convertir total a letras (es)
+        generateFacturaNumero() {
+            // Formato: FYYYYMMDDHHMMSSxxx
+            const d = new Date();
+            const pad = (n, z = 2) => String(n).padStart(z, '0');
+            const s = d.getFullYear().toString() + pad(d.getMonth() + 1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+            const r = Math.floor(Math.random() * 900) + 100;
+            // Nuevo formato solicitado: FAC-XXX-XXX-XXXXX
+            // Usamos dos bloques fijos de 3 dígitos (serie/sucursal) por ahora y una secuencia de 5 dígitos.
+            // Para minimizar colisiones en cliente usamos un contador en localStorage que incrementa por cada factura creada desde este navegador.
+            // Evitar uso de localStorage: generar parte final a partir de timestamp + aleatorio
+            const seriesA = '001'; // serie/establecimiento (ajustable)
+            const seriesB = '001'; // punto de emisión (ajustable)
+            // Combinar segundos Unix y un número aleatorio para obtener 5 dígitos
+            const seconds = Math.floor(Date.now() / 1000);
+            const pseudo = (seconds + Math.floor(Math.random() * 89999) + 10000) % 100000;
+            const seqStr = String(pseudo).padStart(5, '0');
+            return `FAC-${seriesA}-${seriesB}-${seqStr}`;
+        },
+
+        generateOC() {
+            // Simple OC generator: OC + 6 dígitos aleatorios
+            const r = Math.floor(Math.random() * 900000) + 100000;
+            return 'OC' + r;
+        },
+
+        // Nueva versión segura de totalToLetras con formato: '... exactos' o '... con X centavo(s)'
+        totalToLetras2(value) {
+            const n = Math.abs(parseFloat(value) || 0);
+            const entero = Math.floor(n);
+            const cent = Math.round((n - entero) * 100);
+
+            const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciseis', 'diecisiete', 'dieciocho', 'diecinueve'];
+            const decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+            const centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+            function numeroMenosDeMil(num) {
+                let words = '';
+                if (num === 0) return 'cero';
+                if (num === 100) return 'cien';
+                if (num >= 100) {
+                    const c = Math.floor(num / 100);
+                    words += centenas[c] + ' ';
+                    num = num % 100;
+                }
+                if (num < 20) {
+                    words += unidades[num] || '';
+                } else if (num < 30) {
+                    if (num === 20) words += 'veinte';
+                    else words += 'veinti' + (unidades[num - 20] || '');
+                } else {
+                    const d = Math.floor(num / 10);
+                    const u = num % 10;
+                    words += decenas[d] || '';
+                    if (u) words += ' y ' + unidades[u];
+                }
+                return words.trim();
+            }
+
+            let words = '';
+            const millones = Math.floor(entero / 1000000);
+            const restoMillones = entero % 1000000;
+            const miles = Math.floor(restoMillones / 1000);
+            const resto = restoMillones % 1000;
+
+            if (millones > 0) {
+                if (millones === 1) words += 'un millón ';
+                else words += numeroMenosDeMil(millones) + ' millones ';
+            }
+            if (miles > 0) {
+                if (miles === 1) words += 'mil ';
+                else words += numeroMenosDeMil(miles) + ' mil ';
+            }
+            if (resto > 0) {
+                words += numeroMenosDeMil(resto) + ' ';
+            }
+
+            words = words.trim();
+            if (!words) words = 'cero';
+
+            if (cent === 0) {
+                return (words + ' exactos').replace(/\buno mil\b/, 'un mil');
+            }
+            const centWord = cent === 1 ? 'centavo' : 'centavos';
+            return (words + ' con ' + cent + ' ' + centWord).replace(/\buno mil\b/, 'un mil');
+        },
+
+        // Recalcula subtotal/total/total_letras basándose en los detalles actualmente cargados
+        recomputeFacturaTotals() {
+            try {
+                // Sumar total_linea si existe, sino calcular desde precio_unitario * cantidad + impuesto - descuento
+                let subtotal = 0;
+                if (Array.isArray(this.detalles)) {
+                    this.detalles.forEach(d => {
+                        let line = 0;
+                        if (d.total_linea !== undefined && d.total_linea !== null) {
+                            line = parseFloat(d.total_linea) || 0;
+                        } else {
+                            const pu = parseFloat(d.precio_unitario) || 0;
+                            const qty = parseFloat(d.cantidad) || 0;
+                            const impuesto = parseFloat(d.impuesto) || 0;
+                            const descuento = parseFloat(d.descuento) || 0;
+                            line = pu * qty + impuesto - descuento;
+                        }
+                        subtotal += line;
+                    });
+                }
+                subtotal = Number(subtotal.toFixed(2));
+                // Actualizar modelos y DOM
+                this.subtotal = subtotal;
+                const elSub = document.getElementById('subtotal_factura');
+                if (elSub) elSub.value = subtotal;
+                const elEditSub = document.getElementById('edit_subtotal_factura');
+                if (elEditSub) elEditSub.value = subtotal;
+
+                // Calcular impuesto como 15% del subtotal (no editable en los modales)
+                const impuestoVal = Number((subtotal * 0.15).toFixed(2));
+
+                const total = Number((subtotal + impuestoVal).toFixed(2));
+                this.total = total;
+                const elTotal = document.getElementById('total_factura');
+                if (elTotal) elTotal.value = total;
+                const elEditTotal = document.getElementById('edit_total_factura');
+                if (elEditTotal) elEditTotal.value = total;
+
+                // Total en letras
+                const letras = this.totalToLetras2(total);
+                this.total_letras = letras;
+                const elTL = document.getElementById('total_letras_factura');
+                if (elTL) elTL.value = letras;
+                const elEditTL = document.getElementById('edit_total_letras_factura');
+                if (elEditTL) elEditTL.value = letras;
+                // También actualizar la factura en la lista si corresponde (para reflejar cambios en la tabla)
+                try {
+                    const fid = this.itemToEdit?.id_factura_pk || this.itemToEdit?.id || null;
+                    if (fid) {
+                        // actualizar itemToEdit
+                        this.itemToEdit.subtotal = subtotal;
+                        // actualizar impuesto calculado
+                        this.itemToEdit.impuesto = impuestoVal;
+                        this.itemToEdit.total = total;
+                        this.itemToEdit.total_letras = letras;
+                        // actualizar entrada en facturas
+                        const idx = (this.facturas || []).findIndex(f => (f.id_factura_pk || f.id || f.numero) == (this.itemToEdit.id_factura_pk || this.itemToEdit.id || this.itemToEdit.numero));
+                        if (idx !== -1) {
+                            this.facturas[idx].subtotal = subtotal;
+                            this.facturas[idx].impuesto = impuestoVal;
+                            this.facturas[idx].total = total;
+                            this.facturas[idx].total_letras = letras;
+                        }
+                    } else if (this.currentFacturaFilter) {
+                        // si estamos filtrando por una factura en particular, actualizar la coincidencia
+                        const fid2 = this.currentFacturaFilter;
+                        const idx2 = (this.facturas || []).findIndex(f => (f.id_factura_pk || f.id) == fid2);
+                        if (idx2 !== -1) {
+                            this.facturas[idx2].subtotal = subtotal;
+                            this.facturas[idx2].total = total;
+                            this.facturas[idx2].total_letras = letras;
+                        }
+                    }
+                } catch (e) { console.warn('Could not update factura list with recomputed totals', e); }
+            } catch (e) {
+                console.warn('Error recomputing factura totals', e);
+            }
+        },
+
+        totalToLetras(value) {
+            // value puede ser número o cadena; devolver texto en español simple
+            const n = Math.abs(parseFloat(value) || 0);
+            const entero = Math.floor(n);
+            const cent = Math.round((n - entero) * 100);
+
+            const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciseis', 'diecisiete', 'dieciocho', 'diecinueve'];
+            const decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+            const centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+            function numeroMenosDeMil(num) {
+                let words = '';
+                if (num === 0) return 'cero';
+                if (num === 100) return 'cien';
+                if (num >= 100) {
+                    const c = Math.floor(num / 100);
+                    words += centenas[c] + ' ';
+                    num = num % 100;
+                }
+                if (num < 20) {
+                    words += unidades[num] || '';
+                } else if (num < 30) {
+                    if (num === 20) words += 'veinte';
+                    else words += 'veinti' + (unidades[num - 20] || '');
+                } else {
+                    const d = Math.floor(num / 10);
+                    const u = num % 10;
+                    words += decenas[d] || '';
+                    if (u) words += ' y ' + unidades[u];
+                }
+                return words.trim();
+            }
+
+            let words = '';
+            const millones = Math.floor(entero / 1000000);
+            const restoMillones = entero % 1000000;
+            const miles = Math.floor(restoMillones / 1000);
+            const resto = restoMillones % 1000;
+
+            if (millones > 0) {
+                if (millones === 1) words += 'un millón ';
+                else words += numeroMenosDeMil(millones) + ' millones ';
+            }
+            if (miles > 0) {
+                if (miles === 1) words += 'mil ';
+                else words += numeroMenosDeMil(miles) + ' mil ';
+            }
+            if (resto > 0) {
+                words += numeroMenosDeMil(resto) + ' ';
+            }
+
+            words = words.trim();
+            if (!words) words = 'cero';
+
+            // Añadir céntimos en formato 'con XX/100'
+            const centStr = String(cent).padStart(2, '0');
+            return (words + ' con ' + centStr + '/100').replace(/uno mil/, 'un mil');
+        },
+
         handleModalSubmit(event) {
             console.log('Modal submit triggered:', event.detail);
             if (event.detail.formId === 'formFactura') {
@@ -561,13 +1014,255 @@ document.addEventListener('alpine:init', () => {
                 console.log('Calling updateFactura');
                 this.updateFactura();
             }
+
+            // Detalle handlers (form ids used in detalle modals)
+            if (event.detail.formId === 'formDetalle') {
+                console.log('Calling submitDetalle');
+                this.submitDetalle();
+            }
+            if (event.detail.formId === 'formEditDetalle') {
+                console.log('Calling updateDetalle');
+                this.updateDetalle();
+            }
         },
 
         handleDelete() {
+            // Prefer detalle deletion if that modal is open
+            if (this.isDeleteDetalleModalOpen) {
+                this.deleteDetalle();
+                return;
+            }
             if (this.isDeleteFacturaModalOpen) {
                 this.deleteFactura();
             }
-        }
+        },
+
+        // ---------- Detalle functions (copied/adapted from detalle-factura.js) ----------
+        // Form fields for detalle (DOM-backed forms are used)
+        id_factura_fk: '',
+        id_servicio_fk: '',
+        descripcion: '',
+        precio_unitario: 0,
+        cantidad: 0,
+        impuesto: 0,
+        descuento: 0,
+        fecha_servicio: '',
+        horas: 0,
+
+        clearDetalleForm() {
+            this.id_factura_fk = '';
+            this.id_servicio_fk = '';
+            this.descripcion = '';
+            this.precio_unitario = 0;
+            this.cantidad = 0;
+            this.impuesto = 0;
+            this.descuento = 0;
+            this.fecha_servicio = '';
+            this.horas = 0;
+        },
+
+        async submitDetalle() {
+            console.log('submitDetalle called');
+            const idFactura = parseInt(document.getElementById('id_factura_fk')?.value);
+            const idServicio = parseInt(document.getElementById('id_servicio_fk')?.value);
+            const descripcion = document.getElementById('descripcion')?.value || '';
+            const precioUnitario = parseFloat(document.getElementById('precio_unitario')?.value || 0);
+            const cantidad = parseFloat(document.getElementById('cantidad')?.value || 0);
+
+            if (!idFactura || !idServicio) {
+                window.showToast && window.showToast("Factura y Servicio son obligatorios", "error");
+                return;
+            }
+
+            try {
+                const payload = {
+                    id_factura_fk: idFactura,
+                    id_servicio_fk: idServicio,
+                    descripcion: descripcion,
+                    precio_unitario: precioUnitario,
+                    cantidad: cantidad,
+                    impuesto: parseFloat(document.getElementById('impuesto')?.value || 0),
+                    descuento: parseFloat(document.getElementById('descuento')?.value || 0),
+                    fecha_servicio: document.getElementById('fecha_servicio')?.value,
+                    horas: parseFloat(document.getElementById('horas')?.value || 0)
+                };
+
+                const response = await fetch("/api/detalles-factura", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    if (data && data.errors) {
+                        Object.values(data.errors).forEach((errArr) => {
+                            if (Array.isArray(errArr)) {
+                                errArr.forEach((msg) => {
+                                    window.showToast && window.showToast(msg, "error");
+                                });
+                            }
+                        });
+                    } else {
+                        window.showToast && window.showToast("Error al crear el detalle", "error");
+                    }
+                    throw data;
+                }
+
+                window.showToast && window.showToast("Detalle creado exitosamente", "success");
+                this.isDetalleModalOpen = false;
+                this.clearDetalleForm();
+                // Refrescar detalles filtrados para la factura y recomputar totales globales
+                await this.fetchDetallesFactura(this.currentFacturaFilter || payload.id_factura_fk);
+                // Asegurar que la lista de facturas y sus totales/impuestos se actualicen inmediatamente
+                // sin necesidad de recargar la página
+                try {
+                    await this.fetchAllDetallesAndRecompute();
+                } catch (e) { console.warn('fetchAllDetallesAndRecompute after submitDetalle failed', e); }
+            } catch (error) {
+                console.error("Error creating detalle:", error);
+            }
+        },
+
+        async updateDetalle() {
+            if (!this.detalleToEdit || (!this.detalleToEdit.id && !this.detalleToEdit.id_detalle_pk))
+                return;
+
+            const idFactura = parseInt(document.getElementById('edit_id_factura_fk')?.value);
+            const idServicio = parseInt(document.getElementById('edit_id_servicio_fk')?.value);
+            const descripcion = document.getElementById('edit_descripcion')?.value || '';
+            const precioUnitario = parseFloat(document.getElementById('edit_precio_unitario')?.value || 0);
+            const cantidad = parseFloat(document.getElementById('edit_cantidad')?.value || 0);
+
+            try {
+                const detalleId = this.detalleToEdit.id_detalle_pk || this.detalleToEdit.id;
+                const payload = {
+                    id_factura_fk: idFactura,
+                    id_servicio_fk: idServicio,
+                    descripcion: descripcion,
+                    precio_unitario: precioUnitario,
+                    cantidad: cantidad,
+                    impuesto: parseFloat(document.getElementById('edit_impuesto')?.value || 0),
+                    descuento: parseFloat(document.getElementById('edit_descuento')?.value || 0),
+                    fecha_servicio: document.getElementById('edit_fecha_servicio')?.value,
+                    horas: parseFloat(document.getElementById('edit_horas')?.value || 0)
+                };
+
+                const response = await fetch(`/api/detalles-factura/${detalleId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    if (data && data.errors) {
+                        Object.values(data.errors).forEach((errArr) => {
+                            if (Array.isArray(errArr)) {
+                                errArr.forEach((msg) => {
+                                    window.showToast && window.showToast(msg, "error");
+                                });
+                            }
+                        });
+                    } else {
+                        window.showToast && window.showToast("Error al actualizar el detalle", "error");
+                    }
+                    throw data;
+                }
+
+                window.showToast && window.showToast("Detalle actualizado exitosamente", "success");
+                this.isEditDetalleModalOpen = false;
+                this.detalleToEdit = {};
+                await this.fetchDetallesFactura(this.currentFacturaFilter || idFactura);
+            } catch (error) {
+                console.error("Error updating detalle:", error);
+            }
+        },
+
+        async deleteDetalle() {
+            if (!this.detalleToDelete || (!this.detalleToDelete.id && !this.detalleToDelete.id_detalle_pk))
+                return;
+
+            try {
+                const detalleId = this.detalleToDelete.id_detalle_pk || this.detalleToDelete.id;
+                const detalleFacturaId = this.detalleToDelete.id_factura_fk || this.detalleToDelete.id_factura || this.detalleToDelete.id_factura_pk || null;
+                const response = await fetch(`/api/detalles-factura/${detalleId}`, {
+                    method: "DELETE",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw data;
+
+                window.showToast && window.showToast("Detalle eliminado exitosamente", "success");
+                this.isDeleteDetalleModalOpen = false;
+                this.detalleToDelete = {};
+                await this.fetchDetallesFactura(this.currentFacturaFilter || detalleFacturaId);
+            } catch (error) {
+                console.error("Error deleting detalle:", error);
+                const errorMessage = error?.error || "Error al eliminar el detalle";
+                window.showToast && window.showToast(errorMessage, "error");
+            }
+        },
+
+        openCreateDetalleModal() {
+            this.clearDetalleForm();
+            // Clear DOM inputs if present
+            try {
+                ['id_factura_fk', 'id_servicio_fk', 'descripcion', 'precio_unitario', 'cantidad', 'impuesto', 'fecha_servicio', 'horas', 'descuento'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+            } catch (e) { }
+            // If we're viewing detalles filtered to a factura, preselect it
+            try {
+                if (this.currentFacturaFilter) {
+                    const sel = document.getElementById('id_factura_fk');
+                    if (sel) sel.value = this.currentFacturaFilter;
+                }
+            } catch (e) { }
+            this.isDetalleModalOpen = true;
+        },
+
+        openEditDetalleModal(detalle) {
+            this.detalleToEdit = detalle;
+            // Llenar el formulario con los datos del detalle (para edicion)
+            // Se usan bindings directos al DOM para mantener compatibilidad
+            // Con servers que devuelven varios nombres de campo
+            // Populate DOM inputs so document.getElementById reads the correct values
+            try {
+                const facturaVal = detalle.id_factura_fk || detalle.id_factura || detalle.id_factura_pk || '';
+                const servicioVal = detalle.id_servicio_fk || detalle.id_servicio || detalle.id_servicio_pk || '';
+                document.getElementById('edit_id_factura_fk') && (document.getElementById('edit_id_factura_fk').value = facturaVal);
+                document.getElementById('edit_id_servicio_fk') && (document.getElementById('edit_id_servicio_fk').value = servicioVal);
+                document.getElementById('edit_descripcion') && (document.getElementById('edit_descripcion').value = detalle.descripcion || '');
+                document.getElementById('edit_precio_unitario') && (document.getElementById('edit_precio_unitario').value = detalle.precio_unitario || 0);
+                document.getElementById('edit_cantidad') && (document.getElementById('edit_cantidad').value = detalle.cantidad || 0);
+                document.getElementById('edit_impuesto') && (document.getElementById('edit_impuesto').value = detalle.impuesto || 0);
+                document.getElementById('edit_descuento') && (document.getElementById('edit_descuento').value = detalle.descuento || 0);
+                document.getElementById('edit_fecha_servicio') && (document.getElementById('edit_fecha_servicio').value = detalle.fecha_servicio || '');
+                document.getElementById('edit_horas') && (document.getElementById('edit_horas').value = detalle.horas || 0);
+            } catch (e) {
+                console.warn('Could not populate edit detalle DOM fields:', e);
+            }
+            this.isEditDetalleModalOpen = true;
+        },
+
+        openDeleteDetalleModal(detalle) {
+            this.detalleToDelete = detalle;
+            this.isDeleteDetalleModalOpen = true;
+        },
+
+        // ----------------------------------------------------------------------------------
     }));
 });
 

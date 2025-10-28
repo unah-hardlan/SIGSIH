@@ -69,6 +69,16 @@
                 </table>
             </div>
             <!-- Sección Contactos eliminada del reporte de Solicitudes por no requerirse -->
+
+            <!-- Botones de acción (sticky on-screen, hidden in print) -->
+            <div class="report-print-controls no-print">
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    <i class="fas fa-print mr-2"></i>Imprimir
+                </button>
+                <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    <i class="fas fa-times mr-2"></i>Cerrar
+                </button>
+            </div>
         </div>
     </div>
 </div>

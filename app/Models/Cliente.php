@@ -86,4 +86,23 @@ class Cliente extends Model
     {
         return $query->where('tipo_cliente', 'persona');
     }
+
+    /**
+     * Accessor para obtener el nombre del cliente
+     */
+    public function getNombreAttribute()
+    {
+        if ($this->tipo_cliente === 'empresa' && $this->relationLoaded('empresa') && $this->empresa) {
+            return $this->empresa->nombre_comercial ?: $this->empresa->razon_social;
+        }
+
+        if ($this->tipo_cliente === 'persona' && $this->relationLoaded('personas')) {
+            $persona = $this->personas->first();
+            if ($persona) {
+                return trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
+            }
+        }
+
+        return 'N/A';
+    }
 }

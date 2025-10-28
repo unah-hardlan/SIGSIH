@@ -146,4 +146,75 @@ class TicketController extends Controller
             'message' => 'Ticket eliminado exitosamente'
         ]);
     }
+
+    /**
+     * Generate tickets report
+     */
+    public function reporte(Request $request)
+    {
+        $query = Ticket::with([
+            'estado', 
+            'tecnico', 
+            'cliente' => function($q) {
+                $q->with(['empresa', 'personas']);
+            }
+        ]);
+
+        // Filtro por estado del ticket
+        if ($estado = $request->input('estado')) {
+            $query->whereHas('estado', function($q) use ($estado) {
+                $q->where('codigo', $estado);
+            });
+        }
+
+        // Filtro por técnico
+        if ($tecnico = $request->input('tecnico')) {
+            $query->where('id_tecnico_fk', $tecnico);
+        }
+
+        // Filtro por cliente
+        if ($cliente = $request->input('cliente')) {
+            $query->where('id_cliente_fk', $cliente);
+        }
+
+        // Filtro por descripción
+        if ($q = $request->input('q')) {
+            $query->where('descripcion_ticket', 'like', "%$q%");
+        }
+
+        // Filtro por rango de fechas
+        if ($desde = $request->input('desde')) {
+            $query->where('fecha_creacion', '>=', $desde);
+        }
+
+        if ($hasta = $request->input('hasta')) {
+            $query->where('fecha_creacion', '<=', $hasta);
+        }
+
+        // Orden
+        $sortable = [
+            'id' => 'id_ticket_pk',
+            'cliente' => 'id_cliente_fk',
+            'fecha' => 'fecha_creacion',
+            'estado' => 'id_estado_ticket_fk',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'desc')) === 'desc' ? 'desc' : 'asc';
+        if ($sort && isset($sortable[$sort])) {
+            $query->orderBy($sortable[$sort], $direction);
+        } else {
+            $query->orderBy('fecha_creacion', 'desc');
+        }
+
+        $tickets = $query->get();
+        $total = $tickets->count();
+        $pendientes = $tickets->filter(function($t) { return $t->estado && strtolower($t->estado->nombre) === 'pendiente'; })->count();
+        $enProceso = $tickets->filter(function($t) { return $t->estado && strtolower($t->estado->nombre) === 'en proceso'; })->count();
+        $finalizados = $tickets->filter(function($t) { return $t->estado && strtolower($t->estado->nombre) === 'finalizado'; })->count();
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'tickets';
+
+        return view('admin.reporte-tickets', compact('tickets', 'total', 'pendientes', 'enProceso', 'finalizados', 'fecha', 'modulo', 'sort', 'direction'));
+    }
 }
