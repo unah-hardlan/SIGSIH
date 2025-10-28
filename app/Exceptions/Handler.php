@@ -34,7 +34,7 @@ class Handler extends ExceptionHandler
             if ($request->is('api/*')) {
                 if ($e instanceof ValidationException) {
                     return response()->json([
-                        'message' => 'Errores de validación.',
+                        'message' => 'Hay información incorrecta. Verifica los datos e inténtalo de nuevo.',
                         'errors' => $e->errors(),
                     ], 422);
                 }

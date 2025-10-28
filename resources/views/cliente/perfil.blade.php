@@ -1,7 +1,7 @@
 @extends('cliente.layouts.app')
 @section('title','Perfil - Cliente')
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6 mt-12 font-nunito" x-data="perfilData($el)" x-init="init()" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
+<div class="max-w-7xl mx-auto space-y-6 mt-16 font-nunito" x-data="perfilData($el)" x-init="init()" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 font-serif">Mi Perfil</h1>
         @if($persona && !$empresa)
@@ -415,7 +415,7 @@
     @if($persona && !$empresa)
     <template x-teleport="body">
         <div x-show="showEditModal" x-cloak x-transition.opacity.duration.300ms
-            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
+            class="modal-underlay fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
             @click.self="closeEditModal()" @keydown.window.escape="closeEditModal()"
             style="margin: 0;">
             <div x-transition:enter="transition ease-out duration-300" 
@@ -574,7 +574,7 @@
     @if($empresa)
     <template x-teleport="body">
         <div x-show="showEmpresaModal" x-cloak x-transition.opacity.duration.300ms
-            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
+            class="modal-underlay fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
             @click.self="closeEmpresaModal()" @keydown.window.escape="closeEmpresaModal()"
             style="margin: 0;">
             <div x-transition:enter="transition ease-out duration-300" 
@@ -674,7 +674,7 @@
     {{-- Modal de contraseña actual (2FA) --}}
     <template x-teleport="body">
         <div x-show="showPasswordModal" x-cloak x-transition.opacity.duration.300ms
-            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
+            class="modal-underlay fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
             @click.self="closePasswordModal()" @keydown.window.escape="closePasswordModal()"
             style="margin: 0;">
             <div x-transition:enter="transition ease-out duration-300" 

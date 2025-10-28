@@ -1,12 +1,12 @@
 @extends('cliente.layouts.app')
 @section('title','Solicitudes - Cliente')
 @section('content')
-<div class="max-w-7xl mx-auto space-y-6 mt-12" x-data="solicitudesCliente()">
+<div class="max-w-7xl mx-auto space-y-6 mt-16" x-data="solicitudesCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold serif tracking-tight text-gray-900 dark:text-gray-100">Solicitudes de Soporte</h1>
     </div>
 
-    <div class="text-gray-700 dark:text-gray-300 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+    <div class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
         Las solicitudes de soporte le permiten reportar problemas técnicos de su empresa u organización. Nuestro equipo de soporte está comprometido a resolver sus inquietudes de manera efectiva. Por favor, proporcione detalles claros y específicos al crear una solicitud. Una vez sea aprobada se lo notificaremos para propocionarle una cotización de su solicitud.
     </div>
 
@@ -168,9 +168,9 @@ if (typeof window.solicitudesCliente === 'undefined') {
     window.solicitudesCliente = function() {
         return {
             solicitudes: [
-                { id: 1, numero_solicitud_acf: 'ACF-001', numero_solicitud_cliente: 'CLI-2025-001', descripcion_problema: 'Error al generar reporte de inventario', estado: 'Pendiente', contacto: 'Juan Pérez' },
-                { id: 2, numero_solicitud_acf: 'ACF-002', numero_solicitud_cliente: 'CLI-2025-002', descripcion_problema: 'Consulta sobre facturación electrónica', estado: 'Resuelta', contacto: 'María García' },
-                { id: 3, numero_solicitud_acf: 'ACF-003', numero_solicitud_cliente: 'CLI-2025-003', descripcion_problema: 'Problema de acceso al sistema', estado: 'En Proceso', contacto: 'Carlos López' }
+                { id: 1, numero_solicitud_acf: 'ACF-001', numero_solicitud_cliente: 'CLI-2025-001', nombre_solicitud: 'Reporte de Inventario', descripcion_problema: 'Error al generar reporte de inventario', estado: 'Pendiente', contacto: 'Juan Pérez' },
+                { id: 2, numero_solicitud_acf: 'ACF-002', numero_solicitud_cliente: 'CLI-2025-002', nombre_solicitud: 'Consulta Facturación', descripcion_problema: 'Consulta sobre facturación electrónica', estado: 'Resuelta', contacto: 'María García' },
+                { id: 3, numero_solicitud_acf: 'ACF-003', numero_solicitud_cliente: 'CLI-2025-003', nombre_solicitud: 'Acceso al Sistema', descripcion_problema: 'Problema de acceso al sistema', estado: 'En Proceso', contacto: 'Carlos López' }
             ],
             filtros: {
                 search: '',
