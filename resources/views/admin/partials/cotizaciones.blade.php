@@ -30,6 +30,34 @@
         form.subtotal = +subtotal.toFixed(2);
         form.total = +total.toFixed(2);
     },
+    // Formatea el identificador de la cotización como: COT-FECHAHORA-ID-0001
+    formatCotId(c){
+        try{
+            const id = c?.id ?? '';
+            // usar fecha completa si está disponible, si no usar la fecha corta
+            const raw = (c?.fecha || c?.fecha_cotizacion || '').toString();
+            // extraer dígitos de fecha/hora: YYYYMMDDHHmm si están presentes
+            const digits = raw.replace(/[^0-9]/g,'');
+            // preferir hasta YYYYMMDDHHmm (12) o YYYYMMDD (8)
+            let fh = digits.slice(0,12);
+            if(!fh || fh.length < 8) {
+                // fallback a ahora
+                const now = new Date();
+                const YYYY = now.getFullYear();
+                const MM = String(now.getMonth()+1).padStart(2,'0');
+                const DD = String(now.getDate()).padStart(2,'0');
+                const hh = String(now.getHours()).padStart(2,'0');
+                const mm = String(now.getMinutes()).padStart(2,'0');
+                fh = `${YYYY}${MM}${DD}${hh}${mm}`.slice(0,12);
+            } else if(fh.length === 8) {
+                // si solo tenemos YYYYMMDD, añadir hora 0000
+                fh = fh;
+            }
+            const pad4 = (n)=> (('0000') + String(n)).slice(-4);
+            // Evitar duplicar el id: mostrar solo la versión pad (4 dígitos) junto a la fecha/hora
+            return `COT-${fh}-${pad4(id)}`;
+        }catch(e){ return c?.id ?? ''; }
+    },
     addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); },
     removeItem(index, formRef='form'){ this[formRef].items.splice(index,1); this.calcTotals(this[formRef]); },
     apiHeaders(){ return { 'Content-Type':'application/json','Accept':'application/json' }; },
@@ -227,6 +255,8 @@
                     <thead class="nunito-bold text-[10px]">
                         <tr>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
+                                Codigo de Cotización</th>
+                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
                                 Cliente</th>
                             <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
                                 Fecha
@@ -256,6 +286,7 @@
                     <tbody class="nunito-regular">
                         <template x-for="c in cotizaciones" :key="c.id">
                             <tr class="text-[10px]">
+                                <td class="px-4 py-2 border-t border-gray-200" x-text="formatCotId(c)"></td>
                                 <td class="px-4 py-2 border-t border-gray-200"
                                     x-text="c.cliente_nombre || 'Sin cliente'"></td>
                                 <td class="px-4 py-2 border-t border-gray-200" x-text="c.fecha"></td>
@@ -293,10 +324,10 @@
                             </tr>
                         </template>
                         <tr x-show="!cotizaciones.length && !loading">
-                            <td colspan="10" class="text-center text-gray-500 py-4">Sin datos</td>
+                            <td colspan="11" class="text-center text-gray-500 py-4">Sin datos</td>
                         </tr>
                         <tr x-show="loading">
-                            <td colspan="10" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
+                            <td colspan="11" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -915,10 +946,10 @@
 </div>
 
 <style>
-/* Slightly smaller table typography for headers and data */
-table thead th,
-table tbody td {
-    font-size: 0.8125rem;
-    /* ~13px */
-}
+    /* Slightly smaller table typography for headers and data */
+    table thead th,
+    table tbody td {
+        font-size: 0.8125rem;
+        /* ~13px */
+    }
 </style>
