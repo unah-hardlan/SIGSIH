@@ -220,6 +220,33 @@ Route::prefix('admin')
             if ($moduloLower === 'parametros') {
                 return app(\App\Http\Controllers\ParametroController::class)->reporte($request);
             }
+            if ($moduloLower === 'proyectos') {
+                return app(\App\Http\Controllers\ProyectoController::class)->reporte($request);
+            }
+            if ($moduloLower === 'movimientos-proyecto') {
+                return app(\App\Http\Controllers\ProyectoController::class)->reporteMovimientos($request);
+            }
+            if ($moduloLower === 'proyecto-financiero') {
+                return app(\App\Http\Controllers\ProyectoController::class)->reporteFinanciero($request);
+            }
+            if ($moduloLower === 'tickets') {
+                return app(\App\Http\Controllers\TicketController::class)->reporte($request);
+            }
+            if ($moduloLower === 'agencias') {
+                return app(\App\Http\Controllers\AgenciasController::class)->reporte($request);
+            }
+            if ($moduloLower === 'calendario') {
+                return app(\App\Http\Controllers\CalendarioController::class)->reporte($request);
+            }
+            if ($moduloLower === 'cai') {
+                return app(\App\Http\Controllers\CaiController::class)->reporte($request);
+            }
+            if ($moduloLower === 'productos') {
+                return app(\App\Http\Controllers\ProductoController::class)->reporte($request);
+            }
+            if ($moduloLower === 'kardex') {
+                return app(\App\Http\Controllers\KardexController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,

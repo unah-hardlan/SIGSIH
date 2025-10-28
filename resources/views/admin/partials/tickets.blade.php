@@ -192,18 +192,20 @@
             <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Cliente</th>
             <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Fecha</th>
             <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Estado</th>
+            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Técnico</th>
+            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
             <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <template x-if="loading">
             <tr>
-              <td colspan="4" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando tickets...</td>
+              <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando tickets...</td>
             </tr>
           </template>
           <template x-if="!loading && tickets.length===0">
             <tr>
-              <td colspan="4" class="py-8 text-center text-gray-500 nunito-regular">No hay tickets</td>
+              <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular">No hay tickets</td>
             </tr>
           </template>
           <template x-if="!loading && tickets.length>0">
@@ -219,6 +221,8 @@
                           'bg-blue-100 text-blue-700 dark:bg-blue-600 dark:text-blue-100': (t.estado_nombre||'').toLowerCase().includes('final')
                         }" x-text="t.estado_nombre"></span>
                 </td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="t.tecnico_nombre || 'N/A'"></td>
+                <td class="py-2 px-4 text-gray-900 dark:text-gray-200 max-w-xs truncate" x-text="t.descripcion_ticket"></td>
                 <td class="py-2 px-4 flex items-center gap-2">
                   <a href="#" @click.prevent="openEdit(t)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                   <a href="#" @click.prevent="openDelete(t)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>

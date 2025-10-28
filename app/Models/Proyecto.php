@@ -123,4 +123,16 @@ class Proyecto extends Model
         $fechaFin = $this->fecha_finalizacion_proyecto ?? $this->fecha_estimada_fin_proyecto ?? now();
         return $this->fecha_inicio_proyecto->diffInDays($fechaFin);
     }
+
+    // Accessor para calcular total de ingresos
+    public function getTotalIngresosAttribute()
+    {
+        return $this->ingresos()->sum('monto_ingreso');
+    }
+
+    // Accessor para calcular total de gastos
+    public function getTotalGastosAttribute()
+    {
+        return $this->gastos()->sum('monto_gasto');
+    }
 }
