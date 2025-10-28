@@ -27,7 +27,7 @@
                     <i class="fas fa-chevron-right"></i>
                 </button>
 
-                <a href="{{ route('admin.reporte-proyecto') }}" target="_blank" class="p-2 border border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 bg-white/90 dark:bg-gray-800">
+                <a :href="'/admin/reportes-header?modulo=proyecto-financiero&id_proyecto=' + (currentProyecto ? currentProyecto.id_proyecto_pk : '')" target="_blank" class="p-2 border border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 bg-white/90 dark:bg-gray-800">
                     <i class="fas fa-file-pdf"></i>
                 </a>
             </div>
@@ -35,7 +35,7 @@
 
        <!-- PDF button desktop -->
     <div class="hidden sm:flex bg-transparent items-center justify-center">
-        <a href="{{ route('admin.reporte-proyecto') }}" target="_blank" class="flex items-center gap-2 px-6 py-2 border-2 border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors duration-300 w-full min-w-[170px] justify-center">
+        <a :href="'/admin/reportes-header?modulo=proyecto-financiero&id_proyecto=' + (currentProyecto ? currentProyecto.id_proyecto_pk : '')" target="_blank" class="flex items-center gap-2 px-6 py-2 border-2 border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors duration-300 w-full min-w-[170px] justify-center">
             <i class="fas fa-file-pdf"></i>
             Generar PDF
         </a>
