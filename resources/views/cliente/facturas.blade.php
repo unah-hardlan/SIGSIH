@@ -50,32 +50,44 @@
         </div>
     </div>
 
-    <!-- Tabla -->
+    <!-- Tabla (facturas + detalles) -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div class="overflow-x-auto scrollbar-thin">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 text-[11px] uppercase tracking-wide">
+        <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
+            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                <thead class="bg-gray-200 dark:bg-gray-800">
                     <tr>
-                        <th class="px-4 py-2 text-left font-semibold">Factura</th>
-                        <th class="px-4 py-2 text-left font-semibold">Fecha</th>
-                        <th class="px-4 py-2 text-left font-semibold">Estado</th>
-                        <th class="px-4 py-2 text-right font-semibold">Monto</th>
-                        <th class="px-4 py-2 text-center font-semibold">Acción</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Factura</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Fecha</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">OC</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Subtotal</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Impuesto</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Descuento</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Total</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Estado</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Acción</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-300 dark:divide-gray-700">
                     <template x-if="filtradas.length === 0">
-                        <tr><td colspan="5" class="px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">No hay facturas.</td></tr>
+                        <tr>
+                            <td colspan="9" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center font-nunito">No hay facturas.</td>
+                        </tr>
                     </template>
                     <template x-for="f in paginadas" :key="f.numero">
-                        <tr class="border-t border-gray-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-gray-700/60 transition">
-                            <td class="px-4 py-2 font-mono text-xs" x-text="f.numero"></td>
-                            <td class="px-4 py-2" x-text="f.fecha"></td>
-                            <td class="px-4 py-2"><span class="px-2 py-1 rounded text-[10px] font-semibold" :class="estadoBadge(f.estado)" x-text="f.estado"></span></td>
-                            <td class="px-4 py-2 text-right font-semibold" x-text="'$' + f.monto.toLocaleString()"></td>
-                            <td class="px-4 py-2 text-center">
+                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="f.numero"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="f.fecha"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="f.oc"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="'$' + f.subtotal.toLocaleString()"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="'$' + f.impuesto.toLocaleString()"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="'$' + f.descuento.toLocaleString()"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="'$' + f.total.toLocaleString()"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
+                                <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide" :class="estadoBadge(f.estado)" x-text="f.estado"></span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <button class="px-2.5 py-1.5 rounded-md text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition flex items-center gap-1"><i class="fas fa-eye"></i><span>Ver</span></button>
+                                    <button @click="verDetalle(f)" class="px-2.5 py-1.5 rounded-md text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition flex items-center gap-1"><i class="fas fa-eye"></i><span>Ver</span></button>
                                     <button class="px-2.5 py-1.5 rounded-md text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition flex items-center gap-1"><i class="fas fa-file-download"></i><span>PDF</span></button>
                                 </div>
                             </td>
@@ -92,6 +104,80 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Detalle Factura -->
+    <template x-teleport="body">
+        <div x-show="modalFactura" x-cloak x-transition.opacity.duration.300ms class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm" @click.self="modalFactura=false" @keydown.window.escape="modalFactura=false">
+            <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-4xl mx-auto max-h-[90vh] overflow-y-auto" @click.stop>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Detalle de Factura</h3>
+                    <button @click="modalFactura=false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
+                </div>
+
+                <template x-if="facturaActual">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Factura</label>
+                                <p class="text-gray-900 dark:text-gray-100 font-semibold" x-text="facturaActual.numero"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Fecha</label>
+                                <p class="text-gray-900 dark:text-gray-100" x-text="facturaActual.fecha"></p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">OC</label>
+                                <p class="text-gray-900 dark:text-gray-100" x-text="facturaActual.oc"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</label>
+                                <p class="text-gray-900 dark:text-gray-100" x-text="'$' + facturaActual.subtotal.toLocaleString()"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Impuesto</label>
+                                <p class="text-gray-900 dark:text-gray-100" x-text="'$' + facturaActual.impuesto.toLocaleString()"></p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Detalle de líneas</label>
+                            <div class="overflow-x-auto mt-2">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left">Servicio</th>
+                                            <th class="px-3 py-2 text-right">Precio Unit.</th>
+                                            <th class="px-3 py-2 text-right">Cantidad</th>
+                                            <th class="px-3 py-2 text-right">Impuesto</th>
+                                            <th class="px-3 py-2 text-right">Total Línea</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <template x-for="d in facturaActual.detalles" :key="d.id">
+                                            <tr>
+                                                <td class="px-3 py-2" x-text="d.descripcion"></td>
+                                                <td class="px-3 py-2 text-right" x-text="'$' + d.precio_unitario.toLocaleString()"></td>
+                                                <td class="px-3 py-2 text-right" x-text="d.cantidad"></td>
+                                                <td class="px-3 py-2 text-right" x-text="'$' + d.impuesto.toLocaleString()"></td>
+                                                <td class="px-3 py-2 text-right" x-text="'$' + d.total_linea.toLocaleString()"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                    <button @click="modalFactura=false" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 
 <script>
@@ -105,9 +191,19 @@ if (typeof window.facturasCliente === 'undefined') {
             datos: Array.from({length:25}).map((_,i)=>({
                 numero:'FAC-'+(500+i),
                 fecha:new Date(Date.now() - (i*43200000)).toISOString().substring(0,10),
+                oc: 'OC-' + (1000 + i),
+                subtotal: Math.round(100 + Math.random()*4000),
+                impuesto: Math.round(10 + Math.random()*500),
+                descuento: Math.round(Math.random()*200),
+                total: 0, // calculado abajo
                 estado:['Pagada','Pendiente','Vencida'][i%3],
-                monto:Math.round(200 + Math.random()*8000)
-            })),
+                detalles: [
+                    { id: 1, descripcion: 'Servicio A', precio_unitario: 150, cantidad: 2, impuesto: 15, total_linea: 315 },
+                    { id: 2, descripcion: 'Servicio B', precio_unitario: 200, cantidad: 1, impuesto: 20, total_linea: 220 }
+                ]
+            })).map(f=>{ f.total = f.subtotal + f.impuesto - f.descuento; return f; }),
+            modalFactura: false,
+            facturaActual: null,
             get filtradas(){
                 return this.datos.filter(d=>{
                     const s=this.filtros.search.toLowerCase();
@@ -118,6 +214,7 @@ if (typeof window.facturasCliente === 'undefined') {
                     return eOk&&sOk&&dOk&&hOk;
                 });
             },
+            verDetalle(f){ this.facturaActual = f; this.modalFactura = true; },
             get totalPages(){return Math.max(1,Math.ceil(this.filtradas.length/this.pageSize));},
             get paginadas(){const s=(this.page-1)*this.pageSize;return this.filtradas.slice(s,s+this.pageSize);},
             get inicioPagina(){return this.filtradas.length===0?0:((this.page-1)*this.pageSize+1);},

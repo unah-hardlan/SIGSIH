@@ -18,6 +18,15 @@ import {
     faClipboardQuestion,
     faPlus,
     faTimes,
+    faLayerGroup,
+    faCheckCircle,
+    faHourglassHalf,
+    faSearch,
+    faEye,
+    faList,
+    faHourglass,
+    faCheck,
+    faBan,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -33,7 +42,16 @@ library.add(
     faHouseChimney,
     faClipboardQuestion,
     faPlus,
-    faTimes
+    faTimes,
+    faLayerGroup,
+    faCheckCircle,
+    faHourglassHalf,
+    faSearch,
+    faEye,
+    faList,
+    faHourglass,
+    faCheck,
+    faBan
 );
 
 dom.watch();

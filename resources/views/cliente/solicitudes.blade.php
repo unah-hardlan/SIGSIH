@@ -168,9 +168,9 @@ if (typeof window.solicitudesCliente === 'undefined') {
     window.solicitudesCliente = function() {
         return {
             solicitudes: [
-                { id: 1, numero_solicitud_acf: 'ACF-001', numero_solicitud_cliente: 'CLI-2025-001', descripcion_problema: 'Error al generar reporte de inventario', estado: 'Pendiente', contacto: 'Juan Pérez' },
-                { id: 2, numero_solicitud_acf: 'ACF-002', numero_solicitud_cliente: 'CLI-2025-002', descripcion_problema: 'Consulta sobre facturación electrónica', estado: 'Resuelta', contacto: 'María García' },
-                { id: 3, numero_solicitud_acf: 'ACF-003', numero_solicitud_cliente: 'CLI-2025-003', descripcion_problema: 'Problema de acceso al sistema', estado: 'En Proceso', contacto: 'Carlos López' }
+                { id: 1, numero_solicitud_acf: 'ACF-001', numero_solicitud_cliente: 'CLI-2025-001', nombre_solicitud: 'Reporte de Inventario', descripcion_problema: 'Error al generar reporte de inventario', estado: 'Pendiente', contacto: 'Juan Pérez' },
+                { id: 2, numero_solicitud_acf: 'ACF-002', numero_solicitud_cliente: 'CLI-2025-002', nombre_solicitud: 'Consulta Facturación', descripcion_problema: 'Consulta sobre facturación electrónica', estado: 'Resuelta', contacto: 'María García' },
+                { id: 3, numero_solicitud_acf: 'ACF-003', numero_solicitud_cliente: 'CLI-2025-003', nombre_solicitud: 'Acceso al Sistema', descripcion_problema: 'Problema de acceso al sistema', estado: 'En Proceso', contacto: 'Carlos López' }
             ],
             filtros: {
                 search: '',
