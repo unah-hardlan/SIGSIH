@@ -241,6 +241,9 @@ Route::prefix('admin')
             if ($moduloLower === 'productos') {
                 return app(\App\Http\Controllers\ProductoController::class)->reporte($request);
             }
+            if ($moduloLower === 'kardex') {
+                return app(\App\Http\Controllers\KardexController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,
