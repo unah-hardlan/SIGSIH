@@ -1,4 +1,4 @@
-<aside x-data="{}" x-init="$store.clienteLogout = $store.clienteLogout || { modalOpen: false }" x-show="sidebarOpen" :class="{
+<aside x-data="{}" x-init="$store.clienteLogout = $store.clienteLogout || { modalOpen: false }" x-show="sidebarOpen" x-cloak :class="{
         'fixed inset-y-0 left-0 w-72 min-w-[18rem] h-full': isMobile,
         
         'sticky top-4 w-72 min-w-[18rem] max-h-[92vh] ml-4': !isMobile && sidebarOpen,
@@ -7,8 +7,14 @@
         'brightness-50 pointer-events-none': $store.clienteLogout?.modalOpen,
         'brightness-100 pointer-events-auto': !$store.clienteLogout?.modalOpen,
     }"
-    class=" text-gray-800 dark:text-white flex flex-col flex-shrink-0 p-4 shadow-lg border border-gray-500/40 dark:border-gray-700 rounded-xl transition-all duration-300 ease-in-out overflow-y-auto"
-    style="scrollbar-width: thin; scrollbar-color: #D1D5DB #FFFFFF; -webkit-overflow-scrolling: touch; z-index: 9999;">
+    class="client-sidebar transform text-gray-800 dark:text-white flex flex-col flex-shrink-0 p-4 shadow-lg border border-gray-500/40 dark:border-gray-700 rounded-xl transition-all duration-300 ease-in-out overflow-y-auto"
+    style="scrollbar-width: thin; scrollbar-color: #D1D5DB #FFFFFF; -webkit-overflow-scrolling: touch;"
+    x-transition:enter="transition transform ease-out duration-300"
+    x-transition:enter-start="-translate-x-full"
+    x-transition:enter-end="translate-x-0"
+    x-transition:leave="transition transform ease-in duration-250"
+    x-transition:leave-start="translate-x-0"
+    x-transition:leave-end="-translate-x-full">
 
     @php
         $navItems = [
