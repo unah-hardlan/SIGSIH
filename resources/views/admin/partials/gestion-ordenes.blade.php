@@ -55,14 +55,14 @@
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Orden</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Solicitud</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">N° Solicitud ACF</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Técnico</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Estado</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Cliente</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Recepción</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Inicio</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Fin</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Cotización</th>
+                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Codigo de Cotización</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Repuestos</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Observaciones</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Cliente</th>
@@ -103,7 +103,8 @@
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
                                     x-text="orden.fecha_finalizacion || '—'"></td>
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
-                                    x-text="orden.id_cotizacion ? orden.id_cotizacion : '—'"></td>
+                                    x-text="orden.id_cotizacion ? formatCotLabel(orden.raw?.cotizacion || { id: orden.id_cotizacion, fecha_cotizacion: orden.raw?.fecha_cotizacion || '' }) : '—'">
+                                </td>
 
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
                                     x-text="orden.repuestos_summary ? orden.repuestos_summary : '—'"></td>
@@ -192,7 +193,8 @@
         formId="orden-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
+                <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">N° Solicitud
+                    ACF</label>
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
@@ -309,15 +311,21 @@
 
             <div>
                 <label for="id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">
-                    Cotización</label>
+                    Codigo de Cotización</label>
                 <select id="id_cotizacion" name="id_cotizacion" x-model="formOrden.id_cotizacion_fk"
-                    :disabled="loadingCatalogos.cotizaciones"
+                    :disabled="loadingCatalogos.cotizaciones || !formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0)"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
                     </template>
                 </select>
+                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2"
+                    x-show="!loadingCatalogos.cotizaciones && (!formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0))">
+                    <i class="fas fa-info-circle"></i>
+                    <span
+                        x-text="!formOrden.id_solicitud_servicio_fk ? 'Seleccione una solicitud para cargar cotizaciones' : 'No hay cotizaciones disponibles para este cliente'"></span>
+                </div>
                 <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2"
                     x-show="loadingCatalogos.cotizaciones">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -396,8 +404,8 @@
         minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
-                <label for="edit_id_solicitud"
-                    class="block text-sm font-medium text-gray-700 nunito-bold">Solicitud</label>
+                <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">N° Solicitud
+                    ACF</label>
                 <select id="edit_id_solicitud" name="edit_id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
                     :disabled="loadingCatalogos.solicitudes"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
@@ -517,15 +525,21 @@
 
             <div>
                 <label for="edit_id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">
-                    Cotización</label>
+                    Codigo de Cotización</label>
                 <select id="edit_id_cotizacion" name="edit_id_cotizacion" x-model="formOrden.id_cotizacion_fk"
-                    :disabled="loadingCatalogos.cotizaciones"
+                    :disabled="loadingCatalogos.cotizaciones || !formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0)"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
                     </template>
                 </select>
+                <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2"
+                    x-show="!loadingCatalogos.cotizaciones && (!formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0))">
+                    <i class="fas fa-info-circle"></i>
+                    <span
+                        x-text="!formOrden.id_solicitud_servicio_fk ? 'Seleccione una solicitud para cargar cotizaciones' : 'No hay cotizaciones disponibles para este cliente'"></span>
+                </div>
                 <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2"
                     x-show="loadingCatalogos.cotizaciones">
                     <i class="fas fa-spinner fa-spin"></i>
