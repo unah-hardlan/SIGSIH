@@ -354,7 +354,7 @@
                                 <td class="py-2 px-4" x-text="detalle.descripcion"></td>
                                 <td class="py-2 px-4" x-text="detalle.precio_unitario"></td>
                                 <td class="py-2 px-4" x-text="detalle.cantidad"></td>
-                                <td class="py-2 px-4" x-text="detalle.impuesto"></td>
+
                                 <td class="py-2 px-4" x-text="detalle.total_linea"></td>
                                 <td class="py-2 px-4" x-text="detalle.descuento"></td>
                                 <td class="py-2 px-4 flex gap-2">
