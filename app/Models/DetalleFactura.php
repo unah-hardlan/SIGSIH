@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class DetalleFactura extends Model
 {
@@ -54,6 +55,33 @@ class DetalleFactura extends Model
                 $model->total_linea = $subtotal + $imp - $desc;
             }
         });
+
+        // Recalcular totales de la factura cuando se guarda o elimina un detalle
+        static::saved(function($detalle){
+            self::recalcularFactura($detalle->id_factura_fk);
+        });
+
+        static::deleted(function($detalle){
+            self::recalcularFactura($detalle->id_factura_fk);
+        });
+    }
+
+    private static function recalcularFactura($facturaId)
+    {
+        $factura = Factura::find($facturaId);
+        if (!$factura) return;
+
+        $detalles = DetalleFactura::where('id_factura_fk', $facturaId)->get();
+        $subtotal = $detalles->sum('total_linea');
+        $impuesto = $subtotal * 0.15; // 15% IVA
+        $total = $subtotal + $impuesto;
+
+        $factura->update([
+            'subtotal' => $subtotal,
+            'impuesto' => $impuesto,
+            'total' => $total,
+            'total_letras' => \App\Helpers\SpaHelper::numeroALetras($total)
+        ]);
     }
 
     public function factura()

@@ -15,6 +15,7 @@ class Factura extends Model
         'fecha',
         'oc',
         'subtotal',
+        'impuesto',
         'total',
         'total_letras',
         'id_estado_factura_fk',
@@ -49,5 +50,10 @@ class Factura extends Model
     public function cotizacion()
     {
         return $this->belongsTo(Cotizacion::class, 'id_cotizacion_fk', 'id_cotizacion_pk');
+    }
+
+    public function detalles()
+    {
+        return $this->hasMany(DetalleFactura::class, 'id_factura_fk', 'id_factura_pk');
     }
 }

@@ -17,27 +17,47 @@ class ParametroController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Parametro::query();
-        if ($q = $request->input('q')) {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('parametro', 'like', "%$q%")
-                    ->orWhere('valor', 'like', "%$q%");
-            });
-        }
-        $sortable = [ 'parametro' => 'parametro', 'valor' => 'valor', 'creado' => 'fecha_creacion' ];
-        $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
-        if ($sort && isset($sortable[$sort])) { $query->orderBy($sortable[$sort], $direction); } else { $query->orderBy('id_parametro_pk','desc'); }
-        $perPage = (int)$request->input('per_page',10);
-        $parametros = $query->paginate($perPage);
-        return ParametroResource::collection($parametros)->additional([
-            'meta' => [
-                'page' => $parametros->currentPage(),
-                'per_page' => $parametros->perPage(),
-                'total' => $parametros->total(),
-                'last_page' => $parametros->lastPage(),
-            ]
-        ]);
+         $query = Parametro::query();
+    
+    if ($q = $request->input('q')) {
+        $query->where(function ($sub) use ($q) {
+            $sub->where('parametro', 'like', "%$q%")
+                ->orWhere('valor', 'like', "%$q%");
+        });
+    }
+    
+    $sortable = [ 
+        'parametro' => 'parametro', 
+        'valor' => 'valor', 
+        'creado' => 'fecha_creacion' 
+    ];
+    $sort = $request->input('sort');
+    $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+    
+    if ($sort && isset($sortable[$sort])) { 
+        $query->orderBy($sortable[$sort], $direction); 
+    } else { 
+        $query->orderBy('id_parametro_pk', 'asc'); // Más antiguos primero
+    }
+    
+    // Si pide all=1, devolver TODOS sin paginar
+    if ($request->input('all') == 1) {
+        $parametros = $query->get();
+        return ParametroResource::collection($parametros);
+    }
+    
+    // Si no, paginar normalmente
+    $perPage = (int)$request->input('per_page', 10);
+    $parametros = $query->paginate($perPage);
+    
+    return ParametroResource::collection($parametros)->additional([
+        'meta' => [
+            'page' => $parametros->currentPage(),
+            'per_page' => $parametros->perPage(),
+            'total' => $parametros->total(),
+            'last_page' => $parametros->lastPage(),
+        ]
+    ]);
     }
 
     /**

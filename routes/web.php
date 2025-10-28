@@ -481,6 +481,43 @@ Route::prefix('admin')
 
                 return view($view, compact('fecha', 'modulo', 'items', 'search', 'accion', 'usuario', 'objeto', 'desde', 'hasta', 'sort', 'direction'));
             }
+            // Capa dinámica específica para Facturas
+            if ($moduloLower === 'facturas') {
+                $search = $request->query('search');
+                $estadoFactura = $request->query('estado_factura');
+
+                $query = \App\Models\Factura::with(['cliente.empresa', 'cliente.personas', 'estadoFactura', 'cai', 'detalles.servicio']);
+
+                if (!empty($estadoFactura)) {
+                    if (is_numeric($estadoFactura)) {
+                        $query->where('id_estado_factura_fk', (int) $estadoFactura);
+                    } else {
+                        $query->whereHas('estadoFactura', function ($q) use ($estadoFactura) {
+                            $q->where('nombre_estado', 'like', '%' . $estadoFactura . '%');
+                        });
+                    }
+                }
+
+                if (!empty($search)) {
+                    $s = '%' . $search . '%';
+                    $query->where(function ($q) use ($s) {
+                        $q->where('numero', 'like', $s)
+                            ->orWhereHas('cliente', function ($clienteQuery) use ($s) {
+                                $clienteQuery->where('nombre', 'like', $s);
+                            });
+                    });
+                }
+
+                $facturas = $query->orderBy('fecha', 'desc')->get();
+
+                // Calcular resúmenes
+                $totalFacturas = $facturas->count();
+                $pagadas = $facturas->where('estadoFactura.nombre', 'Pagada')->sum('total');
+                $pendientes = $facturas->where('estadoFactura.nombre', 'Pendiente')->sum('total');
+                $anuladas = $facturas->where('estadoFactura.nombre', 'Anulada')->sum('total');
+
+                return view($view, compact('fecha', 'modulo', 'facturas', 'totalFacturas', 'pagadas', 'pendientes', 'anuladas', 'search', 'estadoFactura'));
+            }
             return view($view, compact('fecha', 'modulo'));
         })->name('reportes-header');
 

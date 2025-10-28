@@ -2,15 +2,12 @@
     'admin-facturas-tab', 'forceDefault' => true]) class="p-6">
 
     <div class="mb-6">
-        <ul class="flex border-b nunito-bold">
-            <li @click="setTab('facturas')"
-                :class="tab==='facturas' ? 'border-b-2 border-blue-500 text-blue-500' : 'dark:text-gray-200 hover:text-blue-500 cursor-pointer'"
-                class="mr-6 pb-2 nunito-bold">Facturas</li>
-
-        </ul>
+        <div class="sticky top-6 left-6 z-50">
+            <button x-show="tab==='detalle'" x-cloak @click.prevent="setTab('facturas')"
+                class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded-md nunito-regular text-sm shadow transition-opacity duration-150">Volver</button>
+        </div>
     </div>
 
-    <!-- TAB: FACTURAS -->
     <div x-show="tab==='facturas'" class="overflow-x-auto">
         <x-responsive-table title="Facturas" class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
@@ -35,7 +32,7 @@
                                     <option
                                         :value="estado.nombre_estado || estado.nombre || (estado.id || estado.id_estado_factura_pk)"
                                         x-text="estado.nombre_estado || estado.nombre"></option>
-                                </template>
+                                </template>                                                                                                                                                                                     
                             </select>
                         </div>
                     </div>
