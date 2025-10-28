@@ -1,7 +1,7 @@
 @extends('cliente.layouts.app')
 @section('title','Perfil - Cliente')
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6 mt-12 font-nunito" x-data="perfilData($el)" x-init="init()" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
+<div class="max-w-7xl mx-auto space-y-6 mt-16 font-nunito" x-data="perfilData($el)" x-init="init()" data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa) data-empresa-update-url="{{ route('cliente.empresa.update') }}" @endif>
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 font-serif">Mi Perfil</h1>
         @if($persona && !$empresa)

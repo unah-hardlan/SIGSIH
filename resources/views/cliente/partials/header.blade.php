@@ -14,10 +14,10 @@
     }
 </style>
 <div class="header-fixed">
-<header class="relative flex items-center justify-between h-16 px-3 sm:px-6 bg-gray-50 dark:bg-gray-900 top-0 z-1">
+<header class="relative flex items-center justify-center h-16 px-3 sm:px-6 bg-gray-50 dark:bg-gray-900 top-3">
     
-    <!-- Lado Izquierdo: Solo contiene el botón móvil -->
-    <div>
+    <!-- Lado Izquierdo: botón móvil (posición absoluta en móvil) -->
+    <div class="absolute left-3 md:static md:mr-auto">
         <button @click="sidebarOpen = !sidebarOpen"
             class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden">
             <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -26,16 +26,15 @@
         </button>
     </div>
 
-    {{-- CAMBIO AQUÍ: Añadimos clases de transformación para moverlo un poco a la derecha en móvil --}}
-    <!-- Logo -->
-    <div class="transform translate-x-4 md:transform-none md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2">
+    <!-- Logo centrado -->
+    <div class="flex-shrink-0">
         <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" 
-             class="app-logo h-12 md:h-auto"
+             class="app-logo h-12 md:h-auto mx-auto"
              style="--app-logo-max: {{ ($appLogoHeight ?? 72) }}px;">
     </div>
 
     <!-- Lado Derecho: Acciones (sin cambios en su contenido) -->
-    <div class="flex items-center gap-3 md:gap-6 z-30" x-data="{ profileOpen:false, logoutConfirm:false }" x-init="$store.clienteLogout = { modalOpen: false }" x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm); $store.clienteLogout.modalOpen = logoutConfirm">
+    <div class="absolute right-3 md:static md:ml-auto flex items-center gap-3 md:gap-6 z-30" x-data="{ profileOpen:false, logoutConfirm:false }" x-init="$store.clienteLogout = { modalOpen: false }" x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm); $store.clienteLogout.modalOpen = logoutConfirm">
         <!-- Switch de tema -->
         <label class="switch">
             <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
@@ -64,8 +63,8 @@
         <!-- Usuario -->
         <div class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
             <div class="relative">
-                <button @click="profileOpen = !profileOpen"
-                    class="w-11 h-9 sm:w-10 sm:h-10 rounded-full {{ $clienteAvatar ? 'p-0' : 'bg-blue-500 text-white' }} flex items-center justify-center text-sm sm:text-base font-bold tracking-wide shadow focus:outline-none dark:ring-blue-600/40 hover:shadow-md transition overflow-hidden">
+        <button @click="profileOpen = !profileOpen"
+            class="w-8 h-8 sm:w-7 sm:h-7 rounded-full {{ $clienteAvatar ? 'p-0' : 'bg-blue-500 text-white' }} flex items-center justify-center text-[10px] sm:text-xs font-bold tracking-wide shadow focus:outline-none dark:ring-blue-600/40 hover:shadow-md transition overflow-hidden">
                     @if($clienteAvatar)
                         <img src="{{ asset('storage/' . $clienteAvatar) }}" alt="Avatar de {{ $clienteUsuario }}" class="w-full h-full object-cover">
                     @else
@@ -74,7 +73,7 @@
                 </button>
                 <div x-show="profileOpen" x-cloak @click.away="profileOpen = false" class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-blue-200 dark:border-gray-700 shadow-lg rounded-md py-1 backdrop-blur-md/0"><a href="{{ route('cliente.perfil') }}" class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors"><i class="fas fa-user-edit text-blue-500 dark:text-white"></i> Perfil</a><button @click="logoutConfirm = true; profileOpen = false" class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors"><i class="fas fa-sign-out-alt text-red-500"></i> Cerrar sesión</button></div>
             </div>
-            <div class="hidden sm:flex flex-col items-start"><span class="serif-bold text-gray-800 dark:text-gray-200 text-sm">{{ $clienteUsuario }}</span><span class="text-xs nunito-regular text-gray-500 dark:text-gray-400">Cliente</span></div>
+            <div class="hidden sm:flex flex-col items-start"><span class="serif-bold text-gray-800 dark:text-gray-200 text-xs">{{ $clienteUsuario }}</span><span class="text-xs nunito-regular text-gray-500 dark:text-gray-400">Cliente</span></div>
         </div>
 
         <!-- Modal logout -->

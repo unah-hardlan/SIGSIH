@@ -45,7 +45,7 @@
         </ul>
     </nav>
 
-    <div class="sticky bottom-0 px-4 py-3 border-t border-gray-100 dark:border-gray-700 z-10">
+    <div class="sticky bottom-0 px-4 py-3 border-t border-gray-400/80 dark:border-gray-700 z-10">
         <div class="text-xs text-gray-500 dark:text-gray-400 text-center">© {{ date('Y') }} Hardlan</div>
     </div>
 </aside>
