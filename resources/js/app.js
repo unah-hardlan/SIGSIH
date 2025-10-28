@@ -1622,6 +1622,28 @@ if (typeof window !== "undefined") {
                 }
                 return "";
             },
+            // Formatea la etiqueta que se mostrará para una cotización en selects
+            formatCotLabel(item) {
+                if (!item) return "";
+                // Preferir un código explícito si viene desde el backend
+                if (item.codigo_cotizacion) return String(item.codigo_cotizacion);
+                if (item.codigo) return String(item.codigo);
+                // Extraer fecha si está disponible
+                const fechaRaw = item.fecha_cotizacion || item.fecha || item.created_at || item.fecha_creacion || null;
+                let fechaStr = "000000000000";
+                if (fechaRaw) {
+                    try {
+                        const d = new Date(fechaRaw);
+                        if (!isNaN(d.getTime())) {
+                            const pad = (n) => String(n).padStart(2, "0");
+                            fechaStr = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
+                        }
+                    } catch (_) { }
+                }
+                const id = String(item.id_cotizacion_pk || item.id || item.id_cotizacion || "");
+                const pad4 = id ? id.padStart(4, "0") : "0000";
+                return `COT-${fechaStr}-${pad4}`;
+            },
             mapOrden(orden) {
                 const solicitud = orden.solicitud_servicio || {};
                 const cliente = solicitud.cliente || {};
@@ -1746,16 +1768,25 @@ if (typeof window !== "undefined") {
                 if (!exists) {
                     this[listName].push({
                         value: normalizedValue,
-                        label: label || `ID ${normalizedValue}`,
+                        label: String(label ?? `ID ${normalizedValue}`),
                     });
                     this.sortOptions(listName);
                 }
             },
             sortOptions(listName) {
                 if (!Array.isArray(this[listName])) return;
-                this[listName].sort((a, b) =>
-                    a.label.localeCompare(b.label, "es")
-                );
+                this[listName].sort((a, b) => {
+                    const la = a && a.label !== undefined && a.label !== null ? String(a.label) : "";
+                    const lb = b && b.label !== undefined && b.label !== null ? String(b.label) : "";
+                    try {
+                        return la.localeCompare(lb, "es");
+                    } catch (e) {
+                        // Fallback to simple comparison
+                        if (la < lb) return -1;
+                        if (la > lb) return 1;
+                        return 0;
+                    }
+                });
             },
             ensureOrdenOptions(orden) {
                 if (!orden) return;
@@ -1783,22 +1814,24 @@ if (typeof window !== "undefined") {
                 }
 
                 if (orden.id_cotizacion) {
-                    this.ensureOption(
-                        "cotizacionesOptions",
-                        orden.id_cotizacion,
-                        String(orden.id_cotizacion)
-                    );
+                    const cotId = String(orden.id_cotizacion);
+                    let label = `COT-${cotId.padStart(4, "0")}`;
+                    try {
+                        const found = (this.cotizacionesOptions || []).find(
+                            (o) => String(o.value) === cotId
+                        );
+                        if (found && found.label) label = found.label;
+                    } catch (_) { }
+                    this.ensureOption("cotizacionesOptions", cotId, label);
                 }
             },
             async fetchCatalogos() {
                 if (!(await this.requireAuth())) {
                     return;
                 }
-                await Promise.all([
-                    this.fetchSolicitudes(),
-                    this.fetchTecnicos(),
-                    this.fetchCotizaciones(),
-                ]);
+                // No cargamos cotizaciones globalmente aquí porque las cotizaciones deben
+                // cargarse por cliente cuando se seleccione una solicitud válida.
+                await Promise.all([this.fetchSolicitudes(), this.fetchTecnicos()]);
             },
             async fetchSolicitudes() {
                 if (this.authError) return;
@@ -1814,20 +1847,36 @@ if (typeof window !== "undefined") {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok)
+                    // Tolerante a 204 / body vacío / distintas formas de payload
+                    let raw = [];
+                    if (response.ok) {
+                        try {
+                            const parsed = await response.json().catch(() => null);
+                            if (Array.isArray(parsed)) raw = parsed;
+                            else if (Array.isArray(parsed?.data)) raw = parsed.data;
+                            else if (Array.isArray(parsed?.items)) raw = parsed.items;
+                            else raw = [];
+                        } catch (e) {
+                            console.debug("fetchSolicitudes: parse error, using empty array", e);
+                            raw = [];
+                        }
+                    } else {
+                        // response not ok (4xx/5xx)
                         throw new Error("Error al cargar solicitudes");
-                    const json = await response.json();
-                    const opciones = (json.data || []).map((item) => ({
-                        value: String(item.id_solicitud_pk),
+                    }
+
+                    const opciones = (raw || []).map((item) => ({
+                        value: String(item.id_solicitud_pk || item.id || item.id_solicitud),
                         label:
+                            item.numero_solicitud_acf ||
+                            item.numero_solicitud_cliente ||
                             item.nombre_solicitud ||
-                            `Solicitud #${item.id_solicitud_pk}`,
+                            `Solicitud #${item.id_solicitud_pk || item.id || item.id_solicitud}`,
                     }));
+
                     this.solicitudesOptions = opciones;
                     this.sortOptions("solicitudesOptions");
-                    this.ordenes.forEach((orden) =>
-                        this.ensureOrdenOptions(orden)
-                    );
+                    this.ordenes.forEach((orden) => this.ensureOrdenOptions(orden));
                 } catch (error) {
                     console.error(error);
                     this.showToast(
@@ -1904,8 +1953,8 @@ if (typeof window !== "undefined") {
                         throw new Error("Error al cargar cotizaciones");
                     const json = await response.json();
                     const opciones = (json.data || []).map((item) => ({
-                        value: String(item.id_cotizacion_pk),
-                        label: String(item.id_cotizacion_pk),
+                        value: String(item.id_cotizacion_pk || item.id || item.id_cotizacion),
+                        label: this.formatCotLabel(item),
                     }));
                     this.cotizacionesOptions = opciones;
                     this.sortOptions("cotizacionesOptions");
@@ -1920,6 +1969,83 @@ if (typeof window !== "undefined") {
                     );
                 } finally {
                     this.loadingCatalogos.cotizaciones = false;
+                }
+            },
+            // Fetch cotizaciones filtered by a cliente id
+            async fetchCotizacionesForCliente(clienteId) {
+                if (this.authError) return;
+                this.loadingCatalogos.cotizaciones = true;
+                try {
+                    if (!clienteId) {
+                        // If no cliente provided, fallback to full list
+                        await this.fetchCotizaciones();
+                        return;
+                    }
+                    const params = new URLSearchParams();
+                    params.set('per_page', '100');
+                    // Try a common param name first
+                    params.set('id_cliente_fk', String(clienteId));
+                    params.set('sort', 'fecha');
+                    params.set('direction', 'desc');
+                    let response = await fetch('/api/cotizaciones?' + params.toString(), { headers: this.apiHeaders() });
+                    if (response.status === 401) { this.handleUnauthorized(); return; }
+                    // If backend doesn't accept id_cliente_fk, try alternate param
+                    if (!response.ok) {
+                        const params2 = new URLSearchParams();
+                        params2.set('per_page', '100');
+                        params2.set('cliente_id', String(clienteId));
+                        params2.set('sort', 'fecha');
+                        params2.set('direction', 'desc');
+                        response = await fetch('/api/cotizaciones?' + params2.toString(), { headers: this.apiHeaders() });
+                        if (response.status === 401) { this.handleUnauthorized(); return; }
+                    }
+                    if (!response.ok) throw new Error('Error al cargar cotizaciones por cliente');
+                    const parsed = await response.json().catch(() => null);
+                    const raw = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.data) ? parsed.data : []);
+                    const opciones = (raw || []).map((item) => ({
+                        value: String(item.id_cotizacion_pk || item.id || item.id_cotizacion),
+                        label: this.formatCotLabel(item),
+                    }));
+                    this.cotizacionesOptions = opciones;
+                    this.sortOptions('cotizacionesOptions');
+                } catch (e) {
+                    console.error(e);
+                    // fallback to global list on error
+                    try { await this.fetchCotizaciones(); } catch (_) { }
+                } finally {
+                    this.loadingCatalogos.cotizaciones = false;
+                }
+            },
+
+            // Called when the solicitud select changes to load cotizaciones for the solicitud's cliente
+            async onSolicitudChange(solicitudId) {
+                if (!solicitudId) {
+                    // Clear cotizaciones options or reload full list
+                    this.cotizacionesOptions = [];
+                    return;
+                }
+                try {
+                    // Load full solicitud resource to obtain cliente id
+                    const response = await fetch('/api/solicitudes/' + String(solicitudId), { headers: this.apiHeaders() });
+                    if (response.status === 401) { this.handleUnauthorized(); return; }
+                    if (!response.ok) {
+                        // If failed, try to reload full cotizaciones as fallback
+                        await this.fetchCotizaciones();
+                        return;
+                    }
+                    const json = await response.json().catch(() => null);
+                    const full = json?.data || json || {};
+                    // Try common paths for cliente id
+                    const clienteId = full.id_cliente_fk || full.cliente?.id || full.cliente?.id_cliente_pk || full.cliente_id || full.id_cliente || null;
+                    if (clienteId) {
+                        await this.fetchCotizacionesForCliente(clienteId);
+                    } else {
+                        // No cliente found; fallback to global list
+                        await this.fetchCotizaciones();
+                    }
+                } catch (e) {
+                    console.error('onSolicitudChange error', e);
+                    await this.fetchCotizaciones();
                 }
             },
             async fetchOrdenes() {
@@ -2380,6 +2506,16 @@ if (typeof window !== "undefined") {
                         this.fetchOrdenes();
                     }, 150)
                 );
+                // Cuando cambie la solicitud en el formulario, cargar cotizaciones del cliente
+                this.$watch(
+                    "formOrden.id_solicitud_servicio_fk",
+                    debounce((val) => {
+                        // val puede ser id de solicitud (string)
+                        if (!val) return;
+                        // Llamar al handler que consultará solicitud -> cliente -> cotizaciones
+                        this.onSolicitudChange(val);
+                    }, 250)
+                );
 
                 await Promise.all([
                     this.fetchCatalogos(),
@@ -2774,11 +2910,29 @@ if (typeof window !== "undefined") {
                         "/api/solicitudes?" + params.toString(),
                         { headers: this.apiHeaders() }
                     );
-                    if (!res.ok) throw new Error("Error solicitudes");
-                    const json = await res.json();
-                    this.solicitudes = (json.data || []).map((it) =>
-                        this.mapSolicitud(it)
-                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+
+                    // Tolerante a respuestas vacías / diferentes shapes
+                    let raw = [];
+                    if (res.ok) {
+                        try {
+                            const parsed = await res.json().catch(() => null);
+                            if (Array.isArray(parsed)) raw = parsed;
+                            else if (Array.isArray(parsed?.data)) raw = parsed.data;
+                            else if (Array.isArray(parsed?.items)) raw = parsed.items;
+                            else raw = [];
+                        } catch (e) {
+                            console.debug("gestionSolicitudes.fetchSolicitudes: parse error", e);
+                            raw = [];
+                        }
+                    } else {
+                        throw new Error("Error solicitudes");
+                    }
+
+                    this.solicitudes = (raw || []).map((it) => this.mapSolicitud(it));
                 } catch (e) {
                     console.error(e);
                     this.showToast(
