@@ -75,9 +75,26 @@
             gap: 0.5rem;
             align-items: center;
         }
-        /* On very small screens place controls slightly inset */
+        /* On very small screens place controls as a non-fixed, full-width bar
+           to avoid covering content and improve usability on narrow viewports. */
         @media (max-width: 640px) {
-            .report-print-controls { top: 0.5rem; right: 0.5rem; }
+            .report-print-controls {
+                position: static !important;
+                top: auto !important;
+                right: auto !important;
+                left: 0 !important;
+                width: 100% !important;
+                margin: 0 0 1rem 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                gap: 0.5rem !important;
+                padding: 0.25rem 0.5rem !important;
+                background: transparent !important;
+            }
+            .report-print-controls button {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+            }
         }
     </style>
     @stack('head')
