@@ -235,7 +235,7 @@
                         const resp = error?.response;
                         if (resp?.status === 422) {
                             this.fieldErrors = resp.data?.errors || {};
-                            const message = resp.data?.message || 'Hay errores de validación.';
+                            const message = resp.data?.message || 'Hay información incorrecta. Verifica los datos e inténtalo de nuevo.';
                             if (window.showToast) {
                                 window.showToast(message, 'error');
                             }

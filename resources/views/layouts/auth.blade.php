@@ -224,7 +224,7 @@
                             const resp = err?.response;
                             if (resp?.status === 422) {
                                 this.fieldErrors = resp.data?.errors || {};
-                                this.formError = resp.data?.message || "Hay errores de validación.";
+                                this.formError = resp.data?.message || "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
                             } else if (resp?.status === 401) {
                                 this.formError = resp?.data?.message || resp?.data?.error || 'Credenciales incorrectas.';
                             } else if (resp?.status === 403 && resp?.data?.status === 'email_verification_required') {
