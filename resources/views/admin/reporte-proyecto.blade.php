@@ -195,8 +195,8 @@
                 </div>
             </section>
 
-            <!-- Botones de acción (sin cambios) -->
-            <div class="mt-10 pt-6 border-t border-black/5 flex justify-center gap-4 no-print">
+            <!-- Botones de acción (sticky) -->
+            <div class="report-print-controls no-print">
                 <button onclick="window.print()" class="inline-flex items-center gap-2 bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-md font-semibold text-sm transition">
                     <i class="fas fa-print"></i>Imprimir
                 </button>
