@@ -37,12 +37,12 @@ Route::get('/verify-email', function (\Illuminate\Http\Request $request) {
 
 // Logout (protegido) usado por portal admin y cliente
 Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware(['auth.jwt.web','jwt.refresh'])
+    ->middleware(['auth.jwt.web', 'jwt.refresh'])
     ->name('logout');
 
 // Intercambia la sesión web autenticada por un JWT para el SPA
 Route::get('/session/token', [SessionTokenController::class, 'issue'])
-    ->middleware(['auth.jwt.web','jwt.refresh'])
+    ->middleware(['auth.jwt.web', 'jwt.refresh'])
     ->name('session.token');
 
 
@@ -60,23 +60,25 @@ Route::get('/', function () {
         return redirect()->route('login');
     }
     $rolNombre = strtolower($user->rol->rol ?? '');
-    if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+    if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
         // Verificar si el cliente necesita configurar su perfil
         $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
-        
-        if (!$persona || 
-            empty($persona->primer_nombre) || 
-            empty($persona->primer_apellido) || 
-            empty($persona->dni) || 
-            empty($persona->id_genero_fk)) {
+
+        if (
+            !$persona ||
+            empty($persona->primer_nombre) ||
+            empty($persona->primer_apellido) ||
+            empty($persona->dni) ||
+            empty($persona->id_genero_fk)
+        ) {
             return redirect()->route('cliente.configurar-perfil');
         }
-        
+
         return redirect()->route('cliente.perfil');
     }
     // Por defecto admin
     return redirect()->route('admin.dashboard');
-})->middleware(['auth.jwt.web','jwt.refresh'])->name('home.redirect');
+})->middleware(['auth.jwt.web', 'jwt.refresh'])->name('home.redirect');
 
 // Ruta explícita reutilizable para redirecciones después de login via frontend
 Route::get('/post-auth-redirect', function () {
@@ -85,35 +87,37 @@ Route::get('/post-auth-redirect', function () {
         return redirect()->route('login');
     }
     $rolNombre = strtolower($user->rol->rol ?? '');
-    if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
+    if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
         // Verificar si el cliente necesita configurar su perfil
         $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
-        
-        if (!$persona || 
-            empty($persona->primer_nombre) || 
-            empty($persona->primer_apellido) || 
-            empty($persona->dni) || 
-            empty($persona->id_genero_fk)) {
+
+        if (
+            !$persona ||
+            empty($persona->primer_nombre) ||
+            empty($persona->primer_apellido) ||
+            empty($persona->dni) ||
+            empty($persona->id_genero_fk)
+        ) {
             return redirect()->route('cliente.configurar-perfil');
         }
-        
+
         return redirect()->route('cliente.perfil');
     }
     return redirect()->route('admin.dashboard');
-})->middleware(['auth.jwt.web','jwt.refresh'])->name('post-auth.redirect');
+})->middleware(['auth.jwt.web', 'jwt.refresh'])->name('post-auth.redirect');
 
 // API-like fallbacks (cookie-based auth) for SPA when Bearer token is missing/expirado
 Route::get('/api-web/dashboard/indicadores', [DashboardController::class, 'indicators'])
-    ->middleware(['auth.jwt.web','admin.only'])
+    ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('dashboard.indicators.web');
 Route::get('/api-web/dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado'])
-    ->middleware(['auth.jwt.web','admin.only'])
+    ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('dashboard.ordenes.estado.web');
 Route::get('/api-web/dashboard/cotizaciones-mes', [DashboardController::class, 'cotizacionesPorMes'])
-    ->middleware(['auth.jwt.web','admin.only'])
+    ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('dashboard.cotizaciones.mes.web');
 Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, 'proyectosPorEstado'])
-    ->middleware(['auth.jwt.web','admin.only'])
+    ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('dashboard.proyectos.estado.web');
 
 // Catálogo de Estados de Solicitud (cookie-auth para SPA admin)
@@ -134,7 +138,7 @@ Route::get('/api-web/estados-solicitud', function (\Illuminate\Http\Request $req
         'data' => $items,
         'meta' => ['count' => $items->count()],
     ]);
-})->middleware(['auth.jwt.web','admin.only'])->name('api.web.estados.solicitud');
+})->middleware(['auth.jwt.web', 'admin.only'])->name('api.web.estados.solicitud');
 
 // API-like fallback para cambiar contraseña del perfil (cookie-based auth)
 Route::post('/api-web/me/password', [ProfileController::class, 'changePassword'])
@@ -143,14 +147,14 @@ Route::post('/api-web/me/password', [ProfileController::class, 'changePassword']
 
 // API-like para configuración del sistema (parámetros generales)
 Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show'])
-    ->middleware(['auth.jwt.web','admin.only'])
+    ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('system.settings.show.web');
 Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update'])
-    ->middleware(['auth.jwt.web','admin.only'])
+    ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('system.settings.update.web');
 
 // API-like fallbacks para Reportes (cookie-based auth)
-Route::middleware(['auth.jwt.web','admin.only'])->group(function () {
+Route::middleware(['auth.jwt.web', 'admin.only'])->group(function () {
     // Reportes de visita CRUD básico
     Route::get('/api-web/reportes-visita', [\App\Http\Controllers\ReporteVisitaController::class, 'index']);
     Route::get('/api-web/reportes-visita/{id}', [\App\Http\Controllers\ReporteVisitaController::class, 'show']);
@@ -289,8 +293,8 @@ Route::prefix('admin')
                     $s = "%" . $search . "%";
                     $query->where(function ($q) use ($s) {
                         $q->where('ce.nombre_comercial', 'like', $s)
-                          ->orWhere('ce.razon_social', 'like', $s)
-                          ->orWhere('ce.rtn', 'like', $s);
+                            ->orWhere('ce.razon_social', 'like', $s)
+                            ->orWhere('ce.rtn', 'like', $s);
                     });
                 }
 
@@ -316,12 +320,16 @@ Route::prefix('admin')
                     $nombresEmpresa = \App\Models\NombreEmpresa::select('id_nombre_empresa_pk', 'nombre_empresa', 'descripcion_empresa')
                         ->orderBy('nombre_empresa')
                         ->get();
-                } catch (\Throwable $e) { $nombresEmpresa = collect(); }
+                } catch (\Throwable $e) {
+                    $nombresEmpresa = collect();
+                }
                 try {
                     $oficinasEmpresa = \App\Models\OficinaEmpresa::select('id_oficina_empresa_pk', 'nombre_oficina')
                         ->orderBy('nombre_oficina')
                         ->get();
-                } catch (\Throwable $e) { $oficinasEmpresa = collect(); }
+                } catch (\Throwable $e) {
+                    $oficinasEmpresa = collect();
+                }
 
                 return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
             }
@@ -359,7 +367,7 @@ Route::prefix('admin')
                     } else {
                         $query->where(function ($q) use ($estadoSolicitud) {
                             $q->where('es.nombre', 'like', '%' . $estadoSolicitud . '%')
-                              ->orWhere('es.codigo', 'like', '%' . $estadoSolicitud . '%');
+                                ->orWhere('es.codigo', 'like', '%' . $estadoSolicitud . '%');
                         });
                     }
                 }
@@ -368,11 +376,11 @@ Route::prefix('admin')
                     $s = '%' . $search . '%';
                     $query->where(function ($q) use ($s, $clienteNombreExpr) {
                         $q->where('s.numero_solicitud_acf', 'like', $s)
-                          ->orWhere('s.numero_solicitud_cliente', 'like', $s)
-                          ->orWhere('s.descripcion_problema', 'like', $s)
-                          ->orWhere('es.nombre', 'like', $s)
-                          ->orWhere('es.codigo', 'like', $s)
-                          ->orWhere(DB::raw($clienteNombreExpr), 'like', $s);
+                            ->orWhere('s.numero_solicitud_cliente', 'like', $s)
+                            ->orWhere('s.descripcion_problema', 'like', $s)
+                            ->orWhere('es.nombre', 'like', $s)
+                            ->orWhere('es.codigo', 'like', $s)
+                            ->orWhere(DB::raw($clienteNombreExpr), 'like', $s);
                     });
                 }
 
@@ -389,7 +397,7 @@ Route::prefix('admin')
                     $query->orderBy($orderColumn, 'asc');
                 } else {
                     $query->orderBy('es.nombre', 'asc')
-                          ->orderBy('s.id_solicitud_pk', 'asc');
+                        ->orderBy('s.id_solicitud_pk', 'asc');
                 }
 
                 // Evitar duplicados por join con personas
@@ -406,7 +414,7 @@ Route::prefix('admin')
                 $desde = $request->query('desde');
                 $hasta = $request->query('hasta');
                 $sort = $request->query('sort', 'fecha_evento');
-                $direction = strtolower($request->query('direction','desc')) === 'asc' ? 'asc' : 'desc';
+                $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
                 $q = DB::table('tbl_ms_bitacora as b')
                     ->leftJoin('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'b.id_usuario_fk')
@@ -437,7 +445,7 @@ Route::prefix('admin')
                     $s = '%' . $search . '%';
                     $q->where(function ($w) use ($s) {
                         $w->where('b.accion', 'like', $s)
-                          ->orWhere('b.descripcion', 'like', $s);
+                            ->orWhere('b.descripcion', 'like', $s);
                     });
                 }
                 if (!empty($desde)) {
@@ -479,7 +487,8 @@ Route::prefix('admin')
         // Vistas PDF o externas
         Route::get('detalle-cotizacion', fn() => view('admin.detalle-cotizacion'))->name('detalle-cotizacion');
         Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
-        Route::get('formato-factura', fn() => view('admin.formato-factura'))->name('formato-factura');
+        // Vista de factura dinámica: recibe el id de factura y delega al controlador para cargar datos
+        Route::get('formato-factura/{id}', [\App\Http\Controllers\FacturaController::class, 'formatoFactura'])->name('formato-factura');
         Route::get('reporte-proyecto', function (Request $request) {
             $fecha = $request->query('fecha', now()->format('d-M-Y'));
             $modulo = $request->query('modulo', 'Proyecto BAC');
@@ -498,16 +507,16 @@ Route::redirect('/cliente', '/cliente/perfil');
 // Usa autenticación JWT web + refresh + validación de rol cliente
 Route::prefix('cliente')
     ->name('cliente.')
-    ->middleware(['auth.jwt.web','jwt.refresh','client.only'])
+    ->middleware(['auth.jwt.web', 'jwt.refresh', 'client.only'])
     ->group(function () {
         // Rutas para configuración inicial del perfil (sin middleware de verificación de perfil)
         Route::get('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfil'])->name('configurar-perfil');
         Route::post('configurar-perfil', [\App\Http\Controllers\ClienteController::class, 'configurarPerfilStore'])->name('configurar-perfil.store');
-        
+
         // Rutas para configuración de empresa
         Route::get('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresa'])->name('configurar-empresa');
         Route::post('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresaStore'])->name('configurar-empresa.store');
-        
+
         // Rutas que requieren perfil completo
         Route::middleware(['check.cliente.perfil'])->group(function () {
             Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');
@@ -517,7 +526,7 @@ Route::prefix('cliente')
             Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
             Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
-            
+
             // Rutas de 2FA para clientes (mismo patrón que admin)
             Route::get('2fa/status', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'status'])->name('2fa.status');
             Route::post('2fa/setup/start', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'startSetup'])->name('2fa.setup.start');
