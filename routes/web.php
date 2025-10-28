@@ -238,6 +238,9 @@ Route::prefix('admin')
             if ($moduloLower === 'cai') {
                 return app(\App\Http\Controllers\CaiController::class)->reporte($request);
             }
+            if ($moduloLower === 'productos') {
+                return app(\App\Http\Controllers\ProductoController::class)->reporte($request);
+            }
 
             $view = match ($moduloLower) {
                 'configuracion de accesos', 'configuracion-acceso' => null,
