@@ -17,7 +17,8 @@ class ItemCotizacionResource extends JsonResource
             'impuesto' => (float) $this->impuesto,
             'total' => (float) $this->total,
             'id_cotizacion_fk' => $this->id_cotizacion_fk,
-            'cotizacion' => $this->whenLoaded('cotizacion', function(){
+            'id_producto_fk' => $this->id_producto_fk,
+            'cotizacion' => $this->whenLoaded('cotizacion', function () {
                 return [
                     'id_cotizacion_pk' => $this->cotizacion->id_cotizacion_pk,
                     'fecha_cotizacion' => $this->cotizacion->fecha_cotizacion?->format('Y-m-d H:i:s'),
