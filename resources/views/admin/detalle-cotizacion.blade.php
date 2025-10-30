@@ -6,326 +6,324 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cotización - IT SUPPORT HARDLAN</title>
     <style>
+    body {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .container {
+        width: 21cm;
+        min-height: 29.7cm;
+        background-color: #fff;
+        padding: 30px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+    }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+    }
+
+    .logo-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .logo {
+        width: 150px;
+        height: auto;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .app-logo {
+        width: 150px;
+        height: 100px;
+        object-fit: contain;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .company-info p {
+        margin: 0;
+        line-height: 1.4;
+        font-size: 13px;
+    }
+
+    .quotation-header {
+        text-align: right;
+    }
+
+    .quotation-header h1 {
+        color: #00008b;
+        margin: 0 0 10px 0;
+        font-size: 28px;
+        border-bottom: 2px solid #00008b;
+        padding-bottom: 5px;
+    }
+
+    .header-details {
+        display: block;
+        background-color: #e0e0e0;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 13px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+
+    .detail-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-row span:first-child {
+        font-weight: bold;
+        color: #555;
+        flex-shrink: 0;
+        margin-right: 15px;
+    }
+
+    .detail-row .value {
+        background-color: #fff;
+        padding: 2px 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        display: inline-block;
+        min-width: 100px;
+        text-align: center;
+        flex-grow: 1;
+    }
+
+    .detail-row .value.date {
+        background-color: #fff;
+    }
+
+    .client-section {
+        margin-bottom: 25px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        background-color: #f9f9f9;
+        width: 60%;
+    }
+
+    .client-section h2 {
+        background-color: #00008b;
+        color: #fff;
+        padding: 8px 15px;
+        margin: -15px -15px 15px -15px;
+        font-size: 16px;
+        text-transform: uppercase;
+    }
+
+    .client-section p {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+
+    .items-section {
+        margin-bottom: 25px;
+    }
+
+    .items-section table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .items-section th,
+    .items-section td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+        font-size: 13px;
+    }
+
+    .items-section th {
+        background-color: #00008b;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: normal;
+    }
+
+    .items-section td {
+        vertical-align: top;
+    }
+
+    .items-section .description {
+        width: 50%;
+    }
+
+    .items-section .unit-price,
+    .items-section .quantity,
+    .items-section .taxes,
+    .items-section .total {
+        text-align: right;
+        width: 12.5%;
+    }
+
+    .items-section .total {
+        font-weight: bold;
+    }
+
+    .bottom-sections-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .summary {
+        width: 300px;
+        border: 1px solid #000;
+        flex-shrink: 0;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 10px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-row .amount {
+        font-weight: normal;
+        text-align: right;
+        min-width: 80px;
+    }
+
+    .total-row {
+        background-color: #00008b;
+        color: #fff;
+        font-weight: bold;
+        padding: 8px 10px;
+    }
+
+    .total-row .amount {
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .terms-section {
+        border: 1px solid #ddd;
+        padding: 15px;
+        background-color: #f9f9f9;
+    }
+
+    .terms-section h2 {
+        background-color: #00008b;
+        color: #fff;
+        padding: 8px 15px;
+        margin: -15px -15px 15px -15px;
+        font-size: 16px;
+        text-transform: uppercase;
+    }
+
+    .terms-section ol {
+        padding-left: 20px;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+
+    .terms-section ol li {
+        margin-bottom: 5px;
+        font-size: 13px;
+    }
+
+    .terms-section p {
+        margin: 5px 0;
+        font-size: 13px;
+    }
+
+    .signature-line {
+        border-bottom: 1px solid #000;
+        margin-top: 20px;
+        padding-bottom: 5px;
+    }
+
+    footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+        color: #555;
+    }
+
+    footer .thanks {
+        font-weight: bold;
+        font-size: 14px;
+        color: #00008b;
+        margin-top: 10px;
+    }
+
+    .print-button-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .print-button {
+        background-color: #00008b;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    @media print {
         body {
-            font-family: "Roboto", sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            color: #333;
-            font-size: 14px;
+            padding: 0;
+            background-color: white;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .container {
-            width: 21cm;
-            min-height: 29.7cm;
-            background-color: #fff;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
-        }
-
-        .logo-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .logo {
-            width: 150px;
-            height: auto;
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-
-        .app-logo {
-            width: 150px;
-            height: 100px;
-            object-fit: contain;
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-
-        .company-info p {
-            margin: 0;
-            line-height: 1.4;
-            font-size: 13px;
-        }
-
-        .quotation-header {
-            text-align: right;
-        }
-
-        .quotation-header h1 {
-            color: #00008b;
-            margin: 0 0 10px 0;
-            font-size: 28px;
-            border-bottom: 2px solid #00008b;
-            padding-bottom: 5px;
-        }
-
-        .header-details {
-            display: block;
-            background-color: #e0e0e0;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 13px;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .detail-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .detail-row span:first-child {
-            font-weight: bold;
-            color: #555;
-            flex-shrink: 0;
-            margin-right: 15px;
-        }
-
-        .detail-row .value {
-            background-color: #fff;
-            padding: 2px 8px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            display: inline-block;
-            min-width: 100px;
-            text-align: center;
-            flex-grow: 1;
-        }
-
-        .detail-row .value.date {
-            background-color: #fff;
-        }
-
-        .client-section {
-            margin-bottom: 25px;
-            border: 1px solid #ddd;
-            padding: 15px;
-            background-color: #f9f9f9;
-            width: 60%;
-        }
-
-        .client-section h2 {
-            background-color: #00008b;
-            color: #fff;
-            padding: 8px 15px;
-            margin: -15px -15px 15px -15px;
-            font-size: 16px;
-            text-transform: uppercase;
-        }
-
-        .client-section p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .items-section {
-            margin-bottom: 25px;
+            page-break-inside: avoid;
+            width: 100%;
+            min-height: auto;
+            box-shadow: none;
         }
 
         .items-section table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .items-section th,
-        .items-section td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-            font-size: 13px;
-        }
-
-        .items-section th {
-            background-color: #00008b;
-            color: #fff;
-            text-transform: uppercase;
-            font-weight: normal;
-        }
-
-        .items-section td {
-            vertical-align: top;
-        }
-
-        .items-section .description {
-            width: 50%;
-        }
-
-        .items-section .unit-price,
-        .items-section .quantity,
-        .items-section .taxes,
-        .items-section .total {
-            text-align: right;
-            width: 12.5%;
-        }
-
-        .items-section .total {
-            font-weight: bold;
-        }
-
-        .bottom-sections-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .summary {
-            width: 300px;
-            border: 1px solid #000;
-            flex-shrink: 0;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-        }
-
-        .summary-row .amount {
-            font-weight: normal;
-            text-align: right;
-            min-width: 80px;
-        }
-
-        .total-row {
-            background-color: #00008b;
-            color: #fff;
-            font-weight: bold;
-            padding: 8px 10px;
-        }
-
-        .total-row .amount {
-            font-weight: bold;
-            color: #fff;
+            page-break-inside: avoid;
         }
 
         .terms-section {
-            border: 1px solid #ddd;
-            padding: 15px;
-            background-color: #f9f9f9;
+            page-break-inside: avoid;
         }
 
-        .terms-section h2 {
-            background-color: #00008b;
-            color: #fff;
-            padding: 8px 15px;
-            margin: -15px -15px 15px -15px;
-            font-size: 16px;
-            text-transform: uppercase;
-        }
-
-        .terms-section ol {
-            padding-left: 20px;
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
-
-        .terms-section ol li {
-            margin-bottom: 5px;
-            font-size: 13px;
-        }
-
-        .terms-section p {
-            margin: 5px 0;
-            font-size: 13px;
-        }
-
-        .signature-line {
-            border-bottom: 1px solid #000;
-            margin-top: 20px;
-            padding-bottom: 5px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-            font-size: 12px;
-            color: #555;
-        }
-
-        footer .thanks {
-            font-weight: bold;
-            font-size: 14px;
-            color: #00008b;
-            margin-top: 10px;
-        }
-
-        .print-button-container {
-            text-align: center;
-            margin-bottom: 20px;
+        .summary {
+            page-break-inside: avoid;
         }
 
         .print-button {
-            background-color: #00008b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
+            display: none;
         }
-
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-                background-color: white;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .container {
-                page-break-inside: avoid;
-                width: 100%;
-                min-height: auto;
-                box-shadow: none;
-            }
-
-            .items-section table {
-                page-break-inside: avoid;
-            }
-
-            .terms-section {
-                page-break-inside: avoid;
-            }
-
-            .summary {
-                page-break-inside: avoid;
-            }
-
-            .print-button {
-                display: none;
-            }
-        }
+    }
     </style>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 
@@ -334,10 +332,7 @@
         <header>
             <div class="logo-section">
                 <!-- Using the provided image URL for the logo -->
-                <img
-                    src="{{ $appLogoUrl ?? asset('images/logo.png') }}"
-                    alt="IT SUPPORT HARDLAN Logo"
-                    class="app-logo"
+                <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="IT SUPPORT HARDLAN Logo" class="app-logo"
                     style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;" />
                 <div class="company-info">
                     <p>
@@ -358,7 +353,7 @@
                     </div>
                     <div class="detail-row">
                         <span>COTIZACIÓN #</span>
-                        <span class="value" x-text="cotizacion?.id_cotizacion_pk ?? '-'">-</span>
+                        <span class="value" x-text="formatCotId(cotizacion)">-</span>
                     </div>
                     <div class="detail-row">
                         <span>CLIENTE ID</span>
@@ -374,7 +369,9 @@
 
         <section class="client-section">
             <h2>CLIENTE</h2>
-            <p x-text="cotizacion?.cliente_nombre || (cotizacion?.cliente?.empresa?.nombre_comercial ?? cotizacion?.cliente?.empresa?.razon_social) || '-'">-</p>
+            <p
+                x-text="cotizacion?.cliente_nombre || (cotizacion?.cliente?.empresa?.nombre_comercial ?? cotizacion?.cliente?.empresa?.razon_social) || '-'">
+                -</p>
             <p x-text="contactoNombre || ''"></p>
         </section>
 
@@ -457,7 +454,8 @@
         </div>
 
         <div style="text-align: center; margin-top: 40px;">
-            <button class="print-button" onclick="window.print()" style="background-color: #00008b; color: white; border: none; padding: 5px 10px; font-size: 14px; border-radius: 5px; cursor: pointer;">
+            <button class="print-button" onclick="window.print()"
+                style="background-color: #00008b; color: white; border: none; padding: 5px 10px; font-size: 14px; border-radius: 5px; cursor: pointer;">
                 Imprimir Cotización
             </button>
         </div>
@@ -472,70 +470,97 @@
         </footer>
     </div>
     <script>
-        function cotizacionDetalle() {
-            return {
-                cotizacion: null,
-                items: [],
-                contactoNombre: '',
-                apiHeaders() {
-                    return {
-                        'Accept': 'application/json',
-                    };
-                },
-                async ensureToken() {
-                    return true; 
-                },
-                async fetchWithAuth(url) {
-                    let r = await fetch(url, {
-                        headers: this.apiHeaders()
-                    });
-                    if (r.status === 401) {
-                        const ok = await this.ensureToken();
-                        if (ok) {
-                            r = await fetch(url, {
-                                headers: this.apiHeaders()
-                            });
+    function cotizacionDetalle() {
+        return {
+            cotizacion: null,
+            items: [],
+            contactoNombre: '',
+            apiHeaders() {
+                return {
+                    'Accept': 'application/json',
+                };
+            },
+            async ensureToken() {
+                return true;
+            },
+            async fetchWithAuth(url) {
+                let r = await fetch(url, {
+                    headers: this.apiHeaders()
+                });
+                if (r.status === 401) {
+                    const ok = await this.ensureToken();
+                    if (ok) {
+                        r = await fetch(url, {
+                            headers: this.apiHeaders()
+                        });
+                    }
+                }
+                return r;
+            },
+            idFromQuery() {
+                const u = new URL(window.location.href);
+                return u.searchParams.get('id');
+            },
+            fmt(n) {
+                if (n == null) return '';
+                return Number(n).toFixed(2);
+            },
+            money(n) {
+                if (n == null) return '$ 0.00';
+                return '$ ' + Number(n).toFixed(2);
+            },
+            formatFecha(s) {
+                if (!s) return '--';
+                if (s.length === 10) return new Date(s + 'T00:00:00').toLocaleDateString();
+                return new Date(s).toLocaleDateString();
+            },
+            async init() {
+                try {
+                    const id = this.idFromQuery();
+                    if (!id) return;
+                    const r = await this.fetchWithAuth(`/api/cotizaciones/${id}`);
+                    if (r.ok) {
+                        const j = await r.json();
+                        this.cotizacion = j.data || j;
+                    }
+                    const ri = await this.fetchWithAuth(`/api/items-cotizacion?all=1&id_cotizacion_fk=${id}`);
+                    if (ri.ok) {
+                        const ji = await ri.json();
+                        this.items = (ji.data || ji || []);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            formatCotId(c) {
+                try {
+                    const id = c?.id_cotizacion_pk ?? c?.id ?? '';
+                    // Prefer the provided fecha_cotizacion (or fecha) and format as YYYYMMDD
+                    let dateStr = c?.fecha_cotizacion || c?.fecha || null;
+                    let YYYY, MM, DD;
+                    if (dateStr) {
+                        const d = new Date(dateStr);
+                        if (!isNaN(d)) {
+                            YYYY = d.getFullYear();
+                            MM = String(d.getMonth() + 1).padStart(2, '0');
+                            DD = String(d.getDate()).padStart(2, '0');
                         }
                     }
-                    return r;
-                },
-                idFromQuery() {
-                    const u = new URL(window.location.href);
-                    return u.searchParams.get('id');
-                },
-                fmt(n) {
-                    if (n == null) return '';
-                    return Number(n).toFixed(2);
-                },
-                money(n) {
-                    if (n == null) return '$ 0.00';
-                    return '$ ' + Number(n).toFixed(2);
-                },
-                formatFecha(s) {
-                    if (!s) return '--';
-                    if (s.length === 10) return new Date(s + 'T00:00:00').toLocaleDateString();
-                    return new Date(s).toLocaleDateString();
-                },
-                async init() {
-                    try {
-                        const id = this.idFromQuery();
-                        if (!id) return;
-                        const r = await this.fetchWithAuth(`/api/cotizaciones/${id}`);
-                        if (r.ok) {
-                            const j = await r.json();
-                            this.cotizacion = j.data || j;
-                        }
-                        const ri = await this.fetchWithAuth(`/api/items-cotizacion?all=1&id_cotizacion_fk=${id}`);
-                        if (ri.ok) {
-                            const ji = await ri.json();
-                            this.items = (ji.data || ji || []);
-                        }
-                    } catch (e) {
-                        console.error(e);
+                    if (!YYYY) {
+                        const now = new Date();
+                        YYYY = now.getFullYear();
+                        MM = String(now.getMonth() + 1).padStart(2, '0');
+                        DD = String(now.getDate()).padStart(2, '0');
                     }
+                    const datePart = `${YYYY}${MM}${DD}`;
+                    const pad4 = (n) => (('0000') + String(n)).slice(-4);
+                    return `COT-${datePart}-${pad4(id)}`;
+                } catch (e) {
+                    return c?.id_cotizacion_pk ?? c?.id ?? '-';
                 }
             }
         }
+    }
     </script>
 </body>
 

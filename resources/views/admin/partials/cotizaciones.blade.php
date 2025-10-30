@@ -394,90 +394,48 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="openCreate()"
-                class="text-sm w-full sm:w-40 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
-                <i class="fas fa-plus"></i> Generar Cotización
-            </button>
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <button @click="openCreate()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+                    <i class="fas fa-plus"></i> Generar Cotización
+                </button>
+            </div>
         </x-slot>
 
         <x-slot name="table">
             <div class="overflow-x-auto">
-                <table class="min-w-full text-xs">
-                    <thead class="nunito-bold text-[10px]">
+                <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Codigo de Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Cliente</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Fecha
-                                Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Válida
-                                Hasta</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Imponible</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Impuesto</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Total
-                                Imp.</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Otros
-                                Cargos</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Anticipo</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Total
-                            </th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Acciones</th>
+                            <th class="py-2 px-4 text-left">Codigo de Cotización</th>
+                            <th class="py-2 px-4 text-left">Cliente</th>
+                            <th class="py-2 px-4 text-left">Fecha Cotización</th>
+                            <th class="py-2 px-4 text-left">Válida Hasta</th>
+                            <th class="py-2 px-4 text-left">Imponible</th>
+                            <th class="py-2 px-4 text-left">Impuesto</th>
+                            <th class="py-2 px-4 text-left">Total Imp.</th>
+                            <th class="py-2 px-4 text-left">Otros Cargos</th>
+                            <th class="py-2 px-4 text-left">Anticipo</th>
+                            <th class="py-2 px-4 text-left">Total</th>
+                            <th class="py-2 px-4 text-left">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="nunito-regular">
+                    <tbody>
                         <template x-for="c in cotizaciones" :key="c.id">
-                            <tr class="text-[10px]">
-                                <td class="px-4 py-2 border-t border-gray-200" x-text="formatCotId(c)"></td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="c.cliente_nombre || 'Sin cliente'"></td>
-                                <td class="px-4 py-2 border-t border-gray-200" x-text="c.fecha"></td>
-                                <td class="px-4 py-2 border-t border-gray-200" x-text="c.valido_hasta"></td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
-                                </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
-                                </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
-                                </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
-                                </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
-                                </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
-                                    x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
-                                </td>
-                                <td class="px-4 py-2 border-t border-gray-200 flex items-center gap-2">
-                                    <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
-                                        class="inline-flex items-center justify-center text-[10px] px-2 h-6 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"><i
-                                            class='fas fa-eye mr-1'></i> Ver</a>
-
-
-                                    <!--  BOTON DE ITEMS
-                                            
-                                    <a href="#" @click.prevent="openItems(c)"
-                                        class="inline-flex items-center justify-center text-[10px] px-2 h-6 rounded bg-indigo-600 text-white hover:bg-indigo-700 duration-300 nunito-regular"><i
-                                            class="fas fa-database mr-1"></i> Items</a> -->
-
-
-
-                                    <a href="#" @click.prevent="openEdit(c)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                    <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
-                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                            <tr class="border-b dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4" x-text="formatCotId(c)"></td>
+                                <td class="py-2 px-4" x-text="c.cliente_nombre || 'Sin cliente'"></td>
+                                <td class="py-2 px-4" x-text="c.fecha"></td>
+                                <td class="py-2 px-4" x-text="c.valido_hasta"></td>
+                                <td class="py-2 px-4 text-right" x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
+                                <td class="py-2 px-4 text-right" x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
+                                <td class="py-2 px-4 text-right" x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
+                                <td class="py-2 px-4 text-right" x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
+                                <td class="py-2 px-4 text-right" x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
+                                <td class="py-2 px-4 text-right" x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></td>
+                                <td class="py-2 px-4 flex items-center gap-2">
+                                    <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank" class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1"><i class='fas fa-eye'></i> Ver</a>
+                                    <a href="#" @click.prevent="openEdit(c)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
                         </template>
@@ -858,34 +816,43 @@
                 {{-- Este es el nuevo contenedor para la fila de 3 elementos --}}
                 <!-- Imponible -->
                 <div>
-                    <label for="imponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                    <input type="number" id="imponible" name="imponible" x-model="form.imponible" readonly
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <label class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                    <input type="text"
+                        :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(form.imponible || 0)"
+                        readonly
+                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right font-semibold" />
                 </div>
 
                 <!-- Total impuesto -->
                 <div>
-                    <label for="totalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
-                        Impuesto</label>
-                    <input type="number" id="totalImpuesto" name="totalImpuesto" x-model="form.total_impuesto" readonly
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <label class="block text-sm font-medium text-gray-700 nunito-bold">Total Impuesto</label>
+                    <input type="text"
+                        :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(form.total_impuesto || 0)"
+                        readonly
+                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right" />
                 </div>
 
-                <!-- Otros cargos -->
+                <!-- Otros cargos (editable) -->
                 <div>
                     <label for="otrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
                         Cargos</label>
-                    <input type="number" id="otrosCargos" name="otrosCargos" x-model="form.otros_cargos"
-                        @input="calcTotals(form)"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">L.</span>
+                        <input type="number" id="otrosCargos" name="otrosCargos" x-model.number="form.otros_cargos"
+                            @input="calcTotals(form)"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 pl-8 text-right" />
+                    </div>
                 </div>
             </div>
 
             <!-- Total -->
-            <div> {{-- Este div ahora ocupa todo el ancho --}}
-                <label for="total" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                <input type="number" id="total" name="total" x-model="form.total" readonly
-                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                <div
+                    class="mt-1 block w-full rounded-md border border-blue-700 bg-blue-600 text-white p-3 text-lg font-bold text-right">
+                    <span
+                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(form.total || 0)"></span>
+                </div>
             </div>
         </div>
     </x-admin.form-modal>
@@ -999,40 +966,45 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Imponible -->
                         <div>
-                            <label for="editImponible"
-                                class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                            <input type="number" id="editImponible" name="imponible" readonly
-                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                                x-model="editForm.imponible">
+                            <label class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                            <input type="text"
+                                :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(editForm.imponible || 0)"
+                                readonly
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right font-semibold" />
                         </div>
 
                         <!-- Total impuesto -->
                         <div>
-                            <label for="editTotalImpuesto"
-                                class="block text-sm font-medium text-gray-700 nunito-bold">Total
-                                Impuesto</label>
-                            <input type="number" id="editTotalImpuesto" name="totalImpuesto" readonly
-                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                                x-model="editForm.total_impuesto">
+                            <label class="block text-sm font-medium text-gray-700 nunito-bold">Total Impuesto</label>
+                            <input type="text"
+                                :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(editForm.total_impuesto || 0)"
+                                readonly
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right" />
                         </div>
 
-                        <!-- Otros cargos -->
+                        <!-- Otros cargos (editable) -->
                         <div>
                             <label for="editOtrosCargos"
                                 class="block text-sm font-medium text-gray-700 nunito-bold">Otros
                                 Cargos</label>
-                            <input type="number" id="editOtrosCargos" name="otrosCargos"
-                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                x-model="editForm.otros_cargos" @input="calcTotals(editForm)">
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">L.</span>
+                                <input type="number" id="editOtrosCargos" name="otrosCargos"
+                                    x-model.number="editForm.otros_cargos" @input="calcTotals(editForm)"
+                                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 pl-8 text-right" />
+                            </div>
                         </div>
                     </div>
 
                     <!-- Total -->
-                    <div> {{-- Este div ahora ocupa todo el ancho --}}
-                        <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                        <input type="number" id="editTotal" name="total" readonly
-                            class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                            x-model="editForm.total">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                        <div
+                            class="mt-1 block w-full rounded-md border border-blue-700 bg-blue-600 text-white p-3 text-lg font-bold text-right">
+                            <span
+                                x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(editForm.total || 0)"></span>
+                        </div>
                     </div>
                 </div>
             </div>
