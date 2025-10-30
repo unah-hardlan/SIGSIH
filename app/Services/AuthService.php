@@ -6,6 +6,8 @@ use App\Models\Usuario;
 use App\Models\Parametro;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use App\Notifications\PasswordResetNotification;
 
 
 class AuthService
@@ -42,17 +44,17 @@ class AuthService
         }
 
         // Limitar intentos: leer de parámetros globales y bloquear al superar límite
-        $maxIntentos = (int) (\App\Models\Parametro::where('parametro','ADMIN.INTENTOS_INICIO_SESION')->value('valor')
-            ?? \App\Models\Parametro::where('parametro','ADMIN_INTENTOS_INICIO SESION')->value('valor')
+        $maxIntentos = (int) (\App\Models\Parametro::where('parametro', 'ADMIN.INTENTOS_INICIO_SESION')->value('valor')
+            ?? \App\Models\Parametro::where('parametro', 'ADMIN_INTENTOS_INICIO SESION')->value('valor')
             ?? 3);
 
-    $user = Usuario::where('usuario', $usuario)->first();
+        $user = Usuario::where('usuario', $usuario)->first();
         if (!$user) {
             return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
         }
         // Bloquear si requiere verificación de correo y no verificado
-        $requireVerify = (bool) (Parametro::where('parametro','AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
-            ?? Parametro::where('parametro','auth.require_email_verification')->value('valor')
+        $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
+            ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
         if ($requireVerify && is_null($user->email_verified_at)) {
             return ['error' => 'Correo no verificado', 'code' => 403];
@@ -67,17 +69,33 @@ class AuthService
         $cacheKey = 'login_attempts:' . $user->getKey();
         $attempts = cache()->get($cacheKey, 0);
 
-    $valid = Hash::check($contrasena, $user->contrasena);
+        $valid = Hash::check($contrasena, $user->contrasena);
         if (!$valid) {
             $attempts++;
             // guardar por 15 minutos
             cache()->put($cacheKey, $attempts, now()->addMinutes(15));
+            // Si alcanzó o excedió el máximo, bloquear
             if ($attempts >= $maxIntentos) {
                 $user->estado_usuario = 'BLOQUEADO';
                 $user->save();
-                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos', 'code' => 423];
+                // Al bloquear, generar token de recuperación y notificar por correo
+                try {
+                    $token = Password::createToken($user);
+                    $user->notify(new PasswordResetNotification($token, (string)$user->correo_electronico));
+                } catch (\Throwable $e) {
+                    // No interrumpir el flujo por fallos en el envío; sólo loguear
+                    report($e);
+                }
+                // Devolver mensaje indicando opción para desbloquear
+                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 423];
             }
-            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+            // Calcular intentos restantes y devolver mensaje dinámico
+            $remaining = max(0, $maxIntentos - $attempts);
+            $msg = 'Usuario/contraseña inválidos';
+            if ($remaining > 0) {
+                $msg .= ". Quedan {$remaining} intento" . ($remaining === 1 ? '' : 's') . " antes de bloquear la cuenta.";
+            }
+            return ['error' => $msg, 'code' => 401];
         }
 
         // reset intentos al éxito
@@ -88,8 +106,8 @@ class AuthService
         //  - AUTH.LIMITE_SESIONES.ADMIN
         //  - AUTH.LIMITE_SESIONES.CLIENTE
         // Fallback: AUTH.LIMITE_SESIONES o auth.sessions_limit
-    $limit = $this->determineSessionLimit($user);
-    $sessions = $this->prepareSessions($user, $limit);
+        $limit = $this->determineSessionLimit($user);
+        $sessions = $this->prepareSessions($user, $limit);
 
         $ttl = $this->getTokenTtlSeconds();
         $payload = [
@@ -102,7 +120,7 @@ class AuthService
         $token = JWT::encode($payload, $secret, 'HS256');
 
         // Registrar la sesión (token hash) en cache por 1h
-    $this->storeSessionToken($user, $sessions, $token);
+        $this->storeSessionToken($user, $sessions, $token);
 
         return [
             'token' => $token,
@@ -138,15 +156,26 @@ class AuthService
         if (!$valid) {
             $attempts++;
             cache()->put($cacheKey, $attempts, now()->addMinutes(15));
-            $maxIntentos = (int) (\App\Models\Parametro::where('parametro','ADMIN.INTENTOS_INICIO_SESION')->value('valor')
-                ?? \App\Models\Parametro::where('parametro','ADMIN_INTENTOS_INICIO SESION')->value('valor')
+            $maxIntentos = (int) (\App\Models\Parametro::where('parametro', 'ADMIN.INTENTOS_INICIO_SESION')->value('valor')
+                ?? \App\Models\Parametro::where('parametro', 'ADMIN_INTENTOS_INICIO SESION')->value('valor')
                 ?? 3);
             if ($attempts >= $maxIntentos) {
                 $user->estado_usuario = 'BLOQUEADO';
                 $user->save();
-                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos', 'code' => 423];
+                try {
+                    $token = Password::createToken($user);
+                    $user->notify(new PasswordResetNotification($token, (string)$user->correo_electronico));
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 423];
             }
-            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+            $remaining = max(0, $maxIntentos - $attempts);
+            $msg = 'Usuario/contraseña inválidos';
+            if ($remaining > 0) {
+                $msg .= ".                  Quedan {$remaining} intento" . ($remaining === 1 ? '' : 's') . " antes de bloquear la cuenta.";
+            }
+            return ['error' => $msg, 'code' => 401];
         }
         cache()->forget($cacheKey);
         return ['user' => $user];
