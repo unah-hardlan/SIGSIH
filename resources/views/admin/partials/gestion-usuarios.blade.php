@@ -236,12 +236,9 @@
         <x-admin.confirmation-modal class="nunito-bold" modalName="showDeleteModal" title="Confirmar Inactivación" itemToDelete="userToInactivate" itemNameProperty="nombre_usuario" message="¿Seguro que deseas inactivar al usuario" />
     </div>
 
-<!-- Helper script: attempt to read admin password structure from mantenimiento-general input and return a RegExp.
-     Assumption: the `adminPassword` input may contain a RegExp string (with or without slashes) that can be used to construct one.
-     If not present or invalid, falls back to default policy regex. -->
+
 <script>
 window.getAdminPasswordRegex = function(){
-    // If we already computed it (from server or DOM), return cached
     if(window._adminPasswordRegex) return window._adminPasswordRegex;
 
     function buildRegexFromValue(v){
@@ -251,11 +248,9 @@ window.getAdminPasswordRegex = function(){
         if(v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length-1) === '/'){
             try{ return new RegExp(v.slice(1, -1)); }catch(e){}
         }
-        // obvious regex tokens -> try
         if(/[\\^\[\]()+*?.|]/.test(v)){
             try{ return new RegExp(v); }catch(e){}
         }
-        // infer from example password
         var lookaheads = [];
         if(/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
         if(/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
@@ -270,7 +265,6 @@ window.getAdminPasswordRegex = function(){
     }
 
     try{
-        // 1) Try to read from DOM (if maintenance panel is present in same page)
         var el = document.querySelector('input[x-model="adminPassword"]');
         if(el && el.value){
             var r = buildRegexFromValue(el.value);
@@ -278,7 +272,6 @@ window.getAdminPasswordRegex = function(){
         }
     }catch(e){}
 
-    // 2) Try to fetch server settings asynchronously and cache the regex for future calls
     try{
         fetch('/api-web/system-settings', { credentials: 'same-origin' }).then(function(res){
             if(!res.ok) return null;
@@ -291,7 +284,6 @@ window.getAdminPasswordRegex = function(){
         }).catch(function(){});
     }catch(e){}
 
-    // 3) Default fallback while async fetch completes
     window._adminPasswordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
     return window._adminPasswordRegex;
 };
