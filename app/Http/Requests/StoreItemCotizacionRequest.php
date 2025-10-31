@@ -6,7 +6,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreItemCotizacionRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -17,6 +20,7 @@ class StoreItemCotizacionRequest extends FormRequest
             'impuesto' => 'nullable|numeric|min:0',
             'total' => 'nullable|numeric|min:0', // se recalcula, pero validamos si viene
             'id_cotizacion_fk' => 'required|integer|exists:tbl_cotizacion,id_cotizacion_pk',
+            'id_producto_fk' => 'nullable|integer|exists:tbl_producto,id_producto_pk',
         ];
     }
 }

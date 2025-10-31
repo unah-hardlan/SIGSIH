@@ -609,8 +609,11 @@ class AuthController extends Controller
         }
 
         // Asignación segura: el mutator del modelo se encargará de hashear si es necesario
+        // Además, al restablecer la contraseña desbloqueamos la cuenta y limpiamos el contador de intentos
         $usuario->contrasena = $data['password'];
         $usuario->primer_ingreso = 0;
+        // Asegurar que el estado vuelva a activo tras restablecer contraseña
+        $usuario->estado_usuario = 'ACTIVO';
         $usuario->save();
 
         try {
@@ -634,6 +637,13 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
         }
         $broker->deleteToken($usuario);
+
+        // Eliminar contador temporal de intentos fallidos en cache
+        try {
+            cache()->forget('login_attempts:' . $usuario->getKey());
+        } catch (\Throwable $e) {
+            // noop: no bloquear el proceso por un fallo en cache
+        }
 
         try {
             $this->bitacora->logFor(

@@ -17,9 +17,9 @@
     <!-- Dark mode logic removed -->
 
     <style>
-        [x-cloak] {
-            display: none !important;
-        }
+    [x-cloak] {
+        display: none !important;
+    }
     </style>
 </head>
 
@@ -30,14 +30,16 @@
         <div class="w-full max-w-sm mx-auto">
             <div class="bg-white rounded-lg border border-gray-600 p-4 transition-colors">
                 <div class="text-center mb-4">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 border-2 border-white transition-colors">
-                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo" style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
+                    <div
+                        class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-2 bg-gray-100 border-2 border-white transition-colors">
+                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo"
+                            style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 serif-boldy">
                         Restablece tu contraseña
                     </h2>
                     <p class="text-sm text-gray-600 mt-1 nunito-regular">
-                        Crea una nueva contraseña para ingresar nuevamente a SIGSIH.
+                        Crea una nueva contraseña para ingresar nuevamente a Hardlan.
                     </p>
                 </div>
 
@@ -45,16 +47,16 @@
                     <input type="hidden" name="token" :value="token">
 
                     <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Correo electrónico</label>
-                        <input type="email" name="email" x-model="email" required disabled aria-disabled="true" tabindex="-1"
+                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Correo
+                            electrónico</label>
+                        <input type="email" name="email" x-model="email" required readonly aria-readonly="true"
                             @input="clearFieldError('email')"
                             class="auth-input w-full px-3 py-2 rounded border transition-colors bg-gray-100 text-gray-800 nunito-regular text-xs cursor-not-allowed"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.email || (email && !validateEmail(email)) }"
                             placeholder="tu@correo.com">
                         <!-- Error del servidor -->
                         <template x-if="fieldErrors.email">
-                            <p class="mt-1 text-xs text-red-600 nunito-regular"
-                                x-text="fieldErrors.email[0]"></p>
+                            <p class="mt-1 text-xs text-red-600 nunito-regular" x-text="fieldErrors.email[0]"></p>
                         </template>
                         <!-- Validación en tiempo real -->
                         <template x-if="email && !fieldErrors.email && emailIssues(email).length > 0">
@@ -70,10 +72,11 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Nueva contraseña</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Nueva
+                            contraseña</label>
                         <div class="relative">
-                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password" required maxlength="100"
-                                @input="clearFieldError('password')"
+                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
+                                required maxlength="100" @input="clearFieldError('password')"
                                 class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white text-gray-800 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.password || (password && !validatePassword(password)) }"
                                 placeholder="Ingresa la nueva contraseña">
@@ -96,15 +99,16 @@
                         </template>
                         <!-- Error del servidor -->
                         <template x-if="fieldErrors.password">
-                            <p class="mt-1 text-xs text-red-600 nunito-regular"
-                                x-text="fieldErrors.password[0]"></p>
+                            <p class="mt-1 text-xs text-red-600 nunito-regular" x-text="fieldErrors.password[0]"></p>
                         </template>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Confirmar contraseña</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Confirmar
+                            contraseña</label>
                         <div class="relative">
-                            <input :type="showConfirmPassword ? 'text' : 'password'" name="password_confirmation" x-model="passwordConfirmation" required maxlength="100"
+                            <input :type="showConfirmPassword ? 'text' : 'password'" name="password_confirmation"
+                                x-model="passwordConfirmation" required maxlength="100"
                                 class="auth-input w-full px-3 py-2 rounded border transition-colors bg-white text-gray-800 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': passwordConfirmation && !validateConfirmPassword() }"
                                 placeholder="Confirma la nueva contraseña">
@@ -154,105 +158,109 @@
     </div>
 
     <script>
-        const PASSWORD_RESET_LOGIN_URL = "{{ route('login') }}";
-        window.passwordResetPage = function (initial) {
-            return {
-                token: initial.token,
-                email: initial.email ?? '',
-                password: '',
-                passwordConfirmation: '',
-                loading: false,
-                showPassword: false,
-                showConfirmPassword: false,
-                fieldErrors: {},
-                formValid() {
-                    return this.email && this.password && this.passwordConfirmation && this.password === this.passwordConfirmation;
-                },
-                init() {},
-                clearFieldError(field) {
-                    if (this.fieldErrors[field]) {
-                        delete this.fieldErrors[field];
-                    }
-                },
-                emailIssues(email) {
-                    const value = email || "";
-                    const issues = [];
-                    if (value.length === 0) {
-                        issues.push("El correo electrónico es requerido.");
-                    } else {
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (!emailRegex.test(value)) {
-                            issues.push("Ingresa un correo electrónico válido.");
-                        }
-                    }
-                    return issues;
-                },
-                validateEmail(email) {
-                    return this.emailIssues(email).length === 0;
-                },
-                passwordIssues(pw) {
-                    const value = pw || "";
-                    const issues = [];
-                    if (value.length < 8) issues.push("Debe tener al menos 8 caracteres.");
-                    if (/\s/.test(value)) issues.push("No debe contener espacios.");
-                    if (!/[A-Z]/.test(value)) issues.push("Debe incluir al menos una letra mayúscula.");
-                    return issues;
-                },
-                validatePassword(pw) {
-                    return this.passwordIssues(pw).length === 0;
-                },
-                confirmPasswordIssues() {
-                    const issues = [];
-                    if (this.passwordConfirmation.length === 0) {
-                        issues.push("Debes confirmar tu contraseña.");
-                    } else if (this.passwordConfirmation.length > 0 && this.password !== this.passwordConfirmation) {
-                        issues.push("Las contraseñas no coinciden.");
-                    }
-                    return issues;
-                },
-                validateConfirmPassword() {
-                    return this.confirmPasswordIssues().length === 0;
-                },
-                async handleReset() {
-                    if (!this.formValid()) return;
-                    this.loading = true;
-                    try {
-                        await axios.post('/password/reset', {
-                            token: this.token,
-                            email: this.email,
-                            password: this.password,
-                            password_confirmation: this.passwordConfirmation
-                        });
-                        if (window.showToast) {
-                            window.showToast('Tu contraseña se restableció correctamente. Ahora puedes iniciar sesión.', 'success');
-                        } else {
-                            alert('Tu contraseña se restableció correctamente. Ahora puedes iniciar sesión.');
-                        }
-                        setTimeout(() => {
-                            window.location.href = PASSWORD_RESET_LOGIN_URL;
-                        }, 2000);
-                    } catch (error) {
-                        const resp = error?.response;
-                        if (resp?.status === 422) {
-                            this.fieldErrors = resp.data?.errors || {};
-                            const message = resp.data?.message || 'Hay información incorrecta. Verifica los datos e inténtalo de nuevo.';
-                            if (window.showToast) {
-                                window.showToast(message, 'error');
-                            }
-                        } else {
-                            const message = resp?.data?.message || 'No se pudo restablecer la contraseña';
-                            if (window.showToast) {
-                                window.showToast(message, 'error');
-                            } else {
-                                alert(message);
-                            }
-                        }
-                    } finally {
-                        this.loading = false;
+    const PASSWORD_RESET_LOGIN_URL = "{{ route('login') }}";
+    window.passwordResetPage = function(initial) {
+        return {
+            token: initial.token,
+            email: initial.email ?? '',
+            password: '',
+            passwordConfirmation: '',
+            loading: false,
+            showPassword: false,
+            showConfirmPassword: false,
+            fieldErrors: {},
+            formValid() {
+                return this.email && this.password && this.passwordConfirmation && this.password === this
+                    .passwordConfirmation;
+            },
+            init() {},
+            clearFieldError(field) {
+                if (this.fieldErrors[field]) {
+                    delete this.fieldErrors[field];
+                }
+            },
+            emailIssues(email) {
+                const value = email || "";
+                const issues = [];
+                if (value.length === 0) {
+                    issues.push("El correo electrónico es requerido.");
+                } else {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        issues.push("Ingresa un correo electrónico válido.");
                     }
                 }
-            };
-        }
+                return issues;
+            },
+            validateEmail(email) {
+                return this.emailIssues(email).length === 0;
+            },
+            passwordIssues(pw) {
+                const value = pw || "";
+                const issues = [];
+                if (value.length < 8) issues.push("Debe tener al menos 8 caracteres.");
+                if (/\s/.test(value)) issues.push("No debe contener espacios.");
+                if (!/[A-Z]/.test(value)) issues.push("Debe incluir al menos una letra mayúscula.");
+                return issues;
+            },
+            validatePassword(pw) {
+                return this.passwordIssues(pw).length === 0;
+            },
+            confirmPasswordIssues() {
+                const issues = [];
+                if (this.passwordConfirmation.length === 0) {
+                    issues.push("Debes confirmar tu contraseña.");
+                } else if (this.passwordConfirmation.length > 0 && this.password !== this.passwordConfirmation) {
+                    issues.push("Las contraseñas no coinciden.");
+                }
+                return issues;
+            },
+            validateConfirmPassword() {
+                return this.confirmPasswordIssues().length === 0;
+            },
+            async handleReset() {
+                if (!this.formValid()) return;
+                this.loading = true;
+                try {
+                    await axios.post('/password/reset', {
+                        token: this.token,
+                        email: this.email,
+                        password: this.password,
+                        password_confirmation: this.passwordConfirmation
+                    });
+                    if (window.showToast) {
+                        window.showToast(
+                            'Tu contraseña se restableció correctamente. Ahora puedes iniciar sesión.',
+                            'success');
+                    } else {
+                        alert('Tu contraseña se restableció correctamente. Ahora puedes iniciar sesión.');
+                    }
+                    setTimeout(() => {
+                        window.location.href = PASSWORD_RESET_LOGIN_URL;
+                    }, 2000);
+                } catch (error) {
+                    const resp = error?.response;
+                    if (resp?.status === 422) {
+                        this.fieldErrors = resp.data?.errors || {};
+                        const message = resp.data?.message ||
+                            'Hay información incorrecta. Verifica los datos e inténtalo de nuevo.';
+                        if (window.showToast) {
+                            window.showToast(message, 'error');
+                        }
+                    } else {
+                        const message = resp?.data?.message || 'No se pudo restablecer la contraseña';
+                        if (window.showToast) {
+                            window.showToast(message, 'error');
+                        } else {
+                            alert(message);
+                        }
+                    }
+                } finally {
+                    this.loading = false;
+                }
+            }
+        };
+    }
     </script>
     @livewireScripts
 </body>
