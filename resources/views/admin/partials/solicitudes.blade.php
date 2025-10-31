@@ -286,13 +286,13 @@
                     Problema</label>
                 <textarea id="descripcion_problema" name="descripcion_problema" rows="2"
                     x-model="formSolicitud.descripcion_problema"
-                    maxlength="1000"
+                    maxlength="500"
                     @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
                     @blur="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
-                    :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'border-red-500' : ''"
+                    :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema" x-text="errors.descripcion_problema?.[0]"></p>
-                <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'text-red-500' : ''">Requerido. Máximo 1000 caracteres.</small>
+                <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
             </div>
             <div>
                 <label for="estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
@@ -355,13 +355,13 @@
                         Problema</label>
                     <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
                         x-model="formSolicitud.descripcion_problema"
-                        maxlength="1000"
+                        maxlength="500"
                         @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
                         @blur="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
-                        :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'border-red-500' : ''"
+                        :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                     <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema" x-text="errors.descripcion_problema?.[0]"></p>
-                    <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'text-red-500' : ''">Requerido. Máximo 1000 caracteres.</small>
+                    <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_estado_solicitud"

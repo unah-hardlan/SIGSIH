@@ -1350,6 +1350,7 @@ if (typeof window !== "undefined") {
             saving: false,
             deleting: false,
             errors: {},
+            validationErrors: {},
             formOrden: {
                 id: null,
                 id_solicitud_servicio_fk: "",
@@ -1366,6 +1367,9 @@ if (typeof window !== "undefined") {
                 // Repuestos inline in create/edit modal
                 repuestos: [],
             },
+            // Frontend touched trackers (match tickets pattern)
+            formOrdenAdd: { _touched: {} },
+            formOrdenEdit: { _touched: {} },
             getToken() {
                 // Cookie-based auth only; no JS-accessible token
                 return null;
@@ -1431,6 +1435,51 @@ if (typeof window !== "undefined") {
                 };
                 this.errors = {};
             },
+            // Small client-side helpers used by the blades (validateTexto / validateNumero)
+            // They sanitize input and populate `validationErrors` for inline feedback.
+            validateTexto(value, fieldName, maxLength) {
+                const v = value == null ? "" : String(value);
+                // Ensure validationErrors object exists
+                this.validationErrors = this.validationErrors || {};
+                if (maxLength && v.length > maxLength) {
+                    this.validationErrors[fieldName] = [
+                        `Máximo ${maxLength} caracteres.`,
+                    ];
+                    return v.slice(0, maxLength);
+                }
+                // clear any previous validation error for this field
+                if (this.validationErrors && this.validationErrors[fieldName]) {
+                    delete this.validationErrors[fieldName];
+                }
+                return v;
+            },
+            validateNumero(value, fieldName, maxDigits) {
+                // allow empty
+                if (value === null || value === undefined || value === "") {
+                    if (
+                        this.validationErrors &&
+                        this.validationErrors[fieldName]
+                    ) {
+                        delete this.validationErrors[fieldName];
+                    }
+                    return "";
+                }
+                const s = String(value).replace(/[^0-9]/g, "");
+                const limited = maxDigits ? s.slice(0, maxDigits) : s;
+                this.validationErrors = this.validationErrors || {};
+                if (maxDigits && s.length > maxDigits) {
+                    this.validationErrors[fieldName] = [
+                        `Máximo ${maxDigits} dígitos.`,
+                    ];
+                } else if (
+                    this.validationErrors &&
+                    this.validationErrors[fieldName]
+                ) {
+                    delete this.validationErrors[fieldName];
+                }
+                // return number when possible, keep empty string otherwise
+                return limited === "" ? "" : Number(limited);
+            },
             // Repuestos management state
             isRepuestosModalOpen: false,
             repuestosModalOrder: null,
@@ -1439,6 +1488,7 @@ if (typeof window !== "undefined") {
             repuestosForm: {
                 id_producto_fk: "",
                 cantidad: 1,
+                _touched: {},
             },
             async fetchProducts() {
                 if (this.productsOptions && this.productsOptions.length) return;
@@ -2232,6 +2282,24 @@ if (typeof window !== "undefined") {
                     await this.fetchCotizaciones();
                 }
             },
+            isVerMasModalOpen: false,
+            ordenSeleccionada: null,
+            // FIN: Nuevas propiedades
+
+            // ... (resto de tus propiedades y funciones como init, fetchOrdenes, etc.)
+
+            // INICIO: Nueva función para abrir el modal de detalles
+            openVerMasModal(orden) {
+                this.ordenSeleccionada = orden;
+                this.isVerMasModalOpen = true;
+            },
+            // FIN: Nueva función
+
+            // ... (resto de tus funciones como openCreateOrden, openEditOrden, etc.)
+
+            detalleUrl(id) {
+                return detalleUrl.replace("ID_ORDEN", id);
+            },
             async fetchOrdenes() {
                 if (!(await this.requireAuth()) || this.authError) return;
                 this.loadingOrdenes = true;
@@ -2293,6 +2361,9 @@ if (typeof window !== "undefined") {
                 this.resetForm();
                 // Ensure product options available for repuestos
                 this.fetchProducts().catch(() => {});
+                // reset touched flags so helpers don't show immediately
+                this.formOrdenAdd = this.formOrdenAdd || { _touched: {} };
+                this.formOrdenAdd._touched = {};
                 this.isModalOpen = true;
             },
             openEditOrden(orden) {
@@ -2400,6 +2471,11 @@ if (typeof window !== "undefined") {
                                     : [],
                         };
                     } finally {
+                        // reset touched flags for edit modal
+                        this.formOrdenEdit = this.formOrdenEdit || {
+                            _touched: {},
+                        };
+                        this.formOrdenEdit._touched = {};
                         this.isEditModalOpen = true;
                     }
                 })();
