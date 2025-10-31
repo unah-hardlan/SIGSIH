@@ -12,9 +12,9 @@ if (window.axios) {
         const preferDark = saved
             ? saved === "dark"
             : window.matchMedia &&
-              window.matchMedia("(prefers-color-scheme: dark)").matches;
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
         document.documentElement.classList.toggle("dark", preferDark);
-    } catch (_) {}
+    } catch (_) { }
 })();
 
 // Factory function to create the authPage data object for Alpine.js
@@ -75,14 +75,14 @@ function createAuthPage() {
         applyTheme() {
             try {
                 document.documentElement.classList.toggle("dark", this.isDark);
-            } catch (_) {}
+            } catch (_) { }
         },
         toggleTheme() {
             this.isDark = !this.isDark;
             this.applyTheme();
             try {
                 localStorage.setItem("theme", this.isDark ? "dark" : "light");
-            } catch (_) {}
+            } catch (_) { }
         },
 
         // --- Form Navigation & Reset ---
@@ -297,7 +297,7 @@ function createAuthPage() {
                             window.showToast("Sesión iniciada", "success", {
                                 duration: 1200,
                             });
-                    } catch (_) {}
+                    } catch (_) { }
                     window.location.assign("/admin/dashboard");
                     return;
                 } else {
@@ -328,7 +328,7 @@ function createAuthPage() {
                         err?.response?.status,
                         err?.response?.data || err?.message || err
                     );
-                } catch (_) {}
+                } catch (_) { }
 
                 const resp = err?.response;
                 if (resp?.status === 422) {
@@ -379,7 +379,7 @@ function createAuthPage() {
                         window.showToast("Correo reenviado", "success", {
                             duration: 1500,
                         });
-                } catch (_) {}
+                } catch (_) { }
                 const cool = resp?.data?.retry_after_seconds;
                 if (cool && Number.isFinite(+cool) && +cool > 0) {
                     this.startResendCooldown(+cool);
@@ -395,7 +395,7 @@ function createAuthPage() {
                 try {
                     window.showToast &&
                         window.showToast(msg, "error", { duration: 2000 });
-                } catch (_) {}
+                } catch (_) { }
                 if (retry && Number.isFinite(+retry) && +retry > 0) {
                     this.startResendCooldown(+retry);
                 }
@@ -417,7 +417,7 @@ function createAuthPage() {
                         this.resendTimerId = null;
                     }
                 }, 1000);
-            } catch (_) {}
+            } catch (_) { }
         },
 
         closeVerifyEmailModal() {
@@ -442,7 +442,7 @@ function createAuthPage() {
                         window.showToast("2FA verificado", "success", {
                             duration: 1200,
                         });
-                } catch (_) {}
+                } catch (_) { }
                 window.location.assign("/admin/dashboard");
             } catch (err) {
                 this.needsRecovery = !!err?.response?.data?.needs_recovery; // Backend indicates if recovery is an option
@@ -511,6 +511,10 @@ document.addEventListener("alpine:init", registerAuth);
 
 // Exported utility function for getting authentication token
 // Note: With HttpOnly cookies, token is not accessible from JS
-export function getToken() {
+// Exported utility function for getting authentication token
+// Note: With HttpOnly cookies, token is not accessible from JS
+// Expose a simple getToken helper on window for legacy code that expects it
+window.getToken = function () {
     return ""; // Token handled server-side via HttpOnly cookie
-}
+};
+

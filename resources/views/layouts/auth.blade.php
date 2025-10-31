@@ -6,306 +6,337 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css', 'resources/css/auth.css'])
-    <title>Iniciar Sesión – SIGSIH</title>
+    <title>Iniciar Sesión – Hardlan</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
+
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <script>
-        (function() {
-            try {
-                const saved = localStorage.getItem('theme');
-                const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (isDark) {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
-            } catch (_) {}
-        })();
-        
-        document.addEventListener('alpine:init', () => {
-            if (!window.authPage) {
-                console.warn('authPage not loaded, creating fallback');
-                window.authPage = () => ({
-                    isLogin: true,
-                    showPassword: false,
-                    showConfirmPassword: false,
-                    username: "",
-                    password: "",
-                    confirmPassword: "",
-                    nombre_usuario: "",
-                    email: "",
-                    loading: false,
-                    isDark: false,
-                    formError: "",
-                    fieldErrors: {},
-                    show2FAModal: false,
-                    totpCode: "",
-                    verifying2FA: false,
-                    totpError: "",
-                    needsRecovery: false,
-                    // verify email modal state (fallback)
-                    showVerifyEmailModal: false,
-                    verifyEmailMessage: "",
-                    verifyEmailAddress: "",
-                    resendCooldown: 0,
-                    resendTimerId: null,
-                    
-                    init() {
-                        this.initTheme();
-                    },
-                    
-                    initTheme() {
-                        try {
-                            this.isDark = document.documentElement.classList.contains('dark');
-                            document.documentElement.classList.toggle("dark", this.isDark);
-                        } catch (_) {}
-                    },
-                    
-                    toggleTheme() {
-                        this.isDark = !this.isDark;
-                        document.documentElement.classList.toggle("dark", this.isDark);
-                        try {
-                            localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
-                        } catch (_) {}
-                    },
-                    
-                    switchMode() {
-                        this.isLogin = !this.isLogin;
-                        this.formError = "";
-                        this.fieldErrors = {};
-                        this.password = "";
-                        this.confirmPassword = "";
-                        this.needsRecovery = false;
-                    },
-                    
-                    resetErrors() {
-                        this.formError = "";
-                        this.fieldErrors = {};
-                    },
-                    
-                    clearFieldError(field) {
-                        if (this.fieldErrors[field]) {
-                            delete this.fieldErrors[field];
-                        }
-                    },
-                    
-                    usernameIssues(username) {
-                        const value = username || "";
-                        const issues = [];
-                        if (value.length === 0) {
-                            issues.push("El usuario es requerido.");
-                        } else if (!/^[A-Za-z0-9]+$/.test(value)) {
-                            issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
-                        } else if (value.length > 50) {
-                            issues.push("Máximo 50 caracteres permitidos.");
-                        }
-                        return issues;
-                    },
-                    
-                    validateUsername(username) {
-                        return this.usernameIssues(username).length === 0;
-                    },
-                    
-                    nombreUsuarioIssues(nombre) {
-                        const value = nombre || "";
-                        const issues = [];
-                        if (!this.isLogin && value.length === 0) {
-                            issues.push("El nombre de usuario es requerido.");
-                        } else if (value.length > 0 && !/^[A-Za-z0-9]+$/.test(value)) {
-                            issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
-                        }
-                        return issues;
-                    },
-                    
-                    validateNombreUsuario(nombre) {
-                        return this.nombreUsuarioIssues(nombre).length === 0;
-                    },
-                    
-                    emailIssues(email) {
-                        const value = email || "";
-                        const issues = [];
-                        if (!this.isLogin && value.length === 0) {
-                            issues.push("El correo electrónico es requerido.");
-                        } else if (value.length > 0) {
-                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                            if (!emailRegex.test(value)) {
-                                issues.push("Ingresa un correo electrónico válido.");
-                            }
-                        }
-                        return issues;
-                    },
-                    
-                    validateEmail(email) {
-                        return this.emailIssues(email).length === 0;
-                    },
-                    
-                    confirmPasswordIssues() {
-                        const issues = [];
-                        if (!this.isLogin && this.confirmPassword.length === 0) {
-                            issues.push("Debes confirmar tu contraseña.");
-                        } else if (this.confirmPassword.length > 0 && this.password !== this.confirmPassword) {
-                            issues.push("Las contraseñas no coinciden.");
-                        }
-                        return issues;
-                    },
-                    
-                    passwordIssues(pw) {
-                        const value = pw || "";
-                        const issues = [];
-                        if (value.length < 8) issues.push("Debe tener al menos 8 caracteres.");
-                        if (/\s/.test(value)) issues.push("No debe contener espacios.");
-                        if (!this.isLogin && !/[A-Z]/.test(value)) issues.push("Debe incluir al menos una letra mayúscula.");
-                        return issues;
-                    },
-                    
-                    validatePassword(pw) {
-                        return this.passwordIssues(pw).length === 0;
-                    },
-                    
-                    validateConfirmPassword() {
-                        return this.confirmPasswordIssues().length === 0;
-                    },
-                    
-                    async handleSubmit() {
-                        if (this.loading) return;
-                        this.loading = true;
-                        this.resetErrors();
-                        
-                        try {
-                            if (this.isLogin) {
-                                const res = await axios.post("/api/login", {
-                                    usuario: this.username,
-                                    contrasena: this.password,
-                                });
-                                const data = res?.data || {};
-                                if (data.status === 'email_verification_required') {
-                                    this.verifyEmailAddress = (data && data.email) ? data.email : (this.email || this.username);
-                                    this.verifyEmailMessage = data.message || 'Debes verificar tu correo antes de iniciar sesión.';
-                                    this.showVerifyEmailModal = true;
-                                    this.loading = false;
-                                    return;
-                                }
-                                if (data.status === '2fa_required') {
-                                    this.totpCode = "";
-                                    this.totpError = "";
-                                    this.needsRecovery = false;
-                                    this.show2FAModal = true;
-                                    this.loading = false;
-                                    return;
-                                }
-                                try {
-                                    window.showToast && window.showToast('Sesión iniciada', 'success', { duration: 1200 });
-                                } catch (_) {}
-                                window.location.assign("/admin/dashboard");
-                                return;
-                            } else {
-                                const regRes = await axios.post("/api/register", {
-                                    usuario: this.username,
-                                    nombre_usuario: this.nombre_usuario,
-                                    correo_electronico: this.email,
-                                    contrasena: this.password,
-                                });
-                                const regData = regRes?.data || {};
-                                if (regData.status === 'verification_sent') {
-                                    this.verifyEmailAddress = this.email;
-                                    this.verifyEmailMessage = 'Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.';
-                                    this.showVerifyEmailModal = true;
-                                    this.loading = false;
-                                    return;
-                                }
-                                window.location.assign("/admin/perfil");
-                            }
-                        } catch (err) {
-                            const resp = err?.response;
-                            if (resp?.status === 422) {
-                                this.fieldErrors = resp.data?.errors || {};
-                                this.formError = resp.data?.message || "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
-                            } else if (resp?.status === 401) {
-                                this.formError = resp?.data?.message || resp?.data?.error || 'Credenciales incorrectas.';
-                            } else if (resp?.status === 403 && resp?.data?.status === 'email_verification_required') {
-                                this.verifyEmailAddress = (resp?.data?.email) || this.email || this.username;
-                                this.verifyEmailMessage = resp?.data?.message || 'Debes verificar tu correo antes de continuar.';
-                                this.showVerifyEmailModal = true;
-                            } else {
-                                this.formError = resp?.data?.error || resp?.data?.message || "Error de autenticación";
-                            }
-                        } finally {
-                            this.loading = false;
-                        }
-                    },
-                    
-                    async submit2FA() {
-                        if (this.verifying2FA || !this.totpCode) return;
-                        this.verifying2FA = true;
-                        this.totpError = "";
-                        this.needsRecovery = false;
-                        try {
-                            await axios.post('/api/2fa/verify', { code: this.totpCode });
-                            try {
-                                window.showToast && window.showToast('2FA verificado', 'success', { duration: 1200 });
-                            } catch (_) {}
-                            window.location.assign('/admin/dashboard');
-                        } catch (err) {
-                            this.needsRecovery = !!err?.response?.data?.needs_recovery;
-                            const msg = err?.response?.data?.message || err?.response?.data?.error || 'Código inválido';
-                            this.totpError = msg;
-                        } finally {
-                            this.verifying2FA = false;
-                        }
-                    },
-
-                    close2FA() {
-                        this.show2FAModal = false;
-                        this.totpCode = "";
-                        this.totpError = "";
-                        this.needsRecovery = false;
-                    },
-                    
-                    async resendVerification() {
-                        if (!this.verifyEmailAddress) return;
-                        try {
-                            const resp = await axios.post('/api/email/resend', { email: this.verifyEmailAddress });
-                            try { window.showToast && window.showToast('Correo reenviado', 'success', { duration: 1500 }); } catch (_) {}
-                            const cool = resp?.data?.retry_after_seconds;
-                            this.startResendCooldown((cool && Number.isFinite(+cool) && +cool > 0) ? +cool : 60);
-                        } catch (err) {
-                            const retry = err?.response?.data?.retry_after_seconds;
-                            const msg = err?.response?.data?.message || err?.response?.data?.error || 'No se pudo reenviar';
-                            try { window.showToast && window.showToast(msg, 'error', { duration: 2000 }); } catch (_) {}
-                            if (retry && Number.isFinite(+retry) && +retry > 0) {
-                                this.startResendCooldown(+retry);
-                            }
-                        }
-                    },
-                    startResendCooldown(seconds) {
-                        try {
-                            if (this.resendTimerId) clearInterval(this.resendTimerId);
-                            this.resendCooldown = Math.max(1, Math.floor(seconds));
-                            this.resendTimerId = setInterval(() => {
-                                if (this.resendCooldown > 0) this.resendCooldown -= 1;
-                                if (this.resendCooldown <= 0 && this.resendTimerId) {
-                                    clearInterval(this.resendTimerId);
-                                    this.resendTimerId = null;
-                                }
-                            }, 1000);
-                        } catch (_) {}
-                    },
-
-                    handleGoogle() {
-                        alert("Redirigiendo a Google Sign-In…");
-                    }
-                });
+    (function() {
+        try {
+            const saved = localStorage.getItem('theme');
+            const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
             }
-            
-            Alpine.data('authPage', window.authPage);
-        });
+        } catch (_) {}
+    })();
+
+    document.addEventListener('alpine:init', () => {
+        if (!window.authPage) {
+            console.warn('authPage not loaded, creating fallback');
+            window.authPage = () => ({
+                isLogin: true,
+                showPassword: false,
+                showConfirmPassword: false,
+                username: "",
+                password: "",
+                confirmPassword: "",
+                nombre_usuario: "",
+                email: "",
+                loading: false,
+                isDark: false,
+                formError: "",
+                fieldErrors: {},
+                show2FAModal: false,
+                totpCode: "",
+                verifying2FA: false,
+                totpError: "",
+                needsRecovery: false,
+                // verify email modal state (fallback)
+                showVerifyEmailModal: false,
+                verifyEmailMessage: "",
+                verifyEmailAddress: "",
+                resendCooldown: 0,
+                resendTimerId: null,
+
+                init() {
+                    this.initTheme();
+                },
+
+                initTheme() {
+                    try {
+                        this.isDark = document.documentElement.classList.contains('dark');
+                        document.documentElement.classList.toggle("dark", this.isDark);
+                    } catch (_) {}
+                },
+
+                toggleTheme() {
+                    this.isDark = !this.isDark;
+                    document.documentElement.classList.toggle("dark", this.isDark);
+                    try {
+                        localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+                    } catch (_) {}
+                },
+
+                switchMode() {
+                    this.isLogin = !this.isLogin;
+                    this.formError = "";
+                    this.fieldErrors = {};
+                    this.password = "";
+                    this.confirmPassword = "";
+                    this.needsRecovery = false;
+                },
+
+                resetErrors() {
+                    this.formError = "";
+                    this.fieldErrors = {};
+                },
+
+                clearFieldError(field) {
+                    if (this.fieldErrors[field]) {
+                        delete this.fieldErrors[field];
+                    }
+                },
+
+                usernameIssues(username) {
+                    const value = username || "";
+                    const issues = [];
+                    if (value.length === 0) {
+                        issues.push("El usuario es requerido.");
+                    } else if (!/^[A-Za-z0-9]+$/.test(value)) {
+                        issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
+                    } else if (value.length > 50) {
+                        issues.push("Máximo 50 caracteres permitidos.");
+                    }
+                    return issues;
+                },
+
+                validateUsername(username) {
+                    return this.usernameIssues(username).length === 0;
+                },
+
+                nombreUsuarioIssues(nombre) {
+                    const value = nombre || "";
+                    const issues = [];
+                    if (!this.isLogin && value.length === 0) {
+                        issues.push("El nombre de usuario es requerido.");
+                    } else if (value.length > 0 && !/^[A-Za-z0-9]+$/.test(value)) {
+                        issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
+                    }
+                    return issues;
+                },
+
+                validateNombreUsuario(nombre) {
+                    return this.nombreUsuarioIssues(nombre).length === 0;
+                },
+
+                emailIssues(email) {
+                    const value = email || "";
+                    const issues = [];
+                    if (!this.isLogin && value.length === 0) {
+                        issues.push("El correo electrónico es requerido.");
+                    } else if (value.length > 0) {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(value)) {
+                            issues.push("Ingresa un correo electrónico válido.");
+                        }
+                    }
+                    return issues;
+                },
+
+                validateEmail(email) {
+                    return this.emailIssues(email).length === 0;
+                },
+
+                confirmPasswordIssues() {
+                    const issues = [];
+                    if (!this.isLogin && this.confirmPassword.length === 0) {
+                        issues.push("Debes confirmar tu contraseña.");
+                    } else if (this.confirmPassword.length > 0 && this.password !== this
+                        .confirmPassword) {
+                        issues.push("Las contraseñas no coinciden.");
+                    }
+                    return issues;
+                },
+
+                passwordIssues(pw) {
+                    const value = pw || "";
+                    const issues = [];
+                    if (value.length < 8) issues.push("Debe tener al menos 8 caracteres.");
+                    if (/\s/.test(value)) issues.push("No debe contener espacios.");
+                    if (!this.isLogin && !/[A-Z]/.test(value)) issues.push(
+                        "Debe incluir al menos una letra mayúscula.");
+                    return issues;
+                },
+
+                validatePassword(pw) {
+                    return this.passwordIssues(pw).length === 0;
+                },
+
+                validateConfirmPassword() {
+                    return this.confirmPasswordIssues().length === 0;
+                },
+
+                async handleSubmit() {
+                    if (this.loading) return;
+                    this.loading = true;
+                    this.resetErrors();
+
+                    try {
+                        if (this.isLogin) {
+                            const res = await axios.post("/api/login", {
+                                usuario: this.username,
+                                contrasena: this.password,
+                            });
+                            const data = res?.data || {};
+                            if (data.status === 'email_verification_required') {
+                                this.verifyEmailAddress = (data && data.email) ? data.email : (this
+                                    .email || this.username);
+                                this.verifyEmailMessage = data.message ||
+                                    'Debes verificar tu correo antes de iniciar sesión.';
+                                this.showVerifyEmailModal = true;
+                                this.loading = false;
+                                return;
+                            }
+                            if (data.status === '2fa_required') {
+                                this.totpCode = "";
+                                this.totpError = "";
+                                this.needsRecovery = false;
+                                this.show2FAModal = true;
+                                this.loading = false;
+                                return;
+                            }
+                            try {
+                                window.showToast && window.showToast('Sesión iniciada', 'success', {
+                                    duration: 1200
+                                });
+                            } catch (_) {}
+                            window.location.assign("/admin/dashboard");
+                            return;
+                        } else {
+                            const regRes = await axios.post("/api/register", {
+                                usuario: this.username,
+                                nombre_usuario: this.nombre_usuario,
+                                correo_electronico: this.email,
+                                contrasena: this.password,
+                            });
+                            const regData = regRes?.data || {};
+                            if (regData.status === 'verification_sent') {
+                                this.verifyEmailAddress = this.email;
+                                this.verifyEmailMessage =
+                                    'Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.';
+                                this.showVerifyEmailModal = true;
+                                this.loading = false;
+                                return;
+                            }
+                            window.location.assign("/admin/perfil");
+                        }
+                    } catch (err) {
+                        const resp = err?.response;
+                        if (resp?.status === 422) {
+                            this.fieldErrors = resp.data?.errors || {};
+                            this.formError = resp.data?.message ||
+                                "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
+                        } else if (resp?.status === 401) {
+                            this.formError = resp?.data?.message || resp?.data?.error ||
+                                'Credenciales incorrectas.';
+                        } else if (resp?.status === 403 && resp?.data?.status ===
+                            'email_verification_required') {
+                            this.verifyEmailAddress = (resp?.data?.email) || this.email || this
+                                .username;
+                            this.verifyEmailMessage = resp?.data?.message ||
+                                'Debes verificar tu correo antes de continuar.';
+                            this.showVerifyEmailModal = true;
+                        } else {
+                            this.formError = resp?.data?.error || resp?.data?.message ||
+                                "Error de autenticación";
+                        }
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async submit2FA() {
+                    if (this.verifying2FA || !this.totpCode) return;
+                    this.verifying2FA = true;
+                    this.totpError = "";
+                    this.needsRecovery = false;
+                    try {
+                        await axios.post('/api/2fa/verify', {
+                            code: this.totpCode
+                        });
+                        try {
+                            window.showToast && window.showToast('2FA verificado', 'success', {
+                                duration: 1200
+                            });
+                        } catch (_) {}
+                        window.location.assign('/admin/dashboard');
+                    } catch (err) {
+                        this.needsRecovery = !!err?.response?.data?.needs_recovery;
+                        const msg = err?.response?.data?.message || err?.response?.data?.error ||
+                            'Código inválido';
+                        this.totpError = msg;
+                    } finally {
+                        this.verifying2FA = false;
+                    }
+                },
+
+                close2FA() {
+                    this.show2FAModal = false;
+                    this.totpCode = "";
+                    this.totpError = "";
+                    this.needsRecovery = false;
+                },
+
+                async resendVerification() {
+                    if (!this.verifyEmailAddress) return;
+                    try {
+                        const resp = await axios.post('/api/email/resend', {
+                            email: this.verifyEmailAddress
+                        });
+                        try {
+                            window.showToast && window.showToast('Correo reenviado', 'success', {
+                                duration: 1500
+                            });
+                        } catch (_) {}
+                        const cool = resp?.data?.retry_after_seconds;
+                        this.startResendCooldown((cool && Number.isFinite(+cool) && +cool > 0) ? +
+                            cool : 60);
+                    } catch (err) {
+                        const retry = err?.response?.data?.retry_after_seconds;
+                        const msg = err?.response?.data?.message || err?.response?.data?.error ||
+                            'No se pudo reenviar';
+                        try {
+                            window.showToast && window.showToast(msg, 'error', {
+                                duration: 2000
+                            });
+                        } catch (_) {}
+                        if (retry && Number.isFinite(+retry) && +retry > 0) {
+                            this.startResendCooldown(+retry);
+                        }
+                    }
+                },
+                startResendCooldown(seconds) {
+                    try {
+                        if (this.resendTimerId) clearInterval(this.resendTimerId);
+                        this.resendCooldown = Math.max(1, Math.floor(seconds));
+                        this.resendTimerId = setInterval(() => {
+                            if (this.resendCooldown > 0) this.resendCooldown -= 1;
+                            if (this.resendCooldown <= 0 && this.resendTimerId) {
+                                clearInterval(this.resendTimerId);
+                                this.resendTimerId = null;
+                            }
+                        }, 1000);
+                    } catch (_) {}
+                },
+
+                handleGoogle() {
+                    alert("Redirigiendo a Google Sign-In…");
+                }
+            });
+        }
+
+        Alpine.data('authPage', window.authPage);
+    });
     </script>
-    
+
     <script src="{{ Vite::asset('resources/js/auth.js') }}" defer></script>
     <script src="{{ Vite::asset('resources/js/login-guard.js') }}" defer></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
@@ -328,18 +359,21 @@
                 <div class="text-center mb-4">
                     <div
                         class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
-                        <img src="{{ $appLogoUrl ?? asset('images/logo-hardlan-blue.svg') }}" alt="Logo" class="app-logo w-20 h-20 object-contain"
-                            style="--app-logo-max: 80px;">
+                        <img src="{{ $appLogoUrl ?? asset('images/logo-hardlan-blue.svg') }}" alt="Logo"
+                            class="app-logo w-20 h-20 object-contain" style="--app-logo-max: 80px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-bold">
                         <span x-text="isLogin ? '¡Bienvenido a Hardlan!' : 'Crear cuenta'">¡Bienvenido a Hardlan!</span>
                     </h2>
-                    <div x-show="isLogin" class="text-xs text-gray-700 dark:text-gray-200 mt-1 nunito-regular tracking-wide">
+                    <div x-show="isLogin"
+                        class="text-xs text-gray-700 dark:text-gray-200 mt-1 nunito-regular tracking-wide">
                         El lugar donde tu soporte TI es más fácil.
                     </div>
                     <hr class="mt-3 mb-4 border-gray-400 dark:border-gray-700" />
                     <p class="text-xs text-gray-700 dark:text-gray-300 mt-1 mb-4 nunito font-medium">
-                        <span x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Únete a Hardlan y accede a todos nuestros servicios'" class="nunito-regular">Por favor inicia sesión para continuar</span>
+                        <span
+                            x-text="isLogin ? 'Por favor inicia sesión para continuar' : 'Únete a Hardlan y accede a todos nuestros servicios'"
+                            class="nunito-regular">Por favor inicia sesión para continuar</span>
                     </p>
                 </div>
 
@@ -366,7 +400,8 @@
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.nombre_usuario[0]"></p>
                             </template>
-                            <template x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
+                            <template
+                                x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in nombreUsuarioIssues(nombre_usuario)" :key="issue">
                                         <li class="flex items-center gap-1">
@@ -391,7 +426,8 @@
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
                                     x-text="fieldErrors.correo_electronico[0]"></p>
                             </template>
-                            <template x-if="!isLogin && email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
+                            <template
+                                x-if="!isLogin && email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in emailIssues(email)" :key="issue">
                                         <li class="flex items-center gap-1">
@@ -408,8 +444,7 @@
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    :required="!isLogin" maxlength="100"
-                                    @input="clearFieldError('contrasena')"
+                                    :required="!isLogin" maxlength="100" @input="clearFieldError('contrasena')"
                                     class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (!isLogin && password && !validatePassword(password)) }"
                                     placeholder="••••••••" />
@@ -519,7 +554,7 @@
                     <div x-show="isLogin" class="mb-4 text-right">
                         <a href="{{ route('password.request') }}"
                             class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none nunito-regular">
-                            ¿Olvidaste tu contraseña?
+                            Recuperar contraseña o cuenta bloqueada
                         </a>
                     </div>
 
@@ -545,7 +580,7 @@
                         <span class="mx-2 text-xs text-gray-400 dark:text-gray-500 nunito-regular">o</span>
                         <hr class="flex-grow border-gray-300 dark:border-gray-600" />
                     </div>
-                    
+
                     <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 nunito-regular">
                         <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'">¿No tienes una
                             cuenta?</span>
@@ -563,25 +598,29 @@
     {{-- Livewire scripts removidos en login para evitar múltiples instancias de Alpine --}}
 
     <!-- Modal: Verifica tu correo -->
-    <div x-show="typeof $data !== 'undefined' && $data.showVerifyEmailModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-xl">
+    <div x-show="typeof $data !== 'undefined' && $data.showVerifyEmailModal" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+            class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-xl">
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Verifica tu correo</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1" x-text="typeof $data !== 'undefined' && $data.verifyEmailMessage ? $data.verifyEmailMessage : ''"></p>
-            <p class="text-xs text-gray-600 dark:text-gray-400 mt-2" x-show="typeof $data !== 'undefined' && $data.verifyEmailAddress">
-                Enviado a: <span class="font-mono" x-text="typeof $data !== 'undefined' ? $data.verifyEmailAddress : ''"></span>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1"
+                x-text="typeof $data !== 'undefined' && $data.verifyEmailMessage ? $data.verifyEmailMessage : ''"></p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-2"
+                x-show="typeof $data !== 'undefined' && $data.verifyEmailAddress">
+                Enviado a: <span class="font-mono"
+                    x-text="typeof $data !== 'undefined' ? $data.verifyEmailAddress : ''"></span>
             </p>
             <div class="mt-4 flex items-center gap-2 justify-end">
-                <button type="button"
-                        :disabled="typeof $data !== 'undefined' && $data.resendCooldown > 0"
-                        @click="$data && $data.resendVerification ? resendVerification() : null"
-                        class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="button" :disabled="typeof $data !== 'undefined' && $data.resendCooldown > 0"
+                    @click="$data && $data.resendVerification ? resendVerification() : null"
+                    class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                     <span x-show="typeof $data !== 'undefined' && $data.resendCooldown > 0">
                         Reenviar (espera <span x-text="$data ? $data.resendCooldown : 0"></span>s)
                     </span>
                     <span x-show="!(typeof $data !== 'undefined' && $data.resendCooldown > 0)">Reenviar</span>
                 </button>
                 <button type="button" @click="typeof $data !== 'undefined' ? ($data.showVerifyEmailModal=false) : null"
-                        class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                    class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
                     Entendido
                 </button>
             </div>
