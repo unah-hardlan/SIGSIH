@@ -37,6 +37,9 @@
     edit_id_estado_ticket_fk: '',
     edit_id_tecnico_fk: '',
     edit_id_cliente_fk: '',
+  // Form touched trackers for frontend validation
+  formTicketAdd: { _touched: {} },
+  formTicketEdit: { _touched: {} },
 
     // 1️⃣ Paginación Variables
     numbersTickets: [],
@@ -104,6 +107,8 @@
       } catch (_) {
         this.new_fecha_creacion = '';
       }
+      // reset touched flags when opening the modal so we don't show errors immediately
+      this.formTicketAdd._touched = {};
       this.isModalOpen = true;
     },
     openEdit(item) {
@@ -113,6 +118,8 @@
       this.edit_id_estado_ticket_fk = item.id_estado_ticket_fk || '';
       this.edit_id_tecnico_fk = item.id_tecnico_fk || '';
       this.edit_id_cliente_fk = item.id_cliente_fk || '';
+      // reset touched flags for edit modal
+      this.formTicketEdit._touched = {};
       this.isEditModalOpen = true;
     },
     openDelete(item) {
@@ -308,32 +315,46 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-        <input type="datetime-local" x-model="new_fecha_creacion" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200" />
+        <input type="datetime-local" x-model="new_fecha_creacion" @input="formTicketAdd._touched.fecha = true" @blur="formTicketAdd._touched.fecha = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketAdd._touched && formTicketAdd._touched.fecha && !new_fecha_creacion ? 'border-red-500' : ''" />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
-        <select x-model="new_id_estado_ticket_fk" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200">
+        <select x-model="new_id_estado_ticket_fk" @change="formTicketAdd._touched.estado = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketAdd._touched && formTicketAdd._touched.estado && !new_id_estado_ticket_fk ? 'border-red-500' : ''">
           <option value="">Seleccione...</option>
           <template x-for="e in estadosTicket" :key="e.id_estado_ticket_pk"><option :value="e.id_estado_ticket_pk" x-text="e.nombre"></option></template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketAdd._touched && formTicketAdd._touched.estado && !new_id_estado_ticket_fk ? 'text-red-500' : ''">Requerido.</small>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Técnico</label>
-        <select x-model="new_id_tecnico_fk" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200">
+        <select x-model="new_id_tecnico_fk" @change="formTicketAdd._touched.tecnico = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketAdd._touched && formTicketAdd._touched.tecnico && !new_id_tecnico_fk ? 'border-red-500' : ''">
           <option value="">Seleccione...</option>
           <template x-for="p in tecnicos" :key="p.id"><option :value="p.id" x-text="(p.primer_nombre ? [p.primer_nombre,p.primer_apellido].filter(Boolean).join(' ') : (p.nombre||('ID '+p.id)))"></option></template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketAdd._touched && formTicketAdd._touched.tecnico && !new_id_tecnico_fk ? 'text-red-500' : ''">Requerido.</small>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-        <select x-model="new_id_cliente_fk" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200">
+        <select x-model="new_id_cliente_fk" @change="formTicketAdd._touched.cliente = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketAdd._touched && formTicketAdd._touched.cliente && !new_id_cliente_fk ? 'border-red-500' : ''">
           <option value="">Seleccione...</option>
           <template x-for="c in clientes" :key="c.id"><option :value="c.id" x-text="c.nombre"></option></template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketAdd._touched && formTicketAdd._touched.cliente && !new_id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
       </div>
       <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-        <textarea x-model="new_descripcion_ticket" rows="2" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"></textarea>
+        <textarea x-model="new_descripcion_ticket" rows="2" maxlength="255" @input="formTicketAdd._touched.descripcion = true" @blur="formTicketAdd._touched.descripcion = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketAdd._touched && formTicketAdd._touched.descripcion && (new_descripcion_ticket === '' || new_descripcion_ticket.length >= 255) ? 'border-red-500' : ''"></textarea>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketAdd._touched && formTicketAdd._touched.descripcion && (new_descripcion_ticket === '' || new_descripcion_ticket.length >= 255) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
       </div>
     </div>
   </x-admin.form-modal>
@@ -343,32 +364,46 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-        <input type="datetime-local" x-model="edit_fecha_creacion" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200" />
+        <input type="datetime-local" x-model="edit_fecha_creacion" @input="formTicketEdit._touched.fecha = true" @blur="formTicketEdit._touched.fecha = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketEdit._touched && formTicketEdit._touched.fecha && !edit_fecha_creacion ? 'border-red-500' : ''" />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
-        <select x-model="edit_id_estado_ticket_fk" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200">
+        <select x-model="edit_id_estado_ticket_fk" @change="formTicketEdit._touched.estado = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketEdit._touched && formTicketEdit._touched.estado && !edit_id_estado_ticket_fk ? 'border-red-500' : ''">
           <option value="">Seleccione...</option>
           <template x-for="e in estadosTicket" :key="e.id_estado_ticket_pk"><option :value="e.id_estado_ticket_pk" x-text="e.nombre"></option></template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketEdit._touched && formTicketEdit._touched.estado && !edit_id_estado_ticket_fk ? 'text-red-500' : ''">Requerido.</small>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Técnico</label>
-        <select x-model="edit_id_tecnico_fk" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200">
+        <select x-model="edit_id_tecnico_fk" @change="formTicketEdit._touched.tecnico = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketEdit._touched && formTicketEdit._touched.tecnico && !edit_id_tecnico_fk ? 'border-red-500' : ''">
           <option value="">Seleccione...</option>
           <template x-for="p in tecnicos" :key="p.id"><option :value="p.id" x-text="(p.primer_nombre ? [p.primer_nombre,p.primer_apellido].filter(Boolean).join(' ') : (p.nombre||('ID '+p.id)))"></option></template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketEdit._touched && formTicketEdit._touched.tecnico && !edit_id_tecnico_fk ? 'text-red-500' : ''">Requerido.</small>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-        <select x-model="edit_id_cliente_fk" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200">
+        <select x-model="edit_id_cliente_fk" @change="formTicketEdit._touched.cliente = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketEdit._touched && formTicketEdit._touched.cliente && !edit_id_cliente_fk ? 'border-red-500' : ''">
           <option value="">Seleccione...</option>
           <template x-for="c in clientes" :key="c.id"><option :value="c.id" x-text="c.nombre"></option></template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketEdit._touched && formTicketEdit._touched.cliente && !edit_id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
       </div>
       <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-        <textarea x-model="edit_descripcion_ticket" rows="2" class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"></textarea>
+        <textarea x-model="edit_descripcion_ticket" rows="2" maxlength="255" @input="formTicketEdit._touched.descripcion = true" @blur="formTicketEdit._touched.descripcion = true"
+          class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
+          :class="formTicketEdit._touched && formTicketEdit._touched.descripcion && (edit_descripcion_ticket === '' || edit_descripcion_ticket.length >= 250) ? 'border-red-500' : ''"></textarea>
+        <small class="block mt-1 text-sm text-gray-500" :class="formTicketEdit._touched && formTicketEdit._touched.descripcion && (edit_descripcion_ticket === '' || edit_descripcion_ticket.length >= 250) ? 'text-red-500' : ''">Requerido. Máximo 250 caracteres.</small>
       </div>
     </div>
   </x-admin.edit-modal>

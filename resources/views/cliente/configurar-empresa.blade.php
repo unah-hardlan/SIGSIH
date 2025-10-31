@@ -62,7 +62,7 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     <span class="font-medium text-green-600 dark:text-green-400">Haz clic para subir</span> o arrastra el logo
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">PNG, JPG, WEBP hasta 2MB</p>
+                                <p class="text-xs text-gray-500 dark:text-white mt-1">PNG, JPG, WEBP hasta 2MB</p>
                             </label>
                         </div>
                         
@@ -160,7 +160,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div id="horario-help" class="text-xs text-gray-500 dark:text-gray-400">
+                        <div id="horario-help" class="text-xs text-gray-500 dark:text-white">
                             <strong>Formatos válidos:</strong> L-V 8:00-17:00 | L-S 9:00-18:00 | L-V 8:00-12:00, 14:00-18:00
                         </div>
                         <div id="horario-error" class="text-sm text-red-600 dark:text-red-400 hidden"></div>
@@ -233,7 +233,7 @@
 
     <!-- Footer -->
     <div class="text-center mt-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-gray-500 dark:text-white">
             ¿Necesitas ayuda? <a href="#" class="text-green-600 dark:text-green-400 hover:underline">Contacta soporte</a>
         </p>
     </div>

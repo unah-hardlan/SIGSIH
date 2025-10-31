@@ -20,7 +20,7 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isEstadoFacturaModalOpen = true"
+            <button @click="formEstadoFactura = { _touched: {} }; codigo = ''; nombre = ''; descripcion = ''; orden = 0; es_final = false; isEstadoFacturaModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Estado
             </button>
@@ -86,9 +86,9 @@
                                 </td>
                                 <td class="py-2 px-4 flex gap-2"
                                     :class="{ 'last:rounded-br-lg': index === paginatedEstadosFactura().length - 1 }">
-                                    <a href="#"
-                                        @click.prevent="isEditEstadoFacturaModalOpen = true; itemToEdit = {id_estado_factura_pk: estadoFactura.id_estado_factura_pk, codigo: estadoFactura.codigo, nombre: estadoFactura.nombre_estado, descripcion: estadoFactura.descripcion_estado_factura, es_final: estadoFactura.es_final, orden: estadoFactura.orden}"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                    <a href="#"
+                        @click.prevent="itemToEdit = {id_estado_factura_pk: estadoFactura.id_estado_factura_pk, codigo: estadoFactura.codigo, nombre: estadoFactura.nombre_estado, descripcion: estadoFactura.descripcion_estado_factura, es_final: estadoFactura.es_final, orden: estadoFactura.orden}; formEditEstadoFactura = { _touched: {} }; isEditEstadoFacturaModalOpen = true"
+                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#"
                                         @click.prevent="isDeleteEstadoFacturaModalOpen = true; itemToDelete = {id_estado_factura_pk: estadoFactura.id_estado_factura_pk, nombre: estadoFactura.nombre_estado}"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
@@ -125,7 +125,7 @@
                             x-text="estadoFactura.descripcion_estado_factura"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                             <button
-                                @click.prevent="isEditEstadoFacturaModalOpen = true; itemToEdit = {id_estado_factura_pk: estadoFactura.id_estado_factura_pk, codigo: estadoFactura.codigo, nombre: estadoFactura.nombre_estado, descripcion: estadoFactura.descripcion_estado_factura, es_final: estadoFactura.es_final, orden: estadoFactura.orden}"
+                                @click.prevent="itemToEdit = {id_estado_factura_pk: estadoFactura.id_estado_factura_pk, codigo: estadoFactura.codigo, nombre: estadoFactura.nombre_estado, descripcion: estadoFactura.descripcion_estado_factura, es_final: estadoFactura.es_final, orden: estadoFactura.orden}; formEditEstadoFactura = { _touched: {} }; isEditEstadoFacturaModalOpen = true"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -153,24 +153,40 @@
                 <div>
                     <label for="codigo" class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
                     <input type="text" id="codigo" x-model="codigo" maxlength="10"
+                        @input="formEstadoFactura = formEstadoFactura || { _touched: {} }; formEstadoFactura._touched.codigo = true"
+                        @blur="formEstadoFactura._touched.codigo = true"
+                        :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.codigo && (codigo === '' || codigo.length > 10) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.codigo && (codigo === '' || codigo.length > 10) ? 'text-red-500' : ''">Requerido. Máximo 10 caracteres.</small>
                 </div>
                 <div>
                     <label for="nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                         Estado</label>
-                    <input type="text" id="nombre" x-model="nombre" required
+                    <input type="text" id="nombre" x-model="nombre" required maxlength="150"
+                        @input="formEstadoFactura = formEstadoFactura || { _touched: {} }; formEstadoFactura._touched.nombre = true"
+                        @blur="formEstadoFactura._touched.nombre = true"
+                        :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.nombre && (nombre === '' || nombre.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.nombre && (nombre === '' || nombre.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="descripcion" x-model="descripcion" rows="2"
+                    <textarea id="descripcion" x-model="descripcion" rows="2" maxlength="255"
+                        @input="formEstadoFactura = formEstadoFactura || { _touched: {} }; formEstadoFactura._touched.descripcion = true"
+                        @blur="formEstadoFactura._touched.descripcion = true"
+                        :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.descripcion && descripcion.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <small :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.descripcion && descripcion.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
                 <div>
                     <label for="orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
                     <input type="number" id="orden" x-model="orden" min="0"
+                        @input="formEstadoFactura = formEstadoFactura || { _touched: {} }; formEstadoFactura._touched.orden = true"
+                        @blur="formEstadoFactura._touched.orden = true"
+                        :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.orden && (Number(orden) < 0) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEstadoFactura && formEstadoFactura._touched && formEstadoFactura._touched.orden && (Number(orden) < 0) ? 'text-red-500' : ''">Debe ser mayor o igual a 0.</small>
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="es_final" x-model="es_final"
@@ -189,24 +205,40 @@
                 <div>
                     <label for="edit_codigo" class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
                     <input type="text" id="edit_codigo" x-model="itemToEdit.codigo" maxlength="10"
+                        @input="formEditEstadoFactura = formEditEstadoFactura || { _touched: {} }; formEditEstadoFactura._touched.codigo = true"
+                        @blur="formEditEstadoFactura._touched.codigo = true"
+                        :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.codigo && (itemToEdit.codigo === '' || itemToEdit.codigo.length > 10) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.codigo && (itemToEdit.codigo === '' || itemToEdit.codigo.length > 10) ? 'text-red-500' : ''">Requerido. Máximo 10 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                         Estado</label>
-                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required
+                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required maxlength="150"
+                        @input="formEditEstadoFactura = formEditEstadoFactura || { _touched: {} }; formEditEstadoFactura._touched.nombre = true"
+                        @blur="formEditEstadoFactura._touched.nombre = true"
+                        :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.nombre && (itemToEdit.nombre === '' || itemToEdit.nombre.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.nombre && (itemToEdit.nombre === '' || itemToEdit.nombre.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="col-span-2">
                     <label for="edit_descripcion"
-                        class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="2"
+                        class="block text-sm font medium text-gray-700 nunito-bold">Descripción</label>
+                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="2" maxlength="255"
+                        @input="formEditEstadoFactura = formEditEstadoFactura || { _touched: {} }; formEditEstadoFactura._touched.descripcion = true"
+                        @blur="formEditEstadoFactura._touched.descripcion = true"
+                        :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.descripcion && itemToEdit.descripcion.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <small :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.descripcion && itemToEdit.descripcion.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
                     <input type="number" id="edit_orden" x-model="itemToEdit.orden" min="0"
+                        @input="formEditEstadoFactura = formEditEstadoFactura || { _touched: {} }; formEditEstadoFactura._touched.orden = true"
+                        @blur="formEditEstadoFactura._touched.orden = true"
+                        :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.orden && (Number(itemToEdit.orden) < 0) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEditEstadoFactura && formEditEstadoFactura._touched && formEditEstadoFactura._touched.orden && (Number(itemToEdit.orden) < 0) ? 'text-red-500' : ''">Debe ser mayor o igual a 0.</small>
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="edit_es_final" x-model="itemToEdit.es_final"

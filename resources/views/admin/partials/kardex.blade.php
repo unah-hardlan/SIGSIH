@@ -14,6 +14,8 @@
     perPageKardex: 10,
 
     // --- Modelo para el formulario de Nuevo Movimiento ---
+    formKardex: { _touched: {} },
+    formEditKardex: { _touched: {} },
     newMovimiento: {
         id_origen_fk: null,
         id_producto_fk: '',
@@ -135,7 +137,7 @@ x-effect="
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isKardexModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+            <button @click="formKardex = { _touched: {} }; newMovimiento = { id_origen_fk: null, id_producto_fk: '', id_tipo_movimiento_fk: '', cantidad: '', fecha_movimiento: '', motivo: '' }; isKardexModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Movimiento
             </button>
             <a href="/admin/reportes-header?modulo=Kardex&fecha={{ now()->format('d-M-Y') }}" target="_blank"
@@ -180,7 +182,7 @@ x-effect="
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="movimiento.origen ? movimiento.origen.nombre_origen : 'N/A'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="movimiento.motivo"></td>
                                 <td class="py-2 px-4 flex gap-2">
-                                    <a href="#" @click.prevent="isKardexEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(movimiento))" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="formEditKardex = { _touched: {} }; isKardexEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(movimiento))" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isKardexDeleteModalOpen = true; itemToDelete = { id_kardex_pk: movimiento.id_kardex_pk, motivo: movimiento.motivo }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -214,7 +216,7 @@ x-effect="
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Origen: ' + (movimiento.origen ? movimiento.origen.nombre_origen : 'N/A')"></p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Motivo: ' + movimiento.motivo"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="isKardexEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(movimiento))" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular"><i class="fas fa-edit"></i> Editar</button>
+                            <button @click.prevent="formEditKardex = { _touched: {} }; isKardexEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(movimiento))" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular"><i class="fas fa-edit"></i> Editar</button>
                             <button @click.prevent="isKardexDeleteModalOpen = true; itemToDelete = { id_kardex_pk: movimiento.id_kardex_pk, motivo: movimiento.motivo }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular"><i class="fas fa-trash"></i> Eliminar</button>
                         </div>
                     </div>
@@ -267,21 +269,25 @@ x-effect="
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label for="new_id_producto_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Producto</label>
-                    <select id="new_id_producto_fk" x-model="newMovimiento.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="new_id_producto_fk" x-model="newMovimiento.id_producto_fk" required @change="formKardex._touched.producto = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formKardex._touched && formKardex._touched.producto && !newMovimiento.id_producto_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione un Producto...</option>
                         <template x-for="producto in catalogoProductos" :key="producto.id_producto_pk">
                             <option :value="producto.id_producto_pk" x-text="producto.nombre_producto"></option>
                         </template>
                     </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formKardex._touched && formKardex._touched.producto && !newMovimiento.id_producto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label for="new_id_tipo_movimiento_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Movimiento</label>
-                    <select id="new_id_tipo_movimiento_fk" x-model="newMovimiento.id_tipo_movimiento_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="new_id_tipo_movimiento_fk" x-model="newMovimiento.id_tipo_movimiento_fk" required @change="formKardex._touched.tipo = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formKardex._touched && formKardex._touched.tipo && !newMovimiento.id_tipo_movimiento_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione un Tipo...</option>
                         <template x-for="tipo in catalogoTiposMovimiento" :key="tipo.id_tipo_movimiento_pk">
                             <option :value="tipo.id_tipo_movimiento_pk" x-text="tipo.nombre_tipo_movimiento"></option>
                         </template>
                     </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formKardex._touched && formKardex._touched.tipo && !newMovimiento.id_tipo_movimiento_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label for="new_id_origen_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Origen (Opcional)</label>
@@ -294,15 +300,21 @@ x-effect="
                 </div>
                 <div>
                     <label for="new_cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
-                    <input type="number" step="0.001" id="new_cantidad" x-model="newMovimiento.cantidad" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" step="0.001" id="new_cantidad" x-model="newMovimiento.cantidad" required @input="formKardex._touched.cantidad = true" @blur="formKardex._touched.cantidad = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formKardex._touched && formKardex._touched.cantidad && (!newMovimiento.cantidad || newMovimiento.cantidad <= 0) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formKardex._touched && formKardex._touched.cantidad && (!newMovimiento.cantidad || newMovimiento.cantidad <= 0) ? 'text-red-500' : ''">Requerido. Debe ser mayor que 0.</small>
                 </div>
                 <div>
                     <label for="new_fecha_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Movimiento</label>
-                    <input type="date" id="new_fecha_movimiento" x-model="newMovimiento.fecha_movimiento" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" id="new_fecha_movimiento" x-model="newMovimiento.fecha_movimiento" required @change="formKardex._touched.fecha = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formKardex._touched && formKardex._touched.fecha && !newMovimiento.fecha_movimiento ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formKardex._touched && formKardex._touched.fecha && !newMovimiento.fecha_movimiento ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label for="new_motivo" class="block text-sm font-medium text-gray-700 nunito-bold">Motivo / Razón</label>
-                    <textarea id="new_motivo" x-model="newMovimiento.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea id="new_motivo" x-model="newMovimiento.motivo" maxlength="255" rows="3" required @input="formKardex._touched.motivo = true" @blur="formKardex._touched.motivo = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formKardex._touched && formKardex._touched.motivo && (newMovimiento.motivo === '' || (newMovimiento.motivo && newMovimiento.motivo.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formKardex._touched && formKardex._touched.motivo && (newMovimiento.motivo === '' || (newMovimiento.motivo && newMovimiento.motivo.length >= 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -313,21 +325,25 @@ x-effect="
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label for="edit_id_producto_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Producto</label>
-                    <select id="edit_id_producto_fk" x-model="itemToEdit.id_producto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="edit_id_producto_fk" x-model="itemToEdit.id_producto_fk" required @change="formEditKardex._touched.producto = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditKardex._touched && formEditKardex._touched.producto && !itemToEdit.id_producto_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione...</option>
                         <template x-for="producto in catalogoProductos" :key="producto.id_producto_pk">
                             <option :value="producto.id_producto_pk" x-text="producto.nombre_producto"></option>
                         </template>
                     </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditKardex._touched && formEditKardex._touched.producto && !itemToEdit.id_producto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label for="edit_id_tipo_movimiento_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Movimiento</label>
-                    <select id="edit_id_tipo_movimiento_fk" x-model="itemToEdit.id_tipo_movimiento_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="edit_id_tipo_movimiento_fk" x-model="itemToEdit.id_tipo_movimiento_fk" required @change="formEditKardex._touched.tipo = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditKardex._touched && formEditKardex._touched.tipo && !itemToEdit.id_tipo_movimiento_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione...</option>
                         <template x-for="tipo in catalogoTiposMovimiento" :key="tipo.id_tipo_movimiento_pk">
                             <option :value="tipo.id_tipo_movimiento_pk" x-text="tipo.nombre_tipo_movimiento"></option>
                         </template>
                     </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditKardex._touched && formEditKardex._touched.tipo && !itemToEdit.id_tipo_movimiento_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label for="edit_id_origen_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Origen (Opcional)</label>
@@ -340,15 +356,21 @@ x-effect="
                 </div>
                 <div>
                     <label for="edit_cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
-                    <input type="number" step="0.001" id="edit_cantidad" x-model="itemToEdit.cantidad" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" step="0.001" id="edit_cantidad" x-model="itemToEdit.cantidad" required @input="formEditKardex._touched.cantidad = true" @blur="formEditKardex._touched.cantidad = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditKardex._touched && formEditKardex._touched.cantidad && (!itemToEdit.cantidad || itemToEdit.cantidad <= 0) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditKardex._touched && formEditKardex._touched.cantidad && (!itemToEdit.cantidad || itemToEdit.cantidad <= 0) ? 'text-red-500' : ''">Requerido. Debe ser mayor que 0.</small>
                 </div>
                 <div>
                     <label for="edit_fecha_movimiento" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Movimiento</label>
-                    <input type="date" id="edit_fecha_movimiento" x-model="itemToEdit.fecha_movimiento" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" id="edit_fecha_movimiento" x-model="itemToEdit.fecha_movimiento" required @change="formEditKardex._touched.fecha = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditKardex._touched && formEditKardex._touched.fecha && !itemToEdit.fecha_movimiento ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditKardex._touched && formEditKardex._touched.fecha && !itemToEdit.fecha_movimiento ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label for="edit_motivo" class="block text-sm font-medium text-gray-700 nunito-bold">Motivo / Razón</label>
-                    <textarea id="edit_motivo" x-model="itemToEdit.motivo" rows="3" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea id="edit_motivo" x-model="itemToEdit.motivo" maxlength="255" rows="3" required @input="formEditKardex._touched.motivo = true" @blur="formEditKardex._touched.motivo = true" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditKardex._touched && formEditKardex._touched.motivo && (itemToEdit.motivo === '' || (itemToEdit.motivo && itemToEdit.motivo.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditKardex._touched && formEditKardex._touched.motivo && (itemToEdit.motivo === '' || (itemToEdit.motivo && itemToEdit.motivo.length >= 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
                 </div>
             </div>
             </template>

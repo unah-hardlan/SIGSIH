@@ -19,10 +19,10 @@
         searchReportes: '', ordenarPor: 'fecha', ordenarDirection: 'desc',
         filtroTipoVisita: '', filtroServicioRealizado: '', filtroAccionRealizada: '', filtroOrdenServicio: '',
         desde: '', hasta: '',
-        // crear
-        new_fecha_reporte: '', new_observaciones: '', new_id_tipo_visita_fk: '', new_id_servicio_realizado_fk: '', new_id_accion_realizada_fk: '', new_id_orden_servicio_fk: '',
-        // editar (campos locales)
-        edit_fecha_reporte: '', edit_observaciones: '', edit_id_tipo_visita_fk: '', edit_id_servicio_realizado_fk: '', edit_id_accion_realizada_fk: '', edit_id_orden_servicio_fk: '',
+    // crear
+    formReporte: { _touched: {} }, new_fecha_reporte: '', new_observaciones: '', new_id_tipo_visita_fk: '', new_id_servicio_realizado_fk: '', new_id_accion_realizada_fk: '', new_id_orden_servicio_fk: '',
+    // editar (campos locales)
+    formEditReporte: { _touched: {} }, edit_fecha_reporte: '', edit_observaciones: '', edit_id_tipo_visita_fk: '', edit_id_servicio_realizado_fk: '', edit_id_accion_realizada_fk: '', edit_id_orden_servicio_fk: '',
         
         // 2️⃣ Métodos de Paginación
         paginatedReportes() {
@@ -67,9 +67,10 @@
         },
         handleModalSubmit(e){ if(e.detail.formId==='form-reporte-visita-add') this.storeReporte(); if(e.detail.formId==='form-reporte-visita-edit') this.updateReporte(); },
         handleDelete(){ if(this.isReporteDeleteModalOpen) this.deleteReporte(); },
-        openAdd(){ this.isReporteModalOpen = true; },
+    openAdd(){ this.isReporteModalOpen = true; this.formReporte._touched = {}; this.new_fecha_reporte=''; this.new_observaciones=''; this.new_id_tipo_visita_fk=''; this.new_id_servicio_realizado_fk=''; this.new_id_accion_realizada_fk=''; this.new_id_orden_servicio_fk=''; },
         openEdit(rep){
-                this.reporteToEdit = { ...rep };
+        this.formEditReporte._touched = {};
+        this.reporteToEdit = { ...rep };
                 this.edit_fecha_reporte = rep.fecha_reporte ? rep.fecha_reporte.replace(' ', 'T').slice(0,16) : '';
                 this.edit_observaciones = rep.observaciones || '';
                 this.edit_id_tipo_visita_fk = rep.id_tipo_visita_fk || '';
@@ -271,48 +272,62 @@ class="overflow-x-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium nunito-bold">Fecha de Reporte</label>
-                <input type="datetime-local" x-model="new_fecha_reporte" class="w-full border rounded px-3 py-2 nunito-regular" />
+                <input type="datetime-local" x-model="new_fecha_reporte" x-ref="new_fecha_reporte" @input="formReporte._touched.fecha = true" @blur="formReporte._touched.fecha = true"
+                    class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formReporte._touched && formReporte._touched.fecha && !new_fecha_reporte ? 'border-red-500' : ''" />
+                <small class="block mt-1 text-sm text-gray-500" :class="formReporte._touched && formReporte._touched.fecha && !new_fecha_reporte ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div></div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium nunito-bold">Observaciones</label>
-                <textarea x-model="new_observaciones" rows="2" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
+                <textarea x-model="new_observaciones" maxlength="255" rows="2" @input="formReporte._touched.observaciones = true" @blur="formReporte._touched.observaciones = true"
+                    class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formReporte._touched && formReporte._touched.observaciones && (new_observaciones === '' || (new_observaciones && new_observaciones.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                <small class="block mt-1 text-sm text-gray-500" :class="formReporte._touched && formReporte._touched.observaciones && (new_observaciones === '' || (new_observaciones && new_observaciones.length >= 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium nunito-bold">Tipo de Visita</label>
-                <select x-model="new_id_tipo_visita_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+                <select x-model="new_id_tipo_visita_fk" @change="formReporte._touched.tipo = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formReporte._touched && formReporte._touched.tipo && !new_id_tipo_visita_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="tv in tiposVisita" :key="tv.id_tipo_visita_pk">
                         <option :value="tv.id_tipo_visita_pk" x-text="tv.nombre_tipo_visita || tv.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formReporte._touched && formReporte._touched.tipo && !new_id_tipo_visita_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium nunito-bold">Servicio Realizado</label>
-                <select x-model="new_id_servicio_realizado_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+                <select x-model="new_id_servicio_realizado_fk" @change="formReporte._touched.servicio = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formReporte._touched && formReporte._touched.servicio && !new_id_servicio_realizado_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="sr in serviciosRealizados" :key="sr.id_servicio_realizado_pk">
                         <option :value="sr.id_servicio_realizado_pk" x-text="sr.nombre_servicio || sr.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formReporte._touched && formReporte._touched.servicio && !new_id_servicio_realizado_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium nunito-bold">Acción Realizada</label>
-                <select x-model="new_id_accion_realizada_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+                <select x-model="new_id_accion_realizada_fk" @change="formReporte._touched.accion = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formReporte._touched && formReporte._touched.accion && !new_id_accion_realizada_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="ar in accionesRealizadas" :key="ar.id_accion_realizada_pk">
                         <option :value="ar.id_accion_realizada_pk" x-text="ar.nombre_accion || ar.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formReporte._touched && formReporte._touched.accion && !new_id_accion_realizada_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
-        <label class="block text-sm font-medium nunito-bold">Orden de Servicio</label>
-            <select x-model="new_id_orden_servicio_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+        <label class="block text-sm font medium nunito-bold">Orden de Servicio</label>
+            <select x-model="new_id_orden_servicio_fk" @change="formReporte._touched.orden = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formReporte._touched && formReporte._touched.orden && !new_id_orden_servicio_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="os in ordenesServicio" :key="os.id_orden_servicio_pk">
                 <option :value="os.id_orden_servicio_pk" x-text="os.numero_orden_servicio ? (os.numero_orden_servicio) : ('OS '+os.id_orden_servicio_pk)"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formReporte._touched && formReporte._touched.orden && !new_id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
         </div>
     </x-admin.form-modal>
@@ -322,48 +337,62 @@ class="overflow-x-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium nunito-bold">Fecha de Reporte</label>
-                <input type="datetime-local" x-model="edit_fecha_reporte" class="w-full border rounded px-3 py-2 nunito-regular" />
+                <input type="datetime-local" x-model="edit_fecha_reporte" x-ref="edit_fecha_reporte" @input="formEditReporte._touched.fecha = true" @blur="formEditReporte._touched.fecha = true"
+                    class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formEditReporte._touched && formEditReporte._touched.fecha && !edit_fecha_reporte ? 'border-red-500' : ''" />
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditReporte._touched && formEditReporte._touched.fecha && !edit_fecha_reporte ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div></div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium nunito-bold">Observaciones</label>
-                <textarea x-model="edit_observaciones" rows="2" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
+                <textarea x-model="edit_observaciones" maxlength="500" rows="2" @input="formEditReporte._touched.observaciones = true" @blur="formEditReporte._touched.observaciones = true"
+                    class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formEditReporte._touched && formEditReporte._touched.observaciones && (edit_observaciones === '' || (edit_observaciones && edit_observaciones.length >= 500)) ? 'border-red-500' : ''"></textarea>
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditReporte._touched && formEditReporte._touched.observaciones && (edit_observaciones === '' || (edit_observaciones && edit_observaciones.length >= 500)) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium nunito-bold">Tipo de Visita</label>
-                <select x-model="edit_id_tipo_visita_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+                <select x-model="edit_id_tipo_visita_fk" @change="formEditReporte._touched.tipo = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formEditReporte._touched && formEditReporte._touched.tipo && !edit_id_tipo_visita_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="tv in tiposVisita" :key="tv.id_tipo_visita_pk">
                         <option :value="tv.id_tipo_visita_pk" x-text="tv.nombre_tipo_visita || tv.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditReporte._touched && formEditReporte._touched.tipo && !edit_id_tipo_visita_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium nunito-bold">Servicio Realizado</label>
-                <select x-model="edit_id_servicio_realizado_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+                <select x-model="edit_id_servicio_realizado_fk" @change="formEditReporte._touched.servicio = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formEditReporte._touched && formEditReporte._touched.servicio && !edit_id_servicio_realizado_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="sr in serviciosRealizados" :key="sr.id_servicio_realizado_pk">
                         <option :value="sr.id_servicio_realizado_pk" x-text="sr.nombre_servicio || sr.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditReporte._touched && formEditReporte._touched.servicio && !edit_id_servicio_realizado_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium nunito-bold">Acción Realizada</label>
-                <select x-model="edit_id_accion_realizada_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+                <select x-model="edit_id_accion_realizada_fk" @change="formEditReporte._touched.accion = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formEditReporte._touched && formEditReporte._touched.accion && !edit_id_accion_realizada_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="ar in accionesRealizadas" :key="ar.id_accion_realizada_pk">
                         <option :value="ar.id_accion_realizada_pk" x-text="ar.nombre_accion || ar.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditReporte._touched && formEditReporte._touched.accion && !edit_id_accion_realizada_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
-        <label class="block text-sm font-medium nunito-bold">Orden de Servicio</label>
-            <select x-model="edit_id_orden_servicio_fk" class="w-full border rounded px-3 py-2 nunito-regular">
+        <label class="block text-sm font medium nunito-bold">Orden de Servicio</label>
+            <select x-model="edit_id_orden_servicio_fk" @change="formEditReporte._touched.orden = true" class="w-full border rounded px-3 py-2 nunito-regular"
+                    :class="formEditReporte._touched && formEditReporte._touched.orden && !edit_id_orden_servicio_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione...</option>
                     <template x-for="os in ordenesServicio" :key="os.id_orden_servicio_pk">
                 <option :value="os.id_orden_servicio_pk" x-text="os.numero_orden_servicio ? (os.numero_orden_servicio) : ('OS '+os.id_orden_servicio_pk)"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditReporte._touched && formEditReporte._touched.orden && !edit_id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
         </div>
     </x-admin.edit-modal>

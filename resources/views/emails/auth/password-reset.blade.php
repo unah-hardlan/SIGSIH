@@ -30,21 +30,24 @@
 		}
 		.card-header {
 			background: linear-gradient(135deg, #1d4ed8, #2563eb);
-			padding: 28px 32px;
+			padding: 56px 32px;
 			text-align: center;
 		}
 		.brand {
-			display: inline-flex;
+			display: flex;
 			align-items: center;
-			gap: 12px;
+			justify-content: center;
 			color: #ffffff;
 			font-size: 20px;
 			font-weight: 600;
 			letter-spacing: 0.3px;
 		}
 		.brand img {
-			max-height: 54px;
+			max-height: 80px;
 			display: block;
+			background: #ffffff;
+			border-radius: 20px;
+			padding: 20px 30px;
 		}
 		.brand-placeholder {
 			font-size: 24px;
@@ -66,16 +69,18 @@
 			display: inline-block;
 			margin: 24px 0;
 			padding: 16px 40px;
-			background: linear-gradient(135deg, #1d4ed8, #2563eb);
+			background: #1d4ed8;
 			color: #ffffff !important;
 			text-decoration: none;
 			font-weight: 600;
-			border-radius: 999px;
+			border-radius: 8px;
 			letter-spacing: 0.5px;
-			box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
+			box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+			border: 2px solid #1d4ed8;
 		}
 		.button:hover {
-			background: linear-gradient(135deg, #1f3fd6, #1e4ed8);
+			background: #1e40af;
+			border-color: #1e40af;
 		}
 		.info-box {
 			background-color: #f1f5ff;
@@ -101,6 +106,9 @@
 			}
 		}
 	</style>
+	<!-- Safe preview text -->
+	<meta name="color-scheme" content="light">
+	<meta name="supported-color-schemes" content="light">
 </head>
 <body>
 <div class="email-wrapper">
@@ -111,9 +119,11 @@
 					<div class="card-header">
 						<div class="brand">
 							@if ($logoUrl)
-								<img src="{{ $logoUrl }}" alt="Logo {{ $appName }}">
+								<img src="{{ $logoUrl }}" alt="{{ $appName }}" style="max-height:80px; display:block; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+								<span class="brand-placeholder" style="display:none;">{{ $appName }}</span>
+							@else
+								<span class="brand-placeholder">{{ $appName }}</span>
 							@endif
-							<span class="brand-placeholder">{{ $appName }}</span>
 						</div>
 					</div>
 					<div class="card-body">
