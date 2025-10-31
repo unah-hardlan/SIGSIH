@@ -35,6 +35,13 @@
         const p = this.paises.find(pp => String(pp.id_pais_pk) === String(id));
         return p ? p.nombre_pais : '';
     },
+        formPais: { _touched: {} },
+        formDepartamento: { _touched: {} },
+        formEditDepartamento: { _touched: {} },
+        formCiudad: { _touched: {} },
+        formEditCiudad: { _touched: {} },
+        formDireccion: { _touched: {} },
+        formEditDireccion: { _touched: {} },
     refreshDepartamentoSuggestions() {
         try {
             const nombrePais = this.selectedPaisNombre;
@@ -320,7 +327,7 @@
                             <p class="text-orange-100 text-sm nunito-regular">Gestiona las direcciones por ciudad</p>
                         </div>
                     </div>
-                    <button @click="isDireccionModalOpen = true"
+                    <button @click="formDireccion = { _touched: {} }; direccion = ''; numero = ''; colonia = ''; codigo_postal = ''; referencia = ''; ciudad_direccion = ''; isDireccionModalOpen = true"
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
                         <span class="text-sm">Nuevo</span>
@@ -368,7 +375,7 @@
                                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="getPaisNombreByDireccion(direccion) || 'N/A'"></td>
                                             <td class="px-4 py-3">
                                                 <div class="flex justify-center gap-2">
-                                                    <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                    <button @click="formEditDireccion = { _touched: {} }; isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                         <i class="fas fa-edit text-sm"></i>
                                                     </button>
                                                     <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa}`}" class="text-red-500 hover:text-red-700 p-1 rounded">
@@ -417,7 +424,7 @@
                                         <span class="nunito-regular" x-text="direccion.referencia"></span>
                                     </div>
                                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                        <button @click="formEditDireccion = { _touched: {} }; isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
                                         <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa}`}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
@@ -447,7 +454,7 @@
                                     <p class="text-blue-100 text-sm nunito-regular">Gestiona los países disponibles</p>
                                 </div>
                             </div>
-                            <button @click="isPaisModalOpen = true"
+                            <button @click="formPais = { _touched: {} }; nombre_pais = ''; isPaisModalOpen = true"
                                 class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                                 <i class="fas fa-plus text-sm"></i>
                                 <span class="text-sm">Nuevo</span>
@@ -534,7 +541,7 @@
                                     <p class="text-green-100 text-sm nunito-regular">Gestiona los departamentos por país</p>
                                 </div>
                             </div>
-                            <button @click="isDepartamentoModalOpen = true; refreshDepartamentoSuggestions()"
+                            <button @click="formDepartamento = { _touched: {} }; pais_departamento = ''; nombre_departamento = ''; isDepartamentoModalOpen = true; refreshDepartamentoSuggestions()"
                                 class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                                 <i class="fas fa-plus text-sm"></i>
                                 <span class="text-sm">Nuevo</span>
@@ -633,7 +640,7 @@
                                 <p class="text-purple-100 text-sm nunito-regular">Gestiona las ciudades por departamento</p>
                             </div>
                         </div>
-                        <button @click="isCiudadModalOpen = true; pais_ciudad=''; departamento_ciudad=''; nombre_ciudad=''; suggestedCiudades=[]"
+                        <button @click="formCiudad = { _touched: {} }; pais_ciudad=''; departamento_ciudad=''; nombre_ciudad=''; suggestedCiudades=[]; isCiudadModalOpen = true"
                             class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                             <i class="fas fa-plus text-sm"></i>
                             <span class="text-sm">Nuevo</span>
@@ -727,16 +734,20 @@
         submitLabel="Guardar País"
         maxWidth="max-w-2xl"
         formId="formPais">
-        <div class="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-1 gap-4">
             <div>
                 <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
                 <template x-if="caOptionsDisponibles.length > 0">
-                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais"
+                        @change="formPais = formPais || { _touched: {} }; formPais._touched.nombre_pais = true"
+                        :class="formPais && formPais._touched && formPais._touched.nombre_pais && nombre_pais === '' ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un país</option>
                         <template x-for="n in caOptionsDisponibles" :key="n">
                             <option :value="n" x-text="n"></option>
                         </template>
                     </select>
+                    <small :class="formPais && formPais._touched && formPais._touched.nombre_pais && nombre_pais === '' ? 'text-red-500' : ''">Selecciona un país.</small>
                 </template>
                 <template x-if="caOptionsDisponibles.length === 0">
                     <input type="text" id="nombre_pais" name="nombre_pais" x-model="nombre_pais" placeholder="Todos los países de CA ya están registrados" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border bg-gray-100 text-gray-600 nunito-regular px-2" disabled>
@@ -753,29 +764,32 @@
         submitLabel="Guardar Departamento"
         maxWidth="max-w-2xl"
         formId="formDepartamento">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.pais = true; refreshDepartamentoSuggestions()" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.pais && pais_departamento === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                     </template>
                 </select>
+                <small :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.pais && pais_departamento === '' ? 'text-red-500' : ''">Selecciona un país.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
                 <!-- If we have suggestions for the selected country, show a select; otherwise show a text input -->
                 <template x-if="suggestedDepartamentos.length > 0">
-                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" @change="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.nombre = true" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && nombre_departamento === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un departamento</option>
                         <template x-for="opt in suggestedDepartamentos" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
                         </template>
                     </select>
+                    <small :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && nombre_departamento === '' ? 'text-red-500' : ''">Selecciona o escribe un departamento.</small>
                 </template>
                 <template x-if="suggestedDepartamentos.length === 0">
-                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" />
+                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" maxlength="150" @input="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.nombre = true" @blur="formDepartamento._touched.nombre = true" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && (nombre_departamento === '' || nombre_departamento.length > 150) ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off" />
+                    <small :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && (nombre_departamento === '' || nombre_departamento.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedDepartamentos.length === 0">No hay catálogo para el país seleccionado. Puedes escribirlo manualmente.</p>
             </div>
@@ -789,37 +803,41 @@
         submitLabel="Guardar Ciudad"
         maxWidth="max-w-2xl"
         formId="formCiudad">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="departamento_ciudad = ''; refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.pais = true; departamento_ciudad = ''; refreshCiudadSuggestions()" :class="formCiudad && formCiudad._touched && formCiudad._touched.pais && pais_ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                     </template>
                 </select>
+                <small :class="formCiudad && formCiudad._touched && formCiudad._touched.pais && pais_ciudad === '' ? 'text-red-500' : ''">Selecciona un país.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
-                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.departamento = true; refreshCiudadSuggestions()" :class="formCiudad && formCiudad._touched && formCiudad._touched.departamento && departamento_ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un departamento</option>
                     <template x-for="departamento in departamentosFiltradosCiudad" :key="'dep-' + pais_ciudad + '-' + departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
                     </template>
                 </select>
+                <small :class="formCiudad && formCiudad._touched && formCiudad._touched.departamento && departamento_ciudad === '' ? 'text-red-500' : ''">Selecciona un departamento.</small>
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
                 <template x-if="suggestedCiudades.length > 0">
-                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" @change="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.nombre = true" :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && nombre_ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona una ciudad</option>
                         <template x-for="opt in suggestedCiudades" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
                         </template>
                     </select>
+                    <small :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && nombre_ciudad === '' ? 'text-red-500' : ''">Selecciona una ciudad.</small>
                 </template>
                 <template x-if="suggestedCiudades.length === 0">
-                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" maxlength="150" @input="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.nombre = true" @blur="formCiudad._touched.nombre = true" :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && (nombre_ciudad === '' || nombre_ciudad.length > 150) ? 'border-red-500' : ''" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                    <small :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && (nombre_ciudad === '' || nombre_ciudad.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedCiudades.length === 0">No hay catálogo para el país/departamento seleccionado. Puedes escribirlo manualmente.</p>
             </div>
@@ -836,33 +854,39 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Calle</label>
-                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="direccion" name="direccion" x-model="direccion" maxlength="100" @input="formDireccion._touched.direccion = true" @blur="formDireccion._touched.direccion = true" :class="formDireccion._touched.direccion && direccion === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.direccion && direccion === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="numero" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
-                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="numero" name="numero" x-model="numero" maxlength="100" @input="formDireccion._touched.numero = true" @blur="formDireccion._touched.numero = true" :class="formDireccion._touched.numero && numero === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.numero && numero === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="colonia" class="block text-sm font-medium text-gray-700 nunito-bold">Colonia</label>
-                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="colonia" name="colonia" x-model="colonia" maxlength="100" @input="formDireccion._touched.colonia = true" @blur="formDireccion._touched.colonia = true" :class="formDireccion._touched.colonia && colonia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.colonia && colonia === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
-                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" maxlength="255" inputmode="numeric" @input="formDireccion._touched.codigo_postal = true" @blur="formDireccion._touched.codigo_postal = true" :class="formDireccion._touched.codigo_postal && codigo_postal === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)" autocomplete="off">
+                <small :class="formDireccion._touched.codigo_postal && codigo_postal === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
             <div>
                 <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
-                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="referencia" name="referencia" x-model="referencia" maxlength="255" @input="formDireccion._touched.referencia = true" @blur="formDireccion._touched.referencia = true" :class="formDireccion._touched.referencia && referencia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.referencia && referencia === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
             
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
-                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" @change="formDireccion._touched.ciudad_direccion = true" :class="formDireccion._touched.ciudad_direccion && ciudad_direccion === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
                     </template>
                 </select>
+                <small :class="formDireccion._touched.ciudad_direccion && ciudad_direccion === '' ? 'text-red-500' : ''">Selecciona una ciudad.</small>
             </div>
         </div>
     </x-admin.form-modal>
@@ -957,33 +981,39 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
-                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" maxlength="100" @input="formEditDireccion._touched.calle = true" @blur="formEditDireccion._touched.calle = true" :class="formEditDireccion._touched.calle && itemToEdit.calle === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <small :class="formEditDireccion._touched.calle && itemToEdit.calle === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="edit_numero" class="block text-sm font-medium text-gray-700">Número</label>
-                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" maxlength="100" @input="formEditDireccion._touched.numero = true" @blur="formEditDireccion._touched.numero = true" :class="formEditDireccion._touched.numero && itemToEdit.numero === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <small :class="formEditDireccion._touched.numero && itemToEdit.numero === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="edit_colonia" class="block text-sm font-medium text-gray-700">Colonia</label>
-                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" maxlength="100" @input="formEditDireccion._touched.colonia = true" @blur="formEditDireccion._touched.colonia = true" :class="formEditDireccion._touched.colonia && itemToEdit.colonia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <small :class="formEditDireccion._touched.colonia && itemToEdit.colonia === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
-                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 " placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" maxlength="255" inputmode="numeric" @input="formEditDireccion._touched.codigo_postal = true" @blur="formEditDireccion._touched.codigo_postal = true" :class="formEditDireccion._touched.codigo_postal && itemToEdit.codigo_postal === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 " placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <small :class="formEditDireccion._touched.codigo_postal && itemToEdit.codigo_postal === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
             <div>
                 <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
-                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" maxlength="255" @input="formEditDireccion._touched.referencia = true" @blur="formEditDireccion._touched.referencia = true" :class="formEditDireccion._touched.referencia && itemToEdit.referencia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <small :class="formEditDireccion._touched.referencia && itemToEdit.referencia === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
             
             <div>
                 <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
-                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" @change="formEditDireccion._touched.ciudad = true" :class="formEditDireccion._touched.ciudad && itemToEdit.ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
                     </template>
                 </select>
+                <small :class="formEditDireccion._touched.ciudad && itemToEdit.ciudad === '' ? 'text-red-500' : ''">Selecciona una ciudad.</small>
             </div>
         </div>
         </template>

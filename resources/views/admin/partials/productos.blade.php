@@ -14,6 +14,8 @@
 
     tipoProductos: [],
     loadingTipoProductos: false,
+    formProducto: { _touched: {} },
+    formEditProducto: { _touched: {} },
     sku: '',
     nombre_producto: '',
     descripcion_producto: '',
@@ -95,7 +97,8 @@ x-effect="
             ])
         </x-slot>
         <x-slot name="actions">
-            <button @click="isProductoModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+            <button @click="isProductoModalOpen = true; formProducto._touched = {}; sku=''; nombre_producto=''; descripcion_producto=''; precio_unitario=''; precio_costo=''; precio_venta=''; stock_minimo=''; id_tipo_producto_fk='';"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Producto
             </button>
             <a href="/admin/reportes-header?modulo=Productos&fecha={{ now()->format('d-M-Y') }}" target="_blank"
@@ -127,7 +130,7 @@ x-effect="
                                 <td class="py-2 px-4" x-text="producto.stock_minimo"></td>
                                 <td class="py-2 px-4" x-text="producto.tipo_producto ? producto.tipo_producto.nombre_tipo_producto : 'N/A'"></td>
                                 <td class="py-2 px-4 flex gap-2">
-                                    <a href="#" @click.prevent="isProductoEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(producto))" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="formEditProducto = { _touched: {} }; isProductoEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(producto))" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isProductoDeleteModalOpen = true; itemToDelete = { id_producto_pk: producto.id_producto_pk, nombre_producto: producto.nombre_producto }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -176,7 +179,7 @@ x-effect="
                         </div>
                         
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="isProductoEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(producto))" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <button @click.prevent="formEditProducto = { _touched: {} }; isProductoEditModalOpen = true; itemToEdit = JSON.parse(JSON.stringify(producto))" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button @click.prevent="isProductoDeleteModalOpen = true; itemToDelete = { id_producto_pk: producto.id_producto_pk, nombre_producto: producto.nombre_producto }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
@@ -235,14 +238,64 @@ x-effect="
         <!-- Modal Nuevo Producto -->
         <x-admin.form-modal class="nunito-bold" modalName="isProductoModalOpen" title="Nuevo Producto" submitLabel="Guardar Producto" formId="formProducto" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label for="sku" class="block text-sm font-medium">SKU</label><input type="text" id="sku" x-model="sku" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="nombre_producto" class="block text-sm font-medium">Nombre</label><input type="text" id="nombre_producto" x-model="nombre_producto" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div class="md:col-span-2"><label for="descripcion_producto" class="block text-sm font-medium">Descripción</label><textarea id="descripcion_producto" x-model="descripcion_producto" rows="3" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea></div>
-                <div><label for="precio_unitario" class="block text-sm font-medium">Precio Unitario</label><input type="number" step="0.01" id="precio_unitario" x-model="precio_unitario" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="precio_costo" class="block text-sm font-medium">Precio Costo</label><input type="number" step="0.01" id="precio_costo" x-model="precio_costo" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="precio_venta" class="block text-sm font-medium">Precio Venta</label><input type="number" step="0.01" id="precio_venta" x-model="precio_venta" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="stock_minimo" class="block text-sm font-medium">Stock Mínimo</label><input type="number" id="stock_minimo" x-model="stock_minimo" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div class="md:col-span-2"><label for="id_tipo_producto_fk" class="block text-sm font-medium">Tipo Producto</label><select id="id_tipo_producto_fk" x-model="id_tipo_producto_fk" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"><option value="">Seleccionar Tipo</option><template x-for="tipo in tipoProductos" :key="tipo.id_tipo_producto_pk"><option :value="tipo.id_tipo_producto_pk" x-text="tipo.nombre_tipo_producto"></option></template></select></div>
+                <div>
+                    <label for="sku" class="block text-sm font-medium">SKU</label>
+                    <input type="text" id="sku" x-model="sku" maxlength="50" required @input="formProducto._touched.sku = true" @blur="formProducto._touched.sku = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.sku && (sku === '' || (sku && sku.length >= 50)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.sku && (sku === '' || (sku && sku.length >= 50)) ? 'text-red-500' : ''">Requerido. Máximo 50 caracteres.</small>
+                </div>
+                <div>
+                    <label for="nombre_producto" class="block text-sm font-medium">Nombre</label>
+                    <input type="text" id="nombre_producto" x-model="nombre_producto" maxlength="150" required @input="formProducto._touched.nombre = true" @blur="formProducto._touched.nombre = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.nombre && (nombre_producto === '' || (nombre_producto && nombre_producto.length >= 150)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.nombre && (nombre_producto === '' || (nombre_producto && nombre_producto.length >= 150)) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="descripcion_producto" class="block text-sm font-medium">Descripción</label>
+                    <textarea id="descripcion_producto" x-model="descripcion_producto" maxlength="500" rows="3" @input="formProducto._touched.descripcion = true" @blur="formProducto._touched.descripcion = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.descripcion && (descripcion_producto === '' || (descripcion_producto && descripcion_producto.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.descripcion && (descripcion_producto === '' || (descripcion_producto && descripcion_producto.length >= 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
+                </div>
+                <div>
+                    <label for="precio_unitario" class="block text-sm font-medium">Precio Unitario</label>
+                    <input type="number" step="0.01" id="precio_unitario" x-model="precio_unitario" required @input="formProducto._touched.precio_unitario = true" @blur="formProducto._touched.precio_unitario = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.precio_unitario && !precio_unitario ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.precio_unitario && !precio_unitario ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div>
+                    <label for="precio_costo" class="block text-sm font-medium">Precio Costo</label>
+                    <input type="number" step="0.01" id="precio_costo" x-model="precio_costo" @input="formProducto._touched.precio_costo = true" @blur="formProducto._touched.precio_costo = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.precio_costo && !precio_costo ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.precio_costo && !precio_costo ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div>
+                    <label for="precio_venta" class="block text-sm font-medium">Precio Venta</label>
+                    <input type="number" step="0.01" id="precio_venta" x-model="precio_venta" required @input="formProducto._touched.precio_venta = true" @blur="formProducto._touched.precio_venta = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.precio_venta && !precio_venta ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.precio_venta && !precio_venta ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div>
+                    <label for="stock_minimo" class="block text-sm font-medium">Stock Mínimo</label>
+                    <input type="number" id="stock_minimo" x-model="stock_minimo" required @input="formProducto._touched.stock = true" @blur="formProducto._touched.stock = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.stock && !stock_minimo ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.stock && !stock_minimo ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="id_tipo_producto_fk" class="block text-sm font-medium">Tipo Producto</label>
+                    <select id="id_tipo_producto_fk" x-model="id_tipo_producto_fk" required @change="formProducto._touched.tipo = true" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formProducto._touched && formProducto._touched.tipo && !id_tipo_producto_fk ? 'border-red-500' : ''">
+                        <option value="">Seleccionar Tipo</option>
+                        <template x-for="tipo in tipoProductos" :key="tipo.id_tipo_producto_pk"><option :value="tipo.id_tipo_producto_pk" x-text="tipo.nombre_tipo_producto"></option></template>
+                    </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formProducto._touched && formProducto._touched.tipo && !id_tipo_producto_fk ? 'text-red-500' : ''">Requerido.</small>
+                </div>
             </div>
         </x-admin.form-modal>
 
@@ -250,14 +303,64 @@ x-effect="
         <x-admin.edit-modal class="nunito-bold" modalName="isProductoEditModalOpen" title="Editar Producto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditProducto">
             <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label for="edit_sku" class="block text-sm font-medium">SKU</label><input type="text" id="edit_sku" x-model="itemToEdit.sku" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="edit_nombre_producto" class="block text-sm font-medium">Nombre</label><input type="text" id="edit_nombre_producto" x-model="itemToEdit.nombre_producto" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div class="md:col-span-2"><label for="edit_descripcion_producto" class="block text-sm font-medium">Descripción</label><textarea id="edit_descripcion_producto" x-model="itemToEdit.descripcion_producto" rows="3" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea></div>
-                <div><label for="edit_precio_unitario" class="block text-sm font-medium">Precio Unitario</label><input type="number" step="0.01" id="edit_precio_unitario" x-model="itemToEdit.precio_unitario" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="edit_precio_costo" class="block text-sm font-medium">Precio Costo</label><input type="number" step="0.01" id="edit_precio_costo" x-model="itemToEdit.precio_costo" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="edit_precio_venta" class="block text-sm font-medium">Precio Venta</label><input type="number" step="0.01" id="edit_precio_venta" x-model="itemToEdit.precio_venta" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div><label for="edit_stock_minimo" class="block text-sm font-medium">Stock Mínimo</label><input type="number" id="edit_stock_minimo" x-model="itemToEdit.stock_minimo" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></div>
-                <div class="md:col-span-2"><label for="edit_id_tipo_producto_fk" class="block text-sm font-medium">Tipo Producto</label><select id="edit_id_tipo_producto_fk" x-model="itemToEdit.id_tipo_producto_fk" required class="mt-1 block w-full rounded-md shadow-sm border-gray-300"><option value="">Seleccionar Tipo</option><template x-for="tipo in tipoProductos" :key="tipo.id_tipo_producto_pk"><option :value="tipo.id_tipo_producto_pk" x-text="tipo.nombre_tipo_producto"></option></template></select></div>
+                <div>
+                    <label for="edit_sku" class="block text-sm font-medium">SKU</label>
+                    <input type="text" id="edit_sku" x-model="itemToEdit.sku" maxlength="50" required @input="formEditProducto._touched.sku = true" @blur="formEditProducto._touched.sku = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.sku && (itemToEdit.sku === '' || (itemToEdit.sku && itemToEdit.sku.length >= 50)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.sku && (itemToEdit.sku === '' || (itemToEdit.sku && itemToEdit.sku.length >= 50)) ? 'text-red-500' : ''">Requerido. Máximo 50 caracteres.</small>
+                </div>
+                <div>
+                    <label for="edit_nombre_producto" class="block text-sm font-medium">Nombre</label>
+                    <input type="text" id="edit_nombre_producto" x-model="itemToEdit.nombre_producto" maxlength="150" required @input="formEditProducto._touched.nombre = true" @blur="formEditProducto._touched.nombre = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.nombre && (itemToEdit.nombre_producto === '' || (itemToEdit.nombre_producto && itemToEdit.nombre_producto.length >= 150)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.nombre && (itemToEdit.nombre_producto === '' || (itemToEdit.nombre_producto && itemToEdit.nombre_producto.length >= 150)) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="edit_descripcion_producto" class="block text-sm font-medium">Descripción</label>
+                    <textarea id="edit_descripcion_producto" x-model="itemToEdit.descripcion_producto" maxlength="255" rows="3" @input="formEditProducto._touched.descripcion = true" @blur="formEditProducto._touched.descripcion = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.descripcion && (itemToEdit.descripcion_producto === '' || (itemToEdit.descripcion_producto && itemToEdit.descripcion_producto.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.descripcion && (itemToEdit.descripcion_producto === '' || (itemToEdit.descripcion_producto && itemToEdit.descripcion_producto.length >= 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
+                </div>
+                <div>
+                    <label for="edit_precio_unitario" class="block text-sm font-medium">Precio Unitario</label>
+                    <input type="number" step="0.01" id="edit_precio_unitario" x-model="itemToEdit.precio_unitario" required @input="formEditProducto._touched.precio_unitario = true" @blur="formEditProducto._touched.precio_unitario = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.precio_unitario && !itemToEdit.precio_unitario ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.precio_unitario && !itemToEdit.precio_unitario ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div>
+                    <label for="edit_precio_costo" class="block text-sm font-medium">Precio Costo</label>
+                    <input type="number" step="0.01" id="edit_precio_costo" x-model="itemToEdit.precio_costo" @input="formEditProducto._touched.precio_costo = true" @blur="formEditProducto._touched.precio_costo = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.precio_costo && !itemToEdit.precio_costo ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.precio_costo && !itemToEdit.precio_costo ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div>
+                    <label for="edit_precio_venta" class="block text-sm font-medium">Precio Venta</label>
+                    <input type="number" step="0.01" id="edit_precio_venta" x-model="itemToEdit.precio_venta" required @input="formEditProducto._touched.precio_venta = true" @blur="formEditProducto._touched.precio_venta = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.precio_venta && !itemToEdit.precio_venta ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.precio_venta && !itemToEdit.precio_venta ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div>
+                    <label for="edit_stock_minimo" class="block text-sm font-medium">Stock Mínimo</label>
+                    <input type="number" id="edit_stock_minimo" x-model="itemToEdit.stock_minimo" required @input="formEditProducto._touched.stock = true" @blur="formEditProducto._touched.stock = true"
+                        class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.stock && !itemToEdit.stock_minimo ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.stock && !itemToEdit.stock_minimo ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="edit_id_tipo_producto_fk" class="block text-sm font-medium">Tipo Producto</label>
+                    <select id="edit_id_tipo_producto_fk" x-model="itemToEdit.id_tipo_producto_fk" required @change="formEditProducto._touched.tipo = true" class="mt-1 block w-full rounded-md shadow-sm border-gray-300"
+                        :class="formEditProducto._touched && formEditProducto._touched.tipo && !itemToEdit.id_tipo_producto_fk ? 'border-red-500' : ''">
+                        <option value="">Seleccionar Tipo</option>
+                        <template x-for="tipo in tipoProductos" :key="tipo.id_tipo_producto_pk"><option :value="tipo.id_tipo_producto_pk" x-text="tipo.nombre_tipo_producto"></option></template>
+                    </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditProducto._touched && formEditProducto._touched.tipo && !itemToEdit.id_tipo_producto_fk ? 'text-red-500' : ''">Requerido.</small>
+                </div>
             </div>
             </template>
         </x-admin.edit-modal>

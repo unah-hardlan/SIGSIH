@@ -19,7 +19,7 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isServicioModalOpen = true"
+            <button @click="formServicio = { _touched: {} }; nombre_servicio = ''; tarifa = ''; isServicioModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Servicio
             </button>
@@ -66,7 +66,7 @@
                                 <td class="py-2 px-4 flex gap-2"
                                     :class="{ 'last:rounded-br-lg': index === paginatedServicios().length - 1 }">
                                     <a href="#"
-                                        @click.prevent="isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
+                                        @click.prevent="formEditServicio = { _touched: {} }; isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#"
                                         @click.prevent="isDeleteServicioModalOpen = true; itemToDelete = {id_servicio_pk: servicio.id_servicio_pk, nombre: servicio.nombre_servicio}"
@@ -106,7 +106,7 @@
                         </p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                             <button
-                                @click.prevent="isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
+                                @click.prevent="formEditServicio = { _touched: {} }; isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -134,13 +134,21 @@
                 <div>
                     <label for="nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                         Servicio</label>
-                    <input type="text" id="nombre_servicio" x-model="nombre_servicio" required
+                    <input type="text" id="nombre_servicio" x-model="nombre_servicio" required maxlength="150"
+                        @input="formServicio = formServicio || { _touched: {} }; formServicio._touched.nombre_servicio = true"
+                        @blur="formServicio = formServicio || { _touched: {} }; formServicio._touched.nombre_servicio = true"
+                        :class="formServicio && formServicio._touched && formServicio._touched.nombre_servicio && (nombre_servicio === '' || (nombre_servicio && nombre_servicio.length > 150)) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small class="block text-xs nunito-regular mt-1" :class="formServicio && formServicio._touched && formServicio._touched.nombre_servicio && (nombre_servicio === '' || (nombre_servicio && nombre_servicio.length > 150)) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div>
                     <label for="tarifa" class="block text-sm font-medium text-gray-700 nunito-bold">Tarifa</label>
                     <input type="number" id="tarifa" x-model="tarifa" step="0.01" min="0" required
+                        @input="formServicio = formServicio || { _touched: {} }; formServicio._touched.tarifa = true"
+                        @blur="formServicio = formServicio || { _touched: {} }; formServicio._touched.tarifa = true"
+                        :class="formServicio && formServicio._touched && formServicio._touched.tarifa && (tarifa === '' || tarifa < 0) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small class="block text-xs nunito-regular mt-1" :class="formServicio && formServicio._touched && formServicio._touched.tarifa && (tarifa === '' || tarifa < 0) ? 'text-red-500' : ''">Requerido. Mínimo 0.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -152,13 +160,21 @@
                 <div>
                     <label for="edit_nombre_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                         Servicio</label>
-                    <input type="text" id="edit_nombre_servicio" x-model="itemToEdit.nombre_servicio" required
+                    <input type="text" id="edit_nombre_servicio" x-model="itemToEdit.nombre_servicio" required maxlength="150"
+                        @input="formEditServicio = formEditServicio || { _touched: {} }; formEditServicio._touched.nombre_servicio = true"
+                        @blur="formEditServicio = formEditServicio || { _touched: {} }; formEditServicio._touched.nombre_servicio = true"
+                        :class="formEditServicio && formEditServicio._touched && formEditServicio._touched.nombre_servicio && (itemToEdit.nombre_servicio === '' || (itemToEdit.nombre_servicio && itemToEdit.nombre_servicio.length > 150)) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small class="block text-xs nunito-regular mt-1" :class="formEditServicio && formEditServicio._touched && formEditServicio._touched.nombre_servicio && (itemToEdit.nombre_servicio === '' || (itemToEdit.nombre_servicio && itemToEdit.nombre_servicio.length > 150)) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_tarifa" class="block text-sm font-medium text-gray-700 nunito-bold">Tarifa</label>
                     <input type="number" id="edit_tarifa" x-model="itemToEdit.tarifa" step="0.01" min="0" required
+                        @input="formEditServicio = formEditServicio || { _touched: {} }; formEditServicio._touched.tarifa = true"
+                        @blur="formEditServicio = formEditServicio || { _touched: {} }; formEditServicio._touched.tarifa = true"
+                        :class="formEditServicio && formEditServicio._touched && formEditServicio._touched.tarifa && (itemToEdit.tarifa === '' || itemToEdit.tarifa < 0) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small class="block text-xs nunito-regular mt-1" :class="formEditServicio && formEditServicio._touched && formEditServicio._touched.tarifa && (itemToEdit.tarifa === '' || itemToEdit.tarifa < 0) ? 'text-red-500' : ''">Requerido. Mínimo 0.</small>
                 </div>
             </div>
         </x-admin.edit-modal>

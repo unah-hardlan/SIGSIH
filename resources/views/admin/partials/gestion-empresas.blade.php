@@ -49,7 +49,7 @@
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Nombre Comercial</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Razón Social</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Descripción</th>
-                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">RTN</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Número de identificación fiscal</</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Registro</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Horario</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Estado</th>
@@ -144,38 +144,58 @@
                 <label for="nombre_comercial" class="block text-sm font-medium nunito-bold">Nombre Comercial <span
                         class="text-red-500">*</span></label>
                 <input type="text" id="nombre_comercial"
-                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" maxlength="150"
-                    x-model="formEmpresa.nombre_comercial" required>
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
+                    maxlength="100"
+                    x-model="formEmpresa.nombre_comercial"
+                    @input="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.nombre_comercial = true"
+                    @blur="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.nombre_comercial = true"
+                    :class="formEmpresa._touched && (!formEmpresa.nombre_comercial || formEmpresa.nombre_comercial.length >= 100) ? 'border-red-500' : ''"
+                    required>
                 <template x-if="errors.nombre_comercial">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_comercial[0]"></p>
                 </template>
+                <small x-show="!errors.nombre_comercial" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && (!formEmpresa.nombre_comercial || formEmpresa.nombre_comercial.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="razon_social" class="block text-sm font-medium nunito-bold">Razón Social</label>
                 <input type="text" id="razon_social"
-                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" maxlength="150"
-                    x-model="formEmpresa.razon_social">
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
+                    maxlength="150"
+                    x-model="formEmpresa.razon_social"
+                    @input="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.razon_social = true"
+                    @blur="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.razon_social = true"
+                    :class="formEmpresa._touched && (formEmpresa.razon_social && formEmpresa.razon_social.length >= 150) ? 'border-red-500' : ''">
                 <template x-if="errors.razon_social">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.razon_social[0]"></p>
                 </template>
+                <small x-show="!errors.razon_social" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && (formEmpresa.razon_social && formEmpresa.razon_social.length >= 150) ? 'text-red-500' : ''">Opcional. Máximo 150 caracteres.</small>
             </div>
             <div>
-                <label for="rtn" class="block text-sm font-medium nunito-bold">RTN</label>
+                <label for="rtn" class="block text-sm font-medium nunito-bold">Número de identificación fiscal</label>
                 <input type="text" id="rtn"
-                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" maxlength="30"
-                    x-model="formEmpresa.rtn">
+                    class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
+                    maxlength="30"
+                    x-model="formEmpresa.rtn"
+                    @input="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.rtn = true"
+                    @blur="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.rtn = true"
+                    :class="formEmpresa._touched && (formEmpresa.rtn && formEmpresa.rtn.length >= 30) ? 'border-red-500' : ''">
                 <template x-if="errors.rtn">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.rtn[0]"></p>
                 </template>
+                <small x-show="!errors.rtn" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && (formEmpresa.rtn && formEmpresa.rtn.length >= 30) ? 'text-red-500' : ''">Opcional. Máximo 30 caracteres.</small>
             </div>
             <div class="md:col-span-2">
                 <label for="descripcion_empresa" class="block text-sm font-medium nunito-bold">Descripción</label>
                 <textarea id="descripcion_empresa"
                     class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular" rows="3"
-                    maxlength="255" x-model="formEmpresa.descripcion_empresa"></textarea>
+                    maxlength="255" x-model="formEmpresa.descripcion_empresa"
+                    @input="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.descripcion_empresa = true"
+                    @blur="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.descripcion_empresa = true"
+                    :class="formEmpresa._touched && (formEmpresa.descripcion_empresa && formEmpresa.descripcion_empresa.length >= 255) ? 'border-red-500' : ''"></textarea>
                 <template x-if="errors.descripcion_empresa">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_empresa[0]"></p>
                 </template>
+                <small x-show="!errors.descripcion_empresa" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && (formEmpresa.descripcion_empresa && formEmpresa.descripcion_empresa.length >= 255) ? 'text-red-500' : ''">Opcional. Máximo 255 caracteres.</small>
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium nunito-bold">Horario de atención</label>
@@ -220,20 +240,29 @@
                         class="text-red-500">*</span></label>
                 <input type="date" id="fecha_registro"
                     class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
-                    x-model="formEmpresa.fecha_registro" required>
+                    x-model="formEmpresa.fecha_registro"
+                    @change="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.fecha_registro = true"
+                    @blur="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.fecha_registro = true"
+                    :class="formEmpresa._touched && !formEmpresa.fecha_registro ? 'border-red-500' : ''"
+                    required>
                 <template x-if="errors.fecha_registro">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_registro[0]"></p>
                 </template>
+                <small x-show="!errors.fecha_registro" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && !formEmpresa.fecha_registro ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="estado_cliente" class="block text-sm font-medium nunito-bold">Estado <span
                         class="text-red-500">*</span></label>
                 <select id="estado_cliente"
                     class="mt-1 block w-full rounded-md shadow-sm border-gray-300 nunito-regular"
-                    x-model="formEmpresa.estado_cliente" required>
+                    x-model="formEmpresa.estado_cliente"
+                    @change="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.estado_cliente = true"
+                    :class="formEmpresa._touched && !formEmpresa.estado_cliente ? 'border-red-500' : ''"
+                    required>
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
                 </select>
+                
             </div>
         </div>
     </x-admin.form-modal>

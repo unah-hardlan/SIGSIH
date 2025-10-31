@@ -268,15 +268,16 @@
             <div>
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="id_cliente" name="id_cliente" x-model="formSolicitud.id_cliente_fk"
-                    @change="onClienteChange()"
+                    @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
+                    :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
-                <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk" x-text="errors.id_cliente_fk?.[0]">
-                </p>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk" x-text="errors.id_cliente_fk?.[0]"></p>
+                <small x-show="!errors.id_cliente_fk" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
 
             <div class="col-span-2">
@@ -285,35 +286,43 @@
                     Problema</label>
                 <textarea id="descripcion_problema" name="descripcion_problema" rows="2"
                     x-model="formSolicitud.descripcion_problema"
+                    maxlength="1000"
+                    @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                    @blur="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                    :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
-                <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema"
-                    x-text="errors.descripcion_problema?.[0]"></p>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema" x-text="errors.descripcion_problema?.[0]"></p>
+                <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'text-red-500' : ''">Requerido. Máximo 1000 caracteres.</small>
             </div>
             <div>
                 <label for="estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
                     Solicitud</label>
                 <select id="estado_solicitud" name="estado_solicitud" x-model="formSolicitud.id_estado_solicitud_fk"
+                    @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_estado_solicitud_fk = true"
+                    :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
                     <template x-for="opt in estadosOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
-                <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk"
-                    x-text="errors.id_estado_solicitud_fk?.[0]"></p>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk" x-text="errors.id_estado_solicitud_fk?.[0]"></p>
+                <small x-show="!errors.id_estado_solicitud_fk" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="id_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
                 <select id="id_contacto" name="id_contacto" x-model="formSolicitud.id_contacto_fk"
                     :disabled="!formSolicitud.id_cliente_fk"
+                    @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_contacto_fk = true"
+                    :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="" class="nunito-regular">Seleccione un contacto</option>
                     <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
-                <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk" x-text="errors.id_contacto_fk?.[0]">
-                </p>
+                <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk" x-text="errors.id_contacto_fk?.[0]"></p>
+                <small x-show="!errors.id_contacto_fk" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
         </div>
     </x-admin.form-modal>
@@ -328,15 +337,16 @@
                     <label for="edit_id_cliente"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                     <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk"
-                        @change="onClienteChange()"
+                        @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
+                        :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un cliente</option>
                         <template x-for="opt in clientesOptions" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>
                         </template>
                     </select>
-                    <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk"
-                        x-text="errors.id_cliente_fk?.[0]"></p>
+                    <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk" x-text="errors.id_cliente_fk?.[0]"></p>
+                    <small x-show="!errors.id_cliente_fk" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
 
                 <div class="col-span-2">
@@ -345,9 +355,13 @@
                         Problema</label>
                     <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
                         x-model="formSolicitud.descripcion_problema"
+                        maxlength="1000"
+                        @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                        @blur="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                        :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
-                    <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema"
-                        x-text="errors.descripcion_problema?.[0]"></p>
+                    <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema" x-text="errors.descripcion_problema?.[0]"></p>
+                    <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 1000) ? 'text-red-500' : ''">Requerido. Máximo 1000 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_estado_solicitud"
@@ -356,28 +370,32 @@
                         Solicitud</label>
                     <select id="edit_estado_solicitud" name="edit_estado_solicitud"
                         x-model="formSolicitud.id_estado_solicitud_fk"
+                        @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_estado_solicitud_fk = true"
+                        :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un estado</option>
                         <template x-for="opt in estadosOptions" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>
                         </template>
                     </select>
-                    <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk"
-                        x-text="errors.id_estado_solicitud_fk?.[0]"></p>
+                    <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk" x-text="errors.id_estado_solicitud_fk?.[0]"></p>
+                    <small x-show="!errors.id_estado_solicitud_fk" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label for="edit_id_contacto"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
                     <select id="edit_id_contacto" name="edit_id_contacto" x-model="formSolicitud.id_contacto_fk"
                         :disabled="!formSolicitud.id_cliente_fk"
+                        @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_contacto_fk = true"
+                        :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                         <option value="" class="nunito-regular">Seleccione un contacto</option>
                         <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
                             <option :value="opt.value" x-text="opt.label"></option>
                         </template>
                     </select>
-                    <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk"
-                        x-text="errors.id_contacto_fk?.[0]"></p>
+                    <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk" x-text="errors.id_contacto_fk?.[0]"></p>
+                    <small x-show="!errors.id_contacto_fk" class="text-xs text-gray-500 block mt-1" :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
             </div>
         </template>
@@ -447,23 +465,45 @@
                 <label for="tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de
                     Contacto</label>
                 <input type="text" id="tipo_contacto" name="tipo_contacto" x-model="formContacto.tipo_contacto"
+                    maxlength="100"
+                    @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                    @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                    :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <template x-if="errors.tipo_contacto">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.tipo_contacto[0]"></p>
+                </template>
+                <small x-show="!errors.tipo_contacto" class="text-xs text-gray-500 block mt-1" :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'text-red-500' : ''">Requerido. Valores: email, tel, whatsapp.</small>
             </div>
             <div>
                 <label for="valor_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Valor
                     Contacto</label>
                 <input type="text" id="valor_contacto" name="valor_contacto" x-model="formContacto.valor_contacto"
+                    maxlength="100"
+                    @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                    @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                    :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <template x-if="errors.valor_contacto">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.valor_contacto[0]"></p>
+                </template>
+                <small x-show="!errors.valor_contacto" class="text-xs text-gray-500 block mt-1" :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'text-red-500' : ''">Requerido. Formato según tipo seleccionado.</small>
             </div>
             <div>
                 <label for="id_cliente_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="id_cliente_fk" name="id_cliente_fk" x-model="formContacto.id_cliente_fk"
+                    @change="formContacto._touched = formContacto._touched || {}; formContacto._touched.id_cliente_fk = true"
+                    :class="formContacto._touched && !formContacto.id_cliente_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <template x-if="errors.id_cliente_fk">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.id_cliente_fk[0]"></p>
+                </template>
+                <small x-show="!errors.id_cliente_fk" class="text-xs text-gray-500 block mt-1" :class="formContacto._touched && !formContacto.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
         </div>
     </x-admin.form-modal>
@@ -476,17 +516,33 @@
             <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
                 <div>
                     <label for="edit_tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de
-                        Contacto</label>
-                    <input type="text" id="edit_tipo_contacto" name="edit_tipo_contacto"
+                            Contacto</label>
+                        <input type="text" id="edit_tipo_contacto" name="edit_tipo_contacto"
                         x-model="formContacto.tipo_contacto"
+                        maxlength="100"
+                        @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                        @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                        :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                        <template x-if="errors.tipo_contacto">
+                            <p class="text-xs text-red-600 mt-1" x-text="errors.tipo_contacto[0]"></p>
+                        </template>
+                        <small x-show="!errors.tipo_contacto" class="text-xs text-gray-500 block mt-1" :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'text-red-500' : ''">Requerido. Valores: email, tel, whatsapp.</small>
                 </div>
                 <div>
-                    <label for="edit_valor_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Valor
+                    <label for="edit_valor_contacto" class="block text-sm font medium text-gray-700 nunito-bold">Valor
                         Contacto</label>
                     <input type="text" id="edit_valor_contacto" name="edit_valor_contacto"
                         x-model="formContacto.valor_contacto"
+                        maxlength="100"
+                        @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                        @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                        :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <template x-if="errors.valor_contacto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.valor_contacto[0]"></p>
+                    </template>
+                    <small x-show="!errors.valor_contacto" class="text-xs text-gray-500 block mt-1" :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'text-red-500' : ''">Requerido. Formato según tipo seleccionado.</small>
                 </div>
                 <div>
                     <label for="edit_id_cliente_fk"

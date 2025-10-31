@@ -22,6 +22,7 @@
     ordenarPorProyecto: '',
     currentPageProyectos: 1,
     perPageProyectos: 10,
+    formProyecto: { _touched: {} },
 
     // --- Estado para INGRESOS ---
     isIngresoModalOpen: false,
@@ -42,6 +43,7 @@
     ordenarPorIngreso: '',
     currentPageIngresos: 1,
     perPageIngresos: 10,
+    formIngreso: { _touched: {} },
 
     // --- Estado para GASTOS ---
     isGastoModalOpen: false,
@@ -62,6 +64,10 @@
     ordenarPorGasto: '',
     currentPageGastos: 1,
     perPageGastos: 10,
+    formGasto: { _touched: {} },
+
+    // --- Errores ---
+    errors: {},
     
     // --- Catálogos (para los <select>) ---
     catalogoEstadosProyecto: [],
@@ -705,41 +711,84 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="nombre_proyecto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" x-model="nombre_proyecto" required maxlength="100"
+                        @input="formProyecto._touched.nombre_proyecto = true"
+                        @blur="formProyecto._touched.nombre_proyecto = true"
+                        :class="formProyecto._touched.nombre_proyecto && !nombre_proyecto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.nombre_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.nombre_proyecto" class="text-xs text-gray-500 block mt-1" :class="formProyecto._touched && formProyecto._touched.nombre_proyecto && (nombre_proyecto === '' || nombre_proyecto.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Orden de Servicio</label>
-                    <select x-model="id_orden_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="id_orden_servicio_fk" required
+                        @change="formProyecto._touched.id_orden_servicio_fk = true"
+                        :class="formProyecto._touched.id_orden_servicio_fk && !id_orden_servicio_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="os in catalogoOrdenesServicio" :key="os.id_orden_servicio_pk">
                             <option :value="os.id_orden_servicio_pk" x-text="os.codigo_orden || os.numero_orden_servicio || os.nombre_orden || 'OS-' + os.id_orden_servicio_pk"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_orden_servicio_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_orden_servicio_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_orden_servicio_fk" class="text-xs text-gray-500 block mt-1" :class="formProyecto._touched.id_orden_servicio_fk && !id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Inicio</label>
-                    <input type="date" x-model="fecha_inicio_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="fecha_inicio_proyecto" required
+                        @change="formProyecto._touched.fecha_inicio_proyecto = true"
+                        :class="formProyecto._touched.fecha_inicio_proyecto && !fecha_inicio_proyecto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha_inicio_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_inicio_proyecto" class="text-xs text-gray-500 block mt-1" :class="formProyecto._touched.fecha_inicio_proyecto && !fecha_inicio_proyecto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Estimada</label>
-                    <input type="date" x-model="fecha_estimada_fin_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="fecha_estimada_fin_proyecto" required
+                        @change="formProyecto._touched.fecha_estimada_fin_proyecto = true"
+                        :class="formProyecto._touched.fecha_estimada_fin_proyecto && !fecha_estimada_fin_proyecto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <small class="text-xs text-gray-500 block mt-1" :class="formProyecto._touched.fecha_estimada_fin_proyecto && !fecha_estimada_fin_proyecto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Real</label>
-                    <input type="date" x-model="fecha_finalizacion_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="fecha_finalizacion_proyecto"
+                        @change="formProyecto._touched.fecha_finalizacion_proyecto = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado del Proyecto</label>
-                    <select x-model="id_estado_proyecto_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="id_estado_proyecto_fk" required
+                        @change="formProyecto._touched.id_estado_proyecto_fk = true"
+                        :class="formProyecto._touched.id_estado_proyecto_fk && !id_estado_proyecto_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="estado in catalogoEstadosProyecto" :key="estado.id_estado_proyecto_pk">
                             <option :value="estado.id_estado_proyecto_pk" x-text="estado.nombre"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_estado_proyecto_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_estado_proyecto_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_estado_proyecto_fk" class="text-xs text-gray-500 block mt-1" :class="formProyecto._touched.id_estado_proyecto_fk && !id_estado_proyecto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea x-model="descripcion_proyecto" rows="3" maxlength="500"
+                        @input="formProyecto._touched.descripcion_proyecto = true"
+                        @blur="formProyecto._touched.descripcion_proyecto = true"
+                        :class="formProyecto._touched.descripcion_proyecto && descripcion_proyecto.length > 500 ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"></textarea>
+                    <template x-if="errors.descripcion_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.descripcion_proyecto" class="text-xs text-gray-500 block mt-1" :class="formProyecto._touched && formProyecto._touched.descripcion_proyecto && descripcion_proyecto.length >= 500 ? 'text-red-500' : ''">Máximo 500 caracteres.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -769,41 +818,84 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 }); }">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="itemToEdit.nombre_proyecto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" x-model="itemToEdit.nombre_proyecto" required maxlength="100"
+                        @input="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.nombre_proyecto = true"
+                        @blur="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.nombre_proyecto = true"
+                        :class="itemToEdit._touched && itemToEdit._touched.nombre_proyecto && !itemToEdit.nombre_proyecto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.nombre_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.nombre_proyecto" class="text-xs text-gray-500 block mt-1" :class="itemToEdit._touched && itemToEdit._touched.nombre_proyecto && (itemToEdit.nombre_proyecto === '' || itemToEdit.nombre_proyecto.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Orden de Servicio</label>
-                    <select x-model="itemToEdit.id_orden_servicio_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="itemToEdit.id_orden_servicio_fk" required
+                        @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.id_orden_servicio_fk = true"
+                        :class="itemToEdit._touched && itemToEdit._touched.id_orden_servicio_fk && !itemToEdit.id_orden_servicio_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="os in catalogoOrdenesServicio" :key="os.id_orden_servicio_pk">
                             <option :value="os.id_orden_servicio_pk" x-text="os.codigo_orden || os.numero_orden_servicio || os.nombre_orden || 'OS-' + os.id_orden_servicio_pk" :selected="itemToEdit && (os.id_orden_servicio_pk == (itemToEdit.id_orden_servicio_fk || itemToEdit.orden_servicio?.id_orden_servicio_pk))"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_orden_servicio_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_orden_servicio_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_orden_servicio_fk" class="text-xs text-gray-500 block mt-1" :class="itemToEdit._touched && itemToEdit._touched.id_orden_servicio_fk && !itemToEdit.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de Inicio</label>
-                    <input type="date" x-model="itemToEdit.fecha_inicio_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="itemToEdit.fecha_inicio_proyecto" required
+                        @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.fecha_inicio_proyecto = true"
+                        :class="itemToEdit._touched && itemToEdit._touched.fecha_inicio_proyecto && !itemToEdit.fecha_inicio_proyecto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha_inicio_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_inicio_proyecto" class="text-xs text-gray-500 block mt-1" :class="itemToEdit._touched && itemToEdit._touched.fecha_inicio_proyecto && !itemToEdit.fecha_inicio_proyecto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Estimada</label>
-                    <input type="date" x-model="itemToEdit.fecha_estimada_fin_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="itemToEdit.fecha_estimada_fin_proyecto" required
+                        @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.fecha_estimada_fin_proyecto = true"
+                        :class="itemToEdit._touched && itemToEdit._touched.fecha_estimada_fin_proyecto && !itemToEdit.fecha_estimada_fin_proyecto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <small class="text-xs text-gray-500 block mt-1" :class="itemToEdit._touched && itemToEdit._touched.fecha_estimada_fin_proyecto && !itemToEdit.fecha_estimada_fin_proyecto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Real</label>
-                    <input type="date" x-model="itemToEdit.fecha_finalizacion_proyecto" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="itemToEdit.fecha_finalizacion_proyecto"
+                        @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.fecha_finalizacion_proyecto = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado del Proyecto</label>
-                    <select x-model="itemToEdit.id_estado_proyecto_fk" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="itemToEdit.id_estado_proyecto_fk" required
+                        @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.id_estado_proyecto_fk = true"
+                        :class="itemToEdit._touched && itemToEdit._touched.id_estado_proyecto_fk && !itemToEdit.id_estado_proyecto_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="estado in catalogoEstadosProyecto" :key="estado.id_estado_proyecto_pk">
                             <option :value="estado.id_estado_proyecto_pk" x-text="estado.nombre" :selected="itemToEdit && (estado.id_estado_proyecto_pk == (itemToEdit.id_estado_proyecto_fk || itemToEdit.estado_proyecto?.id_estado_proyecto_pk))"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_estado_proyecto_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_estado_proyecto_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_estado_proyecto_fk" class="text-xs text-gray-500 block mt-1" :class="itemToEdit._touched && itemToEdit._touched.id_estado_proyecto_fk && !itemToEdit.id_estado_proyecto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="itemToEdit.descripcion_proyecto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea x-model="itemToEdit.descripcion_proyecto" rows="3" maxlength="500"
+                        @input="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.descripcion_proyecto = true"
+                        @blur="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.descripcion_proyecto = true"
+                        :class="itemToEdit._touched && itemToEdit._touched.descripcion_proyecto && itemToEdit.descripcion_proyecto.length > 500 ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"></textarea>
+                    <template x-if="errors.descripcion_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.descripcion_proyecto" class="text-xs text-gray-500 block mt-1" :class="itemToEdit._touched && itemToEdit._touched.descripcion_proyecto && itemToEdit.descripcion_proyecto.length > 500 ? 'text-red-500' : ''">Máximo 500 caracteres.</small>
                 </div>
             </div>
             </template>
@@ -816,37 +908,82 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="id_proyecto_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="id_proyecto_fk_ingreso" required
+                        @change="formIngreso._touched.id_proyecto_fk_ingreso = true"
+                        :class="formIngreso._touched.id_proyecto_fk_ingreso && !id_proyecto_fk_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_proyecto_fk_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_proyecto_fk_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_proyecto_fk_ingreso" class="text-xs text-gray-500 block mt-1" :class="formIngreso._touched.id_proyecto_fk_ingreso && !id_proyecto_fk_ingreso ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="nombre_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" x-model="nombre_ingreso" required maxlength="100"
+                        @input="formIngreso._touched.nombre_ingreso = true"
+                        @blur="formIngreso._touched.nombre_ingreso = true"
+                        :class="formIngreso._touched.nombre_ingreso && !nombre_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.nombre_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.nombre_ingreso" class="text-xs text-gray-500 block mt-1" :class="formIngreso._touched && formIngreso._touched.nombre_ingreso && (nombre_ingreso === '' || nombre_ingreso.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="fecha_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="fecha_ingreso" required
+                        @change="formIngreso._touched.fecha_ingreso = true"
+                        :class="formIngreso._touched.fecha_ingreso && !fecha_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_ingreso" class="text-xs text-gray-500 block mt-1" :class="formIngreso._touched.fecha_ingreso && !fecha_ingreso ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="monto_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="monto_ingreso" required
+                        @input="formIngreso._touched.monto_ingreso = true"
+                        @blur="formIngreso._touched.monto_ingreso = true"
+                        :class="formIngreso._touched.monto_ingreso && !monto_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.monto_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.monto_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.monto_ingreso" class="text-xs text-gray-500 block mt-1" :class="formIngreso._touched.monto_ingreso && !monto_ingreso ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="id_categoria_fk_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="id_categoria_fk_ingreso" required
+                        @change="formIngreso._touched.id_categoria_fk_ingreso = true"
+                        :class="formIngreso._touched.id_categoria_fk_ingreso && !id_categoria_fk_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => !c.tipo_categoria || c.tipo_categoria.toLowerCase() === 'ingreso')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_categoria_fk_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_categoria_fk_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_categoria_fk_ingreso" class="text-xs text-gray-500 block mt-1" :class="formIngreso._touched.id_categoria_fk_ingreso && !id_categoria_fk_ingreso ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea x-model="descripcion_ingreso" rows="3" maxlength="255"
+                        @input="formIngreso._touched.descripcion_ingreso = true"
+                        @blur="formIngreso._touched.descripcion_ingreso = true"
+                        :class="formIngreso._touched.descripcion_ingreso && descripcion_ingreso.length > 250 ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"></textarea>
+                    <template x-if="errors.descripcion_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.descripcion_ingreso" class="text-xs text-gray-500 block mt-1" :class="formIngreso._touched && formIngreso._touched.descripcion_ingreso && descripcion_ingreso.length >= 250 ? 'text-red-500' : ''">Máximo 250 caracteres.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -857,37 +994,82 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="ingresoToEdit.id_proyecto_fk" x-bind:value="ingresoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="ingresoToEdit.id_proyecto_fk" x-bind:value="ingresoToEdit.id_proyecto_fk" required
+                        @change="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.id_proyecto_fk = true"
+                        :class="ingresoToEdit._touched && ingresoToEdit._touched.id_proyecto_fk && !ingresoToEdit.id_proyecto_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto" :selected="ingresoToEdit && (proyecto.id_proyecto_pk == (ingresoToEdit.id_proyecto_fk || ingresoToEdit.proyecto?.id_proyecto_pk))"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_proyecto_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_proyecto_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_proyecto_fk" class="text-xs text-gray-500 block mt-1" :class="ingresoToEdit._touched && ingresoToEdit._touched.id_proyecto_fk && !ingresoToEdit.id_proyecto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="ingresoToEdit.nombre_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" x-model="ingresoToEdit.nombre_ingreso" required maxlength="100"
+                        @input="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.nombre_ingreso = true"
+                        @blur="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.nombre_ingreso = true"
+                        :class="ingresoToEdit._touched && ingresoToEdit._touched.nombre_ingreso && !ingresoToEdit.nombre_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.nombre_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.nombre_ingreso" class="text-xs text-gray-500 block mt-1" :class="ingresoToEdit._touched && ingresoToEdit._touched.nombre_ingreso && (ingresoToEdit.nombre_ingreso === '' || ingresoToEdit.nombre_ingreso.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="ingresoToEdit.fecha_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="ingresoToEdit.fecha_ingreso" required
+                        @change="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.fecha_ingreso = true"
+                        :class="ingresoToEdit._touched && ingresoToEdit._touched.fecha_ingreso && !ingresoToEdit.fecha_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_ingreso" class="text-xs text-gray-500 block mt-1" :class="ingresoToEdit._touched && ingresoToEdit._touched.fecha_ingreso && !ingresoToEdit.fecha_ingreso ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="ingresoToEdit.monto_ingreso" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="ingresoToEdit.monto_ingreso" required
+                        @input="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.monto_ingreso = true"
+                        @blur="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.monto_ingreso = true"
+                        :class="ingresoToEdit._touched && ingresoToEdit._touched.monto_ingreso && !ingresoToEdit.monto_ingreso ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.monto_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.monto_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.monto_ingreso" class="text-xs text-gray-500 block mt-1" :class="ingresoToEdit._touched && ingresoToEdit._touched.monto_ingreso && !ingresoToEdit.monto_ingreso ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="ingresoToEdit.id_categoria_fk" x-bind:value="ingresoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="ingresoToEdit.id_categoria_fk" x-bind:value="ingresoToEdit.id_categoria_fk" required
+                        @change="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.id_categoria_fk = true"
+                        :class="ingresoToEdit._touched && ingresoToEdit._touched.id_categoria_fk && !ingresoToEdit.id_categoria_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => !c.tipo_categoria || c.tipo_categoria.toLowerCase() === 'ingreso')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria" :selected="ingresoToEdit && (cat.id_categoria_pk == (ingresoToEdit.id_categoria_fk || ingresoToEdit.categoria?.id_categoria_pk))"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_categoria_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_categoria_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_categoria_fk" class="text-xs text-gray-500 block mt-1" :class="ingresoToEdit._touched && ingresoToEdit._touched.id_categoria_fk && !ingresoToEdit.id_categoria_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="ingresoToEdit.descripcion_ingreso" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea x-model="ingresoToEdit.descripcion_ingreso" rows="3" maxlength="255"
+                        @input="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.descripcion_ingreso = true"
+                        @blur="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.descripcion_ingreso = true"
+                        :class="ingresoToEdit._touched && ingresoToEdit._touched.descripcion_ingreso && ingresoToEdit.descripcion_ingreso.length > 250 ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"></textarea>
+                    <template x-if="errors.descripcion_ingreso">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_ingreso[0]"></p>
+                    </template>
+                    <small x-show="!errors.descripcion_ingreso" class="text-xs text-gray-500 block mt-1" :class="ingresoToEdit._touched && ingresoToEdit._touched.descripcion_ingreso && ingresoToEdit.descripcion_ingreso.length >= 250 ? 'text-red-500' : ''">Máximo 250 caracteres.</small>
                 </div>
             </div>
             </template>
@@ -900,37 +1082,82 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="id_proyecto_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="id_proyecto_fk_gasto" required
+                        @change="formGasto._touched.id_proyecto_fk_gasto = true"
+                        :class="formGasto._touched.id_proyecto_fk_gasto && !id_proyecto_fk_gasto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_proyecto_fk_gasto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_proyecto_fk_gasto[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_proyecto_fk_gasto" class="text-xs text-gray-500 block mt-1" :class="formGasto._touched.id_proyecto_fk_gasto && !id_proyecto_fk_gasto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="nombre_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" x-model="nombre_gasto" required maxlength="100"
+                        @input="formGasto._touched.nombre_gasto = true"
+                        @blur="formGasto._touched.nombre_gasto = true"
+                        :class="formGasto._touched.nombre_gasto && !nombre_gasto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.nombre_gasto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.nombre_gasto[0]"></p>
+                    </template>
+                    <small x-show="!errors.nombre_gasto" class="text-xs text-gray-500 block mt-1" :class="formGasto._touched && formGasto._touched.nombre_gasto && (nombre_gasto === '' || nombre_gasto.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="fecha_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="fecha_gasto" required
+                        @change="formGasto._touched.fecha_gasto = true"
+                        :class="formGasto._touched.fecha_gasto && !fecha_gasto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha_gasto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_gasto[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_gasto" class="text-xs text-gray-500 block mt-1" :class="formGasto._touched.fecha_gasto && !fecha_gasto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="monto_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="monto_gasto" required
+                        @input="formGasto._touched.monto_gasto = true"
+                        @blur="formGasto._touched.monto_gasto = true"
+                        :class="formGasto._touched.monto_gasto && !monto_gasto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.monto_gasto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.monto_gasto[0]"></p>
+                    </template>
+                    <small x-show="!errors.monto_gasto" class="text-xs text-gray-500 block mt-1" :class="formGasto._touched.monto_gasto && !monto_gasto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="id_categoria_fk_gasto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="id_categoria_fk_gasto" required
+                        @change="formGasto._touched.id_categoria_fk_gasto = true"
+                        :class="formGasto._touched.id_categoria_fk_gasto && !id_categoria_fk_gasto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => c.tipo_categoria && c.tipo_categoria.toLowerCase() === 'gasto')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_categoria_fk_gasto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_categoria_fk_gasto[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_categoria_fk_gasto" class="text-xs text-gray-500 block mt-1" :class="formGasto._touched.id_categoria_fk_gasto && !id_categoria_fk_gasto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="descripcion_gasto" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea x-model="descripcion_gasto" rows="3" maxlength="255"
+                        @input="formGasto._touched.descripcion_gasto = true"
+                        @blur="formGasto._touched.descripcion_gasto = true"
+                        :class="formGasto._touched.descripcion_gasto && descripcion_gasto.length > 250 ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"></textarea>
+                    <template x-if="errors.descripcion_gasto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion_gasto[0]"></p>
+                    </template>
+                    <small x-show="!errors.descripcion_gasto" class="text-xs text-gray-500 block mt-1" :class="formGasto._touched && formGasto._touched.descripcion_gasto && descripcion_gasto.length >= 250 ? 'text-red-500' : ''">Máximo 250 caracteres.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -962,37 +1189,82 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                     })(); }); }">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Proyecto</label>
-                    <select x-model="gastoToEdit.id_proyecto_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="gastoToEdit.id_proyecto_fk" required
+                        @change="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.id_proyecto_fk = true"
+                        :class="gastoToEdit._touched && gastoToEdit._touched.id_proyecto_fk && !gastoToEdit.id_proyecto_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="proyecto in catalogoProyectos" :key="proyecto.id_proyecto_pk">
                             <option :value="proyecto.id_proyecto_pk" x-text="proyecto.nombre_proyecto" :selected="gastoToEdit && (proyecto.id_proyecto_pk == (gastoToEdit.id_proyecto_fk || gastoToEdit.proyecto?.id_proyecto_pk))"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_proyecto_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_proyecto_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_proyecto_fk" class="text-xs text-gray-500 block mt-1" :class="gastoToEdit._touched && gastoToEdit._touched.id_proyecto_fk && !gastoToEdit.id_proyecto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" x-model="gastoToEdit.nombre" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" x-model="gastoToEdit.nombre" required maxlength="100"
+                        @input="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.nombre = true"
+                        @blur="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.nombre = true"
+                        :class="gastoToEdit._touched && gastoToEdit._touched.nombre && !gastoToEdit.nombre ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.nombre">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.nombre[0]"></p>
+                    </template>
+                    <small x-show="!errors.nombre" class="text-xs text-gray-500 block mt-1" :class="gastoToEdit._touched && gastoToEdit._touched.nombre && (gastoToEdit.nombre === '' || gastoToEdit.nombre.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
-                    <input type="date" x-model="gastoToEdit.fecha" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="date" x-model="gastoToEdit.fecha" required
+                        @change="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.fecha = true"
+                        :class="gastoToEdit._touched && gastoToEdit._touched.fecha && !gastoToEdit.fecha ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha" class="text-xs text-gray-500 block mt-1" :class="gastoToEdit._touched && gastoToEdit._touched.fecha && !gastoToEdit.fecha ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="gastoToEdit.monto" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" step="0.01" x-model="gastoToEdit.monto" required
+                        @input="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.monto = true"
+                        @blur="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.monto = true"
+                        :class="gastoToEdit._touched && gastoToEdit._touched.monto && !gastoToEdit.monto ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.monto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.monto[0]"></p>
+                    </template>
+                    <small x-show="!errors.monto" class="text-xs text-gray-500 block mt-1" :class="gastoToEdit._touched && gastoToEdit._touched.monto && !gastoToEdit.monto ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Categoría</label>
-                    <select x-model="gastoToEdit.id_categoria_fk" required class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select x-model="gastoToEdit.id_categoria_fk" required
+                        @change="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.id_categoria_fk = true"
+                        :class="gastoToEdit._touched && gastoToEdit._touched.id_categoria_fk && !gastoToEdit.id_categoria_fk ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                         <option value="">Seleccione...</option>
                         <template x-for="cat in catalogoCategorias.filter(c => c.tipo_categoria && c.tipo_categoria.toLowerCase() === 'gasto')" :key="cat.id_categoria_pk">
                             <option :value="cat.id_categoria_pk" x-text="cat.nombre_categoria" :selected="gastoToEdit && (cat.id_categoria_pk == (gastoToEdit.id_categoria_fk || gastoToEdit.categoria?.id_categoria_pk))"></option>
                         </template>
                     </select>
+                    <template x-if="errors.id_categoria_fk">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.id_categoria_fk[0]"></p>
+                    </template>
+                    <small x-show="!errors.id_categoria_fk" class="text-xs text-gray-500 block mt-1" :class="gastoToEdit._touched && gastoToEdit._touched.id_categoria_fk && !gastoToEdit.id_categoria_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea x-model="gastoToEdit.descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea x-model="gastoToEdit.descripcion" rows="3" maxlength="255"
+                        @input="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.descripcion = true"
+                        @blur="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.descripcion = true"
+                        :class="gastoToEdit._touched && gastoToEdit._touched.descripcion && gastoToEdit.descripcion.length > 250 ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"></textarea>
+                    <template x-if="errors.descripcion">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.descripcion[0]"></p>
+                    </template>
+                    <small x-show="!errors.descripcion" class="text-xs text-gray-500 block mt-1" :class="gastoToEdit._touched && gastoToEdit._touched.descripcion && gastoToEdit.descripcion.length >= 250 ? 'text-red-500' : ''">Máximo 250 caracteres.</small>
                 </div>
             </div>
             </template>

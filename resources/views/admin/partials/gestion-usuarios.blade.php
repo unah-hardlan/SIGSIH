@@ -81,7 +81,7 @@
             <template x-if="!loading && users.length === 0">
                 <div class="p-8 text-center text-gray-500 dark:text-gray-400">Sin resultados</div>
             </template>
-                            <template x-for="u in paginatedUsuarios()" :key="u.id">
+            <template x-for="u in paginatedUsuarios()" :key="u.id">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                     <div class="flex justify-between items-start">
                         <div>
@@ -150,30 +150,150 @@
     <div>
         <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Agregar Usuario" submitLabel="Guardar" formId="formCrear" maxWidth="max-w-xl">
              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {{-- Contenido del modal de crear, sin cambios, ya que se vincula a tu objeto 'createForm' --}}
-                <div><label class="block text-sm">Nombre</label><input type="text" x-model="createForm.nombre_usuario" class="mt-1 w-full border rounded px-2 py-1" required></div>
-                <div><label class="block text-sm">Usuario</label><input type="text" x-model="createForm.usuario" class="mt-1 w-full border rounded px-2 py-1" required></div>
-                <div class="sm:col-span-2"><label class="block text-sm">Correo</label><input type="email" x-model="createForm.correo_electronico" class="mt-1 w-full border rounded px-2 py-1" required></div>
-                <div><label class="block text-sm">Estado</label><select x-model="createForm.estado_usuario" class="mt-1 w-full border rounded px-2 py-1"><option value="ACTIVO">ACTIVO</option><option value="INACTIVO">INACTIVO</option><option value="BLOQUEADO">BLOQUEADO</option></select></div>
-                <div><label class="block text-sm">Rol</label><select x-model="createForm.id_rol_fk" required class="mt-1 w-full border rounded px-2 py-1"><option value="" disabled selected>Seleccione...</option><template x-for="r in roles" :key="r.id"><option :value="r.id" x-text="r.rol"></option></template></select></div>
-                <div class="sm:col-span-2"><label class="block text-sm">Contraseña</label><input type="password" x-model="createForm.contrasena" minlength="8" class="mt-1 w-full border rounded px-2 py-1" required></div>
+                <div>
+                    <label class="block text-sm">Nombre</label>
+                    <input type="text" x-model="createForm.nombre_usuario" @click="$event.target.select()" @focus="$event.target.select()" @mouseup.prevent @blur="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true" @input="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true" :class="{'border-red-500': (createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50)}" class="mt-1 w-full border rounded px-2 py-1" required maxlength="50" autocomplete="off">
+                    <small :class="(createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 50 caracteres.</small>
+                </div>
+                <div>
+                    <label class="block text-sm">Usuario</label>
+                    <input type="text" x-model="createForm.usuario" @click="$event.target.select()" @focus="$event.target.select()" @mouseup.prevent @blur="createForm._touched = createForm._touched || {}; createForm._touched.usuario = true" @input="createForm._touched = createForm._touched || {}; createForm._touched.usuario = true" :class="{'border-red-500': (createForm._touched && createForm._touched.usuario) && (createForm.usuario === '' || createForm.usuario.length >= 50 || !/^[A-Z0-9_]+$/.test(createForm.usuario))}" class="mt-1 w-full border rounded px-2 py-1" required maxlength="50" autocomplete="off">
+                    <small :class="(createForm._touched && createForm._touched.usuario) && (createForm.usuario === '' || createForm.usuario.length >= 50 || !/^[A-Z0-9_]+$/.test(createForm.usuario)) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Solo mayúsculas, números y guiones bajos. Máximo 50 caracteres. Debe ser único.</small>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm">Correo</label>
+                    <input type="email" x-model="createForm.correo_electronico" @click="$event.target.select()" @focus="$event.target.select()" @mouseup.prevent @blur="createForm._touched = createForm._touched || {}; createForm._touched.correo_electronico = true" @input="createForm._touched = createForm._touched || {}; createForm._touched.correo_electronico = true" :class="{'border-red-500': (createForm._touched && createForm._touched.correo_electronico) && (createForm.correo_electronico === '' || createForm.correo_electronico.length >= 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.correo_electronico))}" class="mt-1 w-full border rounded px-2 py-1" required maxlength="100" autocomplete="off">
+                    <small :class="(createForm._touched && createForm._touched.correo_electronico) && (createForm.correo_electronico === '' || createForm.correo_electronico.length >= 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.correo_electronico)) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Formato de email válido. Máximo 100 caracteres. Debe ser único.</small>
+                </div>
+                <div>
+                    <label class="block text-sm">Estado</label>
+                    <select x-model="createForm.estado_usuario" @change="createForm._touched = createForm._touched || {}; createForm._touched.estado_usuario = true" :class="{'border-red-500': (createForm._touched && createForm._touched.estado_usuario) && createForm.estado_usuario && createForm.estado_usuario.length >= 20}" class="mt-1 w-full border rounded px-2 py-1">
+                        <option value="ACTIVO">ACTIVO</option>
+                        <option value="INACTIVO">INACTIVO</option>
+                        <option value="BLOQUEADO">BLOQUEADO</option>
+                    </select>
+                    <small :class="(createForm._touched && createForm._touched.estado_usuario) && createForm.estado_usuario && createForm.estado_usuario.length >= 20 ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Opcional. Máximo 20 caracteres.</small>
+                </div>
+                <div>
+                    <label class="block text-sm">Rol</label>
+                    <select x-model="createForm.id_rol_fk" @change="createForm._touched = createForm._touched || {}; createForm._touched.id_rol_fk = true" required :class="{'border-red-500': (createForm._touched && createForm._touched.id_rol_fk) && !createForm.id_rol_fk}" class="mt-1 w-full border rounded px-2 py-1">
+                        <option value="" disabled selected>Seleccione...</option>
+                        <template x-for="r in roles" :key="r.id"><option :value="r.id" x-text="r.rol"></option></template>
+                    </select>
+                    <small :class="(createForm._touched && createForm._touched.id_rol_fk) && !createForm.id_rol_fk ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Debe seleccionar un rol válido.</small>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm">Contraseña</label>
+                    <input type="password" x-model="createForm.contrasena" @blur="createForm._touched = createForm._touched || {}; createForm._touched.contrasena = true" @input="createForm._touched = createForm._touched || {}; createForm._touched.contrasena = true" :class="{'border-red-500': (createForm._touched && createForm._touched.contrasena) && (createForm.contrasena === '' || createForm.contrasena.length < 8 || createForm.contrasena.length >= 100 || !(window.getAdminPasswordRegex ? window.getAdminPasswordRegex().test(createForm.contrasena) : /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(createForm.contrasena))) }" minlength="8" maxlength="100" class="mt-1 w-full border rounded px-2 py-1" required autocomplete="off">
+                    <small :class="(createForm._touched && createForm._touched.contrasena) && (createForm.contrasena === '' || createForm.contrasena.length < 8 || createForm.contrasena.length >= 100 || !(window.getAdminPasswordRegex ? window.getAdminPasswordRegex().test(createForm.contrasena) : /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(createForm.contrasena))) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Debe cumplir la estructura definida en Mantenimiento → Parámetros (fallback: mínimo 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos).</small>
+                </div>
                 <div class="sm:col-span-2 text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
         </x-admin.form-modal>
 
         <x-admin.edit-modal class="nunito-bold" modalName="isEditUserModalOpen" title="Editar Usuario" itemToEdit="userToEdit" formId="formEditar" maxWidth="max-w-xl">
              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {{-- Contenido del modal de editar, sin cambios, ya que se vincula a tu objeto 'editForm' --}}
-                <div><label class="block text-sm">Nombre</label><input type="text" x-model="editForm.nombre_usuario" class="mt-1 w-full border rounded px-2 py-1" required></div>
-                <div><label class="block text-sm">Usuario</label><input type="text" x-model="editForm.usuario" class="mt-1 w-full border rounded px-2 py-1 bg-gray-100" disabled></div>
-                <div class="sm:col-span-2"><label class="block text-sm">Correo</label><input type="email" x-model="editForm.correo_electronico" class="mt-1 w-full border rounded px-2 py-1" required></div>
-                <div><label class="block text-sm">Estado</label><select x-model="editForm.estado_usuario" class="mt-1 w-full border rounded px-2 py-1"><option value="ACTIVO">ACTIVO</option><option value="INACTIVO">INACTIVO</option><option value="BLOQUEADO">BLOQUEADO</option></select></div>
-                <div><label class="block text-sm">Rol</label><select x-model="editForm.id_rol_fk" class="mt-1 w-full border rounded px-2 py-1"><template x-for="r in roles" :key="'er-'+r.id"><option :value="r.id" x-text="r.rol"></option></template></select></div>
-                <div class="sm:col-span-2"><label class="block text-sm">Nueva Contraseña (opcional)</label><input type="password" x-model="editForm.contrasena" minlength="8" class="mt-1 w-full border rounded px-2 py-1" placeholder="Dejar en blanco"></div>
+                <div>
+                    <label class="block text-sm">Nombre</label>
+                    <input type="text" x-model="editForm.nombre_usuario" @click="$event.target.select()" @focus="$event.target.select()" @mouseup.prevent @blur="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true" @input="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true" :class="{'border-red-500': (editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50)}" class="mt-1 w-full border rounded px-2 py-1" required maxlength="50">
+                    <small :class="(editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 50 caracteres.</small>
+                </div>
+                <div>
+                    <label class="block text-sm">Usuario</label>
+                    <input type="text" x-model="editForm.usuario" class="mt-1 w-full border rounded px-2 py-1 bg-gray-100" disabled>
+                    <small :class="(editForm._touched && editForm._touched.usuario) && (editForm.usuario === '' || editForm.usuario.length >= 50 || !/^[A-Z0-9_]+$/.test(editForm.usuario)) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Solo mayúsculas, números y guiones bajos. Máximo 50 caracteres. Debe ser único.</small>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm">Correo</label>
+                    <input type="email" x-model="editForm.correo_electronico" @click="$event.target.select()" @focus="$event.target.select()" @mouseup.prevent @blur="editForm._touched = editForm._touched || {}; editForm._touched.correo_electronico = true" @input="editForm._touched = editForm._touched || {}; editForm._touched.correo_electronico = true" :class="{'border-red-500': (editForm._touched && editForm._touched.correo_electronico) && (editForm.correo_electronico === '' || editForm.correo_electronico.length >= 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.correo_electronico))}" class="mt-1 w-full border rounded px-2 py-1" required maxlength="100">
+                    <small :class="(editForm._touched && editForm._touched.correo_electronico) && (editForm.correo_electronico === '' || editForm.correo_electronico.length >= 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.correo_electronico)) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Formato de email válido. Máximo 100 caracteres. Debe ser único.</small>
+                </div>
+                <div>
+                    <label class="block text-sm">Estado</label>
+                    <select x-model="editForm.estado_usuario" @change="editForm._touched = editForm._touched || {}; editForm._touched.estado_usuario = true" :class="{'border-red-500': (editForm._touched && editForm._touched.estado_usuario) && editForm.estado_usuario && editForm.estado_usuario.length >= 20}" class="mt-1 w-full border rounded px-2 py-1">
+                        <option value="ACTIVO">ACTIVO</option>
+                        <option value="INACTIVO">INACTIVO</option>
+                        <option value="BLOQUEADO">BLOQUEADO</option>
+                    </select>
+                    <small :class="(editForm._touched && editForm._touched.estado_usuario) && editForm.estado_usuario && editForm.estado_usuario.length >= 20 ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Opcional. Máximo 20 caracteres.</small>
+                </div>
+                <div>
+                    <label class="block text-sm">Rol</label>
+                    <select x-model="editForm.id_rol_fk" @change="editForm._touched = editForm._touched || {}; editForm._touched.id_rol_fk = true" :class="{'border-red-500': (editForm._touched && editForm._touched.id_rol_fk) && !editForm.id_rol_fk}" class="mt-1 w-full border rounded px-2 py-1">
+                        <template x-for="r in roles" :key="'er-'+r.id"><option :value="r.id" x-text="r.rol"></option></template>
+                    </select>
+                    <small :class="(editForm._touched && editForm._touched.id_rol_fk) && !editForm.id_rol_fk ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Opcional. Debe seleccionar un rol válido.</small>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-sm">Nueva Contraseña (opcional)</label>
+                    <input type="password" x-model="editForm.contrasena" @blur="editForm._touched = editForm._touched || {}; editForm._touched.contrasena = true" @input="editForm._touched = editForm._touched || {}; editForm._touched.contrasena = true" :class="{'border-red-500': (editForm._touched && editForm._touched.contrasena) && (editForm.contrasena && (editForm.contrasena.length < 8 || editForm.contrasena.length >= 100 || !(window.getAdminPasswordRegex ? window.getAdminPasswordRegex().test(editForm.contrasena) : /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(editForm.contrasena))) )}" minlength="8" maxlength="100" class="mt-1 w-full border rounded px-2 py-1" placeholder="Dejar en blanco">
+                    <small :class="(editForm._touched && editForm._touched.contrasena) && (editForm.contrasena && (editForm.contrasena.length < 8 || editForm.contrasena.length >= 100 || !(window.getAdminPasswordRegex ? window.getAdminPasswordRegex().test(editForm.contrasena) : /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(editForm.contrasena)))) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Opcional. Si se proporciona, debe cumplir la estructura definida en Mantenimiento → Parámetros (fallback: mínimo 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos).</small>
+                </div>
                 <div class="sm:col-span-2 text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
         </x-admin.edit-modal>
 
         <x-admin.confirmation-modal class="nunito-bold" modalName="showDeleteModal" title="Confirmar Inactivación" itemToDelete="userToInactivate" itemNameProperty="nombre_usuario" message="¿Seguro que deseas inactivar al usuario" />
     </div>
+
+<!-- Helper script: attempt to read admin password structure from mantenimiento-general input and return a RegExp.
+     Assumption: the `adminPassword` input may contain a RegExp string (with or without slashes) that can be used to construct one.
+     If not present or invalid, falls back to default policy regex. -->
+<script>
+window.getAdminPasswordRegex = function(){
+    // If we already computed it (from server or DOM), return cached
+    if(window._adminPasswordRegex) return window._adminPasswordRegex;
+
+    function buildRegexFromValue(v){
+        if(!v) return null;
+        v = v.toString().trim();
+        // regex literal
+        if(v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length-1) === '/'){
+            try{ return new RegExp(v.slice(1, -1)); }catch(e){}
+        }
+        // obvious regex tokens -> try
+        if(/[\\^\[\]()+*?.|]/.test(v)){
+            try{ return new RegExp(v); }catch(e){}
+        }
+        // infer from example password
+        var lookaheads = [];
+        if(/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
+        if(/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
+        if(/\d/.test(v)) lookaheads.push('(?=.*\\d)');
+        if(/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
+        if(lookaheads.length > 0){
+            var minLen = Math.max(8, v.length);
+            var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
+            try{ return new RegExp(pattern); }catch(e){}
+        }
+        return null;
+    }
+
+    try{
+        // 1) Try to read from DOM (if maintenance panel is present in same page)
+        var el = document.querySelector('input[x-model="adminPassword"]');
+        if(el && el.value){
+            var r = buildRegexFromValue(el.value);
+            if(r){ window._adminPasswordRegex = r; return r; }
+        }
+    }catch(e){}
+
+    // 2) Try to fetch server settings asynchronously and cache the regex for future calls
+    try{
+        fetch('/api-web/system-settings', { credentials: 'same-origin' }).then(function(res){
+            if(!res.ok) return null;
+            return res.json();
+        }).then(function(data){
+            if(!data) return;
+            var v = data.adminPassword || data.admin_password || data.admin_password_regex || null;
+            var r = buildRegexFromValue(v);
+            if(r) window._adminPasswordRegex = r;
+        }).catch(function(){});
+    }catch(e){}
+
+    // 3) Default fallback while async fetch completes
+    window._adminPasswordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
+    return window._adminPasswordRegex;
+};
+</script>
 </div>

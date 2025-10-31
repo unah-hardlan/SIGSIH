@@ -46,9 +46,9 @@
 
                     <div class="mb-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Correo electrónico</label>
-                        <input type="email" name="email" x-model="email" required
+                        <input type="email" name="email" x-model="email" required disabled aria-disabled="true" tabindex="-1"
                             @input="clearFieldError('email')"
-                            class="auth-input w-full px-3 py-2 rounded border transition-colors bg-gray-100 text-gray-800 nunito-regular text-xs"
+                            class="auth-input w-full px-3 py-2 rounded border transition-colors bg-gray-100 text-gray-800 nunito-regular text-xs cursor-not-allowed"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.email || (email && !validateEmail(email)) }"
                             placeholder="tu@correo.com">
                         <!-- Error del servidor -->

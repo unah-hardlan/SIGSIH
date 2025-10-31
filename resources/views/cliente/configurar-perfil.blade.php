@@ -54,7 +54,7 @@
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                     <span class="font-medium text-blue-600 dark:text-blue-400">Clic para subir</span> o arrastra
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, WEBP (2MB máx)</p>
+                                <p class="text-xs text-gray-500 dark:text-white">PNG, JPG, WEBP (2MB máx)</p>
                             </label>
                         </div>
                         
@@ -244,7 +244,7 @@
     </div>
 
     <div class="text-center mt-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-gray-500 dark:text-white">
             ¿Necesitas ayuda? <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Contacta soporte</a>
         </p>
     </div>
