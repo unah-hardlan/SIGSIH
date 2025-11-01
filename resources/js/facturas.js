@@ -92,6 +92,16 @@ document.addEventListener("alpine:init", () => {
         clientes: [],
         cais: [],
 
+        // Paginación facturas
+        numbers: [], // alias esperado por el componente de paginación
+        currentPage: 1,
+        perPage: 10,
+
+        // Paginación detalles
+        numbersDetalles: [], // alias esperado por el componente de paginación para detalles
+        currentPageDetalles: 1,
+        perPageDetalles: 5,
+
         // Computed: facturas filtradas
         get filteredFacturas() {
             let result = this.facturas;
@@ -293,6 +303,27 @@ document.addEventListener("alpine:init", () => {
                             this.formErrorEdit = "";
                         }
                     });
+
+                // Watchers para paginación - resetear página cuando cambien filtros
+                this.$watch &&
+                    this.$watch("searchFacturas", () => {
+                        this.currentPage = 1;
+                    });
+
+                this.$watch &&
+                    this.$watch("estadoFacturaFiltro", () => {
+                        this.currentPage = 1;
+                    });
+
+                this.$watch &&
+                    this.$watch("clienteFacturaFiltro", () => {
+                        this.currentPage = 1;
+                    });
+
+                this.$watch &&
+                    this.$watch("ordenarPor", () => {
+                        this.currentPage = 1;
+                    });
             } catch (e) {
                 /* ignore */
             }
@@ -464,6 +495,9 @@ document.addEventListener("alpine:init", () => {
                 if (this.facturas.length > 0) {
                     console.log("Sample factura data:", this.facturas[0]);
                 }
+
+                // Sincronizar alias para paginación
+                this.numbers = this.facturas;
             } catch (error) {
                 console.error("Error fetching facturas:", error);
                 window.showToast &&
@@ -471,6 +505,63 @@ document.addEventListener("alpine:init", () => {
             } finally {
                 this.loadingFacturas = false;
             }
+        },
+
+        // Métodos de paginación
+        paginatedFacturas() {
+            const filtered = this.filteredFacturas;
+            return filtered.slice(
+                (this.currentPage - 1) * this.perPage,
+                this.currentPage * this.perPage
+            );
+        },
+
+        totalPages() {
+            return Math.ceil(this.filteredFacturas.length / this.perPage);
+        },
+
+        nextPage() {
+            if (this.currentPage < this.totalPages()) {
+                this.currentPage++;
+            }
+        },
+
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+
+        goToPage(page) {
+            this.currentPage = page;
+        },
+
+        // Métodos de paginación para detalles
+        paginatedDetalles() {
+            return this.detalles.slice(
+                (this.currentPageDetalles - 1) * this.perPageDetalles,
+                this.currentPageDetalles * this.perPageDetalles
+            );
+        },
+
+        totalPagesDetalles() {
+            return Math.ceil(this.detalles.length / this.perPageDetalles);
+        },
+
+        nextPageDetalles() {
+            if (this.currentPageDetalles < this.totalPagesDetalles()) {
+                this.currentPageDetalles++;
+            }
+        },
+
+        prevPageDetalles() {
+            if (this.currentPageDetalles > 1) {
+                this.currentPageDetalles--;
+            }
+        },
+
+        goToPageDetalles(page) {
+            this.currentPageDetalles = page;
         },
 
         async fetchEstadosFactura() {
@@ -723,6 +814,10 @@ document.addEventListener("alpine:init", () => {
                     : [];
 
                 console.log("Todos los detalles de factura:", this.detalles);
+
+                // Sincronizar alias para paginación de detalles
+                this.numbersDetalles = this.detalles;
+
                 // Recalcular subtotal/total cuando cambian los detalles mostrados
                 try {
                     this.recomputeFacturaTotals();
@@ -736,6 +831,7 @@ document.addEventListener("alpine:init", () => {
                         "error"
                     );
                 this.detalles = [];
+                this.numbersDetalles = []; // También limpiar el alias
             } finally {
                 this.loadingDetalles = false;
             }

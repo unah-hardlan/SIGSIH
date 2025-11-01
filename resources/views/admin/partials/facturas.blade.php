@@ -76,13 +76,13 @@
                                         class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                             </tr>
                         </template>
-                        <template x-if="!loadingFacturas && facturas.length === 0">
+                        <template x-if="!loadingFacturas && filteredFacturas.length === 0">
                             <tr>
                                 <td colspan="12" class="py-8 text-center text-gray-500 nunito-regular">Sin resultados
                                 </td>
                             </tr>
                         </template>
-                        <template x-for="factura in filteredFacturas" :key="factura.id || factura.id_factura_pk">
+                        <template x-for="factura in paginatedFacturas()" :key="factura.id || factura.id_factura_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular text-[10px]">
 
                                 <td class="py-2 px-4 text-[10px] break-words" x-text="factura.numero"></td>
@@ -128,10 +128,10 @@
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i
                             class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
                 </template>
-                <template x-if="!loadingFacturas && facturas.length === 0">
+                <template x-if="!loadingFacturas && filteredFacturas.length === 0">
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400">Sin resultados</div>
                 </template>
-                <template x-for="factura in facturas" :key="'card-'+(factura.id || factura.id_factura_pk)">
+                <template x-for="factura in paginatedFacturas()" :key="'card-'+(factura.id || factura.id_factura_pk)">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
@@ -173,6 +173,8 @@
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <x-pagination />
     </div>
 
     <!-- Modales Factura -->
@@ -427,7 +429,7 @@
                                     esta factura</td>
                             </tr>
                         </template>
-                        <template x-for="detalle in detalles" :key="detalle.id || detalle.id_detalle_factura_pk">
+                        <template x-for="detalle in paginatedDetalles()" :key="detalle.id || detalle.id_detalle_factura_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
 
                                 <td class="py-2 px-4" x-text="detalle.factura_numero || detalle.id_factura_fk"></td>
@@ -485,6 +487,19 @@
                 </div>
             </x-slot>
         </x-responsive-table>
+
+        <div x-data="{ 
+            get numbers() { return numbersDetalles; },
+            get currentPage() { return currentPageDetalles; },
+            set currentPage(page) { currentPageDetalles = page; },
+            get perPage() { return perPageDetalles; },
+            totalPages: () => totalPagesDetalles(),
+            nextPage: () => nextPageDetalles(),
+            prevPage: () => prevPageDetalles(),
+            goToPage: (page) => goToPageDetalles(page)
+        }">
+            <x-pagination />
+        </div>
     </div>
 
     <!-- Modal Nuevo Detalle Factura -->
