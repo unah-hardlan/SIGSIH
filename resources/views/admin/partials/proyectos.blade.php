@@ -947,9 +947,10 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="monto_ingreso" required
-                        @input="formIngreso._touched.monto_ingreso = true"
-                        @blur="formIngreso._touched.monto_ingreso = true"
+                    <input type="text" inputmode="decimal" autocomplete="off" required
+                        x-init="$nextTick(() => { if (monto_ingreso) { try { var v = monto_ingreso.toString(); var parts = v.split('.'); var int = (parts[0]||'').replace(/\B(?=(\d{3})+(?!\d))/g, ','); var dec = parts[1] ? parts[1].slice(0,2) : ''; if(int === '' && dec){ int = '0'; } $el.value = int + (dec ? '.'+dec : ''); } catch(e){} } })"
+                        @input="formIngreso._touched.monto_ingreso = true; let raw=$event.target.value; let hasDot = raw.includes('.'); let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && (dec !== '' || hasDot)){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : ''); $event.target.value = formatted; monto_ingreso = int + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : '');"
+                        @blur="formIngreso._touched.monto_ingreso = true; let raw=$event.target.value; let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && dec !== undefined && dec !== ''){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + ((dec !== undefined && dec !== '') ? '.'+dec : ''); $event.target.value = formatted; monto_ingreso = int + ((dec !== undefined && dec !== '') ? '.'+dec : '');"
                         :class="formIngreso._touched.monto_ingreso && !monto_ingreso ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                     <template x-if="errors.monto_ingreso">
@@ -1033,9 +1034,10 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="ingresoToEdit.monto_ingreso" required
-                        @input="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.monto_ingreso = true"
-                        @blur="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.monto_ingreso = true"
+                    <input type="text" inputmode="decimal" autocomplete="off" required
+                        x-init="$nextTick(() => { if (ingresoToEdit && ingresoToEdit.monto_ingreso) { try { var v = ingresoToEdit.monto_ingreso.toString(); var parts = v.split('.'); var int = (parts[0]||'').replace(/\B(?=(\d{3})+(?!\d))/g, ','); var dec = parts[1] ? parts[1].slice(0,2) : ''; if(int === '' && dec){ int = '0'; } $el.value = int + (dec ? '.'+dec : ''); } catch(e){} } })"
+                        @input="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.monto_ingreso = true; let raw=$event.target.value; let hasDot = raw.includes('.'); let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && (dec !== '' || hasDot)){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : ''); $event.target.value = formatted; ingresoToEdit.monto_ingreso = int + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : '');"
+                        @blur="ingresoToEdit._touched = ingresoToEdit._touched || {}; ingresoToEdit._touched.monto_ingreso = true; let raw=$event.target.value; let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && dec !== undefined && dec !== ''){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + ((dec !== undefined && dec !== '') ? '.'+dec : ''); $event.target.value = formatted; ingresoToEdit.monto_ingreso = int + ((dec !== undefined && dec !== '') ? '.'+dec : '');"
                         :class="ingresoToEdit._touched && ingresoToEdit._touched.monto_ingreso && !ingresoToEdit.monto_ingreso ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                     <template x-if="errors.monto_ingreso">
@@ -1121,9 +1123,10 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="monto_gasto" required
-                        @input="formGasto._touched.monto_gasto = true"
-                        @blur="formGasto._touched.monto_gasto = true"
+                    <input type="text" inputmode="decimal" autocomplete="off" required
+                        x-init="$nextTick(() => { if (monto_gasto) { try { var v = monto_gasto.toString(); var parts = v.split('.'); var int = (parts[0]||'').replace(/\B(?=(\d{3})+(?!\d))/g, ','); var dec = parts[1] ? parts[1].slice(0,2) : ''; if(int === '' && dec){ int = '0'; } $el.value = int + (dec ? '.'+dec : ''); } catch(e){} } })"
+                        @input="formGasto._touched.monto_gasto = true; let raw=$event.target.value; let hasDot = raw.includes('.'); let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && (dec !== '' || hasDot)){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : ''); $event.target.value = formatted; monto_gasto = int + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : '');"
+                        @blur="formGasto._touched.monto_gasto = true; let raw=$event.target.value; let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && dec !== undefined && dec !== ''){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + ((dec !== undefined && dec !== '') ? '.'+dec : ''); $event.target.value = formatted; monto_gasto = int + ((dec !== undefined && dec !== '') ? '.'+dec : '');"
                         :class="formGasto._touched.monto_gasto && !monto_gasto ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                     <template x-if="errors.monto_gasto">
@@ -1228,9 +1231,10 @@ x-effect="if (ingresoToEdit && isIngresoEditModalOpen) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Monto</label>
-                    <input type="number" step="0.01" x-model="gastoToEdit.monto" required
-                        @input="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.monto = true"
-                        @blur="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.monto = true"
+                    <input type="text" inputmode="decimal" autocomplete="off" required
+                        x-init="$nextTick(() => { if (gastoToEdit && gastoToEdit.monto) { try { var v = gastoToEdit.monto.toString(); var parts = v.split('.'); var int = (parts[0]||'').replace(/\B(?=(\d{3})+(?!\d))/g, ','); var dec = parts[1] ? parts[1].slice(0,2) : ''; if(int === '' && dec){ int = '0'; } $el.value = int + (dec ? '.'+dec : ''); } catch(e){} } })"
+                    @input="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.monto = true; let raw=$event.target.value; let hasDot = raw.includes('.'); let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && (dec !== '' || hasDot)){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : ''); $event.target.value = formatted; gastoToEdit.monto = int + (dec !== undefined ? (dec !== '' ? '.'+dec : (hasDot ? '.' : '')) : '');"
+                     @blur="gastoToEdit._touched = gastoToEdit._touched || {}; gastoToEdit._touched.monto = true; let raw=$event.target.value; let v = raw.replace(/,/g,'').replace(/[^\d.]/g,''); const parts = v.split('.'); let int = parts[0] || ''; let dec = (parts[1] !== undefined) ? parts[1].slice(0,2) : undefined; int = int.replace(/^0+(?=\d)/,''); if(int === '' && dec !== undefined && dec !== ''){ int = '0'; } const formatted = (int ? int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '') + ((dec !== undefined && dec !== '') ? '.'+dec : ''); $event.target.value = formatted; gastoToEdit.monto = int + ((dec !== undefined && dec !== '') ? '.'+dec : '');"
                         :class="gastoToEdit._touched && gastoToEdit._touched.monto && !gastoToEdit.monto ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                     <template x-if="errors.monto">

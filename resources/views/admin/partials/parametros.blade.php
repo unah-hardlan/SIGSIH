@@ -145,7 +145,7 @@
                            class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
                            required
                            autocomplete="off">
-                    <small :class="(createForm._touched && createForm._touched.parametro) && (createForm.parametro === '' || createForm.parametro.length >= 50) ? 'text-red-500' : 'text-gray-500'" class="text-xs">Requerido. Máximo 50 caracteres.</small>
+                    <small :class="(createForm._touched && createForm._touched.parametro) && (createForm.parametro === '' || createForm.parametro.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 50 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Valor</label>
@@ -158,7 +158,7 @@
                            class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
                            required
                            autocomplete="off">
-                    <small :class="(createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
+                    <small :class="(createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div class="text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
@@ -181,7 +181,7 @@
                            maxlength="100"
                            class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
                            required>
-                    <small :class="(editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
+                    <small :class="(editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div class="text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
