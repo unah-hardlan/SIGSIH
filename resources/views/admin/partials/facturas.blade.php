@@ -178,6 +178,12 @@
     <!-- Modales Factura -->
     <x-admin.form-modal class="nunito-bold" modalName="isFacturaModalOpen" title="Nueva Factura"
         submitLabel="Guardar Factura" maxWidth="max-w-2xl" formId="formFactura">
+            <template x-if="formError">
+                <div class="mb-3 p-3 rounded border border-red-300 bg-red-50 text-red-700 text-sm nunito-regular">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span x-text="formError"></span>
+                </div>
+            </template>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {{-- N° de Factura se genera automáticamente --}}
             <div>
@@ -186,6 +192,9 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     :class="formFactura._touched && formFactura._touched.fecha && !$refs.fecha_factura.value ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.fecha && !$refs.fecha_factura.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errors && errors.fecha">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errors.fecha[0]"></small>
+                </template>
             </div>
             {{-- OC provista por el cliente (campo editable) --}}
             <div>
@@ -195,6 +204,9 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
                     :class="formFactura._touched && formFactura._touched.oc && (oc === '' || (oc && oc.length >= 100)) ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.oc && (oc === '' || (oc && oc.length >= 100)) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                <template x-if="errors && errors.oc">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errors.oc[0]"></small>
+                </template>
             </div>
             <!-- Impuesto ahora se calcula automáticamente (15%) y no es editable en el modal de creación -->
             <div>
@@ -211,6 +223,9 @@
                     </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.estado && !$refs.estado_factura_id.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errors && errors.id_estado_factura_fk">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errors.id_estado_factura_fk[0]"></small>
+                </template>
             </div>
             <div>
                 <label for="cai_factura" class="block text-sm font-medium text-gray-700 nunito-bold">CAI</label>
@@ -219,11 +234,25 @@
                     :class="formFactura._touched && formFactura._touched.cai && !$refs.cai_factura.value ? 'border-red-500' : ''">
                     <option value="" class="nunito-regular">Seleccione un CAI</option>
                     <template x-for="cai in cais" :key="cai.id || cai.id_cai_pk">
-                        <option :value="cai.id || cai.id_cai_pk" x-text="cai.codigo" class="nunito-regular">
-                        </option>
+                        <option :value="cai.id || cai.id_cai_pk" :disabled="cai._usable === false" x-text="cai._option_label || cai.codigo" class="nunito-regular"></option>
                     </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.cai && !$refs.cai_factura.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errors && errors.id_cai_fk">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errors.id_cai_fk[0]"></small>
+                </template>
+                <!-- Ayuda de CAI: vista previa del próximo número o advertencia -->
+                <template x-if="$refs.cai_factura && $refs.cai_factura.value">
+                    <div class="mt-1">
+                        <template x-if="(cais.find(c => (c.id || c.id_cai_pk) == $refs.cai_factura.value)?._usable) === false">
+                            <small class="block text-xs text-red-600">Este CAI no se puede usar (vencido/agotado/fecha vencida).</small>
+                        </template>
+                        <template x-if="(cais.find(c => (c.id || c.id_cai_pk) == $refs.cai_factura.value)?._usable) === true">
+                            <small class="block text-xs text-gray-500">Formato número: <span>FAC-YYYYMMDD-ID</span></small>
+                            <small class="block text-xs text-gray-500">Siguiente consecutivo CAI: <span x-text="cais.find(c => (c.id || c.id_cai_pk) == $refs.cai_factura.value)?._next_cai_consecutivo ?? '—'"></span></small>
+                        </template>
+                    </div>
+                </template>
             </div>
             <div>
                 <label for="cliente_id" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
@@ -238,12 +267,21 @@
                     </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.cliente && !$refs.cliente_id.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errors && errors.id_cliente_fk">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errors.id_cliente_fk[0]"></small>
+                </template>
             </div>
         </div>
     </x-admin.form-modal>
 
     <x-admin.edit-modal class="nunito-bold" modalName="isEditFacturaModalOpen" title="Editar Factura"
         itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditFactura">
+        <template x-if="formErrorEdit">
+            <div class="mb-3 p-3 rounded border border-red-300 bg-red-50 text-red-700 text-sm nunito-regular">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span x-text="formErrorEdit"></span>
+            </div>
+        </template>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {{-- N° de Factura se genera automáticamente; no editable en modal --}}
             <div>
@@ -253,6 +291,9 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     :class="formEditFactura._touched && formEditFactura._touched.fecha && !$refs.edit_fecha_factura.value ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.fecha && !$refs.edit_fecha_factura.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errorsEdit && errorsEdit.fecha">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.fecha[0]"></small>
+                </template>
             </div>
             {{-- OC provista por el cliente (editable) --}}
             <div>
@@ -262,6 +303,9 @@
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
                     :class="formEditFactura._touched && formEditFactura._touched.oc && (itemToEdit.oc === '' || (itemToEdit.oc && itemToEdit.oc.length >= 100)) ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.oc && (itemToEdit.oc === '' || (itemToEdit.oc && itemToEdit.oc.length >= 100)) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                <template x-if="errorsEdit && errorsEdit.oc">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.oc[0]"></small>
+                </template>
             </div>
             <!-- Impuesto se calcula automáticamente (15%) y no es editable desde el modal de edición -->
             <!-- Descuento field removed from Editar Factura modal -->
@@ -281,6 +325,9 @@
                     </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.estado && !$refs.edit_estado_factura_id.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errorsEdit && errorsEdit.id_estado_factura_fk">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.id_estado_factura_fk[0]"></small>
+                </template>
             </div>
             <div>
                 <label for="edit_cai_factura" class="block text-sm font-medium text-gray-700 nunito-bold">CAI</label>
@@ -291,11 +338,27 @@
                     <template x-for="cai in cais" :key="cai.id || cai.id_cai_pk">
                         <option :value="cai.id || cai.id_cai_pk"
                             :selected="(itemToEdit?.cai?.id || itemToEdit?.id_cai_fk) == (cai.id || cai.id_cai_pk)"
-                            x-text="cai.codigo" class="nunito-regular">
+                            :disabled="cai._usable === false"
+                            x-text="cai._option_label || cai.codigo" class="nunito-regular">
                         </option>
                     </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.cai && !$refs.edit_cai_factura.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errorsEdit && errorsEdit.id_cai_fk">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.id_cai_fk[0]"></small>
+                </template>
+                <!-- Ayuda de CAI (editar): vista previa del próximo número o advertencia -->
+                <template x-if="$refs.edit_cai_factura && $refs.edit_cai_factura.value">
+                    <div class="mt-1">
+                        <template x-if="(cais.find(c => (c.id || c.id_cai_pk) == $refs.edit_cai_factura.value)?._usable) === false">
+                            <small class="block text-xs text-red-600">Este CAI no se puede usar (vencido/agotado/fecha vencida).</small>
+                        </template>
+                        <template x-if="(cais.find(c => (c.id || c.id_cai_pk) == $refs.edit_cai_factura.value)?._usable) === true">
+                            <small class="block text-xs text-gray-500">Formato número: <span>FAC-YYYYMMDD-ID</span></small>
+                            <small class="block text-xs text-gray-500">Siguiente consecutivo CAI: <span x-text="cais.find(c => (c.id || c.id_cai_pk) == $refs.edit_cai_factura.value)?._next_cai_consecutivo ?? '—'"></span></small>
+                        </template>
+                    </div>
+                </template>
             </div>
             <div>
                 <label for="edit_cliente_id" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
@@ -311,6 +374,9 @@
                     </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.cliente && !$refs.edit_cliente_id.value ? 'text-red-500' : ''">Requerido.</small>
+                <template x-if="errorsEdit && errorsEdit.id_cliente_fk">
+                    <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.id_cliente_fk[0]"></small>
+                </template>
             </div>
         </div>
     </x-admin.edit-modal>
@@ -427,7 +493,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="id_factura_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Factura</label>
-                <select id="id_factura_fk" name="id_factura_fk" :disabled="currentFacturaFilter" @change="formDetalle._touched.factura = true"
+                <select id="id_factura_fk" name="id_factura_fk" x-model="id_factura_fk" :disabled="currentFacturaFilter" @change="formDetalle._touched.factura = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
                     :class="formDetalle._touched && formDetalle._touched.factura && !id_factura_fk ? 'border-red-500' : ''">
                     <option value="" class="nunito-regular">Seleccione una factura</option>
@@ -440,8 +506,8 @@
                 <small class="block mt-1 text-sm text-gray-500" :class="formDetalle._touched && formDetalle._touched.factura && !id_factura_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
-                <label for="id_servicio_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Servicio</label>
-                <select id="id_servicio_fk" name="id_servicio_fk" @change="formDetalle._touched.servicio = true"
+                <label for="id_servicio_fk" class="block text sm font-medium text-gray-700 nunito-bold">Servicio</label>
+                <select id="id_servicio_fk" name="id_servicio_fk" x-model="id_servicio_fk" @change="formDetalle._touched.servicio = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
                     :class="formDetalle._touched && formDetalle._touched.servicio && !id_servicio_fk ? 'border-red-500' : ''">
                     <option value="" class="nunito-regular">Seleccione un servicio</option>
@@ -454,7 +520,7 @@
             </div>
             <div>
                 <label for="descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                <input type="text" id="descripcion" name="descripcion" maxlength="255" @input="formDetalle._touched.descripcion = true" @blur="formDetalle._touched.descripcion = true"
+                <input type="text" id="descripcion" name="descripcion" x-model="descripcion" maxlength="255" @input="formDetalle._touched.descripcion = true" @blur="formDetalle._touched.descripcion = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     :class="formDetalle._touched && formDetalle._touched.descripcion && !descripcion ? 'border-red-500' : ''" autocomplete="off">
                 <small class="block mt-1 text-sm text-gray-500" :class="formDetalle._touched && formDetalle._touched.descripcion && (!descripcion || descripcion.length > 255) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
@@ -462,14 +528,14 @@
             <div>
                 <label for="precio_unitario" class="block text-sm font-medium text-gray-700 nunito-bold">Precio
                     Unitario</label>
-                <input type="number" step="0.01" id="precio_unitario" name="precio_unitario" @input="formDetalle._touched.precio = true" @blur="formDetalle._touched.precio = true"
+                <input type="number" step="0.01" id="precio_unitario" name="precio_unitario" x-model.number="precio_unitario" @input="formDetalle._touched.precio = true" @blur="formDetalle._touched.precio = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     :class="formDetalle._touched && formDetalle._touched.precio && !precio_unitario ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formDetalle._touched && formDetalle._touched.precio && !precio_unitario ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
-                <input type="number" id="cantidad" name="cantidad" @input="formDetalle._touched.cantidad = true" @blur="formDetalle._touched.cantidad = true"
+                <input type="number" id="cantidad" name="cantidad" x-model.number="cantidad" @input="formDetalle._touched.cantidad = true" @blur="formDetalle._touched.cantidad = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     :class="formDetalle._touched && formDetalle._touched.cantidad && !cantidad ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formDetalle._touched && formDetalle._touched.cantidad && !cantidad ? 'text-red-500' : ''">Requerido.</small>
@@ -478,19 +544,19 @@
             <div>
                 <label for="fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Servicio</label>
-                <input type="date" id="fecha_servicio" name="fecha_servicio" @input="formDetalle._touched.fecha = true" @blur="formDetalle._touched.fecha = true"
+                <input type="date" id="fecha_servicio" name="fecha_servicio" x-model="fecha_servicio" @input="formDetalle._touched.fecha = true" @blur="formDetalle._touched.fecha = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
                     :class="formDetalle._touched && formDetalle._touched.fecha && !fecha_servicio ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formDetalle._touched && formDetalle._touched.fecha && !fecha_servicio ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="horas" class="block text-sm font-medium text-gray-700 nunito-bold">Horas</label>
-                <input type="number" id="horas" name="horas"
+                <input type="number" id="horas" name="horas" x-model.number="horas"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
             <div>
                 <label for="descuento" class="block text-sm font-medium text-gray-700 nunito-bold">Descuento</label>
-                <input type="number" id="descuento" name="descuento"
+                <input type="number" id="descuento" name="descuento" x-model.number="descuento"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
             </div>
         </div>
@@ -503,9 +569,9 @@
             <div>
                 <label for="edit_id_factura_fk"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Factura</label>
-                <select id="edit_id_factura_fk" name="edit_id_factura_fk" :disabled="currentFacturaFilter" @change="formEditDetalle._touched.factura = true"
+                <select id="edit_id_factura_fk" name="edit_id_factura_fk" x-ref="edit_id_factura_fk" :disabled="currentFacturaFilter" @change="formEditDetalle._touched.factura = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
-                    :class="formEditDetalle._touched && formEditDetalle._touched.factura && !edit_id_factura_fk ? 'border-red-500' : ''">
+                    :class="formEditDetalle._touched && formEditDetalle._touched.factura && !$refs.edit_id_factura_fk.value ? 'border-red-500' : ''">
                     <option value="" class="nunito-regular">Seleccione una factura</option>
                     <template x-for="f in facturas" :key="f.id || f.id_factura_pk">
                         <option :value="f.id || f.id_factura_pk"
@@ -519,9 +585,9 @@
             <div>
                 <label for="edit_id_servicio_fk"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Servicio</label>
-                <select id="edit_id_servicio_fk" name="edit_id_servicio_fk" @change="formEditDetalle._touched.servicio = true"
+                <select id="edit_id_servicio_fk" name="edit_id_servicio_fk" x-ref="edit_id_servicio_fk" @change="formEditDetalle._touched.servicio = true"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
-                    :class="formEditDetalle._touched && formEditDetalle._touched.servicio && !edit_id_servicio_fk ? 'border-red-500' : ''">
+                    :class="formEditDetalle._touched && formEditDetalle._touched.servicio && !$refs.edit_id_servicio_fk.value ? 'border-red-500' : ''">
                     <option value="" class="nunito-regular">Seleccione un servicio</option>
                     <template x-for="s in servicios" :key="s.id_servicio_pk">
                         <option :value="s.id_servicio_pk"
@@ -534,35 +600,35 @@
             <div>
                 <label for="edit_fecha_servicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Servicio</label>
-                <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio" @input="formEditDetalle._touched.fecha = true" @blur="formEditDetalle._touched.fecha = true"
+                <input type="date" id="edit_fecha_servicio" name="edit_fecha_servicio" x-ref="edit_fecha_servicio" @input="formEditDetalle._touched.fecha = true" @blur="formEditDetalle._touched.fecha = true"
                     :value="detalleToEdit?.fecha_servicio || ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
-                    :class="formEditDetalle._touched && formEditDetalle._touched.fecha && !edit_fecha_servicio ? 'border-red-500' : ''">
+                    :class="formEditDetalle._touched && formEditDetalle._touched.fecha && !$refs.edit_fecha_servicio.value ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditDetalle._touched && formEditDetalle._touched.fecha && !edit_fecha_servicio ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_descripcion"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                <input type="text" id="edit_descripcion" name="edit_descripcion" maxlength="255" @input="formEditDetalle._touched.descripcion = true" @blur="formEditDetalle._touched.descripcion = true"
+                <input type="text" id="edit_descripcion" name="edit_descripcion" x-ref="edit_descripcion" maxlength="255" @input="formEditDetalle._touched.descripcion = true" @blur="formEditDetalle._touched.descripcion = true"
                     :value="detalleToEdit?.descripcion || ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
-                    :class="formEditDetalle._touched && formEditDetalle._touched.descripcion && (!edit_descripcion || edit_descripcion.length > 250) ? 'border-red-500' : ''">
+                    :class="formEditDetalle._touched && formEditDetalle._touched.descripcion && (!$refs.edit_descripcion.value || $refs.edit_descripcion.value.length > 250) ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditDetalle._touched && formEditDetalle._touched.descripcion && (!edit_descripcion || edit_descripcion.length > 250) ? 'text-red-500' : ''">Requerido. Máximo 250 caracteres.</small>
             </div>
             <div>
                 <label for="edit_precio_unitario" class="block text-sm font-medium text-gray-700 nunito-bold">Precio
                     Unitario</label>
-                <input type="number" step="0.01" id="edit_precio_unitario" name="edit_precio_unitario" @input="formEditDetalle._touched.precio = true" @blur="formEditDetalle._touched.precio = true"
+                <input type="number" step="0.01" id="edit_precio_unitario" name="edit_precio_unitario" x-ref="edit_precio_unitario" @input="formEditDetalle._touched.precio = true" @blur="formEditDetalle._touched.precio = true"
                     :value="detalleToEdit?.precio_unitario || 0"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
-                    :class="formEditDetalle._touched && formEditDetalle._touched.precio && !edit_precio_unitario ? 'border-red-500' : ''">
+                    :class="formEditDetalle._touched && formEditDetalle._touched.precio && !$refs.edit_precio_unitario.value ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditDetalle._touched && formEditDetalle._touched.precio && !edit_precio_unitario ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_cantidad" class="block text-sm font-medium text-gray-700 nunito-bold">Cantidad</label>
-                <input type="number" id="edit_cantidad" name="edit_cantidad" @input="formEditDetalle._touched.cantidad = true" @blur="formEditDetalle._touched.cantidad = true" :value="detalleToEdit?.cantidad || 0"
+                <input type="number" id="edit_cantidad" name="edit_cantidad" x-ref="edit_cantidad" @input="formEditDetalle._touched.cantidad = true" @blur="formEditDetalle._touched.cantidad = true" :value="detalleToEdit?.cantidad || 0"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
-                    :class="formEditDetalle._touched && formEditDetalle._touched.cantidad && !edit_cantidad ? 'border-red-500' : ''">
+                    :class="formEditDetalle._touched && formEditDetalle._touched.cantidad && !$refs.edit_cantidad.value ? 'border-red-500' : ''">
                 <small class="block mt-1 text-sm text-gray-500" :class="formEditDetalle._touched && formEditDetalle._touched.cantidad && !edit_cantidad ? 'text-red-500' : ''">Requerido.</small>
             </div>
 

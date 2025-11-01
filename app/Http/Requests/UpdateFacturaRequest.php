@@ -18,7 +18,7 @@ class UpdateFacturaRequest extends FormRequest
         return [
             'numero' => 'sometimes|required|string|max:20|unique:tbl_factura,numero,' . $this->route('factura')->id_factura_pk . ',id_factura_pk',
             'fecha' => 'sometimes|required|date',
-            'oc' => 'sometimes|nullable|string|max:20',
+            'oc' => 'sometimes|nullable|string|max:100',
             'subtotal' => 'sometimes|required|numeric|min:0',
             'impuesto' => 'sometimes|required|numeric|min:0',
             'total' => 'sometimes|required|numeric|min:0',
@@ -37,7 +37,7 @@ class UpdateFacturaRequest extends FormRequest
             'numero.max' => 'El número no puede exceder 20 caracteres',
             'fecha.required' => 'La fecha es obligatoria',
             'fecha.date' => 'La fecha debe ser válida',
-            'oc.max' => 'La OC no puede exceder 20 caracteres',
+            'oc.max' => 'La OC no puede exceder 100 caracteres',
             'subtotal.required' => 'El subtotal es obligatorio',
             'subtotal.numeric' => 'El subtotal debe ser numérico',
             'impuesto.required' => 'El impuesto es obligatorio',

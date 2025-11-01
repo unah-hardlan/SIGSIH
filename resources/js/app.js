@@ -1,6 +1,19 @@
 import "./bootstrap";
 import "./notifications";
 
+// Silenciar salida a consola en producción/por defecto
+// Habilitar únicamente si window.__ALLOW_CONSOLE__ === true (útil para depuración local)
+try {
+    if (!window.__ALLOW_CONSOLE__) {
+        const noop = () => {};
+        ["log", "info", "debug", "warn", "error"].forEach((m) => {
+            try {
+                console[m] = noop;
+            } catch (_) {}
+        });
+    }
+} catch (_) {}
+
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
 
