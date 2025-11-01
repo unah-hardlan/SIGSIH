@@ -133,7 +133,7 @@
                     <div class="p-8 text-center text-gray-500">No se encontraron solicitudes.</div>
                 </template>
                 <template x-for="sol in paginatedSolicitudes()" :key="'card-'+sol.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-white"
@@ -243,7 +243,7 @@
                     <div class="p-8 text-center text-gray-500">No se encontraron contactos.</div>
                 </template>
                 <template x-for="c in paginatedContactos()" :key="'card-c-'+c.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-white" x-text="c.tipo_contacto"></h3>

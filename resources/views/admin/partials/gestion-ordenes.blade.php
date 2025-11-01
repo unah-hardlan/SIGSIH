@@ -73,14 +73,14 @@
                                         class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                             </tr>
                         </template>
-                        <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
+                        <template x-if="!loadingOrdenes && paginatedOrdenes().length === 0">
                             <tr>
                                 {{-- CAMBIO: Se actualiza el colspan de 14 a 9 --}}
                                 <td colspan="9" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
                                     encontraron órdenes.</td>
                             </tr>
                         </template>
-                        <template x-for="orden in filteredOrdenes()" :key="orden.id">
+                        <template x-for="orden in paginatedOrdenes()" :key="orden.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero || '—'">
                                 </td>
@@ -132,10 +132,10 @@
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i
                             class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
                 </template>
-                <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
+                <template x-if="!loadingOrdenes && paginatedOrdenes().length === 0">
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400">No se encontraron órdenes.</div>
                 </template>
-                <template x-for="orden in filteredOrdenes()" :key="orden.id">
+                <template x-for="orden in paginatedOrdenes()" :key="orden.id">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div>
@@ -178,6 +178,9 @@
             </div>
         </x-slot>
     </x-responsive-table>
+
+    <!-- Paginación -->
+    <x-pagination />
 
     <!-- Modal Nueva Orden -->
     {{-- ... (El contenido de este modal no necesita cambios) ... --}}
@@ -269,7 +272,7 @@
                 <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" x-model="formOrden.fecha_inicio"
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_inicio = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_inicio = true)"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_inicio = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_inicio = true)"
-                    :class="(formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :class="((formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_inicio) || errors.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
@@ -284,7 +287,7 @@
                     x-model="formOrden.fecha_finalizacion"
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_finalizacion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_finalizacion = true)"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_finalizacion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_finalizacion = true)"
-                    :class="(formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :class="((formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_finalizacion) || errors.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
@@ -534,7 +537,7 @@
                     x-model="formOrden.fecha_inicio"
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_inicio = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_inicio = true)"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_inicio = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_inicio = true)"
-                    :class="(formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :class="((formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_inicio) || errors.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
@@ -549,7 +552,7 @@
                     x-model="formOrden.fecha_finalizacion"
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_finalizacion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_finalizacion = true)"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_finalizacion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_finalizacion = true)"
-                    :class="(formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :class="((formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_finalizacion) || errors.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>

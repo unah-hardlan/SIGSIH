@@ -1350,6 +1350,11 @@ if (typeof window !== "undefined") {
             tecnicosOptions: [],
 
             cotizacionesOptions: [],
+
+            // Pagination properties
+            numbers: [], // alias expected by pagination component
+            currentPage: 1,
+            perPage: 10,
             estadosOrdenOptions: [],
             loadingCatalogos: {
                 solicitudes: false,
@@ -2359,6 +2364,7 @@ if (typeof window !== "undefined") {
                     this.ordenes.forEach((orden) =>
                         this.ensureOrdenOptions(orden)
                     );
+                    this.numbers = this.ordenes; // Sincronizar para paginación
                     this.actualizarTecnicos();
                 } catch (error) {
                     console.error(error);
@@ -2729,6 +2735,27 @@ if (typeof window !== "undefined") {
                 if (!this.formOrden.id_cotizacion_fk) {
                     errs.id_cotizacion_fk = [requiredMsg];
                 }
+
+                // Validación de fechas: la fecha de inicio no debe ser mayor que la fecha de finalización
+                if (
+                    this.formOrden.fecha_inicio &&
+                    this.formOrden.fecha_finalizacion
+                ) {
+                    const fechaInicio = new Date(this.formOrden.fecha_inicio);
+                    const fechaFinalizacion = new Date(
+                        this.formOrden.fecha_finalizacion
+                    );
+
+                    if (fechaInicio > fechaFinalizacion) {
+                        errs.fecha_inicio = [
+                            "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+                        ];
+                        errs.fecha_finalizacion = [
+                            "La fecha de finalización no puede ser menor que la fecha de inicio.",
+                        ];
+                    }
+                }
+
                 this.errors = errs;
                 if (Object.keys(errs).length) {
                     this.showToast(
@@ -2801,6 +2828,32 @@ if (typeof window !== "undefined") {
             toggleRow(id) {
                 this.expandedRows[id] = !this.expandedRows[id];
             },
+
+            // Pagination methods
+            paginatedOrdenes() {
+                const start = (this.currentPage - 1) * this.perPage;
+                const end = start + this.perPage;
+                return this.filteredOrdenes().slice(start, end);
+            },
+            totalPages() {
+                return Math.ceil(this.filteredOrdenes().length / this.perPage);
+            },
+            nextPage() {
+                if (this.currentPage < this.totalPages()) {
+                    this.currentPage++;
+                }
+            },
+            prevPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                }
+            },
+            goToPage(page) {
+                if (page >= 1 && page <= this.totalPages()) {
+                    this.currentPage = page;
+                }
+            },
+
             async init() {
                 if (!(await this.requireAuth())) return;
                 // Debounce helper (local)
