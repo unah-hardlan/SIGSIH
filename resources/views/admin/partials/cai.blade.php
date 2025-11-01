@@ -135,131 +135,124 @@ $watch('ordenarPor', () => { currentPage = 1; });
 "
 @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
 
-    <div x-show="tab==='cai'" class="overflow-x-auto">
-        <x-admin.tabla-crud class="nunito-bold">
-            <x-slot name="titulo">
-                <h2 class="text-2xl dark:text-white text-gray-800 nunito-bold">CAI</h2>
-            </x-slot>
-            <x-slot name="filtros">
-                @include('partials.filtros-generales', [
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">CAI</h1>
+    </div>
+
+    <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+        <x-slot name="filters">
+            @include('partials.filtros-generales', [
                 'searchModel' => 'searchCai',
-                'filtrosSelect' => [],
+                'ordenarModel' => 'ordenarPor',
                 'ordenarOptions' => [
-                'codigo' => 'Código',
-                'rango_inicio' => 'Rango Inicio',
-                'rango_fin' => 'Rango Fin',
-                'fecha_limite' => 'Fecha Límite',
+                    'codigo' => 'Código',
+                    'rango_inicio' => 'Rango Inicio',
+                    'rango_fin' => 'Rango Fin',
+                    'fecha_limite' => 'Fecha Límite',
                 ]
-                ])
-                <select x-model="estadoCaiFiltro"
-                    class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                    <option value="">Todos los estados</option>
-                    <template x-for="estado in estadosCai" :key="estado.id_estado_cai_pk || estado.id">
-                        <option :value="estado.nombre_estado_cai || estado.nombre"
-                            x-text="estado.nombre_estado_cai || estado.nombre"></option>
-                    </template>
-                </select>
-            </x-slot>
-            <x-slot name="boton">
-                <div class="flex gap-2 items-stretch">
-                    <button @click="isCaiModalOpen = true; formCai._touched = {}"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
-                        CAI</button>
-                    <a href="/admin/reportes-header?modulo=CAI&fecha={{ now()->format('d-M-Y') }}" target="_blank"
-                        class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
-                        <i class="fas fa-file-alt"></i> Generar Reporte
-                    </a>
-                </div>
-            </x-slot>
-            <div class="overflow-x-auto">
-                <table
-                    class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
-                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+            ])
+            <select x-model="estadoCaiFiltro"
+                class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                <option value="">Todos los estados</option>
+                <template x-for="estado in estadosCai" :key="estado.id_estado_cai_pk || estado.id">
+                    <option :value="estado.nombre_estado_cai || estado.nombre"
+                        x-text="estado.nombre_estado_cai || estado.nombre"></option>
+                </template>
+            </select>
+        </x-slot>
+
+        <x-slot name="actions">
+            <button @click="isCaiModalOpen = true; formCai._touched = {}"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+                Nuevo CAI
+            </button>
+            <a href="/admin/reportes-header?modulo=CAI&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
+                <i class="fas fa-file-alt"></i> Generar Reporte
+            </a>
+        </x-slot>
+
+        <x-slot name="table">
+            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
+                <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
+                    <tr>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Código</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Rango Inicio</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Rango Fin</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Consecutivo</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Fecha Límite</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Estado CAI</th>
+                        <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="loadingCai">
                         <tr>
-
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Código</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Inicio</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Rango Fin</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Consecutivo</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Fecha Límite</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Estado CAI</th>
-                            <th class="py-2 px-4 text-left nunito-bold text-gray-800 dark:text-white">Acciones</th>
+                            <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando registros CAI...
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <template x-if="filteredCais().length > 0">
-                            <template x-for="cai in paginatedCais()" :key="cai.id_cai_pk || cai.id">
-                                <tr class="border-b dark:border-gray-700 nunito-regular">
-                                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white"
-                                        x-text="cai.codigo"></td>
-                                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white"
-                                        x-text="cai.rango_inicio"></td>
-                                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white"
-                                        x-text="cai.rango_fin"></td>
-                                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white"
-                                        x-text="cai.consecutivo_actual"></td>
-                                    <td class="py-2 px-4 nunito-regular text-gray-800 dark:text-white"
-                                        x-text="cai.fecha_limite"></td>
-                                    <td class="py-2 px-4 nunito-regular">
-                                        <span class="px-2 py-1 rounded nunito-regular"
-                                            :class="cai.estado_cai?.es_final ? 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-100' : 'bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-100'"
-                                            x-text="cai.estado_cai?.nombre || 'Sin estado'"></span>
-                                    </td>
-                                    <td class="py-2 px-4 flex gap-2">
-                                        <a href="#" @click.prevent="formEditCai._touched = {}; itemToEdit = { 
-                                                ...cai,
-                                                codigo: window.caiApiHandlers.normalizeCodigo(cai.codigo),
-                                                rango_inicio: window.caiApiHandlers.formatRango(cai.rango_inicio),
-                                                rango_fin: window.caiApiHandlers.formatRango(cai.rango_fin),
-                                                consecutivo_actual: window.caiApiHandlers.onlyDigits(cai.consecutivo_actual),
-                                                fecha_limite: window.caiApiHandlers.normalizeFecha(cai.fecha_limite)
-                                            }; isEditCaiModalOpen = true;"
-                                            class="text-blue-500 hover:text-blue-700 dark:text-blue-300"><i
-                                                class="fas fa-edit"></i></a>
-                                        <a href="#"
-                                            @click.prevent="itemToDelete = {...cai}; isDeleteCaiModalOpen = true;"
-                                            class="text-red-500 hover:text-red-700 dark:text-red-400"><i
-                                                class="fas fa-trash"></i></a>
-                                    </td>
-                                </tr>
-                            </template>
-                        </template>
-                        <template x-if="cais.length === 0 && !loadingCai">
-                            <tr class="border-b dark:border-gray-700 nunito-regular">
-                                <td colspan="8" class="py-4 px-4 text-center text-gray-500 dark:text-gray-400">
-                                    No hay registros CAI
+                    </template>
+                    <template x-if="!loadingCai && cais.length === 0">
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">
+                                No hay registros CAI
+                            </td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingCai && cais.length > 0">
+                        <template x-for="(cai, index) in paginatedCais()" :key="cai.id_cai_pk || cai.id">
+                            <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
+                                :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === cais.length - 1 }">
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="cai.codigo"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="cai.rango_inicio"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="cai.rango_fin"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="cai.consecutivo_actual"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="cai.fecha_limite"></td>
+                                <td class="py-2 px-4">
+                                    <span class="px-2 py-1 rounded text-xs nunito-regular"
+                                        :class="cai.estado_cai?.es_final ? 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-100' : 'bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-100'"
+                                        x-text="cai.estado_cai?.nombre || 'Sin estado'"></span>
+                                </td>
+                                <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === cais.length - 1 }">
+                                    <a href="#" @click.prevent="formEditCai._touched = {}; itemToEdit = { 
+                                            ...cai,
+                                            codigo: window.caiApiHandlers.normalizeCodigo(cai.codigo),
+                                            rango_inicio: window.caiApiHandlers.formatRango(cai.rango_inicio),
+                                            rango_fin: window.caiApiHandlers.formatRango(cai.rango_fin),
+                                            consecutivo_actual: window.caiApiHandlers.onlyDigits(cai.consecutivo_actual),
+                                            fecha_limite: window.caiApiHandlers.normalizeFecha(cai.fecha_limite)
+                                        }; isEditCaiModalOpen = true;"
+                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="itemToDelete = {...cai}; isDeleteCaiModalOpen = true;"
+                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
                         </template>
-                        <template x-if="loadingCai">
-                            <tr class="border-b dark:border-gray-700 nunito-regular">
-                                <td colspan="8" class="py-4 px-4 text-center text-gray-500 dark:text-gray-400">
-                                    Cargando registros CAI...
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
+                    </template>
+                </tbody>
+            </table>
+        </x-slot>
 
-            <!-- Paginación del lado del cliente -->
-            <x-pagination />
+        <x-slot name="cards">
 
-            <x-slot name="cards">
                 <template x-if="loadingCai">
-                    <div class="p-8 text-center text-gray-500 nunito-regular">
-                        <i class="fas fa-spinner fa-spin mr-2"></i> Cargando registros CAI...
-                    </div>
-                </template>
-                <template x-if="!loadingCai && cais.length === 0">
-                    <div class="p-8 text-center text-gray-500 nunito-regular">No hay registros CAI</div>
-                </template>
-                <template x-for="cai in paginatedCais()" :key="'card-cai-'+(cai.id_cai_pk || cai.id)">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center text-gray-500 nunito-regular">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando registros CAI...
+                </div>
+            </template>
+            <template x-if="!loadingCai && cais.length === 0">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center text-gray-500 nunito-regular">
+                    No hay registros CAI
+                </div>
+            </template>
+            <template x-if="!loadingCai && cais.length > 0">
+                <template x-for="cai in paginatedCais()" :key="cai.id_cai_pk || cai.id">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-2 border dark:border-gray-800 border-black">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-white" x-text="cai.codigo"></h3>
-                                <p class="text-xs text-gray-500 dark:text-gray-400"
+                                <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="cai.codigo"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 nunito-regular"
                                     x-text="'Fecha límite: '+(cai.fecha_limite||'-')"></p>
                             </div>
                             <div>
@@ -268,11 +261,11 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                     x-text="cai.estado_cai?.nombre || 'Sin estado'"></span>
                             </div>
                         </div>
-                        <div class="text-sm text-gray-700 dark:text-gray-300 grid grid-cols-2 gap-2">
+                        <div class="text-sm text-gray-700 dark:text-gray-300 grid grid-cols-2 gap-2 nunito-regular">
                             <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Rango Inicio:</span> <span
-                                    x-text="cai.rango_inicio || '-' "></span></div>
+                                    x-text="cai.rango_inicio || '-'"></span></div>
                             <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Rango Fin:</span> <span
-                                    x-text="cai.rango_fin || '-' "></span></div>
+                                    x-text="cai.rango_fin || '-'"></span></div>
                             <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Consecutivo:</span> <span
                                     x-text="cai.consecutivo_actual || '0'"></span></div>
                         </div>
@@ -285,17 +278,21 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                     consecutivo_actual: window.caiApiHandlers.onlyDigits(cai.consecutivo_actual),
                                     fecha_limite: window.caiApiHandlers.normalizeFecha(cai.fecha_limite)
                                 }; isEditCaiModalOpen = true;"
-                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i
-                                    class="fas fa-edit"></i> Editar</button>
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                             <button @click.prevent="itemToDelete = {...cai}; isDeleteCaiModalOpen = true;"
-                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i
-                                    class="fas fa-trash"></i> Eliminar</button>
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
                         </div>
                     </div>
                 </template>
-            </x-slot>
-        </x-admin.tabla-crud>
-    </div>
+            </template>
+        </x-slot>
+    </x-responsive-table>
+
+    <x-pagination />
 
     {{-- Modales --}}
     <x-admin.form-modal class="nunito-bold" modalName="isCaiModalOpen" title="Nuevo CAI" submitLabel="Guardar CAI"
