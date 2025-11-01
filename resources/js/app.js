@@ -2863,6 +2863,30 @@ if (typeof window !== "undefined") {
             ordenarPor: "estado_solicitud",
             searchContacto: "",
             ordenarPorContacto: "tipo_contacto",
+
+            // Variables for pagination component (computed based on active tab)
+            get numbers() {
+                return this.tab === "solicitudes"
+                    ? this.numbersSolicitudes
+                    : this.numbersContactos;
+            },
+            get currentPage() {
+                return this.tab === "solicitudes"
+                    ? this.currentPageSolicitudes
+                    : this.currentPageContactos;
+            },
+            set currentPage(value) {
+                if (this.tab === "solicitudes") {
+                    this.currentPageSolicitudes = value;
+                } else {
+                    this.currentPageContactos = value;
+                }
+            },
+            get perPage() {
+                return this.tab === "solicitudes"
+                    ? this.perPageSolicitudes
+                    : this.perPageContactos;
+            },
             reportUrl() {
                 const params = new URLSearchParams();
                 params.set("modulo", "Solicitudes");
@@ -2920,6 +2944,16 @@ if (typeof window !== "undefined") {
             clientesOptions: [],
             estadosOptions: [],
             contactosOptions: [], // full list for selects; filtered per cliente when rendering
+
+            // Pagination - Solicitudes
+            numbersSolicitudes: [], // alias expected by pagination component
+            currentPageSolicitudes: 1,
+            perPageSolicitudes: 10,
+
+            // Pagination - Contactos
+            numbersContactos: [], // alias expected by pagination component
+            currentPageContactos: 1,
+            perPageContactos: 10,
 
             // Forms and flags
             formSolicitud: {
@@ -3265,6 +3299,8 @@ if (typeof window !== "undefined") {
                     this.solicitudes = (raw || []).map((it) =>
                         this.mapSolicitud(it)
                     );
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -3338,6 +3374,8 @@ if (typeof window !== "undefined") {
                     const json = await res.json();
                     if (json.data)
                         this.solicitudes.unshift(this.mapSolicitud(json.data));
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud creada correctamente");
                     this.isModalOpen = false;
                     this.resetSolicitudForm();
@@ -3386,6 +3424,8 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.solicitudes.splice(idx, 1, mapped);
                     }
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud actualizada");
                     this.isEditModalOpen = false;
                     this.solicitudToEdit = null;
@@ -3419,6 +3459,8 @@ if (typeof window !== "undefined") {
                     this.solicitudes = this.solicitudes.filter(
                         (s) => s.id !== this.solicitudToDelete.id
                     );
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud eliminada");
                 } catch (e) {
                     console.error(e);
@@ -3481,6 +3523,8 @@ if (typeof window !== "undefined") {
                         valor_contacto: it.valor_contacto,
                         id_cliente_fk: it.id_cliente_fk,
                     }));
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -3542,6 +3586,8 @@ if (typeof window !== "undefined") {
                             valor_contacto: json.data.valor_contacto,
                             id_cliente_fk: json.data.id_cliente_fk,
                         });
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto creado");
                     this.isContactoModalOpen = false;
                     this.resetContactoForm();
@@ -3599,6 +3645,8 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.contactos.splice(idx, 1, updated);
                     }
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto actualizado");
                     this.isEditContactoModalOpen = false;
                     this.contactoToEdit = null;
@@ -3631,6 +3679,8 @@ if (typeof window !== "undefined") {
                     this.contactos = this.contactos.filter(
                         (c) => c.id !== this.contactoToDelete.id
                     );
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto eliminado");
                 } catch (e) {
                     console.error(e);
@@ -3791,6 +3841,87 @@ if (typeof window !== "undefined") {
                                 return 0;
                         }
                     });
+            },
+
+            // Pagination methods - Solicitudes
+            paginatedSolicitudes() {
+                const filtered = this.filteredSolicitudes();
+                const start =
+                    (this.currentPageSolicitudes - 1) * this.perPageSolicitudes;
+                const end = start + this.perPageSolicitudes;
+                return filtered.slice(start, end);
+            },
+            totalPagesSolicitudes() {
+                return Math.ceil(
+                    this.filteredSolicitudes().length / this.perPageSolicitudes
+                );
+            },
+            nextPageSolicitudes() {
+                if (
+                    this.currentPageSolicitudes < this.totalPagesSolicitudes()
+                ) {
+                    this.currentPageSolicitudes++;
+                }
+            },
+            prevPageSolicitudes() {
+                if (this.currentPageSolicitudes > 1) {
+                    this.currentPageSolicitudes--;
+                }
+            },
+            goToPageSolicitudes(page) {
+                if (page >= 1 && page <= this.totalPagesSolicitudes()) {
+                    this.currentPageSolicitudes = page;
+                }
+            },
+
+            // Pagination methods - Contactos
+            paginatedContactos() {
+                const filtered = this.filteredContactos();
+                const start =
+                    (this.currentPageContactos - 1) * this.perPageContactos;
+                const end = start + this.perPageContactos;
+                return filtered.slice(start, end);
+            },
+            totalPagesContactos() {
+                return Math.ceil(
+                    this.filteredContactos().length / this.perPageContactos
+                );
+            },
+            nextPageContactos() {
+                if (this.currentPageContactos < this.totalPagesContactos()) {
+                    this.currentPageContactos++;
+                }
+            },
+            prevPageContactos() {
+                if (this.currentPageContactos > 1) {
+                    this.currentPageContactos--;
+                }
+            },
+            goToPageContactos(page) {
+                if (page >= 1 && page <= this.totalPagesContactos()) {
+                    this.currentPageContactos = page;
+                }
+            },
+
+            // Global pagination methods for component compatibility
+            totalPages() {
+                return this.tab === "solicitudes"
+                    ? this.totalPagesSolicitudes()
+                    : this.totalPagesContactos();
+            },
+            nextPage() {
+                if (this.tab === "solicitudes") {
+                    this.nextPageSolicitudes();
+                } else {
+                    this.nextPageContactos();
+                }
+            },
+            prevPage() {
+                if (this.tab === "solicitudes") {
+                    this.prevPageSolicitudes();
+                } else {
+                    this.prevPageContactos();
+                }
             },
 
             // Init

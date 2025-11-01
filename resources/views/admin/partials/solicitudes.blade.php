@@ -1,5 +1,12 @@
 <div x-data="gestionSolicitudes()" x-init="init()" @include('partials.persist-tab', ['tabKey'=>
     'admin-solicitudes-tab'])
+    x-effect="
+    $watch('searchSolicitud', () => { currentPageSolicitudes = 1; });
+    $watch('estadoSolicitud', () => { currentPageSolicitudes = 1; });
+    $watch('ordenarPor', () => { currentPageSolicitudes = 1; });
+    $watch('searchContacto', () => { currentPageContactos = 1; });
+    $watch('ordenarPorContacto', () => { currentPageContactos = 1; });
+    "
     @modal-submit.window="
     if ($event.detail.formId === 'solicitud-form' || $event.detail.formId === 'solicitud-edit-form') {
     submitSolicitud();
@@ -95,7 +102,7 @@
                                     solicitudes.</td>
                             </tr>
                         </template>
-                        <template x-for="sol in filteredSolicitudes()" :key="sol.id">
+                        <template x-for="sol in paginatedSolicitudes()" :key="sol.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4"
                                     x-text="sol.cliente_nombre || clienteLabelById(sol.id_cliente_fk) || '—'"></td>
@@ -125,7 +132,7 @@
                 <template x-if="!loadingSolicitudes && filteredSolicitudes().length === 0">
                     <div class="p-8 text-center text-gray-500">No se encontraron solicitudes.</div>
                 </template>
-                <template x-for="sol in filteredSolicitudes()" :key="'card-'+sol.id">
+                <template x-for="sol in paginatedSolicitudes()" :key="'card-'+sol.id">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
                         <div class="flex justify-between items-start">
                             <div>
@@ -159,6 +166,8 @@
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <x-pagination />
     </div>
 
     <!-- TAB: Contactos -->
@@ -209,7 +218,7 @@
                                     contactos.</td>
                             </tr>
                         </template>
-                        <template x-for="c in filteredContactos()" :key="c.id">
+                        <template x-for="c in paginatedContactos()" :key="c.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4" x-text="c.tipo_contacto"></td>
                                 <td class="py-2 px-4" x-text="c.valor_contacto"></td>
@@ -233,7 +242,7 @@
                 <template x-if="!loadingContactos && filteredContactos().length === 0">
                     <div class="p-8 text-center text-gray-500">No se encontraron contactos.</div>
                 </template>
-                <template x-for="c in filteredContactos()" :key="'card-c-'+c.id">
+                <template x-for="c in paginatedContactos()" :key="'card-c-'+c.id">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
                         <div class="flex justify-between items-start">
                             <div>
@@ -258,6 +267,8 @@
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <x-pagination />
     </div>
 
     <!-- Modal Nueva Solicitud -->
