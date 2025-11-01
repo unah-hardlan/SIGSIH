@@ -77,6 +77,9 @@ document.addEventListener("alpine:init", () => {
         isFacturaModalOpen: false,
         isEditFacturaModalOpen: false,
         isDeleteFacturaModalOpen: false,
+        // Alias para compatibilidad con componentes globales
+        isEditModalOpen: false,
+        isEditListModalOpen: false,
         // initialize as object to avoid reactive "cannot read property" errors in templates
         itemToEdit: {},
         itemToDelete: null,
@@ -757,7 +760,15 @@ document.addEventListener("alpine:init", () => {
 
         async openEditFactura(factura) {
             try {
-                this.itemToEdit = factura;
+                // Crear una copia de la factura y formatear la fecha para el input date
+                this.itemToEdit = { ...factura };
+
+                // Formatear fecha: convertir "2025-10-07 00:00:00" a "2025-10-07"
+                if (this.itemToEdit.fecha) {
+                    // Extraer solo la parte de la fecha (YYYY-MM-DD) sin la hora
+                    this.itemToEdit.fecha = this.itemToEdit.fecha.split(" ")[0];
+                }
+
                 const fid = factura.id || factura.id_factura_pk;
                 if (fid) {
                     await this.fetchDetallesFactura(fid);
@@ -770,7 +781,11 @@ document.addEventListener("alpine:init", () => {
             } catch (e) {
                 console.error("Error opening edit factura modal", e);
                 // fallback: open modal anyway
-                this.itemToEdit = factura;
+                this.itemToEdit = { ...factura };
+                // Formatear fecha en el fallback también
+                if (this.itemToEdit.fecha) {
+                    this.itemToEdit.fecha = this.itemToEdit.fecha.split(" ")[0];
+                }
                 this.isEditFacturaModalOpen = true;
             }
         },
