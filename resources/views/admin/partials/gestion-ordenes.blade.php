@@ -2,7 +2,7 @@
         if ($event.detail.formId === 'orden-form' || $event.detail.formId === 'orden-edit-form') {
             submitOrden();
         }
-    " @keydown.window.escape="isModalOpen = false; isEditModalOpen = false; isDeleteModalOpen = false; isVerMasModalOpen = false"
+    " @keydown.window.escape="isModalOpen = false; isEditModalOpen = false; isDeleteModalOpen = false; isVerMasModalOpen = false; ordenSeleccionada = null"
     @confirm-delete.window="
         if (isDeleteModalOpen) {
             performDeleteOrden();
@@ -730,7 +730,7 @@
         
         class="fixed inset-0 bg-gray-900/75 backdrop-blur transition-all" 
         
-        @click="isVerMasModalOpen = false">
+        @click="isVerMasModalOpen = false; ordenSeleccionada = null">
     </div>
 
     <!-- Contenido del Modal -->
@@ -751,40 +751,40 @@
                         Detalles Adicionales (Orden #<span x-text="ordenSeleccionada?.numero || ''"></span>)
                     </h3>
                     <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                        <div x-if="ordenSeleccionada">
+                        <template x-if="ordenSeleccionada">
                             <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                                 <div class="sm:col-span-2">
                                     <dt class="font-medium text-gray-900 dark:text-white">Código de Cotización</dt>
-                                    <dd class="mt-1" x-text="ordenSeleccionada.id_cotizacion ? formatCotLabel(ordenSeleccionada.raw?.cotizacion || { id: ordenSeleccionada.id_cotizacion, fecha_cotizacion: ordenSeleccionada.raw?.fecha_cotizacion || '' }) : '—'"></dd>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.id_cotizacion) ? formatCotLabel(ordenSeleccionada.raw?.cotizacion || { id: ordenSeleccionada.id_cotizacion, fecha_cotizacion: ordenSeleccionada.raw?.fecha_cotizacion || '' }) : '—'"></dd>
                                 </div>
                                 <div class="sm:col-span-2">
                                     <dt class="font-medium text-gray-900 dark:text-white">Repuestos</dt>
-                                    <dd class="mt-1" x-text="ordenSeleccionada.repuestos_summary || '—'"></dd>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.repuestos_summary) || '—'"></dd>
                                 </div>
                                  <div class="sm:col-span-2">
                                     <dt class="font-medium text-gray-900 dark:text-white">Observaciones</dt>
-                                    <dd class="mt-1" x-text="ordenSeleccionada.observaciones || '—'"></dd>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.observaciones) || '—'"></dd>
                                 </div>
                                  <div class="sm:col-span-2">
                                     <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Cliente</dt>
-                                    <dd class="mt-1" x-text="ordenSeleccionada.diagnostico_cliente || '—'"></dd>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_cliente) || '—'"></dd>
                                 </div>
                                  <div class="sm:col-span-2">
                                     <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Técnico</dt>
-                                    <dd class="mt-1" x-text="ordenSeleccionada.diagnostico_tecnico || '—'"></dd>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_tecnico) || '—'"></dd>
                                 </div>
                                 <div class="sm:col-span-2">
                                     <dt class="font-medium text-gray-900 dark:text-white">Calificación</dt>
-                                    <dd class="mt-1 capitalize" x-text="ordenSeleccionada.calificacion_servicio || 'Sin calificar'"></dd>
+                                    <dd class="mt-1 capitalize" x-text="(ordenSeleccionada && ordenSeleccionada.calificacion_servicio) || 'Sin calificar'"></dd>
                                 </div>
                             </dl>
-                        </div>
+                        </template>
                     </div>
                 </div>
             </div>
         </div>
         <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button @click="isVerMasModalOpen = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+            <button @click="isVerMasModalOpen = false; ordenSeleccionada = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
                 Cerrar
             </button>
         </div>
