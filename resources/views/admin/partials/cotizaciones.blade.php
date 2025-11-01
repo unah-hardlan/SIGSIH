@@ -11,6 +11,11 @@
     clientes:[],
     filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
     ordenarPor:'',
+    
+    // Paginación
+    numbers: [], // alias esperado por el componente de paginación
+    currentPage: 1,
+    perPage: 10,
     // Items manager (por cotización)
     itemsModal:false, currentCotizacionId:null, itemsLoading:false, itemsSearch:'', items:[],
     itemMode:'list', itemForm:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }, itemEditId:null, itemErrors:{},
@@ -261,6 +266,9 @@
     async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('order_by', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
             .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
             .filter(c=>c.id!=null);
+            
+            // Synchronize alias for reusable pagination components
+            this.numbers = this.cotizaciones;
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
     async fetchClientes(){
         try{
@@ -288,6 +296,28 @@
             this.clientes = [];
         }
     },
+    
+    // Métodos de paginación
+    paginatedCotizaciones() {
+        return this.cotizaciones.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.cotizaciones.length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
+    },
+    
     async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
     resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ] }; },
     openCreate(){ this.resetForm(); this.generateCotizacionModal=true; },
@@ -352,9 +382,11 @@
         this.ensureAuth();
         this.fetchClientes(); this.fetchCotizaciones();
         const debounce=(fn,ms=400)=>{let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms);};};
-        this.$watch('filters.search',debounce(()=>this.fetchCotizaciones()));
-        this.$watch('ordenarPor',debounce(()=>this.fetchCotizaciones()));
-        this.$watch('filters.cliente',debounce(()=>this.fetchCotizaciones()));
+        this.$watch('filters.search',debounce(()=>{ this.currentPage = 1; this.fetchCotizaciones(); }));
+        this.$watch('ordenarPor',debounce(()=>{ this.currentPage = 1; this.fetchCotizaciones(); }));
+        this.$watch('filters.cliente',debounce(()=>{ this.currentPage = 1; this.fetchCotizaciones(); }));
+        this.$watch('filters.desde',debounce(()=>{ this.currentPage = 1; this.fetchCotizaciones(); }));
+        this.$watch('filters.hasta',debounce(()=>{ this.currentPage = 1; this.fetchCotizaciones(); }));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
         // Clear/reset modal-related state when modals close
         this.$watch('generateCotizacionModal', val=>{ if(!val){ this.resetForm(); } });
@@ -435,7 +467,7 @@
                         </tr>
                     </thead>
                     <tbody class="nunito-regular">
-                        <template x-for="c in cotizaciones" :key="c.id">
+                        <template x-for="c in paginatedCotizaciones()" :key="c.id">
                             <tr class="text-[10px]">
                                 <td class="px-4 py-2 border-t border-gray-200" x-text="formatCotId(c)"></td>
                                 <td class="px-4 py-2 border-t border-gray-200"
@@ -501,7 +533,7 @@
                 <template x-if="!loading && cotizaciones.length === 0">
                     <div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div>
                 </template>
-                <template x-for="c in cotizaciones" :key="c.id">
+                <template x-for="c in paginatedCotizaciones()" :key="c.id">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
@@ -542,6 +574,8 @@
         </x-slot>
 
     </x-responsive-table>
+
+    <x-pagination />
 
     <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la Cotización" submitLabel="Guardar"
         formId="items-manager" maxWidth="max-w-5xl">
