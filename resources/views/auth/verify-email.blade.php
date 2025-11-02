@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
+    @if(($status ?? '') === 'verified' || ($status ?? '') === 'already_verified')
+    <script>
+        // Señal para otras pestañas: el correo fue verificado
+        try { localStorage.setItem('email_verified', String(Date.now())); } catch(_) {}
+    </script>
+    @endif
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
 
         <div class="w-full max-w-sm mx-auto">

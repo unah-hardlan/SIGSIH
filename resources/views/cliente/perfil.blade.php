@@ -276,19 +276,6 @@
                             <p class="text-sm text-gray-900 dark:text-gray-100">{{ auth()->user()->correo_electronico }}</p>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
-                                Teléfono Fijo de Contacto
-                            </label>
-                            <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
-                                Teléfono Móvil de Contacto
-                            </label>
-                            <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
-                        </div>
                     </div>
                 @endif
 
@@ -531,22 +518,10 @@
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
                                 Correo de Contacto *
                             </label>
-                            <input type="email" x-model="formData.correo_contacto" required
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
+                            <input type="email" x-model="formData.correo_contacto" required readonly aria-readonly="true"
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 cursor-not-allowed">
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
-                                Teléfono Fijo de Contacto
-                            </label>
-                            <input type="tel" x-model="formData.telefono_contacto" required
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
-                                Teléfono Móvil de Contacto
-                            </label>
-                            <input type="tel" x-model="formData.celular_contacto"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100">
+                        
                     </div>
 
                     <!-- Botones -->

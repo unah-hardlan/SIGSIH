@@ -55,9 +55,12 @@
                 verifyEmailAddress: "",
                 resendCooldown: 0,
                 resendTimerId: null,
+                // Pantalla para indicar que puede cerrar la pestaña tras verificar
+                showCloseTabScreen: false,
 
                 init() {
                     this.initTheme();
+                    this.initEmailVerifiedListener();
                 },
 
                 initTheme() {
@@ -324,6 +327,20 @@
                                 this.resendTimerId = null;
                             }
                         }, 1000);
+                    } catch (_) {}
+                },
+
+                // Detecta desde otra pestaña cuando el correo quedó verificado
+                initEmailVerifiedListener() {
+                    try {
+                        window.addEventListener('storage', (e) => {
+                            if (!e) return;
+                            if (e.key === 'email_verified' && e.newValue) {
+                                // Ocultamos el modal (si visible) y mostramos la pantalla final
+                                this.showVerifyEmailModal = false;
+                                this.showCloseTabScreen = true;
+                            }
+                        });
                     } catch (_) {}
                 },
 
@@ -623,6 +640,33 @@
                     class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
                     Entendido
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla: Ya puedes cerrar esta pestaña -->
+    <div x-show="showCloseTabScreen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-5 shadow-2xl text-center">
+            <div class="mb-3 text-green-600">
+                <i class="fas fa-circle-check text-3xl"></i>
+            </div>
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Correo verificado</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Ya puedes cerrar esta pestaña.</p>
+            <div class="mt-4 flex items-center gap-2 justify-center">
+                <button type="button"
+                        @click="
+                            (function(){
+                                let closed=false;
+                                try{window.close();closed=true;}catch(_){}
+                                if(!closed){try{const w=window.open('','_self');w&&w.close&&w.close();closed=true;}catch(_){}}
+                                if(!closed){try{window.top&&window.top.close&&window.top.close();closed=true;}catch(_){}}
+                                if(!closed){try{window.showToast&&window.showToast('No se puede cerrar automáticamente. Cierra esta pestaña.', 'info', {duration:2500});}catch(_){}}
+                            })()
+                        "
+                        class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                    Cerrar pestaña
+                </button>
+                <a href="{{ route('login') }}" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm">Ir al login</a>
             </div>
         </div>
     </div>
