@@ -138,36 +138,43 @@
                             <i class="fas fa-user-edit text-blue-500 dark:text-white"></i>
                             Editar perfil
                         </x-admin.header-menu-link>
-                        <x-admin.header-menu-link
-                            @click="logoutConfirm = true; document.dispatchEvent(new CustomEvent('logout-modal-show'))">
+                        <button @click="logoutConfirm = true; open = false" 
+                                class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors text-left">
                             <i class="fas fa-sign-out-alt text-red-500"></i>
                             Cerrar sesión
-                        </x-admin.header-menu-link>
+                        </button>
                     </div>
-                    <!-- Inline logout confirmation modal (Alpine-only, avoids Blade component issues) -->
-                    <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms
-                        class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-300 ease-in-out bg-black/60 dark:bg-black/80 backdrop-blur-md"
-                        style="-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); background:rgba(0,0,0,0.65);"
-                        @click.self="logoutConfirm=false" @keydown.window.escape="logoutConfirm=false">
-                        <div x-show="logoutConfirm" x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-200"
-                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                            class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-sm mx-auto"
-                            @click.stop>
+                    
+                    <!-- Inline logout confirmation modal -->
+                    <template x-teleport="body">
+                        <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms
+                            class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-300 ease-in-out bg-black/60 dark:bg-black/80 backdrop-blur-md"
+                            style="-webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); background:rgba(0,0,0,0.65);"
+                            @click.self="logoutConfirm=false" @keydown.window.escape="logoutConfirm=false">
+                            <div x-show="logoutConfirm" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-sm mx-auto"
+                                @click.stop>
 
-                            <p class="mt-3 text-lg nunito-bold text-gray-800 dark:text-gray-200">¿Estás seguro de que
-                                deseas cerrar sesión?</p>
-                            <div class="mt-5 flex justify-end gap-2">
-                                <button type="button"
-                                    @click="logoutConfirm = false; document.dispatchEvent(new CustomEvent('logout-modal-hide'))"
-                                    class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm md:text-base text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition-all serif-regular">Cancelar</button>
-                                <button type="button"
-                                    @click="logoutConfirm = false; document.dispatchEvent(new CustomEvent('logout-modal-hide')); (window.appLogout && window.appLogout())"
-                                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm md:text-base transition-all serif-regular">Confirmar</button>
+                                <p class="mt-3 text-lg nunito-bold text-gray-800 dark:text-gray-200">¿Estás seguro de que
+                                    deseas cerrar sesión?</p>
+                                <div class="mt-5 flex justify-end gap-2">
+                                    <button type="button"
+                                        @click="logoutConfirm = false"
+                                        class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm md:text-base text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition-all serif-regular">Cancelar</button>
+                                    
+                                    <!-- Formulario de logout tradicional -->
+                                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm md:text-base transition-all serif-regular">Confirmar</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
 
                 <div class="hidden sm:flex flex-col items-start">
