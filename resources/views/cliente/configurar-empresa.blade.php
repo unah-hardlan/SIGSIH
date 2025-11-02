@@ -1,6 +1,8 @@
 @extends('cliente.layouts.standalone')
 @section('content')
-<!-- Toggle de tema sticky en esquina superior derecha -->
+<!-- Contenedor de notificaciones toast -->
+<div id="toast-container" class="fixed top-4 left-4 z-50 space-y-3 max-w-md"></div>
+
 <div class="fixed top-4 right-4 z-50">
     <button 
         onclick="toggleTheme()" 
@@ -240,7 +242,7 @@
                             <label for="email_contacto" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Email <span class="text-red-500">*</span>
                             </label>
-                            <div class="flex gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2">
                                 <input 
                                     id="email_contacto" 
                                     name="email_contacto" 
@@ -253,7 +255,7 @@
                                 <button 
                                     type="button" 
                                     id="btn-enviar-codigo"
-                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
                                 >
                                     Enviar Código
                                 </button>
@@ -285,7 +287,6 @@
                                     Verificar
                                 </button>
                             </div>
-                            <p id="verification-timer" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
                             <p id="verification-error" class="text-sm text-red-600 dark:text-red-400 mt-1 hidden"></p>
                         </div>
                         
@@ -355,6 +356,61 @@
 </div>
 
 <script>
+// Función para mostrar notificaciones toast
+function showToast(message, type = 'info', duration = 5000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    
+    const colors = {
+        success: 'bg-green-50 dark:bg-green-950/90 border-green-500 dark:border-green-400 text-green-800 dark:text-green-300',
+        error: 'bg-red-50 dark:bg-red-950/90 border-red-500 dark:border-red-400 text-red-800 dark:text-red-300',
+        warning: 'bg-yellow-50 dark:bg-yellow-950/90 border-yellow-500 dark:border-yellow-400 text-yellow-800 dark:text-yellow-300',
+        info: 'bg-blue-50 dark:bg-blue-950/90 border-blue-500 dark:border-blue-400 text-blue-800 dark:text-blue-300'
+    };
+    
+    const icons = {
+        success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>',
+        info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+    };
+    
+    toast.className = `flex items-start gap-3 p-4 rounded-lg border-l-4 shadow-lg transform transition-all duration-300 ease-in-out ${colors[type] || colors.info}`;
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-100%)';
+    
+    toast.innerHTML = `
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            ${icons[type] || icons.info}
+        </svg>
+        <div class="flex-1 text-sm font-medium">
+            ${message}
+        </div>
+        <button onclick="this.parentElement.remove()" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Auto-cerrar
+    if (duration > 0) {
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+}
+
 function previewLogo(input) {
     const preview = document.getElementById('logo-preview');
     const placeholder = document.getElementById('logo-placeholder');
@@ -540,13 +596,13 @@ function setupLogoDragAndDrop() {
             
             // Validar tipo de archivo
             if (!file.type.match('image.*')) {
-                alert('Por favor selecciona solo archivos de imagen.');
+                showToast('Por favor selecciona solo archivos de imagen', 'warning');
                 return;
             }
 
             // Validar tamaño (5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('El archivo es muy grande. Máximo 5MB.');
+                showToast('El archivo es muy grande. Máximo 5MB', 'error');
                 return;
             }
 
@@ -760,13 +816,11 @@ function setupEmailVerification() {
     const verificationSection = document.getElementById('verification-section');
     const verificationSuccess = document.getElementById('verification-success');
     const codigoInput = document.getElementById('codigo_verificacion');
-    const verificationTimer = document.getElementById('verification-timer');
     const verificationError = document.getElementById('verification-error');
     const emailVerificadoInput = document.getElementById('email_verificado');
     const submitBtn = document.getElementById('submit-btn');
     
     let codigoEnviado = null;
-    let timerInterval = null;
     let intentosRestantes = 3;
     
     // Deshabilitar submit hasta que el email esté verificado
@@ -777,7 +831,7 @@ function setupEmailVerification() {
         const email = emailInput.value.trim();
         
         if (!email || !emailInput.validity.valid) {
-            alert('Por favor, ingrese un email válido');
+            showToast('Por favor, ingrese un email válido', 'warning');
             emailInput.focus();
             return;
         }
@@ -810,10 +864,6 @@ function setupEmailVerification() {
                 emailInput.readOnly = true;
                 btnEnviarCodigo.textContent = 'Código Enviado';
                 
-                // Iniciar temporizador con el tiempo de expiración del servidor
-                const expiresIn = data.expires_in || 300; // Default 5 minutos
-                startTimer(expiresIn);
-                
                 // Focus en el input del código
                 codigoInput.focus();
                 
@@ -824,7 +874,7 @@ function setupEmailVerification() {
             }
         } catch (error) {
             console.error('Error:', error);
-            alert(error.message || 'Error al enviar el código. Por favor, intenta nuevamente.');
+            showToast(error.message || 'Error al enviar el código. Por favor, intenta nuevamente.', 'error');
             btnEnviarCodigo.disabled = false;
             btnEnviarCodigo.textContent = 'Enviar Código';
         }
@@ -862,7 +912,6 @@ function setupEmailVerification() {
             
             if (response.ok && data.success && data.verified) {
                 // Código correcto
-                clearInterval(timerInterval);
                 verificationSection.classList.add('hidden');
                 verificationSuccess.classList.remove('hidden');
                 verificationSuccess.classList.add('flex');
@@ -915,41 +964,12 @@ function setupEmailVerification() {
         this.value = this.value.replace(/[^0-9]/g, '');
     });
     
-    function startTimer(seconds) {
-        let timeLeft = seconds;
-        
-        updateTimerDisplay(timeLeft);
-        
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            updateTimerDisplay(timeLeft);
-            
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                showVerificationError('El código ha expirado. Solicita uno nuevo');
-                codigoInput.disabled = true;
-                btnVerificarCodigo.disabled = true;
-                
-                setTimeout(() => {
-                    resetVerification();
-                }, 3000);
-            }
-        }, 1000);
-    }
-    
-    function updateTimerDisplay(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        verificationTimer.textContent = `Código válido por ${minutes}:${secs.toString().padStart(2, '0')}`;
-    }
-    
     function showVerificationError(message) {
         verificationError.textContent = message;
         verificationError.classList.remove('hidden');
     }
     
     function resetVerification() {
-        clearInterval(timerInterval);
         verificationSection.classList.add('hidden');
         verificationSuccess.classList.add('hidden');
         verificationError.classList.add('hidden');

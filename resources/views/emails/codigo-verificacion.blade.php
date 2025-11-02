@@ -109,12 +109,12 @@
             <p>Ingresa este código en el formulario para completar la verificación de tu email.</p>
             
             <div class="warning">
-                <p><strong>⚠️ Importante:</strong> Si no solicitaste este código, puedes ignorar este mensaje de forma segura. Tu cuenta permanece protegida.</p>
+                <p><strong>⚠️ Importante:</strong> Si no solicitaste este código, puedes ignorar este mensaje de forma segura.</p>
             </div>
         </div>
         
         <div class="footer">
-            <p><strong>SIGSIH - Sistema Integral de Gestión de Servicios Industriales de Hardlan</strong></p>
+            <p><strong>Hardlan</strong></p>
             <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
             <p>&copy; {{ date('Y') }} Hardlan. Todos los derechos reservados.</p>
         </div>
