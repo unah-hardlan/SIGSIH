@@ -62,7 +62,7 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     <span class="font-medium text-green-600 dark:text-green-400">Haz clic para subir</span> o arrastra el logo
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-white mt-1">PNG, JPG, WEBP hasta 2MB</p>
+                                <p class="text-xs text-gray-500 dark:text-white mt-1">PNG, JPG, WEBP hasta 5MB</p>
                             </label>
                         </div>
                         
@@ -134,36 +134,78 @@
                     </div>
 
                     <!-- Horario de Atención -->
-                    <div class="space-y-1">
-                        <label for="horario_atencion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <div class="md:col-span-2 space-y-1">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Horario de Atención
                         </label>
-                        <div class="relative">
-                            <input 
-                                id="horario_atencion" 
-                                name="horario_atencion" 
-                                type="text" 
-                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                                placeholder="Ej: L-V 8:00-17:00, S 9:00-12:00"
-                                value="{{ old('horario_atencion') }}"
-                                onblur="validateHorario(this)"
-                                oninput="clearHorarioError()"
-                            >
-                            <div id="horario-validation-icon" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
-                                <!-- Icono de éxito -->
-                                <svg class="w-5 h-5 text-green-500 success-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <!-- Icono de error -->
-                                <svg class="w-5 h-5 text-red-500 error-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
+
+                        <div class="space-y-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-800/60 px-4 py-4 flex items-center justify-center">
+                            <input type="hidden" name="horario_atencion" id="horario_atencion" value="{{ old('horario_atencion') }}">
+
+                            <!-- Días de la semana -->
+                            <div class="space-y-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Días</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @php
+                                        $dias = [
+                                            ['code' => 'L', 'label' => 'Lun'],
+                                            ['code' => 'M', 'label' => 'Mar'],
+                                            ['code' => 'X', 'label' => 'Mié'],
+                                            ['code' => 'J', 'label' => 'Jue'],
+                                            ['code' => 'V', 'label' => 'Vie'],
+                                            ['code' => 'S', 'label' => 'Sáb'],
+                                            ['code' => 'D', 'label' => 'Dom'],
+                                        ];
+                                    @endphp
+                                    @foreach($dias as $dia)
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="hidden peer" data-day-checkbox value="{{ $dia['code'] }}">
+                                            <span class="select-none rounded-lg border-2 border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-all duration-150 hover:border-gray-400 cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:peer-checked:border-green-400 dark:peer-checked:bg-green-900/40 dark:peer-checked:text-green-300">
+                                                {{ $dia['label'] }}
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <!-- Presets rápidos -->
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-150 hover:border-green-500 hover:bg-green-50 hover:text-green-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:border-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300" data-preset="weekdays">Lunes a Viernes</button>
+                                    <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-150 hover:border-green-500 hover:bg-green-50 hover:text-green-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:border-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300" data-preset="weekends">Lunes a Sábado</button>
+                                    
+                                </div>
+                            </div>
+
+                            <!-- Hora de apertura y cierre -->
+                            <div class="space-y-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Hora:</p>
+                                <div class="flex flex-wrap gap-3 items-center">
+                                    <div class="flex items-center gap-2">
+                                        <input 
+                                            type="time" 
+                                            id="horario_inicio" 
+                                            class="px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                            value="08:00"
+                                        >
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">a. m.</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input 
+                                            type="time" 
+                                            id="horario_fin" 
+                                            class="px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                            value="17:00"
+                                        >
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">p. m.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview del horario -->
+                            <div class="pt-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Horario:</p>
+                                <p id="horario-preview" class="text-sm text-gray-700 dark:text-gray-300 font-medium">—</p>
                             </div>
                         </div>
-                        <div id="horario-help" class="text-xs text-gray-500 dark:text-white">
-                            <strong>Formatos válidos:</strong> L-V 8:00-17:00 | L-S 9:00-18:00 | L-V 8:00-12:00, 14:00-18:00
-                        </div>
-                        <div id="horario-error" class="text-sm text-red-600 dark:text-red-400 hidden"></div>
+                        
                         @error('horario_atencion')
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
@@ -179,12 +221,85 @@
                         id="descripcion_empresa" 
                         name="descripcion_empresa" 
                         rows="3"
-                        class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                        class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200 resize-y min-h-[80px] max-h-[280px]"
                         placeholder="Describe brevemente tu empresa y sus servicios"
                     >{{ old('descripcion_empresa') }}</textarea>
                     @error('descripcion_empresa')
                         <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Email de Contacto con Verificación -->
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        Email de Contacto
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <label for="email_contacto" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    id="email_contacto" 
+                                    name="email_contacto" 
+                                    type="email" 
+                                    required 
+                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                    placeholder="ejemplo@empresa.com"
+                                    value="{{ old('email_contacto') }}"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="btn-enviar-codigo"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Enviar Código
+                                </button>
+                            </div>
+                            @error('email_contacto')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <!-- Campo de verificación (oculto inicialmente) -->
+                        <div id="verification-section" class="hidden space-y-1">
+                            <label for="codigo_verificacion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Código de Verificación <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    id="codigo_verificacion" 
+                                    name="codigo_verificacion" 
+                                    type="text" 
+                                    maxlength="6"
+                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200 text-center text-lg tracking-widest font-mono"
+                                    placeholder="000000"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="btn-verificar-codigo"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Verificar
+                                </button>
+                            </div>
+                            <p id="verification-timer" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                            <p id="verification-error" class="text-sm text-red-600 dark:text-red-400 mt-1 hidden"></p>
+                        </div>
+                        
+                        <!-- Indicador de verificación exitosa -->
+                        <div id="verification-success" class="hidden items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-green-800 dark:text-green-200">Email verificado correctamente</span>
+                        </div>
+                        
+                        <!-- Campo oculto para indicar si el email está verificado -->
+                        <input type="hidden" id="email_verificado" name="email_verificado" value="0">
+                    </div>
                 </div>
 
                 <!-- Botones -->
@@ -271,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!file) return true;
             const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
             if (!allowed.includes(file.type)) return 'Formato no permitido';
-            if (file.size > 2 * 1024 * 1024) return 'La imagen debe ser menor a 2MB';
+            if (file.size > 5 * 1024 * 1024) return 'La imagen debe ser menor a 5MB';
             return true;
         }
     };
@@ -365,12 +480,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Configurar drag & drop para el logo
     setupLogoDragAndDrop();
+    
+    // Configurar horario de atención interactivo
+    setupHorarioAtencion();
+    
+    // Configurar verificación de email
+    setupEmailVerification();
 });
 
 // Función para configurar drag & drop del logo
 function setupLogoDragAndDrop() {
     const dropZone = document.getElementById('logo-drop-zone');
     const fileInput = document.getElementById('avatar');
+
+    // Verificar que los elementos existan
+    if (!dropZone || !fileInput) {
+        return;
+    }
 
     // Prevenir comportamiento por defecto
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -418,9 +544,9 @@ function setupLogoDragAndDrop() {
                 return;
             }
 
-            // Validar tamaño (2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                alert('El archivo es muy grande. Máximo 2MB.');
+            // Validar tamaño (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El archivo es muy grande. Máximo 5MB.');
                 return;
             }
 
@@ -453,93 +579,399 @@ function previewLogo(input) {
     }
 }
 
-// Función para validar formato de horario
-function validateHorario(input) {
-    const value = input.value.trim();
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const successIcon = iconContainer.querySelector('.success-icon');
-    const errorIcon = iconContainer.querySelector('.error-icon');
+// Función para configurar el horario de atención interactivo
+function setupHorarioAtencion() {
+    const hiddenInput = document.getElementById('horario_atencion');
+    const dayCheckboxes = document.querySelectorAll('[data-day-checkbox]');
+    const horarioInicio = document.getElementById('horario_inicio');
+    const horarioFin = document.getElementById('horario_fin');
+    const horarioPreview = document.getElementById('horario-preview');
+    const presetButtons = document.querySelectorAll('.horario-preset');
     
-    // Si está vacío, no mostrar error (campo opcional)
-    if (!value) {
-        hideHorarioValidation();
-        return true;
+    // Función para actualizar el preview y el campo oculto
+    function updateHorario() {
+        const selectedDays = Array.from(dayCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        const inicio = horarioInicio.value;
+        const fin = horarioFin.value;
+        
+        if (selectedDays.length === 0 || !inicio || !fin) {
+            horarioPreview.textContent = '—';
+            hiddenInput.value = '';
+            return;
+        }
+        
+        // Generar cadena de días (compactar rangos)
+        let daysString = '';
+        const dayOrder = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+        const sortedDays = selectedDays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+        
+        // Detectar rangos consecutivos
+        if (sortedDays.length === 7) {
+            daysString = 'L-D';
+        } else if (sortedDays.length === 5 && sortedDays.join('') === 'LMXJV') {
+            daysString = 'L-V';
+        } else if (sortedDays.length === 6 && sortedDays.join('') === 'LMXJVS') {
+            daysString = 'L-S';
+        } else {
+            // Días individuales o rangos cortos
+            let ranges = [];
+            let start = 0;
+            for (let i = 1; i <= sortedDays.length; i++) {
+                if (i === sortedDays.length || dayOrder.indexOf(sortedDays[i]) - dayOrder.indexOf(sortedDays[i-1]) > 1) {
+                    if (i - start > 2) {
+                        ranges.push(sortedDays[start] + '-' + sortedDays[i-1]);
+                    } else {
+                        for (let j = start; j < i; j++) {
+                            ranges.push(sortedDays[j]);
+                        }
+                    }
+                    start = i;
+                }
+            }
+            daysString = ranges.join(', ');
+        }
+        
+        // Formatear horario con AM/PM
+        const inicioFormatted = formatTime(inicio);
+        const finFormatted = formatTime(fin);
+        
+        const horarioString = `${daysString} ${inicioFormatted}-${finFormatted}`;
+        horarioPreview.textContent = horarioString;
+        hiddenInput.value = horarioString;
     }
     
-    // Patrones de validación para horarios
-    const patterns = [
-        // L-V 8:00-17:00
-        /^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-        // L-V 8:00-12:00, 14:00-18:00 (con pausa)
-        /^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2},\s*\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-        // L 8:00-17:00 (día individual)
-        /^[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-        // 24 horas
-        /^24\s*horas?$/i,
-        // Cerrado
-        /^cerrado$/i
-    ];
-    
-    const isValid = patterns.some(pattern => pattern.test(value));
-    
-    if (isValid) {
-        showHorarioSuccess();
-        return true;
-    } else {
-        showHorarioError('Formato de horario inválido. Ejemplos: "L-V 8:00-17:00", "L-S 9:00-18:00", "24 horas"');
-        return false;
+    // Función para formatear hora en formato 12h con AM/PM
+    function formatTime(time24) {
+        const [hours, minutes] = time24.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12 || 12;
+        return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
     }
-}
-
-function showHorarioSuccess() {
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const successIcon = iconContainer.querySelector('.success-icon');
-    const errorIcon = iconContainer.querySelector('.error-icon');
-    const input = document.getElementById('horario_atencion');
     
-    errorDiv.classList.add('hidden');
-    iconContainer.classList.remove('hidden');
-    successIcon.classList.remove('hidden');
-    errorIcon.classList.add('hidden');
+    // Event listeners para checkboxes de días
+    dayCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateHorario);
+    });
     
-    input.classList.remove('border-red-500');
-    input.classList.add('border-green-500');
-}
-
-function showHorarioError(message) {
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const successIcon = iconContainer.querySelector('.success-icon');
-    const errorIcon = iconContainer.querySelector('.error-icon');
-    const input = document.getElementById('horario_atencion');
+    // Event listeners para inputs de hora
+    horarioInicio.addEventListener('change', updateHorario);
+    horarioFin.addEventListener('change', updateHorario);
     
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
-    iconContainer.classList.remove('hidden');
-    successIcon.classList.add('hidden');
-    errorIcon.classList.remove('hidden');
+    // Event listeners para botones de preset
+    presetButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const preset = this.dataset.preset;
+            
+            dayCheckboxes.forEach(cb => {
+                if (preset === 'all') {
+                    cb.checked = true;
+                } else if (preset === 'weekdays') {
+                    cb.checked = ['L', 'M', 'X', 'J', 'V'].includes(cb.value);
+                } else if (preset === 'weekends') {
+                    cb.checked = ['L', 'M', 'X', 'J', 'V', 'S'].includes(cb.value);
+                } else if (preset === 'none') {
+                    cb.checked = false;
+                }
+            });
+            
+            updateHorario();
+        });
+    });
     
-    input.classList.remove('border-green-500');
-    input.classList.add('border-red-500');
-}
-
-function hideHorarioValidation() {
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const input = document.getElementById('horario_atencion');
-    
-    errorDiv.classList.add('hidden');
-    iconContainer.classList.add('hidden');
-    input.classList.remove('border-green-500', 'border-red-500');
-}
-
-function clearHorarioError() {
-    const input = document.getElementById('horario_atencion');
-    if (input.classList.contains('border-red-500')) {
-        hideHorarioValidation();
+    // Hidratar desde el valor antiguo si existe
+    const oldValue = hiddenInput.value;
+    if (oldValue) {
+        parseAndSetHorario(oldValue);
     }
+    
+    // Función para parsear y establecer un horario existente
+    function parseAndSetHorario(horarioString) {
+        // Formato esperado: "L-V 8:00 AM-5:00 PM" o similar
+        const match = horarioString.match(/^([LMXJVSD, -]+)\s+(\d{1,2}:\d{2}\s*(?:AM|PM)?)-(\d{1,2}:\d{2}\s*(?:AM|PM)?)$/i);
+        
+        if (!match) return;
+        
+        const [, daysStr, inicioStr, finStr] = match;
+        
+        // Parsear días
+        const dayMap = {'L': 'L', 'M': 'M', 'X': 'X', 'J': 'J', 'V': 'V', 'S': 'S', 'D': 'D'};
+        dayCheckboxes.forEach(cb => cb.checked = false);
+        
+        if (daysStr.includes('-')) {
+            // Rango de días
+            const rangeParts = daysStr.split('-').map(s => s.trim());
+            if (rangeParts.length === 2) {
+                const dayOrder = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+                const startIdx = dayOrder.indexOf(rangeParts[0]);
+                const endIdx = dayOrder.indexOf(rangeParts[1]);
+                
+                if (startIdx !== -1 && endIdx !== -1) {
+                    for (let i = startIdx; i <= endIdx; i++) {
+                        const checkbox = Array.from(dayCheckboxes).find(cb => cb.value === dayOrder[i]);
+                        if (checkbox) checkbox.checked = true;
+                    }
+                }
+            }
+        } else {
+            // Días individuales separados por coma
+            daysStr.split(',').forEach(day => {
+                const d = day.trim();
+                const checkbox = Array.from(dayCheckboxes).find(cb => cb.value === d);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+        
+        // Parsear horas (convertir de 12h a 24h)
+        horarioInicio.value = convertTo24Hour(inicioStr.trim());
+        horarioFin.value = convertTo24Hour(finStr.trim());
+        
+        updateHorario();
+    }
+    
+    // Convertir formato 12h a 24h
+    function convertTo24Hour(time12) {
+        const match = time12.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+        if (!match) return '08:00';
+        
+        let [, hours, minutes, period] = match;
+        hours = parseInt(hours);
+        
+        if (period && period.toUpperCase() === 'PM' && hours !== 12) {
+            hours += 12;
+        } else if (period && period.toUpperCase() === 'AM' && hours === 12) {
+            hours = 0;
+        }
+        
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    }
+    
+    // Inicializar preview
+    updateHorario();
+}
+
+// Función para configurar la verificación de email
+function setupEmailVerification() {
+    const emailInput = document.getElementById('email_contacto');
+    const btnEnviarCodigo = document.getElementById('btn-enviar-codigo');
+    const btnVerificarCodigo = document.getElementById('btn-verificar-codigo');
+    const verificationSection = document.getElementById('verification-section');
+    const verificationSuccess = document.getElementById('verification-success');
+    const codigoInput = document.getElementById('codigo_verificacion');
+    const verificationTimer = document.getElementById('verification-timer');
+    const verificationError = document.getElementById('verification-error');
+    const emailVerificadoInput = document.getElementById('email_verificado');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    let codigoEnviado = null;
+    let timerInterval = null;
+    let intentosRestantes = 3;
+    
+    // Deshabilitar submit hasta que el email esté verificado
+    submitBtn.disabled = true;
+    
+    // Validar email antes de enviar código
+    btnEnviarCodigo.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        
+        if (!email || !emailInput.validity.valid) {
+            alert('Por favor, ingrese un email válido');
+            emailInput.focus();
+            return;
+        }
+        
+        // Deshabilitar botón y cambiar texto
+        btnEnviarCodigo.disabled = true;
+        btnEnviarCodigo.textContent = 'Enviando...';
+        
+        try {
+            const response = await fetch('/api/email-contacto/enviar-codigo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({ email: email })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                // Código enviado exitosamente
+                codigoEnviado = true; // Marcar que se envió el código
+                
+                // Mostrar sección de verificación
+                verificationSection.classList.remove('hidden');
+                verificationSuccess.classList.add('hidden');
+                verificationError.classList.add('hidden');
+                emailInput.readOnly = true;
+                btnEnviarCodigo.textContent = 'Código Enviado';
+                
+                // Iniciar temporizador con el tiempo de expiración del servidor
+                const expiresIn = data.expires_in || 300; // Default 5 minutos
+                startTimer(expiresIn);
+                
+                // Focus en el input del código
+                codigoInput.focus();
+                
+                intentosRestantes = 3;
+            } else {
+                // Error al enviar
+                throw new Error(data.message || 'Error al enviar el código');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Error al enviar el código. Por favor, intenta nuevamente.');
+            btnEnviarCodigo.disabled = false;
+            btnEnviarCodigo.textContent = 'Enviar Código';
+        }
+    });
+    
+    // Verificar código ingresado
+    btnVerificarCodigo.addEventListener('click', async function() {
+        const codigoIngresado = codigoInput.value.trim();
+        const email = emailInput.value.trim();
+        
+        if (!codigoIngresado || codigoIngresado.length !== 6) {
+            showVerificationError('Por favor, ingrese el código de 6 dígitos');
+            return;
+        }
+        
+        btnVerificarCodigo.disabled = true;
+        btnVerificarCodigo.textContent = 'Verificando...';
+        verificationError.classList.add('hidden');
+        
+        try {
+            const response = await fetch('/api/email-contacto/verificar-codigo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({ 
+                    email: email,
+                    codigo: codigoIngresado 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success && data.verified) {
+                // Código correcto
+                clearInterval(timerInterval);
+                verificationSection.classList.add('hidden');
+                verificationSuccess.classList.remove('hidden');
+                verificationSuccess.classList.add('flex');
+                emailVerificadoInput.value = '1';
+                submitBtn.disabled = false;
+            } else {
+                // Código incorrecto o error
+                const message = data.message || 'Código incorrecto';
+                showVerificationError(message);
+                
+                const attemptsRemaining = data.attempts_remaining;
+                
+                if (attemptsRemaining !== undefined && attemptsRemaining > 0) {
+                    codigoInput.value = '';
+                    codigoInput.focus();
+                    btnVerificarCodigo.disabled = false;
+                    btnVerificarCodigo.textContent = 'Verificar';
+                } else if (response.status === 429 || attemptsRemaining === 0) {
+                    // Agotó intentos o código expirado
+                    codigoInput.disabled = true;
+                    btnVerificarCodigo.disabled = true;
+                    
+                    // Permitir reenviar código después de 3 segundos
+                    setTimeout(() => {
+                        resetVerification();
+                    }, 3000);
+                } else {
+                    btnVerificarCodigo.disabled = false;
+                    btnVerificarCodigo.textContent = 'Verificar';
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showVerificationError('Error al verificar el código. Por favor, intenta nuevamente.');
+            btnVerificarCodigo.disabled = false;
+            btnVerificarCodigo.textContent = 'Verificar';
+        }
+    });
+    
+    // Permitir verificar con Enter
+    codigoInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            btnVerificarCodigo.click();
+        }
+    });
+    
+    // Solo permitir números en el código
+    codigoInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+    
+    function startTimer(seconds) {
+        let timeLeft = seconds;
+        
+        updateTimerDisplay(timeLeft);
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay(timeLeft);
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                showVerificationError('El código ha expirado. Solicita uno nuevo');
+                codigoInput.disabled = true;
+                btnVerificarCodigo.disabled = true;
+                
+                setTimeout(() => {
+                    resetVerification();
+                }, 3000);
+            }
+        }, 1000);
+    }
+    
+    function updateTimerDisplay(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        verificationTimer.textContent = `Código válido por ${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    function showVerificationError(message) {
+        verificationError.textContent = message;
+        verificationError.classList.remove('hidden');
+    }
+    
+    function resetVerification() {
+        clearInterval(timerInterval);
+        verificationSection.classList.add('hidden');
+        verificationSuccess.classList.add('hidden');
+        verificationError.classList.add('hidden');
+        emailInput.readOnly = false;
+        codigoInput.value = '';
+        codigoInput.disabled = false;
+        btnEnviarCodigo.disabled = false;
+        btnEnviarCodigo.textContent = 'Enviar Código';
+        btnVerificarCodigo.disabled = false;
+        btnVerificarCodigo.textContent = 'Verificar';
+        emailVerificadoInput.value = '0';
+        submitBtn.disabled = true;
+        codigoEnviado = null;
+        intentosRestantes = 3;
+    }
+    
+    // Resetear verificación si cambia el email
+    emailInput.addEventListener('input', function() {
+        if (emailVerificadoInput.value === '1') {
+            resetVerification();
+        }
+    });
 }
 
 // Función para toggle del tema con animación suave

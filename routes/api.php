@@ -70,6 +70,11 @@ Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 // 2FA verify (public, tied to challenge cookie)
 Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 
+// Verificación de email de contacto (público)
+Route::post('email-contacto/enviar-codigo', [\App\Http\Controllers\EmailVerificationController::class, 'enviarCodigo']);
+Route::post('email-contacto/verificar-codigo', [\App\Http\Controllers\EmailVerificationController::class, 'verificarCodigo']);
+Route::post('email-contacto/verificar-estado', [\App\Http\Controllers\EmailVerificationController::class, 'verificarEstado']);
+
 // Get de genero para cliente
 Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', function () {
     $items = \App\Models\Genero::select('id_genero_pk as id', 'genero')->orderBy('genero')->get();

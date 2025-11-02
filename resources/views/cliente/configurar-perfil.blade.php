@@ -54,7 +54,7 @@
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                     <span class="font-medium text-blue-600 dark:text-blue-400">Clic para subir</span> o arrastra
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-white">PNG, JPG, WEBP (2MB máx)</p>
+                                <p class="text-xs text-gray-500 dark:text-white">PNG, JPG, WEBP (5MB máx)</p>
                             </label>
                         </div>
                         
@@ -184,6 +184,79 @@
                     </div>
                 </div>
 
+                <!-- Sección de Contacto con Verificación -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        Email de Contacto
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <label for="email_contacto" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    id="email_contacto" 
+                                    name="email_contacto" 
+                                    type="email" 
+                                    required 
+                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                                    placeholder="ejemplo@correo.com"
+                                    value="{{ old('email_contacto') }}"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="btn-enviar-codigo"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Enviar Código
+                                </button>
+                            </div>
+                            @error('email_contacto')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <!-- Campo de verificación (oculto inicialmente) -->
+                        <div id="verification-section" class="hidden space-y-1">
+                            <label for="codigo_verificacion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Código de Verificación <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    id="codigo_verificacion" 
+                                    name="codigo_verificacion" 
+                                    type="text" 
+                                    maxlength="6"
+                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-center text-lg tracking-widest font-mono"
+                                    placeholder="000000"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="btn-verificar-codigo"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Verificar
+                                </button>
+                            </div>
+                            <p id="verification-timer" class="text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                            <p id="verification-error" class="text-sm text-red-600 dark:text-red-400 mt-1 hidden"></p>
+                        </div>
+                        
+                        <!-- Indicador de verificación exitosa -->
+                        <div id="verification-success" class="hidden items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-green-800 dark:text-green-200">Email verificado correctamente</span>
+                        </div>
+                        
+                        <!-- Campo oculto para indicar si el email está verificado -->
+                        <input type="hidden" id="email_verificado" name="email_verificado" value="0">
+                    </div>
+                </div>
+
                 <div class="pt-4">
                     <button 
                         type="submit" 
@@ -263,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!file) return true;
             const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
             if (!allowed.includes(file.type)) return 'Formato no permitido';
-            if (file.size > 2 * 1024 * 1024) return 'La imagen debe ser menor a 2MB';
+            if (file.size > 5 * 1024 * 1024) return 'La imagen debe ser menor a 5MB';
             return true;
         }
     };
@@ -383,7 +456,231 @@ document.addEventListener('DOMContentLoaded', function() {
             </span>
         `;
     });
+
+    // Configuración de verificación de email
+    setupEmailVerification();
 });
+
+function setupEmailVerification() {
+    const emailInput = document.getElementById('email_contacto');
+    const btnEnviarCodigo = document.getElementById('btn-enviar-codigo');
+    const btnVerificarCodigo = document.getElementById('btn-verificar-codigo');
+    const verificationSection = document.getElementById('verification-section');
+    const verificationSuccess = document.getElementById('verification-success');
+    const codigoInput = document.getElementById('codigo_verificacion');
+    const verificationTimer = document.getElementById('verification-timer');
+    const verificationError = document.getElementById('verification-error');
+    const emailVerificadoInput = document.getElementById('email_verificado');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    let codigoEnviado = null;
+    let timerInterval = null;
+    let intentosRestantes = 3;
+    
+    // Deshabilitar submit hasta que el email esté verificado
+    submitBtn.disabled = true;
+    
+    // Validar email antes de enviar código
+    btnEnviarCodigo.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        
+        if (!email || !emailInput.validity.valid) {
+            alert('Por favor, ingrese un email válido');
+            emailInput.focus();
+            return;
+        }
+        
+        // Deshabilitar botón y cambiar texto
+        btnEnviarCodigo.disabled = true;
+        btnEnviarCodigo.textContent = 'Enviando...';
+        
+        try {
+            const response = await fetch('/api/email-contacto/enviar-codigo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({ email: email })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                // Código enviado exitosamente
+                codigoEnviado = true; // Marcar que se envió el código
+                
+                // Mostrar sección de verificación
+                verificationSection.classList.remove('hidden');
+                verificationSuccess.classList.add('hidden');
+                verificationError.classList.add('hidden');
+                emailInput.readOnly = true;
+                btnEnviarCodigo.textContent = 'Código Enviado';
+                
+                // Iniciar temporizador con el tiempo de expiración del servidor
+                const expiresIn = data.expires_in || 300; // Default 5 minutos
+                startTimer(expiresIn);
+                
+                // Focus en el input del código
+                codigoInput.focus();
+                
+                intentosRestantes = 3;
+            } else {
+                // Error al enviar
+                throw new Error(data.message || 'Error al enviar el código');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Error al enviar el código. Por favor, intenta nuevamente.');
+            btnEnviarCodigo.disabled = false;
+            btnEnviarCodigo.textContent = 'Enviar Código';
+        }
+    });
+    
+    // Verificar código ingresado
+    btnVerificarCodigo.addEventListener('click', async function() {
+        const codigoIngresado = codigoInput.value.trim();
+        const email = emailInput.value.trim();
+        
+        if (!codigoIngresado || codigoIngresado.length !== 6) {
+            showVerificationError('Por favor, ingrese el código de 6 dígitos');
+            return;
+        }
+        
+        btnVerificarCodigo.disabled = true;
+        btnVerificarCodigo.textContent = 'Verificando...';
+        verificationError.classList.add('hidden');
+        
+        try {
+            const response = await fetch('/api/email-contacto/verificar-codigo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({ 
+                    email: email,
+                    codigo: codigoIngresado 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success && data.verified) {
+                // Código correcto
+                clearInterval(timerInterval);
+                verificationSection.classList.add('hidden');
+                verificationSuccess.classList.remove('hidden');
+                verificationSuccess.classList.add('flex');
+                emailVerificadoInput.value = '1';
+                submitBtn.disabled = false;
+            } else {
+                // Código incorrecto o error
+                const message = data.message || 'Código incorrecto';
+                showVerificationError(message);
+                
+                const attemptsRemaining = data.attempts_remaining;
+                
+                if (attemptsRemaining !== undefined && attemptsRemaining > 0) {
+                    codigoInput.value = '';
+                    codigoInput.focus();
+                    btnVerificarCodigo.disabled = false;
+                    btnVerificarCodigo.textContent = 'Verificar';
+                } else if (response.status === 429 || attemptsRemaining === 0) {
+                    // Agotó intentos o código expirado
+                    codigoInput.disabled = true;
+                    btnVerificarCodigo.disabled = true;
+                    
+                    // Permitir reenviar código después de 3 segundos
+                    setTimeout(() => {
+                        resetVerification();
+                    }, 3000);
+                } else {
+                    btnVerificarCodigo.disabled = false;
+                    btnVerificarCodigo.textContent = 'Verificar';
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showVerificationError('Error al verificar el código. Por favor, intenta nuevamente.');
+            btnVerificarCodigo.disabled = false;
+            btnVerificarCodigo.textContent = 'Verificar';
+        }
+    });
+    
+    // Permitir verificar con Enter
+    codigoInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            btnVerificarCodigo.click();
+        }
+    });
+    
+    // Solo permitir números en el código
+    codigoInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+    
+    function startTimer(seconds) {
+        let timeLeft = seconds;
+        
+        updateTimerDisplay(timeLeft);
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay(timeLeft);
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                showVerificationError('El código ha expirado. Solicita uno nuevo');
+                codigoInput.disabled = true;
+                btnVerificarCodigo.disabled = true;
+                
+                setTimeout(() => {
+                    resetVerification();
+                }, 3000);
+            }
+        }, 1000);
+    }
+    
+    function updateTimerDisplay(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        verificationTimer.textContent = `Código válido por ${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    function showVerificationError(message) {
+        verificationError.textContent = message;
+        verificationError.classList.remove('hidden');
+    }
+    
+    function resetVerification() {
+        clearInterval(timerInterval);
+        verificationSection.classList.add('hidden');
+        verificationSuccess.classList.add('hidden');
+        verificationError.classList.add('hidden');
+        emailInput.readOnly = false;
+        codigoInput.value = '';
+        codigoInput.disabled = false;
+        btnEnviarCodigo.disabled = false;
+        btnEnviarCodigo.textContent = 'Enviar Código';
+        btnVerificarCodigo.disabled = false;
+        btnVerificarCodigo.textContent = 'Verificar';
+        emailVerificadoInput.value = '0';
+        submitBtn.disabled = true;
+        codigoEnviado = null;
+        intentosRestantes = 3;
+    }
+    
+    // Resetear verificación si cambia el email
+    emailInput.addEventListener('input', function() {
+        if (emailVerificadoInput.value === '1') {
+            resetVerification();
+        }
+    });
+}
 
 function toggleTheme() {
     const html = document.documentElement;

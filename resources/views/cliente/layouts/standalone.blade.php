@@ -124,6 +124,10 @@
         function setupDragAndDrop() {
             const dropZone = document.getElementById('avatar-drop-zone');
             const fileInput = document.getElementById('avatar');
+
+            if (!dropZone || !fileInput) {
+                return;
+            }
             
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dropZone.addEventListener(eventName, preventDefaults, false);
