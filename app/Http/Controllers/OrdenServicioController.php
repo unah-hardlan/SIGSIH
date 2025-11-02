@@ -44,9 +44,22 @@ class OrdenServicioController extends Controller
         if ($request->has('fecha_recepcion')) {
             $query->whereDate('fecha_recepcion', $request->fecha_recepcion);
         }
+        // Filtrar por cliente (ordenes cuya solicitud pertenece a un cliente)
+        $clienteId = $request->input('cliente_id', $request->input('id_cliente_fk'));
+        if (!empty($clienteId)) {
+            $query->whereHas('solicitudServicio', function ($q) use ($clienteId) {
+                $q->where('id_cliente_fk', $clienteId);
+            });
+        }
 
-        $ordenesServicio = $query->paginate(15);
-
+        // Paginación flexible: per_page y all
+        $perPage = (int) $request->input('per_page', 15);
+        $all = $request->boolean('all') || $perPage === -1;
+        if ($all) {
+            $items = $query->get();
+            return OrdenServicioResource::collection($items);
+        }
+        $ordenesServicio = $query->paginate(max(1, $perPage));
         return OrdenServicioResource::collection($ordenesServicio);
     }
 
@@ -69,8 +82,7 @@ class OrdenServicioController extends Controller
             'diagnostico_cliente' => 'nullable|string|max:500',
             'calificacion_servicio' => 'nullable|string|in:excelente,bueno,regular,deficiente',
             'id_estado_orden_servicio_fk' => 'nullable|integer|exists:tbl_estado_orden_servicio,id_estado_orden_servicio_pk',
-            'id_cotizacion_fk' => 'nullable|integer|exists:tbl_cotizacion,id_cotizacion_pk'
-            ,
+            'id_cotizacion_fk' => 'nullable|integer|exists:tbl_cotizacion,id_cotizacion_pk',
             'repuestos' => 'nullable|array',
             'repuestos.*.id_producto_fk' => 'required_with:repuestos|integer|exists:tbl_producto,id_producto_pk',
             'repuestos.*.cantidad' => 'required_with:repuestos|integer|min:1',
@@ -169,16 +181,15 @@ class OrdenServicioController extends Controller
             'diagnostico_cliente' => 'nullable|string|max:500',
             'calificacion_servicio' => 'nullable|string|in:excelente,bueno,regular,deficiente',
             'id_estado_orden_servicio_fk' => 'nullable|integer|exists:tbl_estado_orden_servicio,id_estado_orden_servicio_pk',
-            'id_cotizacion_fk' => 'nullable|integer|exists:tbl_cotizacion,id_cotizacion_pk'
-            ,
+            'id_cotizacion_fk' => 'nullable|integer|exists:tbl_cotizacion,id_cotizacion_pk',
             'repuestos' => 'nullable|array',
             'repuestos.*.id_producto_fk' => 'required_with:repuestos|integer|exists:tbl_producto,id_producto_pk',
             'repuestos.*.cantidad' => 'required_with:repuestos|integer|min:1',
         ]);
 
-    // Detectar cambio de estado para notificar después de aplicar la actualización
-    $oldEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
-    $ordenServicio->update($validatedData);
+        // Detectar cambio de estado para notificar después de aplicar la actualización
+        $oldEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
+        $ordenServicio->update($validatedData);
         $ordenServicio->load([
             'solicitudServicio.cliente.empresa',
             'solicitudServicio.cliente.personas',

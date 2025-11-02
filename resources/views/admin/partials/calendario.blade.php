@@ -59,10 +59,16 @@
     submitting: false,
     loadingCatalogs: false,
     loadingEvents: false,
+    loadingFilteredClientes: false,
+    loadingFilteredOrdenes: false,
     catalogAgencias: [],
     catalogEstados: [],
     catalogTiposMantenimiento: [],
     catalogClientes: [],
+    // Clientes filtrados por agencia seleccionada (si aplica)
+    filteredClientes: [],
+    // Ordenes filtradas por cliente seleccionado (si aplica)
+    filteredOrdenesServicio: [],
     catalogOrdenesServicio: [],
     // Calendar variables
     currentYear: new Date().getFullYear(),
@@ -135,6 +141,9 @@
             id_tipo_mantenimiento_fk: raw.id_tipo_mantenimiento_fk || '',
             id_cliente_fk: raw.id_cliente_fk || '',
         };
+        // Alinear dependientes como en Agregar: cargar clientes por agencia y OS por cliente
+        try { window.calendarioApiHandlers && window.calendarioApiHandlers.onAgenciaChange(this, this.formEvento.id_agencias_fk); } catch(_) {}
+        try { window.calendarioApiHandlers && window.calendarioApiHandlers.onClienteChange(this, this.formEvento.id_cliente_fk); } catch(_) {}
         // pequeño delay para asegurar que el modal capta el nuevo estado antes de abrir
         requestAnimationFrame(()=>{ this.isEditModalOpen = true; });
     },
@@ -154,6 +163,9 @@
             id_tipo_mantenimiento_fk: raw.id_tipo_mantenimiento_fk || '',
             id_cliente_fk: raw.id_cliente_fk || '',
         };
+        // Alinear dependientes como en Agregar para la vista de Lista
+        try { window.calendarioApiHandlers && window.calendarioApiHandlers.onAgenciaChange(this, this.formEventoLista.id_agencias_fk); } catch(_) {}
+        try { window.calendarioApiHandlers && window.calendarioApiHandlers.onClienteChange(this, this.formEventoLista.id_cliente_fk); } catch(_) {}
         requestAnimationFrame(()=>{ this.isEditListModalOpen = true; });
     },
     async quickDelete(ev){
@@ -251,6 +263,24 @@
         // Watch for modal close to clear stale selectedEvent
         this.$watch('isEditModalOpen', (open) => { if(!open){ this.selectedEvent=null; } });
         this.$watch('isEditListModalOpen', (open) => { if(!open){ this.selectedEventLista=null; } });
+        // Dependientes: cuando cambia la agencia, cargar solo clientes de esa agencia
+        this.$watch('formEvento.id_agencias_fk', (val) => {
+            if(!val){ this.formEvento.id_cliente_fk=''; this.filteredClientes=[]; }
+            window.calendarioApiHandlers.onAgenciaChange(this, val);
+        });
+        this.$watch('formEventoLista.id_agencias_fk', (val) => {
+            if(!val){ this.formEventoLista.id_cliente_fk=''; this.filteredClientes=[]; }
+            window.calendarioApiHandlers.onAgenciaChange(this, val);
+        });
+        // Cuando cambia el cliente, cargar ordenes de servicio de ese cliente
+        this.$watch('formEvento.id_cliente_fk', (val) => {
+            if(!val){ this.formEvento.id_orden_servicio_fk=''; this.filteredOrdenesServicio=[]; }
+            window.calendarioApiHandlers.onClienteChange(this, val);
+        });
+        this.$watch('formEventoLista.id_cliente_fk', (val) => {
+            if(!val){ this.formEventoLista.id_orden_servicio_fk=''; this.filteredOrdenesServicio=[]; }
+            window.calendarioApiHandlers.onClienteChange(this, val);
+        });
     }
 }" @include('partials.persist-tab', ['tabKey'=> 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
     <div class="w-full">
@@ -285,6 +315,26 @@
                             <i class="fas fa-chevron-right text-lg"></i>
                         </button>
                     </div>
+
+                    <template x-if="formEvento.id_agencias_fk && loadingFilteredClientes">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <template
+                                x-if="formEventoLista.id_agencias_fk && !loadingFilteredClientes && (!filteredClientes || filteredClientes.length===0)">
+                                <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                    <i class="fas fa-info-circle"></i>
+                                    No hay clientes disponibles para esta agencia
+                                </p>
+                            </template>
+                            <template x-if="formEventoLista.id_agencias_fk && loadingFilteredClientes">
+                                <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    Cargando clientes...
+                                </p>
+                            </template>
+                            Cargando clientes...
+                        </p>
+                    </template>
                     <div class="flex justify-end mb-2">
                         <button @click="goToToday(); $nextTick(() => window.calendarioApiHandlers.fetchMonth($data))"
                             class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular transition-colors shadow">
@@ -406,12 +456,30 @@
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                         <select x-model.number="formEvento.id_cliente_fk" required
+                            :disabled="!formEvento.id_agencias_fk"
                             class="border rounded px-3 py-2 w-full nunito-regular">
-                            <option value="" disabled>Seleccione...</option>
-                            <template x-for="c in catalogClientes" :key="c.id">
+                            <option value="" disabled x-show="!formEvento.id_agencias_fk">Seleccione una agencia primero
+                            </option>
+                            <option value="" disabled x-show="formEvento.id_agencias_fk">Seleccione...</option>
+                            <template
+                                x-for="c in (formEvento.id_agencias_fk ? (filteredClientes || []) : catalogClientes)"
+                                :key="c.id">
                                 <option :value="c.id" x-text="c.nombre"></option>
                             </template>
                         </select>
+                        <template
+                            x-if="formEvento.id_agencias_fk && !loadingFilteredClientes && (!filteredClientes || filteredClientes.length===0)">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                No hay clientes disponibles para esta agencia
+                            </p>
+                        </template>
+                        <template x-if="formEvento.id_agencias_fk && loadingFilteredClientes">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando clientes...
+                            </p>
+                        </template>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
@@ -441,14 +509,32 @@
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                         <select x-model.number="formEvento.id_orden_servicio_fk" required
+                            :disabled="!formEvento.id_cliente_fk"
                             class="border rounded px-3 py-2 w-full nunito-regular">
-                            <option value="" disabled>Seleccione una orden...</option>
-                            <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                                <option :value="os.id_orden_servicio_pk"
-                                    x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
+                            <option value="" disabled x-show="!formEvento.id_cliente_fk">Seleccione un cliente primero
+                            </option>
+                            <option value="" disabled x-show="formEvento.id_cliente_fk">Seleccione una orden...</option>
+                            <template
+                                x-for="os in (formEvento.id_cliente_fk ? (filteredOrdenesServicio || []) : (catalogOrdenesServicio || []))"
+                                :key="os.id || os.id_orden_servicio_pk">
+                                <option :value="(os.id || os.id_orden_servicio_pk)"
+                                    x-text="(os.label) || (os.numero_orden_servicio || os.codigo_orden || ('OS-' + (os.id_orden_servicio_pk || os.id)))">
                                 </option>
                             </template>
                         </select>
+                        <template
+                            x-if="formEvento.id_cliente_fk && !loadingFilteredOrdenes && (!filteredOrdenesServicio || filteredOrdenesServicio.length===0)">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                No hay órdenes de servicio disponibles para este cliente
+                            </p>
+                        </template>
+                        <template x-if="formEvento.id_cliente_fk && loadingFilteredOrdenes">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando órdenes de servicio...
+                            </p>
+                        </template>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
@@ -488,12 +574,30 @@
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                         <select x-model.number="formEvento.id_cliente_fk" required
+                            :disabled="!formEvento.id_agencias_fk"
                             class="border rounded px-3 py-2 w-full nunito-regular">
-                            <option value="" disabled>Seleccione...</option>
-                            <template x-for="c in catalogClientes" :key="c.id">
+                            <option value="" disabled x-show="!formEvento.id_agencias_fk">Seleccione una agencia primero
+                            </option>
+                            <option value="" disabled x-show="formEvento.id_agencias_fk">Seleccione...</option>
+                            <template
+                                x-for="c in (formEvento.id_agencias_fk ? (filteredClientes || []) : catalogClientes)"
+                                :key="c.id">
                                 <option :value="c.id" x-text="c.nombre"></option>
                             </template>
                         </select>
+                        <template
+                            x-if="formEvento.id_agencias_fk && !loadingFilteredClientes && (!filteredClientes || filteredClientes.length===0)">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                No hay clientes disponibles para esta agencia
+                            </p>
+                        </template>
+                        <template x-if="formEvento.id_agencias_fk && loadingFilteredClientes">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando clientes...
+                            </p>
+                        </template>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
@@ -523,14 +627,32 @@
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                         <select x-model.number="formEvento.id_orden_servicio_fk" required
+                            :disabled="!formEvento.id_cliente_fk"
                             class="border rounded px-3 py-2 w-full nunito-regular">
-                            <option value="" disabled>Seleccione una orden...</option>
-                            <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                                <option :value="os.id_orden_servicio_pk"
-                                    x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
+                            <option value="" disabled x-show="!formEvento.id_cliente_fk">Seleccione un cliente primero
+                            </option>
+                            <option value="" disabled x-show="formEvento.id_cliente_fk">Seleccione una orden...</option>
+                            <template
+                                x-for="os in (formEvento.id_cliente_fk ? (filteredOrdenesServicio || []) : (catalogOrdenesServicio || []))"
+                                :key="os.id || os.id_orden_servicio_pk">
+                                <option :value="(os.id || os.id_orden_servicio_pk)"
+                                    x-text="(os.label) || (os.numero_orden_servicio || os.codigo_orden || ('OS-' + (os.id_orden_servicio_pk || os.id)))">
                                 </option>
                             </template>
                         </select>
+                        <template
+                            x-if="formEvento.id_cliente_fk && !loadingFilteredOrdenes && (!filteredOrdenesServicio || filteredOrdenesServicio.length===0)">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                No hay órdenes de servicio disponibles para este cliente
+                            </p>
+                        </template>
+                        <template x-if="formEvento.id_cliente_fk && loadingFilteredOrdenes">
+                            <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando órdenes de servicio...
+                            </p>
+                        </template>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
@@ -839,16 +961,47 @@
                             <option :value="a.id_agencias_pk" x-text="a.nombre_agencia"></option>
                         </template>
                     </select>
+                    <template
+                        x-if="formEventoLista.id_agencias_fk && !loadingFilteredClientes && (!filteredClientes || filteredClientes.length===0)">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-info-circle"></i>
+                            No hay clientes disponibles para esta agencia
+                        </p>
+                    </template>
+                    <template x-if="formEventoLista.id_agencias_fk && loadingFilteredClientes">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Cargando clientes...
+                        </p>
+                    </template>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                     <select x-model.number="formEventoLista.id_cliente_fk" required
+                        :disabled="!formEventoLista.id_agencias_fk"
                         class="border rounded px-3 py-2 w-full nunito-regular">
-                        <option value="" disabled>Seleccione...</option>
-                        <template x-for="c in catalogClientes" :key="c.id">
+                        <option value="" disabled x-show="!formEventoLista.id_agencias_fk">Seleccione una agencia
+                            primero</option>
+                        <option value="" disabled x-show="formEventoLista.id_agencias_fk">Seleccione...</option>
+                        <template
+                            x-for="c in (formEventoLista.id_agencias_fk ? (filteredClientes || []) : catalogClientes)"
+                            :key="c.id">
                             <option :value="c.id" x-text="c.nombre"></option>
                         </template>
                     </select>
+                    <template
+                        x-if="formEventoLista.id_agencias_fk && !loadingFilteredClientes && (!filteredClientes || filteredClientes.length===0)">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-info-circle"></i>
+                            No hay clientes disponibles para esta agencia
+                        </p>
+                    </template>
+                    <template x-if="formEventoLista.id_agencias_fk && loadingFilteredClientes">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Cargando clientes...
+                        </p>
+                    </template>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
@@ -878,14 +1031,33 @@
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                     <select x-model.number="formEventoLista.id_orden_servicio_fk" required
+                        :disabled="!formEventoLista.id_cliente_fk"
                         class="border rounded px-3 py-2 w-full nunito-regular">
-                        <option value="" disabled>Seleccione una orden...</option>
-                        <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                            <option :value="os.id_orden_servicio_pk"
-                                x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
+                        <option value="" disabled x-show="!formEventoLista.id_cliente_fk">Seleccione un cliente primero
+                        </option>
+                        <option value="" disabled x-show="formEventoLista.id_cliente_fk">Seleccione una orden...
+                        </option>
+                        <template
+                            x-for="os in (formEventoLista.id_cliente_fk ? (filteredOrdenesServicio || []) : (catalogOrdenesServicio || []))"
+                            :key="os.id || os.id_orden_servicio_pk">
+                            <option :value="(os.id || os.id_orden_servicio_pk)"
+                                x-text="(os.label) || (os.numero_orden_servicio || os.codigo_orden || ('OS-' + (os.id_orden_servicio_pk || os.id)))">
                             </option>
                         </template>
                     </select>
+                    <template
+                        x-if="formEventoLista.id_cliente_fk && !loadingFilteredOrdenes && (!filteredOrdenesServicio || filteredOrdenesServicio.length===0)">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-info-circle"></i>
+                            No hay órdenes de servicio disponibles para este cliente
+                        </p>
+                    </template>
+                    <template x-if="formEventoLista.id_cliente_fk && loadingFilteredOrdenes">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Cargando órdenes de servicio...
+                        </p>
+                    </template>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
@@ -925,9 +1097,14 @@
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                     <select x-model.number="formEventoLista.id_cliente_fk" required
+                        :disabled="!formEventoLista.id_agencias_fk"
                         class="border rounded px-3 py-2 w-full nunito-regular">
-                        <option value="" disabled>Seleccione...</option>
-                        <template x-for="c in catalogClientes" :key="c.id">
+                        <option value="" disabled x-show="!formEventoLista.id_agencias_fk">Seleccione una agencia
+                            primero</option>
+                        <option value="" disabled x-show="formEventoLista.id_agencias_fk">Seleccione...</option>
+                        <template
+                            x-for="c in (formEventoLista.id_agencias_fk ? (filteredClientes || []) : catalogClientes)"
+                            :key="c.id">
                             <option :value="c.id" x-text="c.nombre"></option>
                         </template>
                     </select>
@@ -960,14 +1137,33 @@
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                     <select x-model.number="formEventoLista.id_orden_servicio_fk" required
+                        :disabled="!formEventoLista.id_cliente_fk"
                         class="border rounded px-3 py-2 w-full nunito-regular">
-                        <option value="" disabled>Seleccione una orden...</option>
-                        <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                            <option :value="os.id_orden_servicio_pk"
-                                x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
+                        <option value="" disabled x-show="!formEventoLista.id_cliente_fk">Seleccione un cliente primero
+                        </option>
+                        <option value="" disabled x-show="formEventoLista.id_cliente_fk">Seleccione una orden...
+                        </option>
+                        <template
+                            x-for="os in (formEventoLista.id_cliente_fk ? (filteredOrdenesServicio || []) : (catalogOrdenesServicio || []))"
+                            :key="os.id || os.id_orden_servicio_pk">
+                            <option :value="(os.id || os.id_orden_servicio_pk)"
+                                x-text="(os.label) || (os.numero_orden_servicio || os.codigo_orden || ('OS-' + (os.id_orden_servicio_pk || os.id)))">
                             </option>
                         </template>
                     </select>
+                    <template
+                        x-if="formEventoLista.id_cliente_fk && !loadingFilteredOrdenes && (!filteredOrdenesServicio || filteredOrdenesServicio.length===0)">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-info-circle"></i>
+                            No hay órdenes de servicio disponibles para este cliente
+                        </p>
+                    </template>
+                    <template x-if="formEventoLista.id_cliente_fk && loadingFilteredOrdenes">
+                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Cargando órdenes de servicio...
+                        </p>
+                    </template>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
