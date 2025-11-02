@@ -26,8 +26,8 @@
             color: #ffffff;
         }
         .header h1 {
-            margin: 0;
-            font-size: 24px;
+            margin: 10px 0 0 0;
+            font-size: 22px;
             font-weight: 600;
         }
         .content {
@@ -84,16 +84,27 @@
             margin: 5px 0;
         }
         .logo {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 15px;
+            text-align: center;
+            margin: 0 auto 20px;
+        }
+        .logo img {
+            max-height: 80px;
+            display: block;
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Código de Verificación</h1>
+            <div class="logo">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo SIGSIH">
+            </div>
+            <h1>Código de Verificación</h1>
         </div>
         
         <div class="content">
