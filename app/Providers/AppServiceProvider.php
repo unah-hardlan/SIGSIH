@@ -94,6 +94,10 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo \\App\\Helpers\\DateHelper::format(...([$expression])); ?>";
         });
 
+        // Registrar View Composers para los partials del cliente
+        View::composer('cliente.partials.header', \App\Http\View\Composers\ClienteHeaderComposer::class);
+        View::composer('cliente.partials.sidebar', \App\Http\View\Composers\ClienteSidebarComposer::class);
+
         // Compartir datos del usuario autenticado y su persona para hidratar el header sin fetch ni localStorage
         View::composer('*', function ($view) {
             try {

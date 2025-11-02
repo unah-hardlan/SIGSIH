@@ -1,9 +1,3 @@
-@php
-    $authUser = Auth::user();
-    $clienteUsuario = $authUser->usuario ?? 'Usuario';
-    $clienteIniciales = strtoupper(substr($clienteUsuario, 0, 2));
-    $clienteAvatar = $authPersona->avatar_path ?? null;
-@endphp
 <style>
     .header-fixed {
         position: absolute;
@@ -36,7 +30,6 @@
 <div class="header-fixed">
 <header class="relative flex items-center justify-between h-16 px-3 sm:px-6 bg-gray-50 dark:bg-gray-900 mt-1">
     
-    <!-- Botón hamburguesa (móvil) -->
     <div class="md:hidden flex-shrink-0">
         <button @click="sidebarOpen = !sidebarOpen"
             class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
@@ -46,20 +39,17 @@
         </button>
     </div>
 
-    <!-- Logo (Fixed) -->
     <div class="logo-container">
         <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" 
      class="h-9 sm:h-10 lg:h-10">
     </div>
 
-    <!-- Acciones (derecha) -->
     <div class="absolute right-3 md:static md:ml-auto flex items-center gap-3 md:gap-6 z-30">
         <label class="switch">
             <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
             <span class="slider"></span>
         </label>
 
-        <!-- Notificaciones - scope independiente -->
         <div x-data="{
             open: false,
             items: [],
@@ -158,7 +148,6 @@
             </div>
         </div>
 
-        <!-- Usuario y perfil - scope independiente -->
         <div x-data="{ profileOpen: false, logoutConfirm: false }" 
              x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm)" 
              class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
@@ -172,7 +161,7 @@
                     @endif
                 </button>
                 <div x-show="profileOpen" x-cloak @click.away="profileOpen = false" class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-blue-200 dark:border-gray-700 shadow-lg rounded-md py-1 backdrop-blur-md/0">
-                    <a href="{{ route('cliente.perfil') }}" class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors">
+                    <a href="{{ route('cliente.perfil') }}" data-spa-link @click="profileOpen = false" class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors">
                         <i class="fas fa-user-edit text-blue-500 dark:text-white"></i> Perfil
                     </a>
                     <button @click="logoutConfirm = true; profileOpen = false" class="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors">
@@ -185,7 +174,6 @@
                 <span class="text-xs nunito-regular text-gray-500 dark:text-gray-400">Cliente</span>
             </div>
 
-            <!-- Modal logout - dentro del mismo scope -->
             <template x-teleport="body">
                 <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms 
                     class="fixed inset-0 flex items-center justify-center z-[99999] bg-black/50 backdrop-blur-sm" 

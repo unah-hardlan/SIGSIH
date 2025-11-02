@@ -38,7 +38,6 @@
         </div>
     @endif
 
-    <!-- Sección de Seguridad (2FA) - Igual que admin -->
     <div class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 font-serif">
@@ -136,7 +135,6 @@
         
         <div class="px-6 py-4">
             @if($persona)
-                <!-- Avatar y nombre principal -->
                 <div class="flex items-center space-x-6 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex-shrink-0">
                         @if($empresa && $empresa->avatar)
@@ -180,7 +178,6 @@
                 </div>
 
                 @if($empresa)
-                    <!-- Información de Empresa -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @if($empresa->rtn)
                         <div>
@@ -210,7 +207,6 @@
                     </div>
                     @endif
 
-                    <!-- Información de Contacto -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
@@ -223,7 +219,7 @@
                             <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
                                 Correo de Contacto
                             </label>
-                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ auth()->user()->correo_electronico }}</p>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ $correoContacto ?: auth()->user()->correo_electronico }}</p>
                         </div>
 
                         <div>
@@ -241,7 +237,6 @@
                         </div>
                     </div>
                 @else
-                    <!-- Información Personal -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
@@ -260,7 +255,6 @@
                         @endif
                     </div>
 
-                    <!-- Información de Contacto -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
@@ -273,7 +267,7 @@
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
                                 Correo de Contacto
                             </label>
-                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ auth()->user()->correo_electronico }}</p>
+                            <p class="text-sm text-gray-900 dark:text-gray-100">{{ $correoContacto ?: auth()->user()->correo_electronico }}</p>
                         </div>
 
                     </div>
@@ -282,9 +276,7 @@
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 font-serif">Mi Actividad</h3>
                     
-                    <!-- Grid de estadísticas -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Facturas -->
                         <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
@@ -315,7 +307,6 @@
                             </div>
                         </div>
 
-                        <!-- Cotizaciones -->
                         <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
@@ -346,7 +337,6 @@
                             </div>
                         </div>
 
-                        <!-- Órdenes de Servicio -->
                         <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
@@ -398,7 +388,6 @@
         </div>
     </div>
 
-    <!-- Modal de Edición de Perfil Personal -->
     @if($persona && !$empresa)
     <template x-teleport="body">
         <div x-show="showEditModal" x-cloak x-transition.opacity.duration.300ms
@@ -410,7 +399,6 @@
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto" 
                 @click.stop>
                 
-                <!-- Header -->
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 font-serif">
                         Editar Información Personal
@@ -420,9 +408,7 @@
                     </button>
                 </div>
 
-                <!-- Formulario -->
                 <form @submit.prevent="updateProfile()" class="space-y-6">
-                    <!-- Avatar -->
                     <div class="flex items-center space-x-6">
                         <div class="flex-shrink-0">
                             <div class="relative">
@@ -452,7 +438,6 @@
                         </div>
                     </div>
 
-                    <!-- Nombres -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
@@ -470,7 +455,6 @@
                         </div>
                     </div>
 
-                    <!-- Apellidos -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
@@ -488,7 +472,6 @@
                         </div>
                     </div>
 
-                    <!-- DNI y Género -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
@@ -516,15 +499,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
-                                Correo de Contacto *
+                                Correo de Contacto
                             </label>
-                            <input type="email" x-model="formData.correo_contacto" required readonly aria-readonly="true"
-                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 cursor-not-allowed">
+                            <input type="email" x-model="formData.correo_contacto" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                                   placeholder="No configurado">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <svg class="w-3 h-3 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Este correo se establece durante el registro inicial
+                            </p>
                         </div>
                         
                     </div>
 
-                    <!-- Botones -->
                     <div class="flex justify-end gap-3 pt-4">
                         <button type="button" @click="closeEditModal()" 
                                 class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
@@ -646,7 +635,6 @@
     </template>
     @endif
 
-    {{-- Modal de contraseña actual (2FA) --}}
     <template x-teleport="body">
         <div x-show="showPasswordModal" x-cloak x-transition.opacity.duration.300ms
             class="modal-underlay fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
@@ -657,7 +645,6 @@
                 class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-md mx-auto" 
                 @click.stop>
                 
-                <!-- Header -->
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 font-serif" x-text="passwordModal.title || 'Confirmación requerida'"></h3>
                     <button @click="closePasswordModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
@@ -665,7 +652,6 @@
                     </button>
                 </div>
 
-                <!-- Contenido -->
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-4" x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
                     
@@ -702,25 +688,6 @@
     </template>
 </div>
 
-@php
-    $personaData = $persona ? [
-        'primer_nombre' => $persona->primer_nombre ?? '',
-        'segundo_nombre' => $persona->segundo_nombre ?? '',
-        'primer_apellido' => $persona->primer_apellido ?? '',
-        'segundo_apellido' => $persona->segundo_apellido ?? '',
-        'dni' => $persona->dni ?? '',
-        'id_genero_fk' => $persona->id_genero_fk ?? ''
-    ] : [
-        'primer_nombre' => '',
-        'segundo_nombre' => '',
-        'primer_apellido' => '',
-        'segundo_apellido' => '',
-        'dni' => '',
-        'id_genero_fk' => ''
-    ];
-@endphp
-
-<!-- Alpine.js bootstrap JSON -->
 <script type="application/json" id="persona-json">@json($personaData)</script>
 @if($empresa)
 @php $empresaJson = json_encode($empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion'])); @endphp
