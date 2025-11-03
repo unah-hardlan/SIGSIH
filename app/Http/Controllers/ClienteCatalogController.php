@@ -27,6 +27,9 @@ class ClienteCatalogController extends Controller
         $tipo   = strtolower((string) $request->input('tipo', ''));
         $perPage = (int) $request->input('per_page', 15);
         $all    = $request->boolean('all') || $perPage === -1;
+        // Filtrado opcional por agencia (clientes vinculados a una agencia específica)
+        $agenciaId = $request->input('agencia_id');
+        $agenciaId = is_numeric($agenciaId) ? (int) $agenciaId : null;
 
         // -------- Empresas --------
         $empQuery = DB::table('tbl_cliente_empresa as e')
@@ -37,6 +40,14 @@ class ClienteCatalogController extends Controller
                 $sub->where('e.nombre_comercial', 'like', $like)
                     ->orWhere('e.razon_social', 'like', $like)
                     ->orWhere('e.rtn', 'like', $like);
+            });
+        }
+        if (!is_null($agenciaId)) {
+            // Solo clientes empresa que estén relacionados a la agencia en la tabla pivote
+            $empQuery->whereIn('e.id_cliente_fk', function ($q) use ($agenciaId) {
+                $q->from('tbl_agencia_cliente')
+                    ->select('id_cliente_fk')
+                    ->where('id_agencia_fk', $agenciaId);
             });
         }
 
@@ -52,6 +63,14 @@ class ClienteCatalogController extends Controller
                     ->orWhere('p.primer_apellido', 'like', $like)
                     ->orWhere('p.segundo_apellido', 'like', $like)
                     ->orWhere('p.dni', 'like', $like);
+            });
+        }
+        if (!is_null($agenciaId)) {
+            // Solo clientes persona cuyo cliente esté asociado a la agencia en la tabla pivote
+            $perQuery->whereIn('cp.id_cliente_fk', function ($q) use ($agenciaId) {
+                $q->from('tbl_agencia_cliente')
+                    ->select('id_cliente_fk')
+                    ->where('id_agencia_fk', $agenciaId);
             });
         }
 

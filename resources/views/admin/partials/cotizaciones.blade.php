@@ -18,23 +18,44 @@
     perPage: 10,
     // Items manager (por cotización)
     itemsModal:false, currentCotizacionId:null, itemsLoading:false, itemsSearch:'', items:[],
-    itemMode:'list', itemForm:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }, itemEditId:null, itemErrors:{},
+    itemMode:'list', itemForm:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false }, itemEditId:null, itemErrors:{},
     
     // Catalog selector state
     catalogModal:false, catalogSearch:'', catalogLoading:false, catalogItems:[], catalogExisting:{}, catalogSelectedUser:{}, activeFormRef:'form',
     // Forms
-    form:{ id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ] },
+    form:{ id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] },
     editForm:null,
     errors:{},
     // Computed helpers
     calcTotals(form){
         let imponible=0; let totalImp=0; let subtotal=0; let total=0; const items=form.items||[];
-        items.forEach(it=>{ const precio=parseFloat(it.precio_unitario)||0; const cant=parseFloat(it.cantidad)||0; const imp=parseFloat(it.impuesto)||0; const linea=precio*cant; imponible+=linea; totalImp+=imp; subtotal+= (linea+imp); });
-        total = subtotal + (parseFloat(form.otros_cargos)||0);
+        items.forEach(it=>{
+            const precio=parseFloat(it.precio_unitario)||0;
+            const cant=parseFloat(it.cantidad)||0;
+            // If the item has aplicar_impuesto true, compute impuesto as 15% of precio*cantidad
+            if(it.aplicar_impuesto){
+                const calcImp = +(precio * cant * 0.15);
+                it.impuesto = +calcImp.toFixed(2);
+            }
+            const imp = parseFloat(it.impuesto)||0;
+            const linea = precio * cant;
+            imponible += linea;
+            totalImp += imp;
+            subtotal += (linea + imp);
+        });
+        const otros = parseFloat(form.otros_cargos)||0;
+    const otrosImp = form.apply_isv_otros ? +(otros * 0.15).toFixed(2) : 0;
+        total = subtotal + otros + otrosImp;
         form.imponible = +imponible.toFixed(2);
-        form.total_impuesto = +totalImp.toFixed(2);
+        // Impuesto total incluye impuestos de items + (opcional) impuesto sobre otros cargos
+        const totalImpuesto = +(totalImp + otrosImp).toFixed(2);
+        form.impuesto = totalImpuesto;
+        form.total_impuesto = totalImpuesto;
+    form.impuesto_otros = otrosImp;
         form.subtotal = +subtotal.toFixed(2);
         form.total = +total.toFixed(2);
+        // Anticipo requerido: 50% del total
+        try { form.anticipo_requerido = +(form.total * 0.5).toFixed(2); } catch(e) { form.anticipo_requerido = 0; }
     },
     // Auth token (in-memory only; do NOT persist to localStorage)
     authToken:null,
@@ -66,7 +87,7 @@
             return `COT-${fh}-${pad4(id)}`;
         }catch(e){ return c?.id ?? ''; }
     },
-    addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }); },
+    addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false }); },
     removeItem(index, formRef='form'){ this[formRef].items.splice(index,1); this.calcTotals(this[formRef]); },
     // Remove item from the edit form with reactivity-safe update
     removeEditItem(index){
@@ -175,14 +196,18 @@
             if(!r.ok) throw new Error();
             const j=await r.json();
             const data=j.data||j||[];
-            this.editForm.items = data.map(it=>({ descripcion: it.descripcion || '', precio_unitario: Number(it.precio_unitario||0), cantidad: Number(it.cantidad||0), impuesto: Number(it.impuesto||0), id_producto_fk: it.id_producto_fk || null, id_item: it.id_item_cotizacion_pk }));
+            // If the edit form was closed while the request was in-flight, don't apply results
+            if(!this.editForm) return;
+            this.editForm.items = data.map(it=>({ descripcion: it.descripcion || '', precio_unitario: Number(it.precio_unitario||0), cantidad: Number(it.cantidad||0), impuesto: Number(it.impuesto||0), id_producto_fk: it.id_producto_fk || null, id_item: it.id_item_cotizacion_pk, aplicar_impuesto: Boolean(Number(it.impuesto||0) > 0) }));
             // Keep a copy of original item ids so we can detect deletions on save
             try{ this._editOriginalItemIds = data.map(it=>it.id_item_cotizacion_pk); }catch(e){ this._editOriginalItemIds = []; }
             this.calcTotals(this.editForm);
         }catch(e){
             this.showToast('No se pudieron cargar los items para edición','error');
             // ensure at least an empty row exists
-            this.editForm.items = this.editForm.items && this.editForm.items.length ? this.editForm.items : [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ];
+            if(this.editForm){
+                this.editForm.items = this.editForm.items && this.editForm.items.length ? this.editForm.items : [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 } ];
+            }
         }
     },
 
@@ -209,17 +234,22 @@
         const totalImp = this.items.reduce((acc,it)=> acc + Number(it.impuesto||0), 0);
         const subtotal = imponible + totalImp;
         const otros = Number(row.otros_cargos ?? 0);
-        const total = subtotal + otros;
+    // Usar el valor persistido de impuesto_otros; no derivar desde un flag
+    const otrosImp = Number(row.impuesto_otros || 0);
+        const total = subtotal + otros + otrosImp;
         row.imponible = +imponible.toFixed(2);
-        row.total_impuesto = +totalImp.toFixed(2);
+        row.total_impuesto = +(totalImp + otrosImp).toFixed(2);
+        row.impuesto_otros = otrosImp;
         row.subtotal = +subtotal.toFixed(2);
         row.total = +total.toFixed(2);
+        // Anticipo requerido: 50% del total
+        try { row.anticipo_requerido = +(row.total * 0.5).toFixed(2); } catch(e) { row.anticipo_requerido = 0; }
         this.cotizaciones.splice(rowIndex,1,row);
     },
     openItems(c){ this.currentCotizacionId=c?.id; this.itemsModal=true; this.itemMode='list'; this.itemForm={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }; this.itemEditId=null; this.itemsSearch=''; this.$nextTick(()=>{ this.fetchItemsForCurrent(); }); },
-    openNewItem(){ this.itemMode='create'; this.itemForm={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }; this.itemErrors={}; },
-    openEditItem(it){ this.itemMode='edit'; this.itemEditId=it.id; this.itemForm={ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_producto_fk: it.id_producto_fk || null }; this.itemErrors={}; },
-    cancelItemEdit(){ this.itemMode='list'; this.itemForm={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }; this.itemEditId=null; this.itemErrors={}; },
+    openNewItem(){ this.itemMode='create'; this.itemForm={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false }; this.itemErrors={}; },
+    openEditItem(it){ this.itemMode='edit'; this.itemEditId=it.id; this.itemForm={ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_producto_fk: it.id_producto_fk || null, aplicar_impuesto: Boolean(it.impuesto && Number(it.impuesto) > 0) }; this.itemErrors={}; },
+    cancelItemEdit(){ this.itemMode='list'; this.itemForm={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false }; this.itemEditId=null; this.itemErrors={}; },
     calcItemTotal(o){ const pu=Number(o.precio_unitario||0); const c=Number(o.cantidad||0); const imp=Number(o.impuesto||0); return +(pu*c+imp).toFixed(2); },
     async submitCreateItem(){ try{ const payload={ ...this.itemForm, id_cotizacion_fk:this.currentCotizacionId, total:this.calcItemTotal(this.itemForm) }; const r=await this.doFetch('/api/items-cotizacion',{ method:'POST', body:JSON.stringify(payload) }); if(r.status===422){ this.itemErrors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); this.showToast('Item creado'); this.cancelItemEdit(); await this.fetchItemsForCurrent(); this.recomputeCurrentRowTotalsUsingItems(); }catch(e){ this.showToast('No se creó item','error'); } },
     async submitUpdateItem(){ if(!this.itemEditId) return; try{ const payload={ ...this.itemForm, id_cotizacion_fk:this.currentCotizacionId, total:this.calcItemTotal(this.itemForm) }; const r=await this.doFetch('/api/items-cotizacion/'+this.itemEditId,{ method:'PUT', body:JSON.stringify(payload) }); if(r.status===422){ this.itemErrors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); this.showToast('Item actualizado'); this.cancelItemEdit(); await this.fetchItemsForCurrent(); this.recomputeCurrentRowTotalsUsingItems(); }catch(e){ this.showToast('No se actualizó item','error'); } },
@@ -251,7 +281,7 @@
             const exists = target.items.some(x=> String(x.id_producto_fk || '') === String(it.id));
             if(exists){ skipped++; return; }
             // include id_producto_fk so we can track origin and pre-check in edit
-            target.items.push({ descripcion:it.descripcion||'', precio_unitario:it.precio_unitario||0, cantidad:it.cantidad||1, impuesto:it.impuesto||0, id_producto_fk: it.id });
+            target.items.push({ descripcion:it.descripcion||'', precio_unitario:it.precio_unitario||0, cantidad:it.cantidad||1, impuesto:it.impuesto||0, id_producto_fk: it.id, aplicar_impuesto:false });
             added++;
         });
         // Ensure reactive update in Alpine by replacing the array reference
@@ -263,8 +293,8 @@
         if(added>0) this.showToast(added + ' items agregados');
         if(skipped>0) this.showToast(skipped + ' items ya estaban en la lista', 'error');
     },
-    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('order_by', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
-            .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
+    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('sort', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
+    .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
             .filter(c=>c.id!=null);
             
             // Synchronize alias for reusable pagination components
@@ -296,6 +326,13 @@
             this.clientes = [];
         }
     },
+    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
+    resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] }; },
+    // Reset form but leave date and at least one blank item (used by some flows)
+    resetFormEmpty(){
+        this.form = { id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items: [] };
+    },
+    openCreate(){ this.resetFormEmpty(); this.generateCotizacionModal=true; },
     
     // Métodos de paginación
     paginatedCotizaciones() {
@@ -323,25 +360,72 @@
     openCreate(){ this.resetForm(); this.generateCotizacionModal=true; },
     openEdit(c){
         // prepare header data for editing
-        this.editForm = { ...c, id: c.id, id_cliente_fk: c.cliente_id, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null } ] };
+        const clienteId = c?.cliente_id != null ? String(c.cliente_id) : '';
+    this.editForm = { ...c, id: c.id, id_cliente_fk: clienteId, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false } ], apply_isv_otros: Boolean(Number(c.impuesto_otros||0) > 0), impuesto_otros: Number(c.impuesto_otros||0) };
         // reset original ids tracking
         this._editOriginalItemIds = [];
         this.editModal = true;
         // load items for this cotización so they appear in the edit form
         this.$nextTick(()=>{ this.fetchItemsForEdit(c.id); });
     },
-    async createCotizacion(){ this.saving=true; this.calcTotals(this.form); try{ const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk }; const r=await this.doFetch('/api/cotizaciones',{ method:'POST', body:JSON.stringify(payload) }); if(r.status===422){ this.errors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); const j=await r.json(); const newId=j.data?.id_cotizacion_pk||j.id_cotizacion_pk; // Crear items
-    for(const it of this.form.items){ if(!it.descripcion) continue; await this.doFetch('/api/items-cotizacion',{ method:'POST', body:JSON.stringify({ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:newId, id_producto_fk: it.id_producto_fk ?? null }) }); }
-            this.showToast('Cotización creada'); this.generateCotizacionModal=false; this.fetchCotizaciones(); }
-        catch(e){ this.showToast('No se creó','error'); }
-        finally{ this.saving=false; } },
+    async createCotizacion(){
+        this.saving=true;
+        this.calcTotals(this.form);
+        try{
+            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, impuesto_otros:this.form.impuesto_otros||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk };
+            const r=await this.doFetch('/api/cotizaciones',{ method:'POST', body:JSON.stringify(payload) });
+            if(r.status===422){
+                // Extract validation errors and present them to the developer/user
+                const body = await r.json();
+                // Standard Laravel validation shape: { message: ..., errors: { field: [msg] } }
+                this.errors = body.errors || body;
+                console.error('Validation errors creating cotización:', this.errors);
+                // Build a readable string for a toast (first messages per field)
+                try{
+                    const msgs = Object.values(this.errors).flat().map(m=>Array.isArray(m)?m.join('; '):String(m)).join(' \n');
+                    this.showToast(msgs || 'Errores de validación', 'error');
+                }catch(e){ this.showToast('Errores de validación (revisar consola)', 'error'); }
+                throw new Error('validation');
+            }
+            if(!r.ok) throw new Error();
+            const j=await r.json();
+            const newId=j.data?.id_cotizacion_pk||j.id_cotizacion_pk;
+            // Crear items
+            for(const it of this.form.items){ if(!it.descripcion) continue; await this.doFetch('/api/items-cotizacion',{ method:'POST', body:JSON.stringify({ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:newId, id_producto_fk: it.id_producto_fk ?? null }) }); }
+            this.showToast('Cotización creada'); this.generateCotizacionModal=false; this.fetchCotizaciones();
+        }
+        catch(e){
+            if(e.message === 'validation'){
+                // already handled and shown
+            }else{
+                console.error('createCotizacion error', e);
+                this.showToast('No se creó','error');
+            }
+        }
+        finally{ this.saving=false; }
+    },
     async updateCotizacion(){
         if(!this.editForm) return;
         this.saving=true;
         try{
             this.calcTotals(this.editForm);
-            const payload={ valido_hasta:this.editForm.valido_hasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk };
+            // Normalizar válido_hasta para evitar 422 por fecha pasada
+            let vHasta = this.editForm.valido_hasta;
+            try{
+                const todayStr = new Date().toISOString().slice(0,10);
+                if(!vHasta || (new Date(vHasta) < new Date(todayStr))){ vHasta = todayStr; }
+            }catch(e){}
+            const payload={ valido_hasta:vHasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, impuesto_otros:this.editForm.impuesto_otros||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk };
             const r=await this.doFetch('/api/cotizaciones/'+this.editForm.id,{ method:'PUT', body:JSON.stringify(payload) });
+            if(r.status===422){
+                try{
+                    const body=await r.json();
+                    this.errors = body.errors || body;
+                    const msgs = Object.values(this.errors).flat().map(m=>Array.isArray(m)?m.join('; '):String(m)).join(' \n');
+                    this.showToast(msgs || 'Errores de validación', 'error');
+                }catch(e){ this.showToast('Errores de validación (422)', 'error'); }
+                throw new Error('validation');
+            }
             if(!r.ok) throw new Error('cotizacion update failed');
 
             // Sync items: create new, update existing, delete removed
@@ -389,7 +473,7 @@
         this.$watch('filters.hasta',debounce(()=>{ this.currentPage = 1; this.fetchCotizaciones(); }));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
         // Clear/reset modal-related state when modals close
-        this.$watch('generateCotizacionModal', val=>{ if(!val){ this.resetForm(); } });
+    this.$watch('generateCotizacionModal', val=>{ if(!val){ /* wait for Alpine to finish modal closing animation, then clear form to avoid flicker */ setTimeout(()=>{ this.resetFormEmpty(); }, 220); } });
         this.$watch('editModal', val=>{ if(!val){ this.editForm = null; } });
     this.$watch('catalogModal', val=>{ if(!val){ this.catalogSelectedUser = {}; this.catalogExisting = {}; this.catalogItems = []; this.catalogSearch = ''; } });
         this.$watch('itemsModal', val=>{ if(!val){ this.items = []; this.currentCotizacionId = null; this.itemMode='list'; this.itemForm = { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }; this.itemEditId = null; } });
@@ -407,9 +491,10 @@
                     @include('partials.filtros-generales', [
                     'searchModel' => 'filters.search',
                     'ordenarOptions' => [
-                    'fecha' => 'Fecha',
+                    'fecha' => 'Fecha Cotización',
+                    'valido' => 'Válida Hasta',
                     'total' => 'Total',
-                    'id' => 'ID Cotización'
+                    'subtotal' => 'Subtotal'
                     ]
                     ])
                 </div>
@@ -426,46 +511,41 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="openCreate()"
-                class="text-sm w-full sm:w-40 h-12 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
-                <i class="fas fa-plus"></i> Generar Cotización
-            </button>
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <button @click="openCreate()"
+                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
+                    <i class="fas fa-plus"></i> Generar Cotización
+                </button>
+            </div>
         </x-slot>
 
         <x-slot name="table">
             <div class="overflow-x-auto">
-                <table class="min-w-full text-xs">
-                    <thead class="nunito-bold text-[10px]">
+                <table
+                    class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
+                    <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Codigo de Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Cliente</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Fecha
-                                Cotización</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Válida
-                                Hasta</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Imponible</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Impuesto</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Total
-                                Imp.</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Otros
-                                Cargos</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Anticipo</th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Total
-                            </th>
-                            <th class="px-4 py-3 text-left bg-white dark:bg-gray-800 nunito-bold dark:text-gray-300">
-                                Acciones</th>
+                            <th class="py-2 px-4 text-left">Codigo de Cotización</th>
+                            <th class="py-2 px-4 text-left">Cliente</th>
+                            <th class="py-2 px-4 text-left">Fecha Cotización</th>
+                            <th class="py-2 px-4 text-left">Válida Hasta</th>
+                            <th class="py-2 px-4 text-left">Imponible</th>
+                            <th class="py-2 px-4 text-left">Impuesto</th>
+                            <th class="py-2 px-4 text-left">Total Imp.</th>
+                            <th class="py-2 px-4 text-left">Otros Cargos</th>
+                            <th class="py-2 px-4 text-left">Anticipo</th>
+                            <th class="py-2 px-4 text-left">Total</th>
+                            <th class="py-2 px-4 text-left">Acciones</th>
                         </tr>
                     </thead>
+                    <tbody>
+                        <template x-for="c in cotizaciones" :key="c.id">
+                            <tr class="border-b dark:border-gray-700 nunito-regular">
+                                <td class="py-2 px-4" x-text="formatCotId(c)"></td>
+                                <td class="py-2 px-4" x-text="c.cliente_nombre || 'Sin cliente'"></td>
+                                <td class="py-2 px-4" x-text="c.fecha"></td>
+                                <td class="py-2 px-4" x-text="c.valido_hasta"></td>
+                                <td class="py-2 px-4 text-right"
                     <tbody class="nunito-regular">
                         <template x-for="c in paginatedCotizaciones()" :key="c.id">
                             <tr class="text-[10px]">
@@ -477,35 +557,25 @@
                                 <td class="px-4 py-2 border-t border-gray-200"
                                     x-text="'L.\u00A0'+(Number(c.imponible ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
+                                <td class="py-2 px-4 text-right"
                                     x-text="'L.\u00A0'+(Number(c.impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
+                                <td class="py-2 px-4 text-right"
                                     x-text="'L.\u00A0'+(Number(c.total_impuesto ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
+                                <td class="py-2 px-4 text-right"
                                     x-text="'L.\u00A0'+(Number(c.otros_cargos ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
+                                <td class="py-2 px-4 text-right"
                                     x-text="'L.\u00A0'+(Number(c.anticipo_requerido ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
-                                <td class="px-4 py-2 border-t border-gray-200"
+                                <td class="py-2 px-4 text-right"
                                     x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
-                                <td class="px-4 py-2 border-t border-gray-200 flex items-center gap-2">
+                                <td class="py-2 px-4 flex items-center gap-2">
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
-                                        class="inline-flex items-center justify-center text-[10px] px-2 h-6 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular"><i
-                                            class='fas fa-eye mr-1'></i> Ver</a>
-
-
-                                    <!--  BOTON DE ITEMS
-                                            
-                                    <a href="#" @click.prevent="openItems(c)"
-                                        class="inline-flex items-center justify-center text-[10px] px-2 h-6 rounded bg-indigo-600 text-white hover:bg-indigo-700 duration-300 nunito-regular"><i
-                                            class="fas fa-database mr-1"></i> Items</a> -->
-
-
-
+                                        class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1"><i
+                                            class='fas fa-eye'></i> Ver</a>
                                     <a href="#" @click.prevent="openEdit(c)"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
@@ -826,6 +896,8 @@
                     class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
             </div>
 
+
+
             <!-- Descripción dinámica -->
             <div class="col-span-1">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Producto o Servicio</label>
@@ -835,10 +907,22 @@
                     <template x-for="(description, index) in form.items" :key="index">
                         <div class="mb-3 p-3 rounded-md bg-white/5">
                             <div class="flex justify-between items-start">
-                                <textarea x-model="description.descripcion" placeholder="Descripción"
-                                    @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(form); }"
-                                    x-bind:title="description.descripcion"
-                                    class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                <div class="w-full">
+                                    <textarea x-model="description.descripcion" placeholder="Descripción"
+                                        @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(form); }"
+                                        x-bind:title="description.descripcion"
+                                        class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <label class="inline-flex items-center text-sm text-gray-400">
+                                            <input type="checkbox" class="mr-2 h-4 w-4"
+                                                x-model="description.aplicar_impuesto" @change="calcTotals(form)" />
+                                            Aplicar ISV 15%
+                                        </label>
+                                        <div class="text-sm text-gray-500 ml-4">Impuesto: <span
+                                                x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(description.impuesto || 0)"></span>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button type="button" @click="removeItem(index,'form')"
                                     class="ml-3 inline-flex items-center justify-center w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white"
                                     title="Eliminar">
@@ -892,34 +976,54 @@
                 {{-- Este es el nuevo contenedor para la fila de 3 elementos --}}
                 <!-- Imponible -->
                 <div>
-                    <label for="imponible" class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                    <input type="number" id="imponible" name="imponible" x-model="form.imponible" readonly
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <label class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                    <input type="text"
+                        :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(form.imponible || 0)"
+                        readonly
+                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right font-semibold" />
                 </div>
 
                 <!-- Total impuesto -->
                 <div>
-                    <label for="totalImpuesto" class="block text-sm font-medium text-gray-700 nunito-bold">Total
-                        Impuesto</label>
-                    <input type="number" id="totalImpuesto" name="totalImpuesto" x-model="form.total_impuesto" readonly
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <label class="block text-sm font-medium text-gray-700 nunito-bold">Total Impuesto</label>
+                    <input type="text"
+                        :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(form.total_impuesto || 0)"
+                        readonly
+                        class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right" />
                 </div>
 
-                <!-- Otros cargos -->
+                <!-- Otros cargos (editable) -->
                 <div>
                     <label for="otrosCargos" class="block text-sm font-medium text-gray-700 nunito-bold">Otros
                         Cargos</label>
-                    <input type="number" id="otrosCargos" name="otrosCargos" x-model="form.otros_cargos"
-                        @input="calcTotals(form)"
-                        class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">L.</span>
+                        <input type="number" id="otrosCargos" name="otrosCargos" x-model.number="form.otros_cargos"
+                            @input="calcTotals(form)"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 pl-8 text-right" />
+                    </div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label class="inline-flex items-center text-sm text-gray-400">
+                            <input type="checkbox" class="mr-2 h-4 w-4" x-model="form.apply_isv_otros"
+                                @change="calcTotals(form)" />
+                            Aplicar ISV 15% a Otros Cargos
+                        </label>
+                        <div class="text-sm text-gray-500 ml-4">Impuesto:
+                            <span
+                                x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format((form.apply_isv_otros ? (Number(form.otros_cargos||0) * 0.15) : 0))"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Total -->
-            <div> {{-- Este div ahora ocupa todo el ancho --}}
-                <label for="total" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                <input type="number" id="total" name="total" x-model="form.total" readonly
-                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                <div
+                    class="mt-1 block w-full rounded-md border border-blue-700 bg-blue-600 text-white p-3 text-lg font-bold text-right">
+                    <span
+                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(form.total || 0)"></span>
+                </div>
             </div>
         </div>
     </x-admin.form-modal>
@@ -965,6 +1069,8 @@
                             x-model="editForm.valido_hasta">
                     </div>
 
+
+
                     <!-- Descripción dinámica -->
                     <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
                         <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
@@ -979,6 +1085,17 @@
                                                 @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(editForm); }"
                                                 x-bind:title="item.descripcion"
                                                 class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                            <div class="flex items-center gap-3 mt-2">
+                                                <label class="inline-flex items-center text-sm text-gray-400">
+                                                    <input type="checkbox" class="mr-2 h-4 w-4"
+                                                        x-model="item.aplicar_impuesto"
+                                                        @change="calcTotals(editForm)" />
+                                                    Aplicar ISV 15%
+                                                </label>
+                                                <div class="text-sm text-gray-500 ml-4">Impuesto: <span
+                                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(item.impuesto || 0)"></span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <button type="button" @click="removeEditItem(index)"
                                             class="ml-3 inline-flex items-center justify-center w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white"
@@ -1033,40 +1150,56 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Imponible -->
                         <div>
-                            <label for="editImponible"
-                                class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
-                            <input type="number" id="editImponible" name="imponible" readonly
-                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                                x-model="editForm.imponible">
+                            <label class="block text-sm font-medium text-gray-700 nunito-bold">Imponible</label>
+                            <input type="text"
+                                :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(editForm.imponible || 0)"
+                                readonly
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right font-semibold" />
                         </div>
 
                         <!-- Total impuesto -->
                         <div>
-                            <label for="editTotalImpuesto"
-                                class="block text-sm font-medium text-gray-700 nunito-bold">Total
-                                Impuesto</label>
-                            <input type="number" id="editTotalImpuesto" name="totalImpuesto" readonly
-                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                                x-model="editForm.total_impuesto">
+                            <label class="block text-sm font-medium text-gray-700 nunito-bold">Total Impuesto</label>
+                            <input type="text"
+                                :value="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(editForm.total_impuesto || 0)"
+                                readonly
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 dark:bg-gray-800 p-2 text-sm text-right" />
                         </div>
 
-                        <!-- Otros cargos -->
+                        <!-- Otros cargos (editable) -->
                         <div>
                             <label for="editOtrosCargos"
                                 class="block text-sm font-medium text-gray-700 nunito-bold">Otros
                                 Cargos</label>
-                            <input type="number" id="editOtrosCargos" name="otrosCargos"
-                                class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
-                                x-model="editForm.otros_cargos" @input="calcTotals(editForm)">
+                            <div class="relative">
+                                <span
+                                    class="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">L.</span>
+                                <input type="number" id="editOtrosCargos" name="otrosCargos"
+                                    x-model.number="editForm.otros_cargos" @input="calcTotals(editForm)"
+                                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 pl-8 text-right" />
+                            </div>
+                            <div class="flex items-center gap-3 mt-2">
+                                <label class="inline-flex items-center text-sm text-gray-400">
+                                    <input type="checkbox" class="mr-2 h-4 w-4" x-model="editForm.apply_isv_otros"
+                                        @change="calcTotals(editForm)" />
+                                    Aplicar ISV 15% a Otros Cargos
+                                </label>
+                                <div class="text-sm text-gray-500 ml-4">Impuesto:
+                                    <span
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format((editForm.apply_isv_otros ? (Number(editForm.otros_cargos||0) * 0.15) : 0))"></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Total -->
-                    <div> {{-- Este div ahora ocupa todo el ancho --}}
-                        <label for="editTotal" class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
-                        <input type="number" id="editTotal" name="total" readonly
-                            class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-100 shadow-sm nunito-regular p-1"
-                            x-model="editForm.total">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Total</label>
+                        <div
+                            class="mt-1 block w-full rounded-md border border-blue-700 bg-blue-600 text-white p-3 text-lg font-bold text-right">
+                            <span
+                                x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(editForm.total || 0)"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1137,10 +1270,10 @@
 </div>
 
 <style>
-/* Slightly smaller table typography for headers and data */
-table thead th,
-table tbody td {
-    font-size: 0.8125rem;
-    /* ~13px */
-}
+    /* Slightly smaller table typography for headers and data */
+    table thead th,
+    table tbody td {
+        font-size: 0.8125rem;
+        /* ~13px */
+    }
 </style>

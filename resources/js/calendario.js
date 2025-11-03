@@ -61,17 +61,17 @@
         // Use unified clientes: for empresas display nombre comercial, for persona build name; id is cliente.id
         const clientes = (clientesUnified || []).map((c) => {
           let nombre;
-            if (c.tipo === 'empresa') {
-              nombre = c.nombre || c.nombre_comercial || c.razon_social || '';
-            } else {
-              // Build full name from any available persona fields
-              const parts = [c.primer_nombre, c.segundo_nombre, c.primer_apellido, c.segundo_apellido].filter(Boolean);
-              nombre = parts.join(' ');
-            }
-            if (!nombre || !nombre.trim()) {
-              nombre = `Cliente ${c.id}`; // fallback so it still appears in selector
-            }
-            return { id: c.id, nombre };
+          if (c.tipo === 'empresa') {
+            nombre = c.nombre || c.nombre_comercial || c.razon_social || '';
+          } else {
+            // Build full name from any available persona fields
+            const parts = [c.primer_nombre, c.segundo_nombre, c.primer_apellido, c.segundo_apellido].filter(Boolean);
+            nombre = parts.join(' ');
+          }
+          if (!nombre || !nombre.trim()) {
+            nombre = `Cliente ${c.id}`; // fallback so it still appears in selector
+          }
+          return { id: c.id, nombre };
         }).filter(c => c.id); // only require a valid id now
         // Optionally de-duplicate by id (in case backend returns duplicates)
         const uniqMap = {};
@@ -89,6 +89,99 @@
       } finally {
         component.loadingCatalogs = false;
       }
+    },
+
+    async fetchClientesByAgencia(component, agenciaId) {
+      // When an agency is selected, fetch only clients linked to that agency.
+      // Falls back to all clients when agenciaId is falsy.
+      try {
+        if (!agenciaId) {
+          component.loadingFilteredClientes = false;
+          component.filteredClientes = [];
+          if (component.formEvento) component.formEvento.id_cliente_fk = '';
+          if (component.formEventoLista) component.formEventoLista.id_cliente_fk = '';
+          return [];
+        }
+        component.loadingFilteredClientes = true;
+        const params = new URLSearchParams();
+        params.set('all', '1');
+        params.set('per_page', '500');
+        params.set('agencia_id', String(agenciaId));
+        const data = await fetchJson(`/api/clientes?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+          credentials: 'same-origin'
+        });
+        const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        const clientes = (list || []).map((c) => ({ id: c.id, nombre: c.nombre }));
+        component.filteredClientes = clientes;
+        // If current selected client is not present, clear it to force user selection
+        const ensureSelectedIn = (model) => {
+          const cur = model?.id_cliente_fk;
+          if (!cur) return;
+          const found = clientes.some((x) => Number(x.id) === Number(cur));
+          if (!found) model.id_cliente_fk = '';
+        };
+        if (component.formEvento) ensureSelectedIn(component.formEvento);
+        if (component.formEventoLista) ensureSelectedIn(component.formEventoLista);
+        return clientes;
+      } catch (e) {
+        console.error('Error fetching clientes por agencia', e);
+        component.filteredClientes = [];
+        return [];
+      } finally {
+        component.loadingFilteredClientes = false;
+      }
+    },
+
+    async onAgenciaChange(component, agenciaId /*, contextKey */) {
+      // contextKey reserved if we later need to distinguish forms
+      return this.fetchClientesByAgencia(component, agenciaId);
+    },
+
+    async fetchOrdenesByCliente(component, clienteId) {
+      try {
+        if (!clienteId) {
+          component.loadingFilteredOrdenes = false;
+          component.filteredOrdenesServicio = [];
+          if (component.formEvento) component.formEvento.id_orden_servicio_fk = '';
+          if (component.formEventoLista) component.formEventoLista.id_orden_servicio_fk = '';
+          return [];
+        }
+        component.loadingFilteredOrdenes = true;
+        const params = new URLSearchParams();
+        params.set('all', '1');
+        params.set('per_page', '500');
+        params.set('cliente_id', String(clienteId));
+        const data = await fetchJson(`/api/ordenes-servicio?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+          credentials: 'same-origin'
+        });
+        const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        const os = (list || []).map((o) => ({
+          id: o.id_orden_servicio_pk || o.id || o.id_orden_servicio,
+          label: o.numero_orden_servicio || o.codigo_orden || `OS-${o.id_orden_servicio_pk || o.id}`
+        })).filter(x => x.id);
+        component.filteredOrdenesServicio = os;
+        const ensureSelectedIn = (model) => {
+          const cur = model?.id_orden_servicio_fk;
+          if (!cur) return;
+          const found = os.some((x) => Number(x.id) === Number(cur));
+          if (!found) model.id_orden_servicio_fk = '';
+        };
+        if (component.formEvento) ensureSelectedIn(component.formEvento);
+        if (component.formEventoLista) ensureSelectedIn(component.formEventoLista);
+        return os;
+      } catch (e) {
+        console.error('Error fetching ordenes por cliente', e);
+        component.filteredOrdenesServicio = [];
+        return [];
+      } finally {
+        component.loadingFilteredOrdenes = false;
+      }
+    },
+
+    async onClienteChange(component, clienteId /*, contextKey */) {
+      return this.fetchOrdenesByCliente(component, clienteId);
     },
 
     // Events

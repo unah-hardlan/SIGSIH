@@ -967,6 +967,8 @@ document.addEventListener("alpine:init", () => {
                     fecha: fechaTrim,
                     oc: ocTrim || null,
                     subtotal: subtotal,
+                    // El impuesto se calcula en el backend; enviar 0 para cumplir validación
+                    impuesto: 0,
                     total: total,
                     total_letras: totalLetrasTrim,
                     id_estado_factura_fk: estadoFacturaId,

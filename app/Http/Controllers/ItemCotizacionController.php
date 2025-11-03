@@ -59,6 +59,13 @@ class ItemCotizacionController extends Controller
             }
         }
         $item = ItemCotizacion::create($data);
+        // Recompute parent cotización totals to ensure subtotal (base), impuestos and total are consistent
+        try {
+            $this->recomputeCotizacionTotals($item->id_cotizacion_fk);
+        } catch (
+            \Throwable $e
+        ) {
+        }
         $item->load('cotizacion');
         return (new ItemCotizacionResource($item))->response()->setStatusCode(201);
     }
@@ -84,6 +91,10 @@ class ItemCotizacionController extends Controller
             }
         }
         $item->update($data);
+        try {
+            $this->recomputeCotizacionTotals($item->id_cotizacion_fk);
+        } catch (\Throwable $e) {
+        }
         $item->load('cotizacion');
         return (new ItemCotizacionResource($item))->response();
     }
@@ -92,7 +103,46 @@ class ItemCotizacionController extends Controller
     {
         $item = ItemCotizacion::find($id);
         if (!$item) return response()->json(['error' => 'Item no encontrado'], 404);
+        $cotId = $item->id_cotizacion_fk;
         $item->delete();
+        try {
+            $this->recomputeCotizacionTotals($cotId);
+        } catch (\Throwable $e) {
+        }
         return response()->json(['message' => 'Item eliminado']);
+    }
+
+    // Recompute totals for a cotización based on its items and update the cotización record.
+    protected function recomputeCotizacionTotals($cotizacionId)
+    {
+        if (!$cotizacionId) return;
+        $items = ItemCotizacion::where('id_cotizacion_fk', $cotizacionId)->get();
+        $imponible = 0.0;
+        $totalImpuesto = 0.0;
+        foreach ($items as $it) {
+            $pu = (float) ($it->precio_unitario ?? 0);
+            $cant = (float) ($it->cantidad ?? 0);
+            $imponible += $pu * $cant;
+            $totalImpuesto += (float) ($it->impuesto ?? 0);
+        }
+        $cot = \App\Models\Cotizacion::find($cotizacionId);
+        if (!$cot) return;
+        $cot->imponible = $imponible;
+        // subtotal = imponible + impuestos de items (sin incluir impuesto_otros)
+        $cot->subtotal = $imponible;
+        $otros = (float) ($cot->otros_cargos ?? 0);
+        // No recalcular aquí: respetar el valor persistido de impuesto_otros proveniente del flujo de UI
+        $otrosImp = (float) ($cot->impuesto_otros ?? 0.0);
+        $totalImp = round($totalImpuesto + $otrosImp, 2);
+        $cot->total_impuesto = $totalImp;
+        $cot->impuesto = $totalImp;
+        $cot->total = $imponible + $totalImpuesto + $otros + $otrosImp;
+        // Reglas de negocio: anticipo es 50% del total
+        try {
+            $cot->anticipo_requerido = round(($cot->total ?? 0) * 0.5, 2);
+        } catch (\Throwable $e) {
+            // no-op si falla el cálculo
+        }
+        $cot->save();
     }
 }
