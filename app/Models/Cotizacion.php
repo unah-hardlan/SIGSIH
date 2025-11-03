@@ -24,6 +24,7 @@ class Cotizacion extends Model
         'otros_cargos',
         'impuesto_otros',
         'anticipo_requerido',
+        'id_estado_cotizacion_fk',
         'id_cliente_fk',
         'id_orden_servicio_fk',
     ];
@@ -48,6 +49,17 @@ class Cotizacion extends Model
             if (!$model->fecha_cotizacion) {
                 $model->fecha_cotizacion = now();
             }
+            // Default estado to 'borrador' if available
+            try {
+                if (!$model->id_estado_cotizacion_fk) {
+                    $estadoId = EstadoCotizacion::where('codigo', 'borrador')->value('id_estado_cotizacion_pk');
+                    if ($estadoId) {
+                        $model->id_estado_cotizacion_fk = $estadoId;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // ignore if table not yet migrated
+            }
         });
     }
 
@@ -59,5 +71,10 @@ class Cotizacion extends Model
     public function ordenServicio()
     {
         return $this->belongsTo(OrdenServicio::class, 'id_orden_servicio_fk', 'id_orden_servicio_pk');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(EstadoCotizacion::class, 'id_estado_cotizacion_fk', 'id_estado_cotizacion_pk');
     }
 }

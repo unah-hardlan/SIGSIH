@@ -24,6 +24,7 @@ class UpdateCotizacionRequest extends FormRequest
             'otros_cargos' => 'sometimes|numeric|min:0',
             'impuesto_otros' => 'sometimes|numeric|min:0',
             'anticipo_requerido' => 'sometimes|numeric|min:0',
+            'id_estado_cotizacion_fk' => 'sometimes|integer|exists:tbl_estado_cotizacion,id_estado_cotizacion_pk',
             'id_cliente_fk' => 'sometimes|integer|exists:tbl_cliente,id_cliente_pk',
         ];
     }
