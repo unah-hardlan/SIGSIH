@@ -38,7 +38,7 @@
         </div>
     @endif
 
-    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-400 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 font-serif">
                 Autenticación en Dos Pasos (2FA)
@@ -122,7 +122,7 @@
         </div>
     </div>
 
-    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div class="bg-gray-50 dark:bg-gray-800 border border-gray-400 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-lg font-bold serif text-gray-900 dark:text-gray-100 font-serif">
                 @if($empresa)
@@ -277,7 +277,7 @@
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 font-serif">Mi Actividad</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
@@ -307,7 +307,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
@@ -337,7 +337,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-3">

@@ -10,10 +10,76 @@
         return document.querySelector('meta[name="csrf-token"]')?.content || "";
     }
 
-    function getToastFn() {
-        return typeof window.showToast === "function"
-            ? window.showToast
-            : (message) => console.warn("[toast]", message);
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function isValidDomain(email) {
+        const commonDomains = [
+            "gmail.com",
+            "yahoo.com",
+            "hotmail.com",
+            "outlook.com",
+            "live.com",
+            "icloud.com",
+            "protonmail.com",
+            "mail.com",
+            "aol.com",
+            "zoho.com",
+            "yandex.com",
+            "gmx.com",
+        ];
+
+        const domain = email.split("@")[1]?.toLowerCase();
+        if (!domain) return false;
+
+        return commonDomains.includes(domain) || domain.includes(".");
+    }
+
+    function showEmailError(input, message) {
+        const container = input.closest(".space-y-2") || input.parentElement;
+
+        let errorContainer = container.querySelector(".email-error-message");
+
+        if (!errorContainer) {
+            errorContainer = document.createElement("p");
+            errorContainer.className =
+                "email-error-message text-sm text-red-600 dark:text-red-400 mt-1";
+
+            const inputWrapper = input.closest(".flex");
+            if (inputWrapper) {
+                if (inputWrapper.nextElementSibling) {
+                    container.insertBefore(
+                        errorContainer,
+                        inputWrapper.nextElementSibling
+                    );
+                } else {
+                    inputWrapper.parentElement.appendChild(errorContainer);
+                }
+            } else {
+                container.appendChild(errorContainer);
+            }
+        }
+
+        errorContainer.textContent = message;
+        errorContainer.style.display = "block";
+        errorContainer.classList.remove("hidden");
+        input.classList.add("border-red-500");
+        input.classList.remove("border-gray-300", "dark:border-gray-600");
+    }
+
+    function clearEmailError(input) {
+        const container = input.closest(".space-y-2") || input.parentElement;
+        const errorContainer = container.querySelector(".email-error-message");
+
+        if (errorContainer) {
+            errorContainer.textContent = "";
+            errorContainer.classList.add("hidden");
+        }
+
+        input.classList.remove("border-red-500");
+        input.classList.add("border-gray-300", "dark:border-gray-600");
     }
 
     function setupEmailVerification(options = {}) {
@@ -71,7 +137,6 @@
             return;
         }
 
-        const toast = getToastFn();
         const csrfToken = getCsrfToken();
 
         const state = {
@@ -127,54 +192,100 @@
 
         function validateRequiredFields() {
             const missing = [];
+            const missingNames = [];
+
             config.requiredFields.forEach((field) => {
                 const input = document.getElementById(field.id);
                 if (!input) return;
 
                 const value = input.value?.trim();
                 if (!value) {
-                    missing.push(field.name);
+                    missing.push(field);
+                    missingNames.push(field.name);
                     input.classList.add("border-red-500");
-                    input.classList.remove("border-gray-300");
+                    input.classList.remove(
+                        "border-gray-300",
+                        "dark:border-gray-600"
+                    );
                 } else {
                     input.classList.remove("border-red-500");
-                    input.classList.add("border-gray-300");
+                    input.classList.add(
+                        "border-gray-300",
+                        "dark:border-gray-600"
+                    );
                 }
             });
 
             if (missing.length > 0) {
-                const firstMissing = config.requiredFields.find((field) =>
-                    missing.includes(field.name)
-                );
-                if (firstMissing) {
-                    document.getElementById(firstMissing.id)?.focus();
+                const firstMissing = missing[0];
+                const firstInput = document.getElementById(firstMissing.id);
+
+                if (firstInput) {
+                    firstInput.focus();
                 }
-                toast(
-                    `Debe completar los siguientes campos antes del email de contacto: ${missing.join(
+
+                showEmailError(
+                    emailInput,
+                    `Debe completar los siguientes campos antes: ${missingNames.join(
                         ", "
-                    )}`,
-                    "warning"
+                    )}`
                 );
+
                 return false;
             }
 
             return true;
         }
 
+        function validateEmailInput() {
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                showEmailError(emailInput, "El email es obligatorio");
+                return false;
+            }
+
+            if (email.length > 255) {
+                showEmailError(
+                    emailInput,
+                    "El email no puede exceder 255 caracteres"
+                );
+                return false;
+            }
+
+            if (!isValidEmail(email)) {
+                showEmailError(
+                    emailInput,
+                    "Por favor, ingrese un email válido"
+                );
+                return false;
+            }
+
+            if (!isValidDomain(email)) {
+                showEmailError(emailInput, "El dominio del email no es válido");
+                return false;
+            }
+
+            clearEmailError(emailInput);
+            return true;
+        }
+
         async function handleSendCode() {
             if (!validateRequiredFields()) {
+                sendButton.disabled = true;
+                return;
+            }
+
+            if (!validateEmailInput()) {
+                sendButton.disabled = true;
                 return;
             }
 
             const email = emailInput.value.trim();
-            if (!email || !emailInput.checkValidity()) {
-                toast("Por favor, ingrese un email válido", "warning");
-                emailInput.focus();
-                return;
-            }
 
             setSendButtonLoading(true);
             clearVerificationError();
+            clearEmailError(emailInput);
 
             try {
                 const response = await fetch(config.endpoints.send, {
@@ -206,11 +317,6 @@
                 config.onSendSuccess(data);
             } catch (error) {
                 console.error("Email verification send error:", error);
-                toast(
-                    error.message ||
-                        "Error al enviar el código. Por favor, intenta nuevamente.",
-                    "error"
-                );
                 setSendButtonLoading(false);
                 config.onSendError(error);
             }
@@ -282,6 +388,122 @@
             }
         }
 
+        emailInput.addEventListener("input", () => {
+            if (verifiedField.value === "1") {
+                resetVerification({ keepReadonly: false });
+            }
+
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                clearEmailError(emailInput);
+                sendButton.disabled = true;
+                return;
+            }
+
+            const missingFields = [];
+            const missingNames = [];
+
+            config.requiredFields.forEach((field) => {
+                const input = document.getElementById(field.id);
+                if (input) {
+                    const value = input.value?.trim();
+                    if (!value) {
+                        missingFields.push(field);
+                        missingNames.push(field.name);
+                    }
+                }
+            });
+
+            if (missingFields.length > 0) {
+                showEmailError(
+                    emailInput,
+                    `Debe completar estos campos primero: ${missingNames.join(
+                        ", "
+                    )}`
+                );
+                sendButton.disabled = true;
+                return;
+            }
+
+            if (email.length > 255) {
+                showEmailError(
+                    emailInput,
+                    "El email no puede exceder 255 caracteres"
+                );
+                sendButton.disabled = true;
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showEmailError(emailInput, "Formato de email inválido");
+                sendButton.disabled = true;
+                return;
+            }
+
+            if (!isValidDomain(email)) {
+                showEmailError(emailInput, "El dominio del email no es válido");
+                sendButton.disabled = true;
+                return;
+            }
+
+            clearEmailError(emailInput);
+            sendButton.disabled = false;
+        });
+
+        emailInput.addEventListener("blur", () => {
+            const email = emailInput.value.trim();
+            if (email) {
+                const missingFields = [];
+                const missingNames = [];
+
+                config.requiredFields.forEach((field) => {
+                    const input = document.getElementById(field.id);
+                    if (input && !input.value.trim()) {
+                        missingFields.push(field);
+                        missingNames.push(field.name);
+                    }
+                });
+
+                if (missingFields.length > 0) {
+                    showEmailError(
+                        emailInput,
+                        `Debe completar estos campos primero: ${missingNames.join(
+                            ", "
+                        )}`
+                    );
+                    return;
+                }
+
+                validateEmailInput();
+            }
+        });
+
+        config.requiredFields.forEach((field) => {
+            const input = document.getElementById(field.id);
+            if (input) {
+                input.addEventListener("input", () => {
+                    if (input.value.trim()) {
+                        input.classList.remove("border-red-500");
+                        input.classList.add(
+                            "border-gray-300",
+                            "dark:border-gray-600"
+                        );
+                    }
+
+                    if (emailInput.value.trim()) {
+                        emailInput.dispatchEvent(new Event("input"));
+                    }
+                });
+
+                input.addEventListener("blur", () => {
+                    if (emailInput.value.trim()) {
+                        emailInput.dispatchEvent(new Event("input"));
+                    }
+                });
+            }
+        });
+
         sendButton.addEventListener("click", handleSendCode);
         verifyButton.addEventListener("click", handleVerifyCode);
 
@@ -296,11 +518,11 @@
             this.value = this.value.replace(/[^0-9]/g, "");
         });
 
-        emailInput.addEventListener("input", () => {
-            if (verifiedField.value === "1") {
-                resetVerification({ keepReadonly: false });
-            }
-        });
+        sendButton.disabled = true;
+
+        if (emailInput.value.trim()) {
+            emailInput.dispatchEvent(new Event("input"));
+        }
 
         if (submitButton) {
             submitButton.disabled = verifiedField.value !== "1";

@@ -193,15 +193,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ];
 
             if (!allowed.includes(file.type)) {
-                window.showToast?.(
-                    "Formato no permitido. Usa imágenes JPG, JPEG, PNG o WEBP",
-                    "warning"
-                );
                 return;
             }
 
             if (file.size > 5 * 1024 * 1024) {
-                window.showToast?.("La imagen debe ser menor a 5MB", "error");
                 return;
             }
 
@@ -246,17 +241,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!emailInput?.value.trim()) {
             event.preventDefault();
-            window.showToast?.("El email de contacto es obligatorio", "error");
             emailInput?.focus();
             return;
         }
 
         if (!emailVerified) {
             event.preventDefault();
-            window.showToast?.(
-                "Debe verificar el email de contacto antes de guardar",
-                "error"
-            );
             emailInput?.focus();
             return;
         }
@@ -286,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
             { id: "primer_nombre", name: "Primer Nombre" },
             { id: "primer_apellido", name: "Primer Apellido" },
             { id: "dni", name: "DNI" },
+            { id: "id_genero_fk", name: "Género" },
         ],
         onVerificationSuccess: validateAll,
         onVerificationReset: validateAll,

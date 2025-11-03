@@ -129,17 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!emailInput?.value.trim()) {
             event.preventDefault();
-            window.showToast?.("El email de contacto es obligatorio", "error");
             emailInput?.focus();
             return;
         }
 
         if (!emailVerified) {
             event.preventDefault();
-            window.showToast?.(
-                "Debe verificar el email de contacto antes de guardar",
-                "error"
-            );
             emailInput?.focus();
             return;
         }
@@ -196,18 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = files[0];
 
             if (!file.type.match("image.*")) {
-                window.showToast?.(
-                    "Por favor selecciona solo archivos de imagen",
-                    "warning"
-                );
                 return;
             }
 
             if (file.size > 5 * 1024 * 1024) {
-                window.showToast?.(
-                    "El archivo es muy grande. Máximo 5MB",
-                    "error"
-                );
                 return;
             }
 
@@ -444,12 +431,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.previewLogo = previewLogoInput;
 
+    function setupDescripcionCounter() {
+        const descripcionTextarea = document.getElementById(
+            "descripcion_empresa"
+        );
+        const counter = document.getElementById("descripcion_count");
+
+        if (!descripcionTextarea || !counter) {
+            return;
+        }
+
+        const updateCounter = () => {
+            const currentLength = descripcionTextarea.value.length;
+            counter.textContent = currentLength;
+        };
+
+        descripcionTextarea.addEventListener("input", updateCounter);
+        updateCounter();
+    }
+
     setupLogoDragAndDrop();
     setupHorarioAtencion();
+    setupDescripcionCounter();
     validateAll();
 
     setupEmailVerification({
-        requiredFields: [{ id: "nombre_comercial", name: "Nombre Comercial" }],
+        requiredFields: [
+            { id: "nombre_comercial", name: "Nombre Comercial" },
+            { id: "razon_social", name: "Razón Social" },
+            { id: "rtn", name: "RTN" },
+            { id: "horario_atencion", name: "Horario de Atención" },
+            { id: "descripcion_empresa", name: "Descripción de la Empresa" },
+        ],
         onVerificationSuccess: validateAll,
         onVerificationReset: validateAll,
     });

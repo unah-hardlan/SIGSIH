@@ -17,7 +17,7 @@ class UpdateEmpresaClienteRequest extends FormRequest
             'nombre_comercial' => 'sometimes|required|string|max:150',
             'razon_social' => 'sometimes|nullable|string|max:150',
             'rtn' => 'sometimes|nullable|string|max:30',
-            'descripcion_empresa' => 'sometimes|nullable|string|max:255',
+            'descripcion_empresa' => 'sometimes|nullable|string|max:500',
             'horario_atencion' => 'sometimes|nullable|string|max:50',
             'avatar' => 'sometimes|nullable|string|max:255',
             'fecha_registro' => 'sometimes|date',

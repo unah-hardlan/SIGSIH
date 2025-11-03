@@ -17,7 +17,7 @@ class StoreEmpresaClienteRequest extends FormRequest
             'nombre_comercial' => 'required|string|max:150',
             'razon_social' => 'nullable|string|max:150',
             'rtn' => 'nullable|string|max:30',
-            'descripcion_empresa' => 'nullable|string|max:255',
+            'descripcion_empresa' => 'nullable|string|max:500',
             'horario_atencion' => 'nullable|string|max:50',
             'avatar' => 'nullable|string|max:255',
             'fecha_registro' => 'nullable|date',

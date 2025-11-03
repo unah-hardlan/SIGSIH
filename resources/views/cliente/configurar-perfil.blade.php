@@ -186,7 +186,6 @@
                     </div>
                 </div>
 
-                <!-- Sección de Contacto con Verificación -->
                 <div class="space-y-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                         Email de Contacto
@@ -197,30 +196,32 @@
                             <label for="email_contacto" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Email <span class="text-red-500">*</span>
                             </label>
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input 
-                                    id="email_contacto" 
-                                    name="email_contacto" 
-                                    type="email" 
-                                    required 
-                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
-                                    placeholder="ejemplo@correo.com"
-                                    value="{{ old('email_contacto') }}"
-                                >
-                                <button 
-                                    type="button" 
-                                    id="btn-enviar-codigo"
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
-                                >
-                                    Enviar Código
-                                </button>
+                            <div class="space-y-2">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input 
+                                        id="email_contacto" 
+                                        name="email_contacto" 
+                                        type="email" 
+                                        required 
+                                        maxlength="255"
+                                        class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                                        placeholder="ejemplo@correo.com"
+                                        value="{{ old('email_contacto') }}"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        id="btn-enviar-codigo"
+                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
+                                    >
+                                        Enviar Código
+                                    </button>
+                                </div>
+                                @error('email_contacto')
+                                    <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
-                            @error('email_contacto')
-                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
                         </div>
                         
-                        <!-- Campo de verificación (oculto inicialmente) -->
                         <div id="verification-section" class="hidden space-y-1">
                             <label for="codigo_verificacion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Código de Verificación <span class="text-red-500">*</span>
@@ -245,7 +246,6 @@
                             <p id="verification-error" class="text-sm text-red-600 dark:text-red-400 mt-1 hidden"></p>
                         </div>
                         
-                        <!-- Indicador de verificación exitosa -->
                         <div id="verification-success" class="hidden items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                             <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -253,7 +253,6 @@
                             <span class="text-sm font-medium text-green-800 dark:text-green-200">Email verificado correctamente</span>
                         </div>
                         
-                        <!-- Campo oculto para indicar si el email está verificado -->
                         <input type="hidden" id="email_verificado" name="email_verificado" value="0">
                     </div>
                 </div>
@@ -324,7 +323,6 @@
     </div>
 </div>
 
-<script src="{{ asset('js/toast-notifications.js') }}" defer></script>
 <script src="{{ asset('js/email-verification.js') }}" defer></script>
 <script src="{{ asset('js/theme-toggle.js') }}" defer></script>
 <script src="{{ asset('js/configurar-perfil.js') }}" defer></script>

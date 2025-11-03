@@ -191,14 +191,14 @@ class ClienteController extends Controller
             'nombre_comercial' => 'required|string|max:150',
             'razon_social' => 'nullable|string|max:150',
             'rtn' => 'nullable|string|max:30',
-            'descripcion_empresa' => 'nullable|string|max:255',
+            'descripcion_empresa' => 'nullable|string|max:500',
             'horario_atencion' => [
                 'nullable',
                 'string',
-                'max:100',
+                'max:500',
                 function ($attribute, $value, $fail) {
                     if ($value && !$this->isValidHorarioFormat($value)) {
-                        $fail('El formato del horario no es válido. Ejemplos: "L-V 8:00-17:00", "L-S 9:00-18:00", "24 horas"');
+                        $fail('El formato del horario no es válido. Ejemplos: "L-V 8:00 AM-5:00 PM", "L-S 9:00 AM-6:00 PM", "24 horas"');
                     }
                 }
             ],
@@ -295,29 +295,55 @@ class ClienteController extends Controller
     private function isValidHorarioFormat($horario): bool
     {
         $horario = trim($horario);
-        
-        if (empty($horario)) {
+
+        if ($horario === '') {
             return true;
         }
-        
-        $patterns = [
-            '/^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
-            '/^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2},\s*\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
-            '/^[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
-            '/^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2},\s*[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/',
-            '/^24\s*horas?$/i',
-            '/^cerrado$/i'
-        ];
-        
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $horario)) {
-                if ($this->validateTimeValues($horario)) {
-                    return true;
+
+        if (preg_match('/^24\s*horas?$/i', $horario) || preg_match('/^cerrado$/i', $horario)) {
+            return true;
+        }
+
+        $timePattern = '\\d{1,2}:\\d{2}(?:\\s*(?:[AaPp]\\.?[Mm]\\.?))?';
+        $daysPattern = '[LMXJVSD](?:\\s*-\\s*[LMXJVSD])?(?:\\s*,\\s*[LMXJVSD](?:\\s*-\\s*[LMXJVSD])?)*';
+
+        if (!preg_match('/^(' . $daysPattern . ')\\s+' . $timePattern . '\\s*-\\s*' . $timePattern . '$/i', $horario, $matches)) {
+            return false;
+        }
+
+        $daysString = $matches[1] ?? null;
+        if (!$daysString) {
+            return false;
+        }
+
+        $dayOrder = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+        foreach (array_map('trim', explode(',', $daysString)) as $segment) {
+            if ($segment === '') {
+                return false;
+            }
+
+            if (strpos($segment, '-') !== false) {
+                [$start, $end] = array_map('trim', explode('-', $segment));
+                if (!in_array($start, $dayOrder, true) || !in_array($end, $dayOrder, true)) {
+                    return false;
+                }
+
+                if (array_search($start, $dayOrder, true) > array_search($end, $dayOrder, true)) {
+                    return false;
+                }
+            } else {
+                if (!in_array($segment, $dayOrder, true)) {
+                    return false;
                 }
             }
         }
-        
-        return false;
+
+        if (!$this->validateTimeValues($horario)) {
+            return false;
+        }
+
+        return true;
     }
 
    
@@ -392,12 +418,12 @@ class ClienteController extends Controller
                 'nombre_comercial' => 'required|string|max:150',
                 'razon_social' => 'nullable|string|max:150',
                 'rtn' => 'nullable|string|max:30',
-                'descripcion_empresa' => 'nullable|string|max:255',
+                'descripcion_empresa' => 'nullable|string|max:500',
                 'horario_atencion' => [
-                    'nullable','string','max:100',
+                    'nullable','string','max:500',
                     function ($attribute,$value,$fail){
                         if ($value && !$this->isValidHorarioFormat($value)) {
-                            $fail('El formato del horario no es válido.');
+                            $fail('El formato del horario no es válido. Ejemplos: "L-V 8:00 AM-5:00 PM", "L-D 9:00 AM-6:00 PM", "24 horas"');
                         }
                     }
                 ],

@@ -1,6 +1,5 @@
 @extends('cliente.layouts.standalone')
 @section('content')
-<!-- Contenedor de notificaciones toast -->
 <div id="toast-container" class="fixed top-4 left-4 z-50 space-y-3 max-w-md"></div>
 
 <div class="fixed top-4 right-4 z-50">
@@ -19,12 +18,9 @@
 </div>
 
 <div class="w-full max-w-4xl mx-auto">
-    <!-- Tarjeta principal -->
     <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
-        <!-- Header de la tarjeta -->
         <div class="bg-gradient-to-r from-green-700 to-green-800 p-6 text-center">
             <div class="w-20 h-20 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <!-- Logo de la empresa -->
                 <div class="w-15 h-15 rounded-full overflow-hidden bg-white flex items-center justify-center p-1">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo SIGSIH" class="w-full h-full object-contain">
                 </div>
@@ -33,16 +29,13 @@
             <p class="text-green-100">Completa la información corporativa de tu empresa</p>
         </div>
 
-        <!-- Contenido del formulario -->
         <div class="p-6">
             <form action="{{ route('cliente.configurar-empresa.store') }}" method="POST" id="empresa-form" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 
-                <!-- Sección de Logo de Empresa -->
                 <div class="text-center mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Logo de la Empresa</h3>
                     <div class="flex flex-col items-center">
-                        <!-- Preview del logo -->
                         <div class="relative mb-4">
                             <div class="w-32 h-32 rounded-full border-4 border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700">
                                 <img id="logo-preview" class="w-full h-full object-cover hidden" alt="Preview">
@@ -54,7 +47,6 @@
                             </div>
                         </div>
                         
-                        <!-- Zona de drag and drop -->
                         <div id="logo-drop-zone" class="w-full max-w-sm border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-green-500 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all duration-300 ease-in-out">
                             <input type="file" id="avatar" name="avatar" data-validate="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="previewLogo(this)">
                             <label for="avatar" class="cursor-pointer">
@@ -74,9 +66,7 @@
                     </div>
                 </div>
 
-                <!-- Grid de campos de empresa -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Nombre Comercial -->
                     <div class="space-y-1">
                         <label for="nombre_comercial" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                             Nombre Comercial <span class="text-red-500">*</span>
@@ -97,33 +87,35 @@
                         @enderror
                     </div>
 
-                    <!-- Razón Social -->
                     <div class="space-y-1">
                         <label for="razon_social" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Razón Social
+                            Razón Social <span class="text-red-500">*</span>
                         </label>
                         <input 
                             id="razon_social" 
                             name="razon_social" 
                             type="text" 
+                            required
+                            data-validate="name"
                             class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
                             placeholder="Razón social legal"
                             value="{{ old('razon_social') }}"
                         >
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="razon_social"></p>
                         @error('razon_social')
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- RTN -->
                     <div class="space-y-1">
                         <label for="rtn" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            RTN
+                            RTN <span class="text-red-500">*</span>
                         </label>
                         <input 
                             id="rtn" 
                             name="rtn" 
                             type="text" 
+                            required
                             data-validate="rtn"
                             class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
                             placeholder="Registro Tributario Nacional"
@@ -135,16 +127,14 @@
                         @enderror
                     </div>
 
-                    <!-- Horario de Atención -->
                     <div class="md:col-span-2 space-y-1">
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Horario de Atención
+                            Horario de Atención <span class="text-red-500">*</span>
                         </label>
 
                         <div class="space-y-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-800/60 px-4 py-4">
                             <input type="hidden" name="horario_atencion" id="horario_atencion" value="{{ old('horario_atencion') }}">
 
-                            <!-- Días de la semana -->
                             <div class="space-y-2">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Días</p>
                                 <div class="flex flex-wrap gap-2">
@@ -168,7 +158,6 @@
                                         </label>
                                     @endforeach
                                 </div>
-                                <!-- Presets rápidos -->
                                 <div class="flex flex-wrap gap-2">
                                     <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-150 hover:border-green-500 hover:bg-green-50 hover:text-green-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:border-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300" data-preset="weekdays">Lunes a Viernes</button>
                                     <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-150 hover:border-green-500 hover:bg-green-50 hover:text-green-600 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:border-green-400 dark:hover:bg-green-900/20 dark:hover:text-green-300" data-preset="weekends">Lunes a Sábado</button>
@@ -177,7 +166,6 @@
                                 </div>
                             </div>
 
-                            <!-- Hora de apertura y cierre -->
                             <div class="space-y-2">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Horario</p>
                                 <div class="flex flex-wrap gap-3 items-center">
@@ -202,7 +190,6 @@
                                 </div>
                             </div>
 
-                            <!-- Preview del horario -->
                             <div class="pt-2 border-t border-gray-200 dark:border-gray-600">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Vista previa:</p>
                                 <p id="horario-preview" class="text-sm text-gray-700 dark:text-gray-300 font-medium">—</p>
@@ -215,24 +202,30 @@
                     </div>
                 </div>
 
-                <!-- Descripción de la Empresa -->
                 <div class="space-y-1">
                     <label for="descripcion_empresa" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Descripción de la Empresa
+                        Descripción de la Empresa <span class="text-red-500">*</span>
                     </label>
                     <textarea 
                         id="descripcion_empresa" 
                         name="descripcion_empresa" 
-                        rows="3"
-                        class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200 resize-y min-h-[80px] max-h-[280px]"
-                        placeholder="Describe brevemente tu empresa y sus servicios"
+                        rows="4"
+                        required
+                        maxlength="500"
+                        class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200 resize-y min-h-[100px] max-h-[300px]"
+                        placeholder="Describe brevemente tu empresa y sus servicios (máximo 500 caracteres)"
                     >{{ old('descripcion_empresa') }}</textarea>
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="descripcion_empresa"></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <span id="descripcion_count">0</span>/500 caracteres
+                        </p>
+                    </div>
                     @error('descripcion_empresa')
                         <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Email de Contacto con Verificación -->
                 <div class="space-y-3">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                         Email de Contacto
@@ -243,30 +236,32 @@
                             <label for="email_contacto" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Email <span class="text-red-500">*</span>
                             </label>
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input 
-                                    id="email_contacto" 
-                                    name="email_contacto" 
-                                    type="email" 
-                                    required 
-                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                                    placeholder="ejemplo@empresa.com"
-                                    value="{{ old('email_contacto') }}"
-                                >
-                                <button 
-                                    type="button" 
-                                    id="btn-enviar-codigo"
-                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
-                                >
-                                    Enviar Código
-                                </button>
+                            <div class="space-y-2">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input 
+                                        id="email_contacto" 
+                                        name="email_contacto" 
+                                        type="email" 
+                                        required 
+                                        maxlength="255"
+                                        class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                        placeholder="ejemplo@empresa.com"
+                                        value="{{ old('email_contacto') }}"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        id="btn-enviar-codigo"
+                                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
+                                    >
+                                        Enviar Código
+                                    </button>
+                                </div>
+                                @error('email_contacto')
+                                    <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
-                            @error('email_contacto')
-                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
                         </div>
                         
-                        <!-- Campo de verificación (oculto inicialmente) -->
                         <div id="verification-section" class="hidden space-y-1">
                             <label for="codigo_verificacion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Código de Verificación <span class="text-red-500">*</span>
@@ -291,7 +286,6 @@
                             <p id="verification-error" class="text-sm text-red-600 dark:text-red-400 mt-1 hidden"></p>
                         </div>
                         
-                        <!-- Indicador de verificación exitosa -->
                         <div id="verification-success" class="hidden items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                             <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -299,12 +293,10 @@
                             <span class="text-sm font-medium text-green-800 dark:text-green-200">Email verificado correctamente</span>
                         </div>
                         
-                        <!-- Campo oculto para indicar si el email está verificado -->
                         <input type="hidden" id="email_verificado" name="email_verificado" value="0">
                     </div>
                 </div>
 
-                <!-- Botones -->
                 <div class="pt-6 flex gap-4">
                     <a href="{{ route('cliente.configurar-perfil') }}" 
                        class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-3 px-6 rounded-lg text-center hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200">
@@ -324,7 +316,6 @@
                     </button>
                 </div>
 
-                <!-- Mensaje de error global -->
                 @if(session('error'))
                     <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
                         <div class="flex">
@@ -348,7 +339,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="text-center mt-8">
         <p class="text-sm text-gray-500 dark:text-white">
             ¿Necesitas ayuda? <a href="#" class="text-green-600 dark:text-green-400 hover:underline">Contacta soporte</a>
@@ -356,7 +346,6 @@
     </div>
 </div>
 
-<script src="{{ asset('js/toast-notifications.js') }}" defer></script>
 <script src="{{ asset('js/email-verification.js') }}" defer></script>
 <script src="{{ asset('js/theme-toggle.js') }}" defer></script>
 <script src="{{ asset('js/configurar-empresa.js') }}" defer></script>
