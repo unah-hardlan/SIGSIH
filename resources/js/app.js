@@ -1,6 +1,19 @@
 import "./bootstrap";
 import "./notifications";
 
+// Silenciar salida a consola en producción/por defecto
+// Habilitar únicamente si window.__ALLOW_CONSOLE__ === true (útil para depuración local)
+try {
+    if (!window.__ALLOW_CONSOLE__) {
+        const noop = () => {};
+        ["log", "info", "debug", "warn", "error"].forEach((m) => {
+            try {
+                console[m] = noop;
+            } catch (_) {}
+        });
+    }
+} catch (_) {}
+
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
 
@@ -1094,7 +1107,7 @@ if (typeof window !== "undefined") {
     window.settingsState = function () {
         const initial = {
             appLogoUrl: "/images/logo.png",
-            appName: "SIGSIH",
+            appName: "Hardlan",
             appLogoHeight: 96,
         };
         return {
@@ -1337,6 +1350,11 @@ if (typeof window !== "undefined") {
             tecnicosOptions: [],
 
             cotizacionesOptions: [],
+
+            // Pagination properties
+            numbers: [], // alias expected by pagination component
+            currentPage: 1,
+            perPage: 10,
             estadosOrdenOptions: [],
             loadingCatalogos: {
                 solicitudes: false,
@@ -1350,6 +1368,7 @@ if (typeof window !== "undefined") {
             saving: false,
             deleting: false,
             errors: {},
+            validationErrors: {},
             formOrden: {
                 id: null,
                 id_solicitud_servicio_fk: "",
@@ -1366,6 +1385,9 @@ if (typeof window !== "undefined") {
                 // Repuestos inline in create/edit modal
                 repuestos: [],
             },
+            // Frontend touched trackers (match tickets pattern)
+            formOrdenAdd: { _touched: {} },
+            formOrdenEdit: { _touched: {} },
             getToken() {
                 // Cookie-based auth only; no JS-accessible token
                 return null;
@@ -1431,6 +1453,51 @@ if (typeof window !== "undefined") {
                 };
                 this.errors = {};
             },
+            // Small client-side helpers used by the blades (validateTexto / validateNumero)
+            // They sanitize input and populate `validationErrors` for inline feedback.
+            validateTexto(value, fieldName, maxLength) {
+                const v = value == null ? "" : String(value);
+                // Ensure validationErrors object exists
+                this.validationErrors = this.validationErrors || {};
+                if (maxLength && v.length > maxLength) {
+                    this.validationErrors[fieldName] = [
+                        `Máximo ${maxLength} caracteres.`,
+                    ];
+                    return v.slice(0, maxLength);
+                }
+                // clear any previous validation error for this field
+                if (this.validationErrors && this.validationErrors[fieldName]) {
+                    delete this.validationErrors[fieldName];
+                }
+                return v;
+            },
+            validateNumero(value, fieldName, maxDigits) {
+                // allow empty
+                if (value === null || value === undefined || value === "") {
+                    if (
+                        this.validationErrors &&
+                        this.validationErrors[fieldName]
+                    ) {
+                        delete this.validationErrors[fieldName];
+                    }
+                    return "";
+                }
+                const s = String(value).replace(/[^0-9]/g, "");
+                const limited = maxDigits ? s.slice(0, maxDigits) : s;
+                this.validationErrors = this.validationErrors || {};
+                if (maxDigits && s.length > maxDigits) {
+                    this.validationErrors[fieldName] = [
+                        `Máximo ${maxDigits} dígitos.`,
+                    ];
+                } else if (
+                    this.validationErrors &&
+                    this.validationErrors[fieldName]
+                ) {
+                    delete this.validationErrors[fieldName];
+                }
+                // return number when possible, keep empty string otherwise
+                return limited === "" ? "" : Number(limited);
+            },
             // Repuestos management state
             isRepuestosModalOpen: false,
             repuestosModalOrder: null,
@@ -1439,6 +1506,7 @@ if (typeof window !== "undefined") {
             repuestosForm: {
                 id_producto_fk: "",
                 cantidad: 1,
+                _touched: {},
             },
             async fetchProducts() {
                 if (this.productsOptions && this.productsOptions.length) return;
@@ -1692,21 +1760,33 @@ if (typeof window !== "undefined") {
             formatCotLabel(item) {
                 if (!item) return "";
                 // Preferir un código explícito si viene desde el backend
-                if (item.codigo_cotizacion) return String(item.codigo_cotizacion);
+                if (item.codigo_cotizacion)
+                    return String(item.codigo_cotizacion);
                 if (item.codigo) return String(item.codigo);
                 // Extraer fecha si está disponible
-                const fechaRaw = item.fecha_cotizacion || item.fecha || item.created_at || item.fecha_creacion || null;
+                const fechaRaw =
+                    item.fecha_cotizacion ||
+                    item.fecha ||
+                    item.created_at ||
+                    item.fecha_creacion ||
+                    null;
                 let fechaStr = "000000000000";
                 if (fechaRaw) {
                     try {
                         const d = new Date(fechaRaw);
                         if (!isNaN(d.getTime())) {
                             const pad = (n) => String(n).padStart(2, "0");
-                            fechaStr = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
+                            fechaStr = `${d.getFullYear()}${pad(
+                                d.getMonth() + 1
+                            )}${pad(d.getDate())}${pad(d.getHours())}${pad(
+                                d.getMinutes()
+                            )}`;
                         }
-                    } catch (_) { }
+                    } catch (_) {}
                 }
-                const id = String(item.id_cotizacion_pk || item.id || item.id_cotizacion || "");
+                const id = String(
+                    item.id_cotizacion_pk || item.id || item.id_cotizacion || ""
+                );
                 const pad4 = id ? id.padStart(4, "0") : "0000";
                 return `COT-${fechaStr}-${pad4}`;
             },
@@ -1883,8 +1963,14 @@ if (typeof window !== "undefined") {
             sortOptions(listName) {
                 if (!Array.isArray(this[listName])) return;
                 this[listName].sort((a, b) => {
-                    const la = a && a.label !== undefined && a.label !== null ? String(a.label) : "";
-                    const lb = b && b.label !== undefined && b.label !== null ? String(b.label) : "";
+                    const la =
+                        a && a.label !== undefined && a.label !== null
+                            ? String(a.label)
+                            : "";
+                    const lb =
+                        b && b.label !== undefined && b.label !== null
+                            ? String(b.label)
+                            : "";
                     try {
                         return la.localeCompare(lb, "es");
                     } catch (e) {
@@ -1928,7 +2014,7 @@ if (typeof window !== "undefined") {
                             (o) => String(o.value) === cotId
                         );
                         if (found && found.label) label = found.label;
-                    } catch (_) { }
+                    } catch (_) {}
                     this.ensureOption("cotizacionesOptions", cotId, label);
                 }
             },
@@ -1938,7 +2024,10 @@ if (typeof window !== "undefined") {
                 }
                 // No cargamos cotizaciones globalmente aquí porque las cotizaciones deben
                 // cargarse por cliente cuando se seleccione una solicitud válida.
-                await Promise.all([this.fetchSolicitudes(), this.fetchTecnicos()]);
+                await Promise.all([
+                    this.fetchSolicitudes(),
+                    this.fetchTecnicos(),
+                ]);
             },
             async fetchSolicitudes() {
                 if (this.authError) return;
@@ -1958,13 +2047,20 @@ if (typeof window !== "undefined") {
                     let raw = [];
                     if (response.ok) {
                         try {
-                            const parsed = await response.json().catch(() => null);
+                            const parsed = await response
+                                .json()
+                                .catch(() => null);
                             if (Array.isArray(parsed)) raw = parsed;
-                            else if (Array.isArray(parsed?.data)) raw = parsed.data;
-                            else if (Array.isArray(parsed?.items)) raw = parsed.items;
+                            else if (Array.isArray(parsed?.data))
+                                raw = parsed.data;
+                            else if (Array.isArray(parsed?.items))
+                                raw = parsed.items;
                             else raw = [];
                         } catch (e) {
-                            console.debug("fetchSolicitudes: parse error, using empty array", e);
+                            console.debug(
+                                "fetchSolicitudes: parse error, using empty array",
+                                e
+                            );
                             raw = [];
                         }
                     } else {
@@ -1973,17 +2069,25 @@ if (typeof window !== "undefined") {
                     }
 
                     const opciones = (raw || []).map((item) => ({
-                        value: String(item.id_solicitud_pk || item.id || item.id_solicitud),
+                        value: String(
+                            item.id_solicitud_pk || item.id || item.id_solicitud
+                        ),
                         label:
                             item.numero_solicitud_acf ||
                             item.numero_solicitud_cliente ||
                             item.nombre_solicitud ||
-                            `Solicitud #${item.id_solicitud_pk || item.id || item.id_solicitud}`,
+                            `Solicitud #${
+                                item.id_solicitud_pk ||
+                                item.id ||
+                                item.id_solicitud
+                            }`,
                     }));
 
                     this.solicitudesOptions = opciones;
                     this.sortOptions("solicitudesOptions");
-                    this.ordenes.forEach((orden) => this.ensureOrdenOptions(orden));
+                    this.ordenes.forEach((orden) =>
+                        this.ensureOrdenOptions(orden)
+                    );
                 } catch (error) {
                     console.error(error);
                     this.showToast(
@@ -2060,7 +2164,11 @@ if (typeof window !== "undefined") {
                         throw new Error("Error al cargar cotizaciones");
                     const json = await response.json();
                     const opciones = (json.data || []).map((item) => ({
-                        value: String(item.id_cotizacion_pk || item.id || item.id_cotizacion),
+                        value: String(
+                            item.id_cotizacion_pk ||
+                                item.id ||
+                                item.id_cotizacion
+                        ),
                         label: this.formatCotLabel(item),
                     }));
                     this.cotizacionesOptions = opciones;
@@ -2089,36 +2197,61 @@ if (typeof window !== "undefined") {
                         return;
                     }
                     const params = new URLSearchParams();
-                    params.set('per_page', '100');
+                    params.set("per_page", "100");
                     // Try a common param name first
-                    params.set('id_cliente_fk', String(clienteId));
-                    params.set('sort', 'fecha');
-                    params.set('direction', 'desc');
-                    let response = await fetch('/api/cotizaciones?' + params.toString(), { headers: this.apiHeaders() });
-                    if (response.status === 401) { this.handleUnauthorized(); return; }
+                    params.set("id_cliente_fk", String(clienteId));
+                    params.set("sort", "fecha");
+                    params.set("direction", "desc");
+                    let response = await fetch(
+                        "/api/cotizaciones?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
                     // If backend doesn't accept id_cliente_fk, try alternate param
                     if (!response.ok) {
                         const params2 = new URLSearchParams();
-                        params2.set('per_page', '100');
-                        params2.set('cliente_id', String(clienteId));
-                        params2.set('sort', 'fecha');
-                        params2.set('direction', 'desc');
-                        response = await fetch('/api/cotizaciones?' + params2.toString(), { headers: this.apiHeaders() });
-                        if (response.status === 401) { this.handleUnauthorized(); return; }
+                        params2.set("per_page", "100");
+                        params2.set("cliente_id", String(clienteId));
+                        params2.set("sort", "fecha");
+                        params2.set("direction", "desc");
+                        response = await fetch(
+                            "/api/cotizaciones?" + params2.toString(),
+                            { headers: this.apiHeaders() }
+                        );
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return;
+                        }
                     }
-                    if (!response.ok) throw new Error('Error al cargar cotizaciones por cliente');
+                    if (!response.ok)
+                        throw new Error(
+                            "Error al cargar cotizaciones por cliente"
+                        );
                     const parsed = await response.json().catch(() => null);
-                    const raw = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.data) ? parsed.data : []);
+                    const raw = Array.isArray(parsed)
+                        ? parsed
+                        : Array.isArray(parsed?.data)
+                        ? parsed.data
+                        : [];
                     const opciones = (raw || []).map((item) => ({
-                        value: String(item.id_cotizacion_pk || item.id || item.id_cotizacion),
+                        value: String(
+                            item.id_cotizacion_pk ||
+                                item.id ||
+                                item.id_cotizacion
+                        ),
                         label: this.formatCotLabel(item),
                     }));
                     this.cotizacionesOptions = opciones;
-                    this.sortOptions('cotizacionesOptions');
+                    this.sortOptions("cotizacionesOptions");
                 } catch (e) {
                     console.error(e);
                     // fallback to global list on error
-                    try { await this.fetchCotizaciones(); } catch (_) { }
+                    try {
+                        await this.fetchCotizaciones();
+                    } catch (_) {}
                 } finally {
                     this.loadingCatalogos.cotizaciones = false;
                 }
@@ -2133,8 +2266,14 @@ if (typeof window !== "undefined") {
                 }
                 try {
                     // Load full solicitud resource to obtain cliente id
-                    const response = await fetch('/api/solicitudes/' + String(solicitudId), { headers: this.apiHeaders() });
-                    if (response.status === 401) { this.handleUnauthorized(); return; }
+                    const response = await fetch(
+                        "/api/solicitudes/" + String(solicitudId),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
                     if (!response.ok) {
                         // If failed, try to reload full cotizaciones as fallback
                         await this.fetchCotizaciones();
@@ -2143,7 +2282,13 @@ if (typeof window !== "undefined") {
                     const json = await response.json().catch(() => null);
                     const full = json?.data || json || {};
                     // Try common paths for cliente id
-                    const clienteId = full.id_cliente_fk || full.cliente?.id || full.cliente?.id_cliente_pk || full.cliente_id || full.id_cliente || null;
+                    const clienteId =
+                        full.id_cliente_fk ||
+                        full.cliente?.id ||
+                        full.cliente?.id_cliente_pk ||
+                        full.cliente_id ||
+                        full.id_cliente ||
+                        null;
                     if (clienteId) {
                         await this.fetchCotizacionesForCliente(clienteId);
                     } else {
@@ -2151,9 +2296,27 @@ if (typeof window !== "undefined") {
                         await this.fetchCotizaciones();
                     }
                 } catch (e) {
-                    console.error('onSolicitudChange error', e);
+                    console.error("onSolicitudChange error", e);
                     await this.fetchCotizaciones();
                 }
+            },
+            isVerMasModalOpen: false,
+            ordenSeleccionada: null,
+            // FIN: Nuevas propiedades
+
+            // ... (resto de tus propiedades y funciones como init, fetchOrdenes, etc.)
+
+            // INICIO: Nueva función para abrir el modal de detalles
+            openVerMasModal(orden) {
+                this.ordenSeleccionada = orden;
+                this.isVerMasModalOpen = true;
+            },
+            // FIN: Nueva función
+
+            // ... (resto de tus funciones como openCreateOrden, openEditOrden, etc.)
+
+            detalleUrl(id) {
+                return detalleUrl.replace("ID_ORDEN", id);
             },
             async fetchOrdenes() {
                 if (!(await this.requireAuth()) || this.authError) return;
@@ -2201,6 +2364,7 @@ if (typeof window !== "undefined") {
                     this.ordenes.forEach((orden) =>
                         this.ensureOrdenOptions(orden)
                     );
+                    this.numbers = this.ordenes; // Sincronizar para paginación
                     this.actualizarTecnicos();
                 } catch (error) {
                     console.error(error);
@@ -2216,6 +2380,9 @@ if (typeof window !== "undefined") {
                 this.resetForm();
                 // Ensure product options available for repuestos
                 this.fetchProducts().catch(() => {});
+                // reset touched flags so helpers don't show immediately
+                this.formOrdenAdd = this.formOrdenAdd || { _touched: {} };
+                this.formOrdenAdd._touched = {};
                 this.isModalOpen = true;
             },
             openEditOrden(orden) {
@@ -2323,6 +2490,11 @@ if (typeof window !== "undefined") {
                                     : [],
                         };
                     } finally {
+                        // reset touched flags for edit modal
+                        this.formOrdenEdit = this.formOrdenEdit || {
+                            _touched: {},
+                        };
+                        this.formOrdenEdit._touched = {};
                         this.isEditModalOpen = true;
                     }
                 })();
@@ -2563,6 +2735,27 @@ if (typeof window !== "undefined") {
                 if (!this.formOrden.id_cotizacion_fk) {
                     errs.id_cotizacion_fk = [requiredMsg];
                 }
+
+                // Validación de fechas: la fecha de inicio no debe ser mayor que la fecha de finalización
+                if (
+                    this.formOrden.fecha_inicio &&
+                    this.formOrden.fecha_finalizacion
+                ) {
+                    const fechaInicio = new Date(this.formOrden.fecha_inicio);
+                    const fechaFinalizacion = new Date(
+                        this.formOrden.fecha_finalizacion
+                    );
+
+                    if (fechaInicio > fechaFinalizacion) {
+                        errs.fecha_inicio = [
+                            "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+                        ];
+                        errs.fecha_finalizacion = [
+                            "La fecha de finalización no puede ser menor que la fecha de inicio.",
+                        ];
+                    }
+                }
+
                 this.errors = errs;
                 if (Object.keys(errs).length) {
                     this.showToast(
@@ -2635,6 +2828,32 @@ if (typeof window !== "undefined") {
             toggleRow(id) {
                 this.expandedRows[id] = !this.expandedRows[id];
             },
+
+            // Pagination methods
+            paginatedOrdenes() {
+                const start = (this.currentPage - 1) * this.perPage;
+                const end = start + this.perPage;
+                return this.filteredOrdenes().slice(start, end);
+            },
+            totalPages() {
+                return Math.ceil(this.filteredOrdenes().length / this.perPage);
+            },
+            nextPage() {
+                if (this.currentPage < this.totalPages()) {
+                    this.currentPage++;
+                }
+            },
+            prevPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                }
+            },
+            goToPage(page) {
+                if (page >= 1 && page <= this.totalPages()) {
+                    this.currentPage = page;
+                }
+            },
+
             async init() {
                 if (!(await this.requireAuth())) return;
                 // Debounce helper (local)
@@ -2697,6 +2916,30 @@ if (typeof window !== "undefined") {
             ordenarPor: "estado_solicitud",
             searchContacto: "",
             ordenarPorContacto: "tipo_contacto",
+
+            // Variables for pagination component (computed based on active tab)
+            get numbers() {
+                return this.tab === "solicitudes"
+                    ? this.numbersSolicitudes
+                    : this.numbersContactos;
+            },
+            get currentPage() {
+                return this.tab === "solicitudes"
+                    ? this.currentPageSolicitudes
+                    : this.currentPageContactos;
+            },
+            set currentPage(value) {
+                if (this.tab === "solicitudes") {
+                    this.currentPageSolicitudes = value;
+                } else {
+                    this.currentPageContactos = value;
+                }
+            },
+            get perPage() {
+                return this.tab === "solicitudes"
+                    ? this.perPageSolicitudes
+                    : this.perPageContactos;
+            },
             reportUrl() {
                 const params = new URLSearchParams();
                 params.set("modulo", "Solicitudes");
@@ -2754,6 +2997,16 @@ if (typeof window !== "undefined") {
             clientesOptions: [],
             estadosOptions: [],
             contactosOptions: [], // full list for selects; filtered per cliente when rendering
+
+            // Pagination - Solicitudes
+            numbersSolicitudes: [], // alias expected by pagination component
+            currentPageSolicitudes: 1,
+            perPageSolicitudes: 10,
+
+            // Pagination - Contactos
+            numbersContactos: [], // alias expected by pagination component
+            currentPageContactos: 1,
+            perPageContactos: 10,
 
             // Forms and flags
             formSolicitud: {
@@ -3080,18 +3333,27 @@ if (typeof window !== "undefined") {
                         try {
                             const parsed = await res.json().catch(() => null);
                             if (Array.isArray(parsed)) raw = parsed;
-                            else if (Array.isArray(parsed?.data)) raw = parsed.data;
-                            else if (Array.isArray(parsed?.items)) raw = parsed.items;
+                            else if (Array.isArray(parsed?.data))
+                                raw = parsed.data;
+                            else if (Array.isArray(parsed?.items))
+                                raw = parsed.items;
                             else raw = [];
                         } catch (e) {
-                            console.debug("gestionSolicitudes.fetchSolicitudes: parse error", e);
+                            console.debug(
+                                "gestionSolicitudes.fetchSolicitudes: parse error",
+                                e
+                            );
                             raw = [];
                         }
                     } else {
                         throw new Error("Error solicitudes");
                     }
 
-                    this.solicitudes = (raw || []).map((it) => this.mapSolicitud(it));
+                    this.solicitudes = (raw || []).map((it) =>
+                        this.mapSolicitud(it)
+                    );
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -3165,6 +3427,8 @@ if (typeof window !== "undefined") {
                     const json = await res.json();
                     if (json.data)
                         this.solicitudes.unshift(this.mapSolicitud(json.data));
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud creada correctamente");
                     this.isModalOpen = false;
                     this.resetSolicitudForm();
@@ -3213,6 +3477,8 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.solicitudes.splice(idx, 1, mapped);
                     }
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud actualizada");
                     this.isEditModalOpen = false;
                     this.solicitudToEdit = null;
@@ -3246,6 +3512,8 @@ if (typeof window !== "undefined") {
                     this.solicitudes = this.solicitudes.filter(
                         (s) => s.id !== this.solicitudToDelete.id
                     );
+                    // keep pagination alias in sync
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud eliminada");
                 } catch (e) {
                     console.error(e);
@@ -3275,6 +3543,12 @@ if (typeof window !== "undefined") {
                 if (!this.formSolicitud.id_contacto_fk)
                     errs.id_contacto_fk = ["Seleccione un contacto."];
                 if (Object.keys(errs).length) {
+                    // mark fields as touched so UI shows validation states after submit attempt
+                    this.formSolicitud._touched =
+                        this.formSolicitud._touched || {};
+                    Object.keys(errs).forEach((k) => {
+                        this.formSolicitud._touched[k] = true;
+                    });
                     this.errors = errs;
                     this.showToast("Complete los campos requeridos", "warn");
                     return;
@@ -3302,6 +3576,8 @@ if (typeof window !== "undefined") {
                         valor_contacto: it.valor_contacto,
                         id_cliente_fk: it.id_cliente_fk,
                     }));
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -3363,6 +3639,8 @@ if (typeof window !== "undefined") {
                             valor_contacto: json.data.valor_contacto,
                             id_cliente_fk: json.data.id_cliente_fk,
                         });
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto creado");
                     this.isContactoModalOpen = false;
                     this.resetContactoForm();
@@ -3420,6 +3698,8 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.contactos.splice(idx, 1, updated);
                     }
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto actualizado");
                     this.isEditContactoModalOpen = false;
                     this.contactoToEdit = null;
@@ -3452,6 +3732,8 @@ if (typeof window !== "undefined") {
                     this.contactos = this.contactos.filter(
                         (c) => c.id !== this.contactoToDelete.id
                     );
+                    // keep pagination alias in sync
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto eliminado");
                 } catch (e) {
                     console.error(e);
@@ -3463,6 +3745,36 @@ if (typeof window !== "undefined") {
                 }
             },
             submitContacto() {
+                // quick client-side validation for contactos
+                this.errors = {};
+                const errs = {};
+                if (
+                    !this.formContacto.tipo_contacto ||
+                    String(this.formContacto.tipo_contacto).trim().length === 0
+                ) {
+                    errs.tipo_contacto = ["El tipo de contacto es requerido."];
+                }
+                if (
+                    !this.formContacto.valor_contacto ||
+                    String(this.formContacto.valor_contacto).trim().length === 0
+                ) {
+                    errs.valor_contacto = [
+                        "El valor de contacto es requerido.",
+                    ];
+                }
+                if (!this.formContacto.id_cliente_fk) {
+                    errs.id_cliente_fk = ["Seleccione un cliente."];
+                }
+                if (Object.keys(errs).length) {
+                    this.formContacto._touched =
+                        this.formContacto._touched || {};
+                    Object.keys(errs).forEach(
+                        (k) => (this.formContacto._touched[k] = true)
+                    );
+                    this.errors = errs;
+                    this.showToast("Complete los campos requeridos", "warn");
+                    return;
+                }
                 if (this.formContacto.id) this.updateContacto();
                 else this.createContacto();
             },
@@ -3582,6 +3894,87 @@ if (typeof window !== "undefined") {
                                 return 0;
                         }
                     });
+            },
+
+            // Pagination methods - Solicitudes
+            paginatedSolicitudes() {
+                const filtered = this.filteredSolicitudes();
+                const start =
+                    (this.currentPageSolicitudes - 1) * this.perPageSolicitudes;
+                const end = start + this.perPageSolicitudes;
+                return filtered.slice(start, end);
+            },
+            totalPagesSolicitudes() {
+                return Math.ceil(
+                    this.filteredSolicitudes().length / this.perPageSolicitudes
+                );
+            },
+            nextPageSolicitudes() {
+                if (
+                    this.currentPageSolicitudes < this.totalPagesSolicitudes()
+                ) {
+                    this.currentPageSolicitudes++;
+                }
+            },
+            prevPageSolicitudes() {
+                if (this.currentPageSolicitudes > 1) {
+                    this.currentPageSolicitudes--;
+                }
+            },
+            goToPageSolicitudes(page) {
+                if (page >= 1 && page <= this.totalPagesSolicitudes()) {
+                    this.currentPageSolicitudes = page;
+                }
+            },
+
+            // Pagination methods - Contactos
+            paginatedContactos() {
+                const filtered = this.filteredContactos();
+                const start =
+                    (this.currentPageContactos - 1) * this.perPageContactos;
+                const end = start + this.perPageContactos;
+                return filtered.slice(start, end);
+            },
+            totalPagesContactos() {
+                return Math.ceil(
+                    this.filteredContactos().length / this.perPageContactos
+                );
+            },
+            nextPageContactos() {
+                if (this.currentPageContactos < this.totalPagesContactos()) {
+                    this.currentPageContactos++;
+                }
+            },
+            prevPageContactos() {
+                if (this.currentPageContactos > 1) {
+                    this.currentPageContactos--;
+                }
+            },
+            goToPageContactos(page) {
+                if (page >= 1 && page <= this.totalPagesContactos()) {
+                    this.currentPageContactos = page;
+                }
+            },
+
+            // Global pagination methods for component compatibility
+            totalPages() {
+                return this.tab === "solicitudes"
+                    ? this.totalPagesSolicitudes()
+                    : this.totalPagesContactos();
+            },
+            nextPage() {
+                if (this.tab === "solicitudes") {
+                    this.nextPageSolicitudes();
+                } else {
+                    this.nextPageContactos();
+                }
+            },
+            prevPage() {
+                if (this.tab === "solicitudes") {
+                    this.prevPageSolicitudes();
+                } else {
+                    this.prevPageContactos();
+                }
             },
 
             // Init

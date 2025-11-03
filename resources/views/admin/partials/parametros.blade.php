@@ -136,11 +136,29 @@
             <div class="space-y-4 text-gray-700 dark:text-gray-200">
                 <div>
                     <label class="block text-sm font-medium">Parámetro</label>
-                    <input type="text" x-model="createForm.parametro" class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200" required>
+                    <input type="text"
+                           x-model="createForm.parametro"
+                           @blur="createForm._touched = createForm._touched || {}; createForm._touched.parametro = true"
+                           @input="createForm._touched = createForm._touched || {}; createForm._touched.parametro = true"
+                           :class="{'border-red-500': (createForm._touched && createForm._touched.parametro)  && (createForm.parametro === '' || createForm.parametro.length >= 50)}"
+                           maxlength="50"
+                           class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
+                           required
+                           autocomplete="off">
+                    <small :class="(createForm._touched && createForm._touched.parametro) && (createForm.parametro === '' || createForm.parametro.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 50 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Valor</label>
-                    <input type="text" x-model="createForm.valor" class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200" required>
+                    <input type="text"
+                           x-model="createForm.valor"
+                           @blur="createForm._touched = createForm._touched || {}; createForm._touched.valor = true"
+                           @input="createForm._touched = createForm._touched || {}; createForm._touched.valor = true"
+                           :class="{'border-red-500': (createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100)}"
+                           maxlength="100"
+                           class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
+                           required
+                           autocomplete="off">
+                    <small :class="(createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div class="text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
@@ -151,10 +169,19 @@
                 <div>
                     <label class="block text-sm font-medium">Parámetro</label>
                     <input type="text" x-model="editForm.parametro" class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 bg-gray-100 dark:bg-gray-700 dark:text-gray-300" disabled>
+                    <small class="text-xs">Solo lectura. Máximo 50 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Valor</label>
-                    <input type="text" x-model="editForm.valor" class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200" required>
+                    <input type="text"
+                           x-model="editForm.valor"
+                           @blur="editForm._touched = editForm._touched || {}; editForm._touched.valor = true"
+                           @input="editForm._touched = editForm._touched || {}; editForm._touched.valor = true"
+                           :class="{'border-red-500': (editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100)}"
+                           maxlength="100"
+                           class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
+                           required>
+                    <small :class="(editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div class="text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>

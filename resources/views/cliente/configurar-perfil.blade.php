@@ -1,5 +1,7 @@
 @extends('cliente.layouts.standalone')
 @section('content')
+<div id="toast-container" class="fixed top-4 left-4 z-50 space-y-3 max-w-md"></div>
+
 <div class="fixed top-4 right-4 z-50">
     <button 
         onclick="toggleTheme()" 
@@ -54,7 +56,7 @@
                                 <p class="text-xs text-gray-600 dark:text-gray-400">
                                     <span class="font-medium text-blue-600 dark:text-blue-400">Clic para subir</span> o arrastra
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, WEBP (2MB máx)</p>
+                                <p class="text-xs text-gray-500 dark:text-white">PNG, JPG, WEBP (5MB máx)</p>
                             </label>
                         </div>
                         
@@ -184,6 +186,77 @@
                     </div>
                 </div>
 
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        Email de Contacto
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <label for="email_contacto" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <div class="space-y-2">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input 
+                                        id="email_contacto" 
+                                        name="email_contacto" 
+                                        type="email" 
+                                        required 
+                                        maxlength="255"
+                                        class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
+                                        placeholder="ejemplo@correo.com"
+                                        value="{{ old('email_contacto') }}"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        id="btn-enviar-codigo"
+                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
+                                    >
+                                        Enviar Código
+                                    </button>
+                                </div>
+                                @error('email_contacto')
+                                    <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div id="verification-section" class="hidden space-y-1">
+                            <label for="codigo_verificacion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Código de Verificación <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    id="codigo_verificacion" 
+                                    name="codigo_verificacion" 
+                                    type="text" 
+                                    maxlength="6"
+                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-center text-lg tracking-widest font-mono"
+                                    placeholder="000000"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="btn-verificar-codigo"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Verificar
+                                </button>
+                            </div>
+                            <p id="verification-error" class="text-sm text-red-600 dark:text-red-400 mt-1 hidden"></p>
+                        </div>
+                        
+                        <div id="verification-success" class="hidden items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-green-800 dark:text-green-200">Email verificado correctamente</span>
+                        </div>
+                        
+                        <input type="hidden" id="email_verificado" name="email_verificado" value="0">
+                    </div>
+                </div>
+
                 <div class="pt-4">
                     <button 
                         type="submit" 
@@ -244,165 +317,13 @@
     </div>
 
     <div class="text-center mt-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-gray-500 dark:text-white">
             ¿Necesitas ayuda? <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Contacta soporte</a>
         </p>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('profile-form');
-    const submitBtn = document.getElementById('submit-btn');
-
-    const validators = {
-        name: value => value.trim().length >= 2 || 'Debe tener al menos 2 caracteres',
-    dni: value => /^[0-9-]{6,20}$/.test(value.trim()) || 'DNI inválido (solo números y guiones, 6-20 caracteres)',
-        select: value => value !== '' || 'Este campo es obligatorio',
-        avatar: file => {
-            if (!file) return true;
-            const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
-            if (!allowed.includes(file.type)) return 'Formato no permitido';
-            if (file.size > 2 * 1024 * 1024) return 'La imagen debe ser menor a 2MB';
-            return true;
-        }
-    };
-
-    const touched = {};
-    let triedSubmit = false;
-
-    function showError(input, message) {
-        const el = document.querySelector(`[data-client-error-for="${input.id}"]`);
-        if (el) {
-            el.textContent = message;
-            el.classList.remove('hidden');
-        }
-        input.classList.add('border-red-500');
-        input.classList.remove('border-gray-300');
-    }
-
-    function clearError(input) {
-        const el = document.querySelector(`[data-client-error-for="${input.id}"]`);
-        if (el) {
-            el.textContent = '';
-            el.classList.add('hidden');
-        }
-        input.classList.remove('border-red-500');
-        input.classList.add('border-gray-300');
-    }
-
-    function validateInput(input) {
-        const rule = input.dataset.validate;
-        if (!rule) return true;
-        let value;
-        if (input.type === 'file') value = input.files[0] || null;
-        else value = input.value || '';
-
-        const res = validators[rule](value);
-
-        if (res === true) {
-            clearError(input);
-            return true;
-        } else {
-            if (touched[input.id] || triedSubmit) {
-                showError(input, res);
-            } else {
-                clearError(input);
-            }
-            return false;
-        }
-    }
-
-    function validateAll() {
-        const inputs = form.querySelectorAll('[data-validate]');
-        let ok = true;
-        inputs.forEach(i => {
-            const v = validateInput(i);
-            if (!v) ok = false;
-        });
-        submitBtn.disabled = !ok;
-        return ok;
-    }
-
-    form.querySelectorAll('[data-validate]').forEach(input => {
-        touched[input.id] = false;
-        const ev = input.type === 'file' ? 'change' : 'input';
-
-        input.addEventListener(ev, () => {
-            touched[input.id] = true;
-            validateInput(input);
-            validateAll();
-        });
-
-        input.addEventListener('blur', () => {
-            touched[input.id] = true;
-            validateInput(input);
-            validateAll();
-        });
-    });
-
-    // Avatar preview
-    const avatarInput = document.getElementById('avatar');
-    const avatarPreview = document.getElementById('avatar-preview');
-    const avatarPlaceholder = document.getElementById('avatar-placeholder');
-    function previewImage(input) {
-        const file = input.files && input.files[0];
-        if (!file) {
-            avatarPreview.classList.add('hidden');
-            avatarPlaceholder.classList.remove('hidden');
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            avatarPreview.src = e.target.result;
-            avatarPreview.classList.remove('hidden');
-            avatarPlaceholder.classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
-    }
-    window.previewImage = previewImage;
-
-    validateAll();
-
-    form.addEventListener('submit', function(e) {
-        triedSubmit = true;
-        if (!validateAll()) {
-            e.preventDefault();
-            // focus first invalid field
-            const firstInvalid = form.querySelector('[data-validate].border-red-500') || form.querySelector('[data-validate]');
-            if (firstInvalid) firstInvalid.focus();
-            return;
-        }
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <span class="flex items-center justify-center">
-                <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                Guardando perfil...
-            </span>
-        `;
-    });
-});
-
-function toggleTheme() {
-    const html = document.documentElement;
-    const button = document.querySelector('.theme-toggle');
-    const isDark = html.classList.contains('dark');
-    
-    button.style.transform = 'scale(0.9)';
-    
-    setTimeout(() => {
-        if (isDark) {
-            html.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        } else {
-            html.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        }
-        
-        button.style.transform = 'scale(1)';
-    }, 100);
-}
-</script>
+<script src="{{ asset('js/email-verification.js') }}" defer></script>
+<script src="{{ asset('js/theme-toggle.js') }}" defer></script>
+<script src="{{ asset('js/configurar-perfil.js') }}" defer></script>
 @endsection

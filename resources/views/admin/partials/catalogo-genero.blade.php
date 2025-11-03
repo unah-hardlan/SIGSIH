@@ -13,6 +13,8 @@
     perPageGeneros: 10,
 
     genero: '',
+    formGenero: { _touched: {} },
+    formEditGenero: { _touched: {} },
     filtroGenero: '',
     ordenarPor: 'genero',
     
@@ -125,7 +127,7 @@ x-effect="
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isGeneroModalOpen = true"
+            <button @click="formGenero = { _touched: {} }; genero = ''; isGeneroModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo género
             </button>
@@ -168,7 +170,7 @@ x-effect="
                                 <td class="py-2 px-4 flex gap-2"
                                     :class="{ 'last:rounded-br-lg': index === paginatedGeneros().length - 1 }">
                                     <a href="#"
-                                        @click.prevent="isGeneroEditModalOpen = true; itemToEdit = {id_genero_pk: genero.id_genero_pk, genero: genero.genero}"
+                                        @click.prevent="formEditGenero = { _touched: {} }; isGeneroEditModalOpen = true; itemToEdit = {id_genero_pk: genero.id_genero_pk, genero: genero.genero}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#"
                                         @click.prevent="isGeneroDeleteModalOpen = true; itemToDelete = {id_genero_pk: genero.id_genero_pk, nombre: genero.genero}"
@@ -204,7 +206,7 @@ x-effect="
                         </div>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                             <button
-                                @click.prevent="isGeneroEditModalOpen = true; itemToEdit = {id_genero_pk: genero.id_genero_pk, genero: genero.genero}"
+                                @click.prevent="formEditGenero = { _touched: {} }; isGeneroEditModalOpen = true; itemToEdit = {id_genero_pk: genero.id_genero_pk, genero: genero.genero}"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -268,8 +270,12 @@ x-effect="
             submitLabel="Guardar Género" formId="formGenero" maxWidth="max-w-md">
             <div>
                 <label for="genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                <input type="text" id="genero" x-model="genero" required
+                <input type="text" id="genero" x-model="genero" required maxlength="100"
+                    @input="formGenero = formGenero || { _touched: {} }; formGenero._touched.genero = true"
+                    @blur="formGenero._touched.genero = true"
+                    :class="formGenero && formGenero._touched && formGenero._touched.genero && (genero === '' || genero.length > 100) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <small :class="formGenero && formGenero._touched && formGenero._touched.genero && (genero === '' || genero.length > 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
         </x-admin.form-modal>
 
@@ -279,8 +285,12 @@ x-effect="
             <template x-if="itemToEdit">
                 <div>
                     <label for="edit_genero" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="edit_genero" x-model="itemToEdit.genero" required
+                    <input type="text" id="edit_genero" x-model="itemToEdit.genero" required maxlength="100"
+                        @input="formEditGenero = formEditGenero || { _touched: {} }; formEditGenero._touched.genero = true"
+                        @blur="formEditGenero._touched.genero = true"
+                        :class="formEditGenero && formEditGenero._touched && formEditGenero._touched.genero && (itemToEdit.genero === '' || itemToEdit.genero.length > 100) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEditGenero && formEditGenero._touched && formEditGenero._touched.genero && (itemToEdit.genero === '' || itemToEdit.genero.length > 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
                 </div>
             </template>
         </x-admin.edit-modal>

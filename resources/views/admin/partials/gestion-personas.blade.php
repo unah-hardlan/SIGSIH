@@ -32,6 +32,8 @@
         primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
         dni: '', id_genero_fk: '', id_usuario_fk: '', as_contacto_empresa: false, id_cliente_fk: ''
     },
+    formPersonas: { _touched: {} },
+    formEditPersonas: { _touched: {} },
 
     // --- Lógica Interna ---
     _catalogosPromise: null,
@@ -186,7 +188,7 @@
     isUsuarioCliente(id) { try { const u = this.catalogoUsuarios.find(x => String(x.id) === String(id)); return !!(u && (String(u.rol || '').toLowerCase() === 'cliente')); } catch (_) { return false; } },
     sortLocal() { /* Reemplazado por el getter filteredPersonas */ },
     usuariosSinPersona() { try { const usados = new Set(this.personas.map(p => String(p.id_usuario_fk || ''))); return this.catalogoUsuarios.filter(u => !usados.has(String(u.id))); } catch (_) { return this.catalogoUsuarios; } },
-    openAdd() { this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '', id_usuario_fk: '', as_contacto_empresa: false, id_cliente_fk: '' }; this.isModalOpenPersonas = true; },
+    openAdd() { this.formPersonas = { _touched: {} }; this.addForm = { primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '', dni: '', id_genero_fk: '', id_usuario_fk: '', as_contacto_empresa: false, id_cliente_fk: '' }; this.isModalOpenPersonas = true; },
     
     async createPersona() {
         try {
@@ -211,7 +213,7 @@
         } catch (e) { this.notify(e.message || 'Error al crear persona', 'error'); }
     },
     
-    openEdit(persona) { this.itemToEdit = JSON.parse(JSON.stringify(persona)); this.isEditModalOpenPersonas = true; },
+    openEdit(persona) { this.formEditPersonas = { _touched: {} }; this.itemToEdit = JSON.parse(JSON.stringify(persona)); this.isEditModalOpenPersonas = true; },
     
     async updatePersona() {
         try {
@@ -403,31 +405,58 @@
     <!-- Modales -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona" submitLabel="Guardar" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_nombre" placeholder="Ej: Juan" /></div>
-            <div><label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_nombre" placeholder="Ej: Carlos" /></div>
-            <div><label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_apellido" placeholder="Ej: Pérez" /></div>
-            <div><label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_apellido" placeholder="Ej: Gómez" /></div>
-            <div><label class="block text-sm font-medium mb-1 nunito-bold">DNI</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" /></div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_nombre" placeholder="Ej: Juan" @input="formPersonas._touched.primer_nombre = true" @blur="formPersonas._touched.primer_nombre = true"
+                    :class="formPersonas._touched && formPersonas._touched.primer_nombre && !addForm.primer_nombre ? 'border-red-500' : ''" autocomplete="off" />
+                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.primer_nombre && !addForm.primer_nombre ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_nombre" placeholder="Ej: Carlos" @input="formPersonas._touched.segundo_nombre = true" @blur="formPersonas._touched.segundo_nombre = true"
+                    :class="formPersonas._touched && formPersonas._touched.segundo_nombre && (addForm.segundo_nombre && addForm.segundo_nombre.length >= 100) ? 'border-red-500' : ''" autocomplete="off" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_apellido" placeholder="Ej: Pérez" @input="formPersonas._touched.primer_apellido = true" @blur="formPersonas._touched.primer_apellido = true"
+                    :class="formPersonas._touched && formPersonas._touched.primer_apellido && !addForm.primer_apellido ? 'border-red-500' : ''" autocomplete="off" />
+                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.primer_apellido && !addForm.primer_apellido ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_apellido" placeholder="Ej: Gómez" @input="formPersonas._touched.segundo_apellido = true" @blur="formPersonas._touched.segundo_apellido = true"
+                    :class="formPersonas._touched && formPersonas._touched.segundo_apellido && (addForm.segundo_apellido && addForm.segundo_apellido.length >= 100) ? 'border-red-500' : ''" autocomplete="off" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
+                <input type="text" maxlength="20" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" @input="formPersonas._touched.dni = true" @blur="formPersonas._touched.dni = true"
+                    :class="formPersonas._touched && formPersonas._touched.dni && !addForm.dni ? 'border-red-500' : ''" autocomplete="off" />
+                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.dni && !addForm.dni ? 'text-red-500' : ''">Requerido. Máximo 20 caracteres.</small>
+            </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk">
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk" @change="formPersonas._touched.genero = true"
+                    :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione</option>
                     <template x-for="op in catalogoGeneros" :key="op.id"><option :value="op.id" x-text="op.genero"></option></template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk">
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk" @change="formPersonas._touched.usuario = true"
+                    :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione</option>
                     <template x-for="u in usuariosSinPersona()" :key="'u-add-'+u.id"><option :value="u.id" x-text="u.usuario"></option></template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div x-show="isUsuarioCliente(addForm.id_usuario_fk)" class="sm:col-span-2">
                 <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-2" x-model="addForm.as_contacto_empresa"> Asociar esta persona como contacto de la empresa del usuario seleccionado</label>
             </div>
             <div x-show="addForm.as_contacto_empresa" class="sm:col-span-2">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Empresa a asociar</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_cliente_fk">
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_cliente_fk" @change="formPersonas._touched.empresa = true">
                     <option value="">Seleccione una empresa</option>
                     <template x-for="e in empresas" :key="'empresa-'+e.id"><option :value="e.id" x-text="e.nombre"></option></template>
                 </select>
@@ -439,17 +468,42 @@
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" /></div>
-                <div><label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" /></div>
-                <div><label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" /></div>
-                <div><label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" /></div>
-                <div><label class="block text-sm font-medium mb-1 nunito-bold">DNI</label><input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" /></div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" @input="formEditPersonas._touched.primer_nombre = true" @blur="formEditPersonas._touched.primer_nombre = true"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.primer_nombre && !itemToEdit.primer_nombre ? 'border-red-500' : ''" />
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.primer_nombre && !itemToEdit.primer_nombre ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" @input="formEditPersonas._touched.segundo_nombre = true" @blur="formEditPersonas._touched.segundo_nombre = true"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.segundo_nombre && (itemToEdit.segundo_nombre && itemToEdit.segundo_nombre.length >= 100) ? 'border-red-500' : ''" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" @input="formEditPersonas._touched.primer_apellido = true" @blur="formEditPersonas._touched.primer_apellido = true"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.primer_apellido && !itemToEdit.primer_apellido ? 'border-red-500' : ''" />
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.primer_apellido && !itemToEdit.primer_apellido ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" @input="formEditPersonas._touched.segundo_apellido = true" @blur="formEditPersonas._touched.segundo_apellido = true"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.segundo_apellido && (itemToEdit.segundo_apellido && itemToEdit.segundo_apellido.length >= 100) ? 'border-red-500' : ''" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
+                    <input type="text" maxlength="20" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" @input="formEditPersonas._touched.dni = true" @blur="formEditPersonas._touched.dni = true"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.dni && !itemToEdit.dni ? 'border-red-500' : ''" />
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.dni && !itemToEdit.dni ? 'text-red-500' : ''">Requerido. Máximo 20 caracteres.</small>
+                </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
-                    <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk">
+                    <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk" @change="formEditPersonas._touched.genero = true"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione</option>
                         <template x-for="op in catalogoGeneros" :key="'edit-genero-'+op.id"><option :value="op.id" x-text="op.genero"></option></template>
                     </select>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
             </div>
         </template>

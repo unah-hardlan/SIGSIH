@@ -20,6 +20,8 @@
     descripcion_estado_cai: '',
     es_final: false,
     orden: 0,
+    formEstadoCai: { _touched: {} },
+    formEditEstadoCai: { _touched: {} },
     filtroEstadoCai: '',
     ordenarPor: 'nombre_estado_cai',
     currentPage: 1,
@@ -27,9 +29,9 @@
     paginatedEstadosCai() {
         return this.filteredEstadosCai.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
     },
-    totalPages() {
-        return Math.ceil(this.filteredEstadosCai.length / this.perPage);
-    },
+        totalPages() {
+            return Math.max(1, Math.ceil((this.filteredEstadosCai || []).length / this.perPage));
+        },
     nextPage() {
         if (this.currentPage < this.totalPages()) {
             this.currentPage++;
@@ -132,7 +134,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isEstadoCaiModalOpen = true"
+            <button @click="formEstadoCai = { _touched: {} }; codigo_estado_cai=''; nombre_estado_cai=''; descripcion_estado_cai=''; es_final=false; orden=0; isEstadoCaiModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Estado CAI
             </button>
@@ -199,7 +201,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                 <td class="py-2 px-4 flex gap-2"
                                     :class="{ 'last:rounded-br-lg': index === paginatedEstadosCai().length - 1 }">
                                     <a href="#"
-                                        @click.prevent="isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
+                                        @click.prevent="formEditEstadoCai = { _touched: {} }; isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#"
                                         @click.prevent="isDeleteEstadoCaiModalOpen = true; itemToDelete = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, nombre_estado_cai: estadoCai.nombre_estado_cai}"
@@ -248,7 +250,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
                         </div>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                             <button
-                                @click.prevent="isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
+                                @click.prevent="formEditEstadoCai = { _touched: {} }; isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -276,25 +278,33 @@ $watch('ordenarPor', () => { currentPage = 1; });
                 <div>
                     <label for="codigo_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
-                    <input type="text" id="codigo_estado_cai" x-model="codigo_estado_cai" maxlength="10"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="codigo_estado_cai" x-model="codigo_estado_cai" maxlength="10" @input="formEstadoCai._touched.codigo = true" @blur="formEstadoCai._touched.codigo = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoCai._touched && formEstadoCai._touched.codigo && (codigo_estado_cai === '' || (codigo_estado_cai && codigo_estado_cai.length >= 10)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoCai._touched && formEstadoCai._touched.codigo && (codigo_estado_cai === '' || (codigo_estado_cai && codigo_estado_cai.length >= 10)) ? 'text-red-500' : ''">Requerido. Máximo 10 caracteres.</small>
                 </div>
                 <div>
                     <label for="nombre_estado_cai" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre
                         Estado CAI</label>
-                    <input type="text" id="nombre_estado_cai" x-model="nombre_estado_cai" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="nombre_estado_cai" x-model="nombre_estado_cai" maxlength="150" required @input="formEstadoCai._touched.nombre = true" @blur="formEstadoCai._touched.nombre = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoCai._touched && formEstadoCai._touched.nombre && !nombre_estado_cai ? 'border-red-500' : (formEstadoCai._touched && formEstadoCai._touched.nombre && (nombre_estado_cai && nombre_estado_cai.length >= 150) ? 'border-red-500' : '')">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoCai._touched && formEstadoCai._touched.nombre && !nombre_estado_cai ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="descripcion_estado_cai" x-model="descripcion_estado_cai" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea id="descripcion_estado_cai" x-model="descripcion_estado_cai" maxlength="500" rows="2" @input="formEstadoCai._touched.descripcion = true" @blur="formEstadoCai._touched.descripcion = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoCai._touched && formEstadoCai._touched.descripcion && (descripcion_estado_cai === '' || (descripcion_estado_cai && descripcion_estado_cai.length >= 500)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoCai._touched && formEstadoCai._touched.descripcion && (descripcion_estado_cai === '' || (descripcion_estado_cai && descripcion_estado_cai.length >= 500)) ? 'text-red-500' : ''">Máximo 500 caracteres.</small>
                 </div>
                 <div>
                     <label for="orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
-                    <input type="number" id="orden" x-model="orden" min="0"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" id="orden" x-model="orden" min="0" @input="formEstadoCai._touched.orden = true" @blur="formEstadoCai._touched.orden = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoCai._touched && formEstadoCai._touched.orden && (orden === '' || orden < 0) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoCai._touched && formEstadoCai._touched.orden && (orden === '' || orden < 0) ? 'text-red-500' : ''">Requerido. Valor >= 0.</small>
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="es_final" x-model="es_final"
@@ -312,25 +322,33 @@ $watch('ordenarPor', () => { currentPage = 1; });
                 <div>
                     <label for="edit_codigo_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
-                    <input type="text" id="edit_codigo_estado_cai" x-model="itemToEdit.codigo_estado_cai" maxlength="10"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="edit_codigo_estado_cai" x-model="itemToEdit.codigo_estado_cai" maxlength="10" @input="formEditEstadoCai._touched.codigo = true" @blur="formEditEstadoCai._touched.codigo = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoCai._touched && formEditEstadoCai._touched.codigo && (itemToEdit.codigo_estado_cai === '' || (itemToEdit.codigo_estado_cai && itemToEdit.codigo_estado_cai.length >= 10)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoCai._touched && formEditEstadoCai._touched.codigo && (itemToEdit.codigo_estado_cai === '' || (itemToEdit.codigo_estado_cai && itemToEdit.codigo_estado_cai.length >= 10)) ? 'text-red-500' : ''">Requerido. Máximo 10 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_nombre_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Estado CAI</label>
-                    <input type="text" id="edit_nombre_estado_cai" x-model="itemToEdit.nombre_estado_cai" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="edit_nombre_estado_cai" x-model="itemToEdit.nombre_estado_cai" maxlength="150" required @input="formEditEstadoCai._touched.nombre = true" @blur="formEditEstadoCai._touched.nombre = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoCai._touched && formEditEstadoCai._touched.nombre && !itemToEdit.nombre_estado_cai ? 'border-red-500' : (formEditEstadoCai._touched && formEditEstadoCai._touched.nombre && (itemToEdit.nombre_estado_cai && itemToEdit.nombre_estado_cai.length >= 150) ? 'border-red-500' : '')">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoCai._touched && formEditEstadoCai._touched.nombre && !itemToEdit.nombre_estado_cai ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="col-span-2">
                     <label for="edit_descripcion_estado_cai"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="edit_descripcion_estado_cai" x-model="itemToEdit.descripcion_estado_cai" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea id="edit_descripcion_estado_cai" x-model="itemToEdit.descripcion_estado_cai" maxlength="500" rows="2" @input="formEditEstadoCai._touched.descripcion = true" @blur="formEditEstadoCai._touched.descripcion = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoCai._touched && formEditEstadoCai._touched.descripcion && (itemToEdit.descripcion_estado_cai === '' || (itemToEdit.descripcion_estado_cai && itemToEdit.descripcion_estado_cai.length >= 500)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoCai._touched && formEditEstadoCai._touched.descripcion && (itemToEdit.descripcion_estado_cai === '' || (itemToEdit.descripcion_estado_cai && itemToEdit.descripcion_estado_cai.length >= 500)) ? 'text-red-500' : ''">Máximo 500 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
-                    <input type="number" id="edit_orden" x-model="itemToEdit.orden" min="0"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" id="edit_orden" x-model="itemToEdit.orden" min="0" @input="formEditEstadoCai._touched.orden = true" @blur="formEditEstadoCai._touched.orden = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoCai._touched && formEditEstadoCai._touched.orden && (itemToEdit.orden === '' || itemToEdit.orden < 0) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoCai._touched && formEditEstadoCai._touched.orden && (itemToEdit.orden === '' || itemToEdit.orden < 0) ? 'text-red-500' : ''">Requerido. Valor >= 0.</small>
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="edit_es_final" x-model="itemToEdit.es_final"

@@ -2,7 +2,7 @@
         if ($event.detail.formId === 'orden-form' || $event.detail.formId === 'orden-edit-form') {
             submitOrden();
         }
-    " @keydown.window.escape="isModalOpen = false; isEditModalOpen = false; isDeleteModalOpen = false"
+    " @keydown.window.escape="isModalOpen = false; isEditModalOpen = false; isDeleteModalOpen = false; isVerMasModalOpen = false; ordenSeleccionada = null"
     @confirm-delete.window="
         if (isDeleteModalOpen) {
             performDeleteOrden();
@@ -62,29 +62,25 @@
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Recepción</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Inicio</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Fin</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Codigo de Cotización</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Repuestos</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Observaciones</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Cliente</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Diag. Técnico</th>
-                            <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Calificación</th>
                             <th class="py-2 px-3 text-left text-gray-900 dark:text-gray-200">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-if="loadingOrdenes">
                             <tr>
-                                <td colspan="14" class="py-2 text-center text-gray-600 dark:text-gray-300"><i
+                                {{-- CAMBIO: Se actualiza el colspan de 14 a 9 --}}
+                                <td colspan="9" class="py-2 text-center text-gray-600 dark:text-gray-300"><i
                                         class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                             </tr>
                         </template>
-                        <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
+                        <template x-if="!loadingOrdenes && paginatedOrdenes().length === 0">
                             <tr>
-                                <td colspan="14" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
+                                {{-- CAMBIO: Se actualiza el colspan de 14 a 9 --}}
+                                <td colspan="9" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
                                     encontraron órdenes.</td>
                             </tr>
                         </template>
-                        <template x-for="orden in filteredOrdenes()" :key="orden.id">
+                        <template x-for="orden in paginatedOrdenes()" :key="orden.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700">
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200" x-text="orden.numero || '—'">
                                 </td>
@@ -102,35 +98,24 @@
                                     x-text="orden.fecha_inicio || '—'"></td>
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
                                     x-text="orden.fecha_finalizacion || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
-                                    x-text="orden.id_cotizacion ? formatCotLabel(orden.raw?.cotizacion || { id: orden.id_cotizacion, fecha_cotizacion: orden.raw?.fecha_cotizacion || '' }) : '—'">
-                                </td>
+                                
 
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
-                                    x-text="orden.repuestos_summary ? orden.repuestos_summary : '—'"></td>
-
-
-
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[12rem] truncate"
-                                    :title="orden.observaciones || ''" x-text="orden.observaciones || '—'"></td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate"
-                                    :title="orden.diagnostico_cliente || ''" x-text="orden.diagnostico_cliente || '—'">
-                                </td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200 max-w-[10rem] truncate"
-                                    :title="orden.diagnostico_tecnico || ''" x-text="orden.diagnostico_tecnico || '—'">
-                                </td>
-                                <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
-                                    x-text="orden.calificacion_servicio || '—'"></td>
                                 <td class="py-1 px-2">
                                     <div class="flex gap-2 items-center">
                                         <a :href="detalleUrl(orden.id)" target="_blank"
-                                            class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600">
-                                            <i class="fas fa-eye mr-1"></i> Ver
+                                            class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600" title="Ver Detalle Completo">
+                                            <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="#" @click.prevent="openEditOrden(orden)"
-                                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                            class="text-blue-500 hover:text-blue-700" title="Editar Orden"><i class="fas fa-edit"></i></a>
                                         <a href="#" @click.prevent="openDeleteOrden(orden)"
-                                            class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                            class="text-red-500 hover:text-red-700" title="Eliminar Orden"><i class="fas fa-trash"></i></a>
+                                        
+                                        <button @click.prevent="openVerMasModal(orden)"
+                                            class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 flex items-center gap-1">
+                                            <i class="fas fa-info-circle"></i> Ver más
+                                        </button>
+
                                     </div>
                                 </td>
                             </tr>
@@ -141,15 +126,16 @@
         </x-slot>
 
         <x-slot name="cards">
+            {{-- La vista de tarjetas no necesita muchos cambios ya que no mostraba toda la información --}}
             <div class="space-y-4 px-2 sm:px-0">
                 <template x-if="loadingOrdenes">
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i
                             class="fas fa-spinner fa-spin mr-2"></i> Cargando...</div>
                 </template>
-                <template x-if="!loadingOrdenes && filteredOrdenes().length === 0">
+                <template x-if="!loadingOrdenes && paginatedOrdenes().length === 0">
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400">No se encontraron órdenes.</div>
                 </template>
-                <template x-for="orden in filteredOrdenes()" :key="orden.id">
+                <template x-for="orden in paginatedOrdenes()" :key="orden.id">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div>
@@ -181,6 +167,11 @@
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            <button @click.prevent="openVerMasModal(orden)"
+                                class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i> Ver más
+                            </button>
+
                         </div>
                     </div>
                 </template>
@@ -188,7 +179,11 @@
         </x-slot>
     </x-responsive-table>
 
+    <!-- Paginación -->
+    <x-pagination />
+
     <!-- Modal Nueva Orden -->
+    {{-- ... (El contenido de este modal no necesita cambios) ... --}}
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Orden" submitLabel="Guardar Orden"
         formId="orden-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
@@ -196,8 +191,9 @@
                 <label for="id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">N° Solicitud
                     ACF</label>
                 <select id="id_solicitud" name="id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
-                    :disabled="loadingCatalogos.solicitudes"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    @change="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.id_solicitud_servicio_fk = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.id_solicitud_servicio_fk = true)"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && !formOrden.id_solicitud_servicio_fk) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :disabled="loadingCatalogos.solicitudes">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
@@ -211,12 +207,15 @@
                 <template x-if="errors.id_solicitud_servicio_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_solicitud_servicio_fk[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.id_solicitud_servicio_fk && !formOrden.id_solicitud_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold"> Técnico</label>
                 <select id="id_tecnico" name="id_tecnico" x-model="formOrden.id_tecnico_fk"
-                    :disabled="loadingCatalogos.tecnicos"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    @change="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.id_tecnico_fk = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.id_tecnico_fk = true)"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && !formOrden.id_tecnico_fk) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :disabled="loadingCatalogos.tecnicos">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
@@ -230,16 +229,23 @@
                 <template x-if="errors.id_tecnico_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_tecnico_fk[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.id_tecnico_fk && !formOrden.id_tecnico_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="fecha_recepcion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Recepción</label>
                 <input type="datetime-local" id="fecha_recepcion" name="fecha_recepcion"
                     x-model="formOrden.fecha_recepcion"
+                    @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_recepcion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_recepcion = true)"
+                    @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_recepcion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_recepcion = true)"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_recepcion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_recepcion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_recepcion[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.fecha_recepcion && !formOrden.fecha_recepcion ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="id_estado_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
@@ -264,57 +270,90 @@
                 <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Inicio</label>
                 <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" x-model="formOrden.fecha_inicio"
+                    @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_inicio = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_inicio = true)"
+                    @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_inicio = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_inicio = true)"
+                    :class="((formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_inicio) || errors.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.fecha_inicio && !formOrden.fecha_inicio ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="fecha_finalizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Finalización</label>
                 <input type="datetime-local" id="fecha_finalizacion" name="fecha_finalizacion"
                     x-model="formOrden.fecha_finalizacion"
+                    @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_finalizacion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_finalizacion = true)"
+                    @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_finalizacion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_finalizacion = true)"
+                    :class="((formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_finalizacion) || errors.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.fecha_finalizacion && !formOrden.fecha_finalizacion ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div class="col-span-2">
                 <label for="observaciones"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Observaciones</label>
                 <textarea id="observaciones" name="observaciones" rows="2" x-model="formOrden.observaciones"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.observaciones = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.observaciones = true); (typeof validateTexto === 'function') ? formOrden.observaciones = validateTexto($event.target.value, 'observaciones', 500) : formOrden.observaciones = $event.target.value"
+                    @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.observaciones = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.observaciones = true)"
+                    maxlength="500"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && (!formOrden.observaciones || formOrden.observaciones.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'
+                    ">
+                </textarea>
                 <template x-if="errors.observaciones">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.observaciones[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.observaciones && (!formOrden.observaciones || formOrden.observaciones.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.observaciones || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
                 <label for="diagnostico_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold">Diagnóstico
                     del Técnico</label>
                 <textarea id="diagnostico_tecnico" name="diagnostico_tecnico" rows="2"
                     x-model="formOrden.diagnostico_tecnico"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_tecnico = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_tecnico = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_tecnico = validateTexto($event.target.value, 'diagnostico_tecnico', 500) : formOrden.diagnostico_tecnico = $event.target.value"
+                    @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_tecnico = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_tecnico = true)"
+                    maxlength="500"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    ></textarea>
                 <template x-if="errors.diagnostico_tecnico">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_tecnico[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.diagnostico_tecnico && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_tecnico || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
                 <label for="diagnostico_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Diagnóstico
                     del Cliente</label>
                 <textarea id="diagnostico_cliente" name="diagnostico_cliente" rows="2"
                     x-model="formOrden.diagnostico_cliente"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_cliente = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_cliente = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_cliente = validateTexto($event.target.value, 'diagnostico_cliente', 500) : formOrden.diagnostico_cliente = $event.target.value"
+                    @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_cliente = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_cliente = true)"
+                    maxlength="500"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    ></textarea>
                 <template x-if="errors.diagnostico_cliente">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_cliente[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.diagnostico_cliente && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_cliente || '').length + ' / 500'"></small>
             </div>
 
             <div>
                 <label for="id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Codigo de Cotización</label>
                 <select id="id_cotizacion" name="id_cotizacion" x-model="formOrden.id_cotizacion_fk"
-                    :disabled="loadingCatalogos.cotizaciones || !formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    @change="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.id_cotizacion_fk = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.id_cotizacion_fk = true)"
+                    :class="(formOrdenAdd && formOrdenAdd._touched && !formOrden.id_cotizacion_fk) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :disabled="loadingCatalogos.cotizaciones || !formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0)">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
@@ -334,6 +373,8 @@
                 <template x-if="errors.id_cotizacion_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_cotizacion_fk[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenAdd._touched && formOrdenAdd._touched.id_cotizacion_fk && !formOrden.id_cotizacion_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <!-- removed duplicate edit selector from New modal; keep single calificacion below -->
             <div>
@@ -369,9 +410,13 @@
                     <div class="w-28">
                         <label class="text-xs text-gray-500">Cantidad</label>
                         <input type="number" min="1" x-model.number="repuestosForm.cantidad"
+                            @input="(repuestosForm && repuestosForm._touched) ? repuestosForm._touched.cantidad = true : (repuestosForm = repuestosForm || { _touched: {} }, repuestosForm._touched.cantidad = true); (typeof validateNumero === 'function') ? repuestosForm.cantidad = validateNumero($event.target.value, 'repuestos_cantidad', 6) : repuestosForm.cantidad = $event.target.value"
+                            :class="(repuestosForm && repuestosForm._touched && (!repuestosForm.cantidad || repuestosForm.cantidad === '')) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                             class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                     </div>
-                    <div>
+                    <div class="flex items-center gap-2">
+                        <small class="text-sm text-gray-500"
+                            :class="(repuestosForm && repuestosForm._touched && (!repuestosForm.cantidad || repuestosForm.cantidad === '')) ? 'text-red-600' : ''">Requerido.</small>
                         <button type="button" @click.prevent="addRepuestoToForm()"
                             class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Agregar</button>
                     </div>
@@ -399,6 +444,7 @@
     </x-admin.form-modal>
 
     <!-- Modal Editar Orden -->
+    {{-- ... (El contenido de este modal no necesita cambios) ... --}}
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Orden" itemToEdit="ordenToEdit"
         formId="orden-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -407,8 +453,9 @@
                 <label for="edit_id_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">N° Solicitud
                     ACF</label>
                 <select id="edit_id_solicitud" name="edit_id_solicitud" x-model="formOrden.id_solicitud_servicio_fk"
-                    :disabled="loadingCatalogos.solicitudes"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    @change="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.id_solicitud_servicio_fk = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.id_solicitud_servicio_fk = true)"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && !formOrden.id_solicitud_servicio_fk) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :disabled="loadingCatalogos.solicitudes">
                     <option value="">Seleccione...</option>
                     <template x-for="sol in solicitudesOptions" :key="sol.value">
                         <option :value="sol.value" x-text="sol.label"></option>
@@ -422,13 +469,16 @@
                 <template x-if="errors.id_solicitud_servicio_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_solicitud_servicio_fk[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.id_solicitud_servicio_fk && !formOrden.id_solicitud_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_id_tecnico" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Técnico</label>
                 <select id="edit_id_tecnico" name="edit_id_tecnico" x-model="formOrden.id_tecnico_fk"
-                    :disabled="loadingCatalogos.tecnicos"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    @change="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.id_tecnico_fk = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.id_tecnico_fk = true)"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && !formOrden.id_tecnico_fk) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :disabled="loadingCatalogos.tecnicos">
                     <option value="">Seleccione...</option>
                     <template x-for="tec in tecnicosOptions" :key="tec.value">
                         <option :value="tec.value" x-text="tec.label"></option>
@@ -442,16 +492,23 @@
                 <template x-if="errors.id_tecnico_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_tecnico_fk[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.id_tecnico_fk && !formOrden.id_tecnico_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_fecha_recepcion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Recepción</label>
                 <input type="datetime-local" id="edit_fecha_recepcion" name="edit_fecha_recepcion"
                     x-model="formOrden.fecha_recepcion"
+                    @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_recepcion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_recepcion = true)"
+                    @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_recepcion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_recepcion = true)"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_recepcion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_recepcion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_recepcion[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.fecha_recepcion && !formOrden.fecha_recepcion ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_id_estado_orden"
@@ -478,57 +535,89 @@
                     Inicio</label>
                 <input type="datetime-local" id="edit_fecha_inicio" name="edit_fecha_inicio"
                     x-model="formOrden.fecha_inicio"
+                    @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_inicio = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_inicio = true)"
+                    @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_inicio = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_inicio = true)"
+                    :class="((formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_inicio) || errors.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.fecha_inicio && !formOrden.fecha_inicio ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_fecha_finalizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Finalización</label>
                 <input type="datetime-local" id="edit_fecha_finalizacion" name="edit_fecha_finalizacion"
                     x-model="formOrden.fecha_finalizacion"
+                    @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_finalizacion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_finalizacion = true)"
+                    @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_finalizacion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_finalizacion = true)"
+                    :class="((formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_finalizacion) || errors.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.fecha_finalizacion && !formOrden.fecha_finalizacion ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div class="col-span-2">
                 <label for="edit_observaciones"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Observaciones</label>
                 <textarea id="edit_observaciones" name="edit_observaciones" rows="2" x-model="formOrden.observaciones"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.observaciones = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.observaciones = true); (typeof validateTexto === 'function') ? formOrden.observaciones = validateTexto($event.target.value, 'observaciones', 500) : formOrden.observaciones = $event.target.value"
+                    @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.observaciones = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.observaciones = true)"
+                    maxlength="500"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && (!formOrden.observaciones || formOrden.observaciones.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    ></textarea>
                 <template x-if="errors.observaciones">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.observaciones[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.observaciones && (!formOrden.observaciones || formOrden.observaciones.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.observaciones || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
                 <label for="edit_diagnostico_tecnico"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Diagnóstico del Técnico</label>
                 <textarea id="edit_diagnostico_tecnico" name="edit_diagnostico_tecnico" rows="2"
                     x-model="formOrden.diagnostico_tecnico"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_tecnico = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_tecnico = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_tecnico = validateTexto($event.target.value, 'diagnostico_tecnico', 500) : formOrden.diagnostico_tecnico = $event.target.value"
+                    @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_tecnico = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_tecnico = true)"
+                    maxlength="500"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    ></textarea>
                 <template x-if="errors.diagnostico_tecnico">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_tecnico[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.diagnostico_tecnico && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_tecnico || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
                 <label for="edit_diagnostico_cliente"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Diagnóstico del Cliente</label>
                 <textarea id="edit_diagnostico_cliente" name="edit_diagnostico_cliente" rows="2"
                     x-model="formOrden.diagnostico_cliente"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_cliente = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_cliente = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_cliente = validateTexto($event.target.value, 'diagnostico_cliente', 500) : formOrden.diagnostico_cliente = $event.target.value"
+                    @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_cliente = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_cliente = true)"
+                    maxlength="500"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    ></textarea>
                 <template x-if="errors.diagnostico_cliente">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_cliente[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.diagnostico_cliente && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_cliente || '').length + ' / 500'"></small>
             </div>
 
             <div>
                 <label for="edit_id_cotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Codigo de Cotización</label>
                 <select id="edit_id_cotizacion" name="edit_id_cotizacion" x-model="formOrden.id_cotizacion_fk"
-                    :disabled="loadingCatalogos.cotizaciones || !formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0)"
-                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    @change="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.id_cotizacion_fk = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.id_cotizacion_fk = true)"
+                    :class="(formOrdenEdit && formOrdenEdit._touched && !formOrden.id_cotizacion_fk) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
+                    :disabled="loadingCatalogos.cotizaciones || !formOrden.id_solicitud_servicio_fk || ((cotizacionesOptions || []).length === 0)">
                     <option value="" disabled selected hidden>Seleccione...</option>
                     <template x-for="cot in cotizacionesOptions" :key="cot.value">
                         <option :value="cot.value" x-text="cot.label"></option>
@@ -548,6 +637,8 @@
                 <template x-if="errors.id_cotizacion_fk">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.id_cotizacion_fk[0]"></p>
                 </template>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formOrdenEdit._touched && formOrdenEdit._touched.id_cotizacion_fk && !formOrden.id_cotizacion_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="edit_calificacion_servicio"
@@ -582,9 +673,13 @@
                     <div class="w-28">
                         <label class="text-xs text-gray-500">Cantidad</label>
                         <input type="number" min="1" x-model.number="repuestosForm.cantidad"
+                            @input="(repuestosForm && repuestosForm._touched) ? repuestosForm._touched.cantidad = true : (repuestosForm = repuestosForm || { _touched: {} }, repuestosForm._touched.cantidad = true); (typeof validateNumero === 'function') ? repuestosForm.cantidad = validateNumero($event.target.value, 'repuestos_cantidad', 6) : repuestosForm.cantidad = $event.target.value"
+                            :class="(repuestosForm && repuestosForm._touched && (!repuestosForm.cantidad || repuestosForm.cantidad === '')) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                             class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                     </div>
-                    <div>
+                    <div class="flex items-center gap-2">
+                        <small class="text-sm text-gray-500"
+                            :class="(repuestosForm && repuestosForm._touched && (!repuestosForm.cantidad || repuestosForm.cantidad === '')) ? 'text-red-600' : ''">Requerido.</small>
                         <button type="button" @click.prevent="addRepuestoToForm()"
                             class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Agregar</button>
                     </div>
@@ -610,9 +705,91 @@
             </div>
         </div>
     </x-admin.edit-modal>
-
+    
     <!-- Modal Confirmar Eliminación Orden -->
     <x-admin.confirmation-modal modal-name="isDeleteModalOpen" title="Eliminar Orden de Servicio"
         item-to-delete="ordenToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar la orden ID" />
+    
+    
+    <!-- INICIO: Nuevo Modal para "Ver Más" -->
+    <!-- INICIO: Modal "Ver Más" con Transición y Estado Final Correctos -->
+<div x-show="isVerMasModalOpen"
+    class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
+    style="display: none;"
+    x-cloak>
+    
+    <!-- Fondo oscuro y desenfocado -->
+    <div x-show="isVerMasModalOpen"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 backdrop-blur-none"
+        x-transition:enter-end="opacity-100 backdrop-blur-md"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 backdrop-blur-md"
+        x-transition:leave-end="opacity-0 backdrop-blur-none"
+        
+        class="fixed inset-0 bg-gray-900/75 backdrop-blur transition-all" 
+        
+        @click="isVerMasModalOpen = false; ordenSeleccionada = null">
+    </div>
+
+    <!-- Contenido del Modal -->
+    <div x-show="isVerMasModalOpen"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        class="relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full m-4"
+        role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+        
+        <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 nunito-bold" id="modal-headline">
+                        Detalles Adicionales (Orden #<span x-text="ordenSeleccionada?.numero || ''"></span>)
+                    </h3>
+                    <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+                        <template x-if="ordenSeleccionada">
+                            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                                <div class="sm:col-span-2">
+                                    <dt class="font-medium text-gray-900 dark:text-white">Código de Cotización</dt>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.id_cotizacion) ? formatCotLabel(ordenSeleccionada.raw?.cotizacion || { id: ordenSeleccionada.id_cotizacion, fecha_cotizacion: ordenSeleccionada.raw?.fecha_cotizacion || '' }) : '—'"></dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="font-medium text-gray-900 dark:text-white">Repuestos</dt>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.repuestos_summary) || '—'"></dd>
+                                </div>
+                                 <div class="sm:col-span-2">
+                                    <dt class="font-medium text-gray-900 dark:text-white">Observaciones</dt>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.observaciones) || '—'"></dd>
+                                </div>
+                                 <div class="sm:col-span-2">
+                                    <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Cliente</dt>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_cliente) || '—'"></dd>
+                                </div>
+                                 <div class="sm:col-span-2">
+                                    <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Técnico</dt>
+                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_tecnico) || '—'"></dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="font-medium text-gray-900 dark:text-white">Calificación</dt>
+                                    <dd class="mt-1 capitalize" x-text="(ordenSeleccionada && ordenSeleccionada.calificacion_servicio) || 'Sin calificar'"></dd>
+                                </div>
+                            </dl>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button @click="isVerMasModalOpen = false; ordenSeleccionada = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+                Cerrar
+            </button>
+        </div>
+    </div>
 </div>
+<!-- FIN: Modal "Ver Más" -->
+</div>
+

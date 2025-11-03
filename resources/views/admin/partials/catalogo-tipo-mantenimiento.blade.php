@@ -16,6 +16,8 @@
     descripcion_mantenimiento: '',
     edit_tipo_mantenimiento: '',
     edit_descripcion_mantenimiento: '',
+    formTipoMantenimiento: { _touched: {} },
+    formEditTipoMantenimiento: { _touched: {} },
     filtroTipoMantenimiento: '',
     ordenarPor: 'nombre',
 
@@ -86,7 +88,7 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isModalOpen = true"
+            <button @click="formTipoMantenimiento = { _touched: {} }; tipo_mantenimiento = ''; descripcion_mantenimiento = ''; isModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm">
                 Nuevo tipo de mantenimiento
             </button>
@@ -120,7 +122,7 @@
                             <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="item.descripcion_mantenimiento"></td>
                             <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === paginatedItems().length - 1 }">
                                 <a href="#"
-                                    @click.prevent="itemToEdit = {...item}; edit_tipo_mantenimiento = item.tipo_mantenimiento || ''; edit_descripcion_mantenimiento = item.descripcion_mantenimiento || ''; isEditModalOpen=true"
+                                    @click.prevent="itemToEdit = {...item}; edit_tipo_mantenimiento = item.tipo_mantenimiento || ''; edit_descripcion_mantenimiento = item.descripcion_mantenimiento || ''; formEditTipoMantenimiento = { _touched: {} }; isEditModalOpen=true"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                 <a href="#"
                                     @click.prevent="isDeleteModalOpen=true; itemToDelete = {id: item.id_tipo_mantenimiento_pk, nombre: item.tipo_mantenimiento}"
@@ -149,7 +151,7 @@
                         <p class="text-sm text-gray-600 dark:text-gray-300" x-text="item.descripcion_mantenimiento"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
                             <button
-                                @click.prevent="itemToEdit = {...item}; edit_tipo_mantenimiento = item.tipo_mantenimiento || ''; edit_descripcion_mantenimiento = item.descripcion_mantenimiento || ''; isEditModalOpen = true"
+                                @click.prevent="itemToEdit = {...item}; edit_tipo_mantenimiento = item.tipo_mantenimiento || ''; edit_descripcion_mantenimiento = item.descripcion_mantenimiento || ''; formEditTipoMantenimiento = { _touched: {} }; isEditModalOpen = true"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -213,13 +215,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="tipo_mantenimiento" class="block text-sm font-medium">Nombre</label>
-                    <input type="text" id="tipo_mantenimiento" x-model="tipo_mantenimiento"
+                    <input type="text" id="tipo_mantenimiento" x-model="tipo_mantenimiento" required maxlength="150"
+                        @input="formTipoMantenimiento = formTipoMantenimiento || { _touched: {} }; formTipoMantenimiento._touched.tipo_mantenimiento = true"
+                        @blur="formTipoMantenimiento._touched.tipo_mantenimiento = true"
+                        :class="formTipoMantenimiento && formTipoMantenimiento._touched && formTipoMantenimiento._touched.tipo_mantenimiento && (tipo_mantenimiento === '' || tipo_mantenimiento.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300">
+                    <small :class="formTipoMantenimiento && formTipoMantenimiento._touched && formTipoMantenimiento._touched.tipo_mantenimiento && (tipo_mantenimiento === '' || tipo_mantenimiento.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label for="descripcion_mantenimiento" class="block text-sm font-medium">Descripción</label>
-                    <textarea id="descripcion_mantenimiento" x-model="descripcion_mantenimiento" rows="3"
+                    <textarea id="descripcion_mantenimiento" x-model="descripcion_mantenimiento" rows="3" maxlength="255"
+                        @input="formTipoMantenimiento = formTipoMantenimiento || { _touched: {} }; formTipoMantenimiento._touched.descripcion_mantenimiento = true"
+                        @blur="formTipoMantenimiento._touched.descripcion_mantenimiento = true"
+                        :class="formTipoMantenimiento && formTipoMantenimiento._touched && formTipoMantenimiento._touched.descripcion_mantenimiento && descripcion_mantenimiento.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea>
+                    <small :class="formTipoMantenimiento && formTipoMantenimiento._touched && formTipoMantenimiento._touched.descripcion_mantenimiento && descripcion_mantenimiento.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -229,13 +239,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium">Nombre</label>
-                    <input type="text" x-model="edit_tipo_mantenimiento"
+                    <input type="text" x-model="edit_tipo_mantenimiento" required maxlength="150"
+                        @input="formEditTipoMantenimiento = formEditTipoMantenimiento || { _touched: {} }; formEditTipoMantenimiento._touched.edit_tipo_mantenimiento = true"
+                        @blur="formEditTipoMantenimiento._touched.edit_tipo_mantenimiento = true"
+                        :class="formEditTipoMantenimiento && formEditTipoMantenimiento._touched && formEditTipoMantenimiento._touched.edit_tipo_mantenimiento && (edit_tipo_mantenimiento === '' || edit_tipo_mantenimiento.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300">
+                    <small :class="formEditTipoMantenimiento && formEditTipoMantenimiento._touched && formEditTipoMantenimiento._touched.edit_tipo_mantenimiento && (edit_tipo_mantenimiento === '' || edit_tipo_mantenimiento.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium">Descripción</label>
-                    <textarea x-model="edit_descripcion_mantenimiento" rows="3"
+                    <textarea x-model="edit_descripcion_mantenimiento" rows="3" maxlength="255"
+                        @input="formEditTipoMantenimiento = formEditTipoMantenimiento || { _touched: {} }; formEditTipoMantenimiento._touched.edit_descripcion_mantenimiento = true"
+                        @blur="formEditTipoMantenimiento._touched.edit_descripcion_mantenimiento = true"
+                        :class="formEditTipoMantenimiento && formEditTipoMantenimiento._touched && formEditTipoMantenimiento._touched.edit_descripcion_mantenimiento && edit_descripcion_mantenimiento.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea>
+                    <small :class="formEditTipoMantenimiento && formEditTipoMantenimiento._touched && formEditTipoMantenimiento._touched.edit_descripcion_mantenimiento && edit_descripcion_mantenimiento.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
             </div>
         </x-admin.edit-modal>

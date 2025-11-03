@@ -18,6 +18,8 @@
     edit_nombre_origen: '',
     edit_descripcion_origen: '',
     edit_activo: true,
+    formOrigen: { _touched: {} },
+    formEditOrigen: { _touched: {} },
     filtroOrigen: '',
     ordenarPor: 'nombre',
 
@@ -92,7 +94,7 @@
         </x-slot>
 
         <x-slot name="actions">
-            <button @click="isModalOpen = true"
+            <button @click="formOrigen = { _touched: {} }; nombre_origen = ''; descripcion_origen = ''; activo = true; isModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm">
                 Nuevo Origen
             </button>
@@ -134,7 +136,7 @@
                             </td>
                             <td class="py-2 px-4 flex gap-2">
                                 <a href="#"
-                                    @click.prevent="itemToEdit = {...item}; edit_nombre_origen = item.nombre_origen || ''; edit_descripcion_origen = item.descripcion_origen || ''; edit_activo = !!item.activo; isEditModalOpen=true"
+                                    @click.prevent="formEditOrigen = { _touched: {} }; itemToEdit = {...item}; edit_nombre_origen = item.nombre_origen || ''; edit_descripcion_origen = item.descripcion_origen || ''; edit_activo = !!item.activo; isEditModalOpen=true"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                 <a href="#"
                                     @click.prevent="isDeleteModalOpen=true; itemToDelete = {id_origen_pk: item.id_origen_pk, nombre_origen: item.nombre_origen}"
@@ -167,7 +169,7 @@
                         <p class="text-sm text-gray-600 dark:text-gray-300" x-text="item.descripcion_origen"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
                             <button
-                                @click.prevent="itemToEdit = {...item}; edit_nombre_origen = item.nombre_origen || ''; edit_descripcion_origen = item.descripcion_origen || ''; edit_activo = !!item.activo; isEditModalOpen = true"
+                                @click.prevent="formEditOrigen = { _touched: {} }; itemToEdit = {...item}; edit_nombre_origen = item.nombre_origen || ''; edit_descripcion_origen = item.descripcion_origen || ''; edit_activo = !!item.activo; isEditModalOpen = true"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -231,13 +233,21 @@
             <div class="space-y-4">
                 <div>
                     <label for="nombre_origen" class="block text-sm font-medium">Nombre</label>
-                    <input type="text" id="nombre_origen" x-model="nombre_origen"
+                    <input type="text" id="nombre_origen" x-model="nombre_origen" required maxlength="150"
+                        @input="formOrigen = formOrigen || { _touched: {} }; formOrigen._touched.nombre_origen = true"
+                        @blur="formOrigen._touched.nombre_origen = true"
+                        :class="formOrigen && formOrigen._touched && formOrigen._touched.nombre_origen && (nombre_origen === '' || nombre_origen.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300">
+                    <small :class="formOrigen && formOrigen._touched && formOrigen._touched.nombre_origen && (nombre_origen === '' || nombre_origen.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div>
                     <label for="descripcion_origen" class="block text-sm font-medium">Descripción</label>
-                    <textarea id="descripcion_origen" x-model="descripcion_origen" rows="3"
+                    <textarea id="descripcion_origen" x-model="descripcion_origen" rows="3" maxlength="255"
+                        @input="formOrigen = formOrigen || { _touched: {} }; formOrigen._touched.descripcion_origen = true"
+                        @blur="formOrigen._touched.descripcion_origen = true"
+                        :class="formOrigen && formOrigen._touched && formOrigen._touched.descripcion_origen && descripcion_origen.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea>
+                    <small :class="formOrigen && formOrigen._touched && formOrigen._touched.descripcion_origen && descripcion_origen.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="activo" x-model="activo" class="rounded border-gray-400">
@@ -251,13 +261,21 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium">Nombre</label>
-                    <input type="text" x-model="edit_nombre_origen"
+                    <input type="text" x-model="edit_nombre_origen" required maxlength="150"
+                        @input="formEditOrigen = formEditOrigen || { _touched: {} }; formEditOrigen._touched.nombre_origen = true"
+                        @blur="formEditOrigen._touched.nombre_origen = true"
+                        :class="formEditOrigen && formEditOrigen._touched && formEditOrigen._touched.nombre_origen && (edit_nombre_origen === '' || edit_nombre_origen.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300">
+                    <small :class="formEditOrigen && formEditOrigen._touched && formEditOrigen._touched.nombre_origen && (edit_nombre_origen === '' || edit_nombre_origen.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Descripción</label>
-                    <textarea x-model="edit_descripcion_origen" rows="3"
+                    <textarea x-model="edit_descripcion_origen" rows="3" maxlength="255"
+                        @input="formEditOrigen = formEditOrigen || { _touched: {} }; formEditOrigen._touched.descripcion_origen = true"
+                        @blur="formEditOrigen._touched.descripcion_origen = true"
+                        :class="formEditOrigen && formEditOrigen._touched && formEditOrigen._touched.descripcion_origen && edit_descripcion_origen.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md shadow-sm border-gray-300"></textarea>
+                    <small :class="formEditOrigen && formEditOrigen._touched && formEditOrigen._touched.descripcion_origen && edit_descripcion_origen.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" x-model="edit_activo" class="rounded border-gray-400">

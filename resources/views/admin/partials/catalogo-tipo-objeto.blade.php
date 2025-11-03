@@ -67,8 +67,8 @@ x-init="fetchTipoObjetos()"
             </x-slot>
 
             <x-slot name="actions">
-                <div class="w-full flex justify-center sm:justify-end">
-                    <button @click="isTipoModalOpen = true"
+                    <div class="w-full flex justify-center sm:justify-end">
+                    <button @click="formTipoObjeto = { _touched: {} }; tipoToEdit = { nombre: '', descripcion: '' }; isTipoModalOpen = true"
                         class="w-11/12 sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                         Agregar tipo
                     </button>
@@ -114,7 +114,7 @@ x-init="fetchTipoObjetos()"
                                         <td class="py-2 px-4" x-text="tipo.modificado_por || '-'"></td>
                                         <td class="py-2 px-4" x-text="tipo.fecha_modificacion ? new Date(tipo.fecha_modificacion).toLocaleDateString() : '-'"></td>
                                         <td class="py-2 px-4 flex gap-2">
-                                            <button @click="tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
+                                            <button @click="formEditTipoObjeto = { _touched: {} }; tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
                                                 class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
                                             <button @click="tipoToDelete = {id: tipo.id, nombre: tipo.nombre}; isTipoDeleteModalOpen = true"
                                                 class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
@@ -165,7 +165,7 @@ x-init="fetchTipoObjetos()"
                                 </template>
                             </div>
                             <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <button @click="tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
+                                <button @click="formEditTipoObjeto = { _touched: {} }; tipoToEdit = {id: tipo.id, nombre: tipo.nombre, descripcion: tipo.descripcion}; isTipoEditModalOpen = true"
                                     class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                     <i class="fas fa-edit"></i> Editar
                                 </button>
@@ -192,11 +192,21 @@ x-init="fetchTipoObjetos()"
             formId="form-agregar-tipo-objeto">
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-                <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Analítica">
+                <input type="text" x-model="tipoToEdit.nombre" maxlength="150"
+                    @input="formTipoObjeto = formTipoObjeto || { _touched: {} }; formTipoObjeto._touched.nombre = true"
+                    @blur="formTipoObjeto = formTipoObjeto || { _touched: {} }; formTipoObjeto._touched.nombre = true"
+                    :class="formTipoObjeto && formTipoObjeto._touched && formTipoObjeto._touched.nombre && (tipoToEdit.nombre === '' || (tipoToEdit.nombre && tipoToEdit.nombre.length > 150)) ? 'border-red-500' : ''"
+                    class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Analítica">
+                <small class="block text-xs nunito-regular mt-1" :class="formTipoObjeto && formTipoObjeto._touched && formTipoObjeto._touched.nombre && (tipoToEdit.nombre === '' || (tipoToEdit.nombre && tipoToEdit.nombre.length > 150)) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el tipo..."></textarea>
+                <textarea x-model="tipoToEdit.descripcion" maxlength="255"
+                    @input="formTipoObjeto = formTipoObjeto || { _touched: {} }; formTipoObjeto._touched.descripcion = true"
+                    @blur="formTipoObjeto = formTipoObjeto || { _touched: {} }; formTipoObjeto._touched.descripcion = true"
+                    :class="formTipoObjeto && formTipoObjeto._touched && formTipoObjeto._touched.descripcion && (tipoToEdit.descripcion === '' || (tipoToEdit.descripcion && tipoToEdit.descripcion.length > 255)) ? 'border-red-500' : ''"
+                    class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el tipo..."></textarea>
+                <small class="block text-xs nunito-regular mt-1" :class="formTipoObjeto && formTipoObjeto._touched && formTipoObjeto._touched.descripcion && (tipoToEdit.descripcion === '' || (tipoToEdit.descripcion && tipoToEdit.descripcion.length > 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
         </x-admin.edit-modal>
 
@@ -210,11 +220,21 @@ x-init="fetchTipoObjetos()"
             formId="form-editar-tipo-objeto">
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-                <input type="text" x-model="tipoToEdit.nombre" class="w-full border rounded px-3 py-2 nunito-regular">
+                <input type="text" x-model="tipoToEdit.nombre" maxlength="150"
+                    @input="formEditTipoObjeto = formEditTipoObjeto || { _touched: {} }; formEditTipoObjeto._touched.nombre = true"
+                    @blur="formEditTipoObjeto = formEditTipoObjeto || { _touched: {} }; formEditTipoObjeto._touched.nombre = true"
+                    :class="formEditTipoObjeto && formEditTipoObjeto._touched && formEditTipoObjeto._touched.nombre && (tipoToEdit.nombre === '' || (tipoToEdit.nombre && tipoToEdit.nombre.length > 150)) ? 'border-red-500' : ''"
+                    class="w-full border rounded px-3 py-2 nunito-regular">
+                <small class="block text-xs nunito-regular mt-1" :class="formEditTipoObjeto && formEditTipoObjeto._touched && formEditTipoObjeto._touched.nombre && (tipoToEdit.nombre === '' || (tipoToEdit.nombre && tipoToEdit.nombre.length > 150)) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                <textarea x-model="tipoToEdit.descripcion" class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
+                <textarea x-model="tipoToEdit.descripcion" maxlength="255"
+                    @input="formEditTipoObjeto = formEditTipoObjeto || { _touched: {} }; formEditTipoObjeto._touched.descripcion = true"
+                    @blur="formEditTipoObjeto = formEditTipoObjeto || { _touched: {} }; formEditTipoObjeto._touched.descripcion = true"
+                    :class="formEditTipoObjeto && formEditTipoObjeto._touched && formEditTipoObjeto._touched.descripcion && (tipoToEdit.descripcion === '' || (tipoToEdit.descripcion && tipoToEdit.descripcion.length > 255)) ? 'border-red-500' : ''"
+                    class="w-full border rounded px-3 py-2 nunito-regular"></textarea>
+                <small class="block text-xs nunito-regular mt-1" :class="formEditTipoObjeto && formEditTipoObjeto._touched && formEditTipoObjeto._touched.descripcion && (tipoToEdit.descripcion === '' || (tipoToEdit.descripcion && tipoToEdit.descripcion.length > 255)) ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
         </x-admin.edit-modal>
 

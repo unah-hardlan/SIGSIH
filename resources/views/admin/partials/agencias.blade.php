@@ -16,7 +16,7 @@
   // estados de modales
   isAgenciaModalOpen: false, isDeleteAgenciaModalOpen: false,
   // modelos de formulario
-  formAgencia: { id: null, nombre: '', horario: '', direccion_id: '', clients: [] },
+  formAgencia: { id: null, nombre: '', horario: '', direccion_id: '', clients: [], _touched: {} },
   agenciaToDelete: null,
 
   // Métodos de Paginación
@@ -138,7 +138,7 @@ x-init="
 
     <x-slot name="actions">
       <button
-        @click="formAgencia = { id:null, nombre: '', horario: '', direccion_id: '', clients: [] }; dias.forEach(d=>d.sel=false); horaInicio='08:00'; horaFin='17:00'; composeHorario(); isAgenciaModalOpen = true"
+        @click="formAgencia = { id:null, nombre: '', horario: '', direccion_id: '', clients: [], _touched: {} }; dias.forEach(d=>d.sel=false); horaInicio='08:00'; horaFin='17:00'; composeHorario(); isAgenciaModalOpen = true"
         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nueva agencia</button>
       <a href="/admin/reportes-header?modulo=Agencias&fecha={{ now()->format('d-M-Y') }}" target="_blank"
         class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
@@ -178,7 +178,7 @@ x-init="
                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ag.direccion?.ciudad?.departamento?.pais?.nombre_pais || '-' "></td>
                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-html="ag.clientes && ag.clientes.length ? (ag.clientes.slice(0,2).map(c=>c.nombre).join(', ') + (ag.clientes.length>2 ? ' +' + (ag.clientes.length-2) : '')) : '-' "></td>
                 <td class="py-2 px-4 flex gap-2">
-                  <a href="#" @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk, clients: (ag.clientes ? ag.clientes.map(c=>c.id) : []) }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                  <a href="#" @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk, clients: (ag.clientes ? ag.clientes.map(c=>c.id) : []), _touched: {} }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                   <a href="#" @click.prevent="isDeleteAgenciaModalOpen = true; agenciaToDelete = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                 </td>
               </tr>
@@ -206,8 +206,8 @@ x-init="
             <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Departamento: ' + (ag.direccion?.ciudad?.departamento?.nombre_departamento || 'No especificado')"></p>
             <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'País: ' + (ag.direccion?.ciudad?.departamento?.pais?.nombre_pais || 'No especificado')"></p>
             <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="'Clientes: ' + (ag.clientes && ag.clientes.length ? (ag.clientes.slice(0,2).map(c=>c.nombre).join(', ') + (ag.clientes.length>2 ? ' +' + (ag.clientes.length-2) : '')) : 'Ninguno')"></p>
-            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <button @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk, clients: (ag.clientes ? ag.clientes.map(c=>c.id) : []) }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular"><i class="fas fa-edit"></i> Editar</button>
+              <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <button @click.prevent="formAgencia = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia, horario: ag.horario_agencia, direccion_id: ag.id_direccion_fk, clients: (ag.clientes ? ag.clientes.map(c=>c.id) : []), _touched: {} }; cargarRangosDesdeTexto(); isAgenciaModalOpen = true" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular"><i class="fas fa-edit"></i> Editar</button>
               <button @click.prevent="isDeleteAgenciaModalOpen = true; agenciaToDelete = { id: ag.id_agencias_pk, nombre: ag.nombre_agencia }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular"><i class="fas fa-trash"></i> Eliminar</button>
             </div>
           </div>
@@ -248,14 +248,19 @@ x-init="
   </div>
 
   <!-- Modal Nueva/Editar Agencia -->
-  <x-admin.form-modal class="nunito-bold" modalName="isAgenciaModalOpen" title="Agencia" submitLabel="Guardar Agencia" maxWidth="max-w-3xl" formId="form-agencia" noScroll="true">
+  <x-admin.form-modal class="nunito-bold" modalName="isAgenciaModalOpen" title="Agencia" submitLabel="Guardar Agencia" maxWidth="max-w-7xl" formId="form-agencia">
     <div x-effect="composeHorario()"></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="grid grid-cols-2 gap-3">
       <div>
         <label for="nombre_agencia" class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Nombre de la agencia</label>
-        <input type="text" id="nombre_agencia" name="nombre_agencia" x-model="formAgencia.nombre" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white  nunito-regular px-2" placeholder="Ej. Agencia Centro">
+        <input type="text" id="nombre_agencia" name="nombre_agencia" x-model="formAgencia.nombre" maxlength="100"
+          @input="formAgencia._touched.nombre = true" @blur="formAgencia._touched.nombre = true"
+          class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white  nunito-regular px-2"
+          :class="formAgencia._touched && formAgencia._touched.nombre && (formAgencia.nombre === '' || formAgencia.nombre.length >= 100) ? 'border-red-500' : ''"
+          placeholder="Ej. Agencia Centro">
+        <small class="block mt-1 text-sm text-gray-500" :class="formAgencia._touched && formAgencia._touched.nombre && (formAgencia.nombre === '' || formAgencia.nombre.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
       </div>
-      <div class="md:col-span-2">
+      <div class="col-span-2">
         <label class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold mb-2">Horario</label>
         <div class="space-y-3">
           <div>
@@ -281,21 +286,24 @@ x-init="
           </div>
         </div>
       </div>
-      <div class="md:col-span-2">
+      <div class="col-span-2">
         <label for="direccion_agencia" class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Dirección</label>
-        <select id="direccion_agencia" name="direccion_agencia" x-model.number="formAgencia.direccion_id" class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white  nunito-regular px-2">
+        <select id="direccion_agencia" name="direccion_agencia" x-model.number="formAgencia.direccion_id" @change="formAgencia._touched.direccion = true"
+          class="mt-1 block w-full rounded-md border-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm border focus:border-gray-500 dark:focus:border-white  nunito-regular px-2"
+          :class="formAgencia._touched && formAgencia._touched.direccion && !formAgencia.direccion_id ? 'border-red-500' : ''">
           <option value="">Seleccione una dirección</option>
           <template x-for="d in direcciones" :key="d.id_direccion_pk">
             <option :value="d.id_direccion_pk" x-text="(d.direccion_completa || [d.calle, d.numero, d.colonia].filter(Boolean).join(' ')) + (d.ciudad ? ' - ' + d.ciudad.nombre_ciudad : '')"></option>
           </template>
         </select>
+        <small class="block mt-1 text-sm text-gray-500" :class="formAgencia._touched && formAgencia._touched.direccion && !formAgencia.direccion_id ? 'text-red-500' : ''">Requerido.</small>
       </div>
-      <div class="md:col-span-2">
+      <div class="col-span-2">
         <label class="block text-sm font-medium text-gray-700 dark:text-white nunito-bold">Clientes asociados</label>
         <div class="mt-2 grid grid-cols-3 gap-3 items-center">
           <div>
             <div class="text-xs text-gray-600 dark:text-gray-400 mb-2 nunito-regular">Clientes disponibles</div>
-            <ul class="h-36 overflow-auto border rounded p-2 bg-white dark:bg-gray-800 text-sm">
+            <ul class="h-24 overflow-auto border rounded p-2 bg-white dark:bg-gray-800 text-sm">
               <template x-if="loadingClientes"><li class="text-gray-500 nunito-regular p-1">Cargando clientes...</li></template>
               <template x-if="!loadingClientes">
                 <template x-for="c in availableClients()" :key="c.id">
@@ -312,7 +320,7 @@ x-init="
           </div>
           <div>
             <div class="text-xs text-gray-600 dark:text-gray-400 mb-2 nunito-regular">Clientes asociados</div>
-            <ul class="h-36 overflow-auto border rounded p-2 bg-white dark:bg-gray-800 text-sm">
+            <ul class="h-24 overflow-auto border rounded p-2 bg-white dark:bg-gray-800 text-sm">
               <template x-if="loadingClientes"><li class="text-gray-500 nunito-regular p-1">Cargando...</li></template>
               <template x-if="!loadingClientes">
                 <template x-for="c in associatedClients()" :key="c.id">

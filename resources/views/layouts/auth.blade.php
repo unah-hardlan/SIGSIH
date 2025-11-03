@@ -8,8 +8,6 @@
     @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css', 'resources/css/auth.css'])
     <title>Iniciar Sesión – Hardlan</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -49,15 +47,17 @@
                 verifying2FA: false,
                 totpError: "",
                 needsRecovery: false,
-                // verify email modal state (fallback)
                 showVerifyEmailModal: false,
                 verifyEmailMessage: "",
                 verifyEmailAddress: "",
                 resendCooldown: 0,
                 resendTimerId: null,
+                showCloseTabScreen: false,
+                showAwaitVerificationScreen: false,
 
                 init() {
                     this.initTheme();
+                    this.initEmailVerifiedListener();
                 },
 
                 initTheme() {
@@ -324,6 +324,19 @@
                                 this.resendTimerId = null;
                             }
                         }, 1000);
+                    } catch (_) {}
+                },
+
+                initEmailVerifiedListener() {
+                    try {
+                        window.addEventListener('storage', (e) => {
+                            if (!e) return;
+                            if (e.key === 'email_verified' && e.newValue) {
+                                this.showVerifyEmailModal = false;
+                                this.showAwaitVerificationScreen = false;
+                                this.showCloseTabScreen = true;
+                            }
+                        });
                     } catch (_) {}
                 },
 
@@ -595,9 +608,7 @@
         </div>
     </div>
 
-    {{-- Livewire scripts removidos en login para evitar múltiples instancias de Alpine --}}
 
-    <!-- Modal: Verifica tu correo -->
     <div x-show="typeof $data !== 'undefined' && $data.showVerifyEmailModal" x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div
@@ -619,10 +630,66 @@
                     </span>
                     <span x-show="!(typeof $data !== 'undefined' && $data.resendCooldown > 0)">Reenviar</span>
                 </button>
-                <button type="button" @click="typeof $data !== 'undefined' ? ($data.showVerifyEmailModal=false) : null"
+                <button type="button" @click="showVerifyEmailModal=false; showAwaitVerificationScreen=true"
                     class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
                     Entendido
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showAwaitVerificationScreen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-5 shadow-xl text-center">
+            <div class="mb-3 text-blue-600">
+                <i class="fas fa-envelope-circle-check text-3xl"></i>
+            </div>
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Revisa tu correo</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Te enviamos un enlace para verificar tu cuenta. Esta pestaña se actualizará automáticamente cuando completes la verificación.</p>
+            <div class="mt-4 flex items-center gap-2 justify-center">
+                <button type="button" :disabled="resendCooldown>0" @click="resendVerification()"
+                    class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm disabled:opacity-50">
+                    <span x-show="resendCooldown>0">Reenviar (espera <span x-text="resendCooldown"></span>s)</span>
+                    <span x-show="!(resendCooldown>0)">Reenviar</span>
+                </button>
+                <button type="button"
+                    @click="
+                        (function(){
+                            let closed=false;
+                            try{window.close();closed=true;}catch(_){}
+                            if(!closed){try{const w=window.open('','_self');w&&w.close&&w.close();closed=true;}catch(_){}}
+                            if(!closed){try{window.top&&window.top.close&&window.top.close();closed=true;}catch(_){}}
+                            if(!closed){try{window.showToast&&window.showToast('No se puede cerrar automáticamente. Cierra esta pestaña.', 'info', {duration:2500});}catch(_){}}
+                        })()
+                    "
+                    class="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 text-sm">
+                    Cerrar pestaña
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showCloseTabScreen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div class="w-full max-w-sm bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-5 shadow-2xl text-center">
+            <div class="mb-3 text-green-600">
+                <i class="fas fa-circle-check text-3xl"></i>
+            </div>
+            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Correo verificado</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Ya puedes cerrar esta pestaña.</p>
+            <div class="mt-4 flex items-center gap-2 justify-center">
+                <button type="button"
+                        @click="
+                            (function(){
+                                let closed=false;
+                                try{window.close();closed=true;}catch(_){}
+                                if(!closed){try{const w=window.open('','_self');w&&w.close&&w.close();closed=true;}catch(_){}}
+                                if(!closed){try{window.top&&window.top.close&&window.top.close();closed=true;}catch(_){}}
+                                if(!closed){try{window.showToast&&window.showToast('No se puede cerrar automáticamente. Cierra esta pestaña.', 'info', {duration:2500});}catch(_){}}
+                            })()
+                        "
+                        class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                    Cerrar pestaña
+                </button>
+                <a href="{{ route('login') }}" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm">Ir al login</a>
             </div>
         </div>
     </div>

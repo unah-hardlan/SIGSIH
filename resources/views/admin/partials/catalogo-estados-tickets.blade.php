@@ -17,6 +17,8 @@
     codigo: '',
     es_final: false,
     orden: '',
+    formEstadoTicket: { _touched: {} },
+    formEditEstadoTicket: { _touched: {} },
     filtroEstadoTicket: '',
     ordenarPor: 'nombre',
 
@@ -28,7 +30,7 @@
         );
     },
     totalPagesEstadosTickets() {
-        return Math.ceil(this.estadosTickets.length / this.perPageEstadosTickets);
+        return Math.max(1, Math.ceil((this.estadosTickets || []).length / this.perPageEstadosTickets));
     },
     nextPageEstadosTickets() {
         if (this.currentPageEstadosTickets < this.totalPagesEstadosTickets()) {
@@ -99,7 +101,7 @@ x-effect="
 
         <x-slot name="actions">
             <button
-                @click="isEstadoTicketModalOpen = true"
+                @click="formEstadoTicket = { _touched: {} }; codigo=''; nombre=''; descripcion=''; es_final=false; orden=''; isEstadoTicketModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo estado de ticket
             </button>
@@ -144,7 +146,7 @@ x-effect="
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoTicket.es_final ? 'Sí' : 'No'"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 nunito-regular" x-text="estadoTicket.orden"></td>
                                 <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === paginatedEstadosTickets().length - 1 }">
-                                    <a href="#" @click.prevent="isEstadoTicketEditModalOpen = true; itemToEdit = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, codigo: estadoTicket.codigo, nombre: estadoTicket.nombre, descripcion: estadoTicket.descripcion, es_final: estadoTicket.es_final, orden: estadoTicket.orden}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="formEditEstadoTicket = { _touched: {} }; isEstadoTicketEditModalOpen = true; itemToEdit = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, codigo: estadoTicket.codigo, nombre: estadoTicket.nombre, descripcion: estadoTicket.descripcion, es_final: estadoTicket.es_final, orden: estadoTicket.orden}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isEstadoTicketDeleteModalOpen = true; itemToDelete = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, nombre: estadoTicket.nombre}" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -172,8 +174,8 @@ x-effect="
                             <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="estadoTicket.nombre"></h3>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="estadoTicket.descripcion"></p>
-                        <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="isEstadoTicketEditModalOpen = true; itemToEdit = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, codigo: estadoTicket.codigo, nombre: estadoTicket.nombre, descripcion: estadoTicket.descripcion, es_final: estadoTicket.es_final, orden: estadoTicket.orden}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <button @click.prevent="formEditEstadoTicket = { _touched: {} }; isEstadoTicketEditModalOpen = true; itemToEdit = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, codigo: estadoTicket.codigo, nombre: estadoTicket.nombre, descripcion: estadoTicket.descripcion, es_final: estadoTicket.es_final, orden: estadoTicket.orden}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button @click.prevent="isEstadoTicketDeleteModalOpen = true; itemToDelete = {id_estado_ticket_pk: estadoTicket.id_estado_ticket_pk, nombre: estadoTicket.nombre}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
@@ -236,19 +238,25 @@ class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transiti
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="codigo" class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
-                    <input type="text" id="codigo" x-model="codigo" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="codigo" x-model="codigo" maxlength="10" required @input="formEstadoTicket._touched.codigo = true" @blur="formEstadoTicket._touched.codigo = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoTicket._touched && formEstadoTicket._touched.codigo && (codigo === '' || (codigo && codigo.length >= 10)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoTicket._touched && formEstadoTicket._touched.codigo && (codigo === '' || (codigo && codigo.length >= 10)) ? 'text-red-500' : ''">Requerido. Máximo 10 caracteres.</small>
                 </div>
                 <div>
                     <label for="nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="nombre" x-model="nombre" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="nombre" x-model="nombre" maxlength="150" required @input="formEstadoTicket._touched.nombre = true" @blur="formEstadoTicket._touched.nombre = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoTicket._touched && formEstadoTicket._touched.nombre && !nombre ? 'border-red-500' : (formEstadoTicket._touched && formEstadoTicket._touched.nombre && (nombre && nombre.length >= 150) ? 'border-red-500' : '')">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoTicket._touched && formEstadoTicket._touched.nombre && !nombre ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="col-span-2">
                     <label for="descripcion"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="descripcion" x-model="descripcion" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea id="descripcion" x-model="descripcion" maxlength="255" rows="2" @input="formEstadoTicket._touched.descripcion = true" @blur="formEstadoTicket._touched.descripcion = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoTicket._touched && formEstadoTicket._touched.descripcion && (descripcion === '' || (descripcion && descripcion.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoTicket._touched && formEstadoTicket._touched.descripcion && (descripcion === '' || (descripcion && descripcion.length >= 255)) ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
                 <div>
                     <label for="es_final" class="block text-sm font-medium text-gray-700 nunito-bold">Es Final</label>
@@ -258,8 +266,10 @@ class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transiti
                 <div>
 
 <label for="orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
-                    <input type="number" id="orden" x-model="orden" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" id="orden" x-model="orden" required min="0" @input="formEstadoTicket._touched.orden = true" @blur="formEstadoTicket._touched.orden = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEstadoTicket._touched && formEstadoTicket._touched.orden && (orden === '' || orden < 0) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEstadoTicket._touched && formEstadoTicket._touched.orden && (orden === '' || orden < 0) ? 'text-red-500' : ''">Requerido. Valor >= 0.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -270,19 +280,25 @@ class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transiti
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_codigo" class="block text-sm font-medium text-gray-700 nunito-bold">Código</label>
-                    <input type="text" id="edit_codigo" x-model="itemToEdit.codigo" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="edit_codigo" x-model="itemToEdit.codigo" maxlength="10" required @input="formEditEstadoTicket._touched.codigo = true" @blur="formEditEstadoTicket._touched.codigo = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.codigo && (itemToEdit.codigo === '' || (itemToEdit.codigo && itemToEdit.codigo.length >= 10)) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.codigo && (itemToEdit.codigo === '' || (itemToEdit.codigo && itemToEdit.codigo.length >= 10)) ? 'text-red-500' : ''">Requerido. Máximo 10 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" maxlength="150" required @input="formEditEstadoTicket._touched.nombre = true" @blur="formEditEstadoTicket._touched.nombre = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.nombre && !itemToEdit.nombre ? 'border-red-500' : (formEditEstadoTicket._touched && formEditEstadoTicket._touched.nombre && (itemToEdit.nombre && itemToEdit.nombre.length >= 150) ? 'border-red-500' : '')">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.nombre && !itemToEdit.nombre ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div class="col-span-2">
                     <label for="edit_descripcion"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="2"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" maxlength="255" rows="2" @input="formEditEstadoTicket._touched.descripcion = true" @blur="formEditEstadoTicket._touched.descripcion = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.descripcion && (itemToEdit.descripcion === '' || (itemToEdit.descripcion && itemToEdit.descripcion.length >= 255)) ? 'border-red-500' : ''"></textarea>
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.descripcion && (itemToEdit.descripcion === '' || (itemToEdit.descripcion && itemToEdit.descripcion.length >= 255)) ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_es_final" class="block text-sm font-medium text-gray-700 nunito-bold">Es Final</label>
@@ -291,8 +307,10 @@ class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transiti
                 </div>
                 <div>
                     <label for="edit_orden" class="block text-sm font-medium text-gray-700 nunito-bold">Orden</label>
-                    <input type="number" id="edit_orden" x-model="itemToEdit.orden" required
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="number" id="edit_orden" x-model="itemToEdit.orden" required min="0" @input="formEditEstadoTicket._touched.orden = true" @blur="formEditEstadoTicket._touched.orden = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"
+                        :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.orden && (itemToEdit.orden === '' || itemToEdit.orden < 0) ? 'border-red-500' : ''">
+                    <small class="block mt-1 text-sm text-gray-500" :class="formEditEstadoTicket._touched && formEditEstadoTicket._touched.orden && (itemToEdit.orden === '' || itemToEdit.orden < 0) ? 'text-red-500' : ''">Requerido. Valor >= 0.</small>
                 </div>
             </div>
             </template>

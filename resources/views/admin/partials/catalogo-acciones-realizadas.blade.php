@@ -14,6 +14,8 @@
 
     nombre: '',
     descripcion: '',
+    formAccionRealizada: { _touched: {} },
+    formEditAccionRealizada: { _touched: {} },
     filtroAccionRealizada: '',
     ordenarPor: 'nombre',
 
@@ -97,7 +99,7 @@ x-effect="
 
         <x-slot name="actions">
             <button
-                @click="isAccionRealizadaModalOpen = true"
+                @click="formAccionRealizada = { _touched: {} }; nombre = ''; descripcion = ''; isAccionRealizadaModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nueva Acción
             </button>
@@ -135,7 +137,7 @@ x-effect="
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="accion.nombre"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="accion.descripcion"></td>
                                 <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === paginatedAccionesRealizadas().length - 1 }">
-                                    <a href="#" @click.prevent="isAccionRealizadaEditModalOpen = true; itemToEdit = { ...accion }" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    <a href="#" @click.prevent="itemToEdit = { ...accion }; formEditAccionRealizada = { _touched: {} }; isAccionRealizadaEditModalOpen = true" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
                                     <a href="#" @click.prevent="isAccionRealizadaDeleteModalOpen = true; itemToDelete = { id_accion_realizada_pk: accion.id_accion_realizada_pk, nombre: accion.nombre }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
@@ -162,7 +164,7 @@ x-effect="
                         <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="accion.nombre"></h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="accion.descripcion"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <button @click.prevent="isAccionRealizadaEditModalOpen = true; itemToEdit = { ...accion }" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <button @click.prevent="itemToEdit = { ...accion }; formEditAccionRealizada = { _touched: {} }; isAccionRealizadaEditModalOpen = true" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button @click.prevent="isAccionRealizadaDeleteModalOpen = true; itemToDelete = { id_accion_realizada_pk: accion.id_accion_realizada_pk, nombre: accion.nombre }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
@@ -224,13 +226,21 @@ x-effect="
             <div class="space-y-4">
                 <div>
                     <label for="nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="nombre" x-model="nombre" required
+                    <input type="text" id="nombre" x-model="nombre" required maxlength="150"
+                        @input="formAccionRealizada = formAccionRealizada || { _touched: {} }; formAccionRealizada._touched.nombre = true"
+                        @blur="formAccionRealizada._touched.nombre = true"
+                        :class="formAccionRealizada && formAccionRealizada._touched && formAccionRealizada._touched.nombre && (nombre === '' || nombre.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formAccionRealizada && formAccionRealizada._touched && formAccionRealizada._touched.nombre && (nombre === '' || nombre.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div>
                     <label for="descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="descripcion" x-model="descripcion" rows="3"
+                    <textarea id="descripcion" x-model="descripcion" rows="3" maxlength="255"
+                        @input="formAccionRealizada = formAccionRealizada || { _touched: {} }; formAccionRealizada._touched.descripcion = true"
+                        @blur="formAccionRealizada._touched.descripcion = true"
+                        :class="formAccionRealizada && formAccionRealizada._touched && formAccionRealizada._touched.descripcion && descripcion.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <small :class="formAccionRealizada && formAccionRealizada._touched && formAccionRealizada._touched.descripcion && descripcion.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
             </div>
         </x-admin.form-modal>
@@ -242,13 +252,21 @@ x-effect="
             <div class="space-y-4">
                 <div>
                     <label for="edit_nombre" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required
+                    <input type="text" id="edit_nombre" x-model="itemToEdit.nombre" required maxlength="150"
+                        @input="formEditAccionRealizada = formEditAccionRealizada || { _touched: {} }; formEditAccionRealizada._touched.nombre = true"
+                        @blur="formEditAccionRealizada._touched.nombre = true"
+                        :class="formEditAccionRealizada && formEditAccionRealizada._touched && formEditAccionRealizada._touched.nombre && (itemToEdit.nombre === '' || itemToEdit.nombre.length > 150) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <small :class="formEditAccionRealizada && formEditAccionRealizada._touched && formEditAccionRealizada._touched.nombre && (itemToEdit.nombre === '' || itemToEdit.nombre.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_descripcion" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="3"
+                    <textarea id="edit_descripcion" x-model="itemToEdit.descripcion" rows="3" maxlength="255"
+                        @input="formEditAccionRealizada = formEditAccionRealizada || { _touched: {} }; formEditAccionRealizada._touched.descripcion = true"
+                        @blur="formEditAccionRealizada._touched.descripcion = true"
+                        :class="formEditAccionRealizada && formEditAccionRealizada._touched && formEditAccionRealizada._touched.descripcion && itemToEdit.descripcion.length > 255 ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                    <small :class="formEditAccionRealizada && formEditAccionRealizada._touched && formEditAccionRealizada._touched.descripcion && itemToEdit.descripcion.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
                 </div>
             </div>
             </template>

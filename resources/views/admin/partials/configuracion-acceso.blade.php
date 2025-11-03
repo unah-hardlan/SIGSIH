@@ -415,11 +415,19 @@
     <x-admin.form-modal class="nunito-bold" modalName="$store.roles.isCreateOpen" title="Agregar Rol" submitLabel="Guardar Rol" maxWidth="max-w-xl" formId="form-create-role">
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
-            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Supervisor" x-model="$store.roles.form.rol" />
+            <input type="text" maxlength="50" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Supervisor" x-model="$store.roles.form.rol"
+                @input="$store.roles.form._touched = true"
+                @blur="$store.roles.form._touched = true"
+                :class="$store.roles.form._touched && (!$store.roles.form.rol || $store.roles.form.rol.length >= 50) ? 'border-red-500' : ''" />
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.roles.form._touched && (!$store.roles.form.rol || $store.roles.form.rol.length >= 50) ? 'text-red-500' : ''">Requerido. Máximo 50 caracteres.</small>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-            <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el propósito del rol..." x-model="$store.roles.form.descripcion_rol"></textarea>
+            <textarea maxlength="255" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el propósito del rol..." x-model="$store.roles.form.descripcion_rol"
+                @input="$store.roles.form._touched = true"
+                @blur="$store.roles.form._touched = true"
+                :class="$store.roles.form._touched && ($store.roles.form.descripcion_rol && $store.roles.form.descripcion_rol.length >= 250) ? 'border-red-500' : ''"></textarea>
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.roles.form._touched && ($store.roles.form.descripcion_rol && $store.roles.form.descripcion_rol.length >= 250) ? 'text-red-500' : ''">Opcional. Máximo 250 caracteres.</small>
         </div>
         <div @modal-submit.window="if($event.detail.formId==='form-create-role'){ $store.roles.create() }"></div>
     </x-admin.form-modal>
@@ -428,11 +436,19 @@
     <x-admin.edit-modal class="nunito-bold" modalName="$store.roles.isEditOpen" title="Editar Rol" itemToEdit="$store.roles.current" maxWidth="max-w-xl" formId="form-edit-role">
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
-            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.rol" />
+            <input type="text" maxlength="50" class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.rol"
+                @input="$store.roles.form._touched = true"
+                @blur="$store.roles.form._touched = true"
+                :class="$store.roles.form._touched && (!$store.roles.form.rol || $store.roles.form.rol.length >= 50) ? 'border-red-500' : ''" />
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.roles.form._touched && (!$store.roles.form.rol || $store.roles.form.rol.length >= 50) ? 'text-red-500' : ''">Requerido. Máximo 50 caracteres.</small>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-            <textarea class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.descripcion_rol"></textarea>
+            <textarea maxlength="255" class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.roles.form.descripcion_rol"
+                @input="$store.roles.form._touched = true"
+                @blur="$store.roles.form._touched = true"
+                :class="$store.roles.form._touched && ($store.roles.form.descripcion_rol && $store.roles.form.descripcion_rol.length >= 250) ? 'border-red-500' : ''"></textarea>
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.roles.form._touched && ($store.roles.form.descripcion_rol && $store.roles.form.descripcion_rol.length >= 250) ? 'text-red-500' : ''">Opcional. Máximo 250 caracteres.</small>
         </div>
         <div @modal-submit.window="if($event.detail.formId==='form-edit-role'){ $store.roles.update() }"></div>
     </x-admin.edit-modal>
@@ -576,22 +592,33 @@
         maxWidth="max-w-xl" formId="form-create-obj">
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Objeto X"
-                x-model="$store.objetos.form.nombre_objeto" />
+            <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Ej: Objeto X"
+                x-model="$store.objetos.form.nombre_objeto"
+                @input="$store.objetos.form._touched = true"
+                @blur="$store.objetos.form._touched = true"
+                :class="$store.objetos.form._touched && (!$store.objetos.form.nombre_objeto || $store.objetos.form.nombre_objeto.length >= 100) ? 'border-red-500' : ''" />
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.objetos.form._touched && (!$store.objetos.form.nombre_objeto || $store.objetos.form.nombre_objeto.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-            <textarea class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el objeto..."
-                x-model="$store.objetos.form.descripcion_objeto"></textarea>
+            <textarea maxlength="255" class="w-full border rounded px-3 py-2 nunito-regular" placeholder="Describe el objeto..."
+                x-model="$store.objetos.form.descripcion_objeto"
+                @input="$store.objetos.form._touched = true"
+                @blur="$store.objetos.form._touched = true"
+                :class="$store.objetos.form._touched && ($store.objetos.form.descripcion_objeto && $store.objetos.form.descripcion_objeto.length >= 255) ? 'border-red-500' : ''"></textarea>
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.objetos.form._touched && ($store.objetos.form.descripcion_objeto && $store.objetos.form.descripcion_objeto.length >= 255) ? 'text-red-500' : ''">Opcional. Máximo 255 caracteres.</small>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Tipo</label>
-            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk">
+            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk"
+                @change="$store.objetos.form._touched = true"
+                :class="$store.objetos.form._touched && !$store.objetos.form.id_tipo_objetos_fk ? 'border-red-500' : ''">
                 <option value="">Seleccione…</option>
                 <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-form-'+t.id">
                     <option :value="t.id" x-text="t.nombre"></option>
                 </template>
             </select>
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.objetos.form._touched && !$store.objetos.form.id_tipo_objetos_fk ? 'text-red-500' : ''">Requerido. Seleccione un tipo.</small>
         </div>
         <div @modal-submit.window="if($event.detail.formId==='form-create-obj'){ $store.objetos.create() }"></div>
     </x-admin.form-modal>
@@ -601,22 +628,33 @@
         maxWidth="max-w-xl" formId="form-edit-obj">
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Nombre</label>
-            <input type="text" class="w-full border rounded px-3 py-2 nunito-regular"
-                x-model="$store.objetos.form.nombre_objeto" />
+            <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                x-model="$store.objetos.form.nombre_objeto"
+                @input="$store.objetos.form._touched = true"
+                @blur="$store.objetos.form._touched = true"
+                :class="$store.objetos.form._touched && (!$store.objetos.form.nombre_objeto || $store.objetos.form.nombre_objeto.length >= 100) ? 'border-red-500' : ''" />
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.objetos.form._touched && (!$store.objetos.form.nombre_objeto || $store.objetos.form.nombre_objeto.length >= 100) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-            <textarea class="w-full border rounded px-3 py-2 nunito-regular"
-                x-model="$store.objetos.form.descripcion_objeto"></textarea>
+            <textarea maxlength="255" class="w-full border rounded px-3 py-2 nunito-regular"
+                x-model="$store.objetos.form.descripcion_objeto"
+                @input="$store.objetos.form._touched = true"
+                @blur="$store.objetos.form._touched = true"
+                :class="$store.objetos.form._touched && ($store.objetos.form.descripcion_objeto && $store.objetos.form.descripcion_objeto.length >= 255) ? 'border-red-500' : ''"></textarea>
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.objetos.form._touched && ($store.objetos.form.descripcion_objeto && $store.objetos.form.descripcion_objeto.length >= 255) ? 'text-red-500' : ''">Opcional. Máximo 255 caracteres.</small>
         </div>
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Tipo</label>
-            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk">
+            <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="$store.objetos.form.id_tipo_objetos_fk"
+                @change="$store.objetos.form._touched = true"
+                :class="$store.objetos.form._touched && !$store.objetos.form.id_tipo_objetos_fk ? 'border-red-500' : ''">
                 <option value="">Seleccione…</option>
                 <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-form-edit-'+t.id">
                     <option :value="t.id" x-text="t.nombre"></option>
                 </template>
             </select>
+            <small class="text-xs text-gray-500 block mt-1" :class="$store.objetos.form._touched && !$store.objetos.form.id_tipo_objetos_fk ? 'text-red-500' : ''">Requerido. Seleccione un tipo.</small>
         </div>
         <div @modal-submit.window="if($event.detail.formId==='form-edit-obj'){ $store.objetos.update() }"></div>
     </x-admin.edit-modal>
