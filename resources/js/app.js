@@ -5,14 +5,14 @@ import "./notifications";
 // Habilitar únicamente si window.__ALLOW_CONSOLE__ === true (útil para depuración local)
 try {
     if (!window.__ALLOW_CONSOLE__) {
-        const noop = () => {};
+        const noop = () => { };
         ["log", "info", "debug", "warn", "error"].forEach((m) => {
             try {
                 console[m] = noop;
-            } catch (_) {}
+            } catch (_) { }
         });
     }
-} catch (_) {}
+} catch (_) { }
 
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
@@ -36,12 +36,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                         "Authorization"
                     ]; // ensure cleared
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 document.dispatchEvent(
                     new CustomEvent("auth:updated", { detail: { token: null } })
                 );
-            } catch (_) {}
+            } catch (_) { }
         }
 
         async function fetchSessionToken(force = false) {
@@ -89,7 +89,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                     return { Accept: "application/json" };
                 },
             };
-        } catch (_) {}
+        } catch (_) { }
 
         function withAuthToApi(input, init) {
             const t = getToken();
@@ -144,8 +144,8 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 const delay = isDashboard
                     ? Math.floor(Math.random() * 180) + 60
                     : isApi
-                    ? Math.floor(Math.random() * 80)
-                    : 0;
+                        ? Math.floor(Math.random() * 80)
+                        : 0;
 
                 if (!isApi) return origFetch(...args);
 
@@ -177,12 +177,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                                                 "warning",
                                                 { duration: 4000 }
                                             );
-                                    } catch (_) {}
+                                    } catch (_) { }
                                     try {
                                         window.appLogout && window.appLogout();
-                                    } catch (_) {}
+                                    } catch (_) { }
                                 }
-                            } catch (_) {}
+                            } catch (_) { }
                         }
                         return res;
                     };
@@ -452,7 +452,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) {}
+    } catch (_) { }
 });
 function collapse(Alpine) {
     Alpine.directive(
@@ -542,13 +542,13 @@ document.addEventListener("alpine:init", () => {
             try {
                 if (typeof destroyExistingCharts === "function")
                     destroyExistingCharts();
-            } catch (_) {}
+            } catch (_) { }
 
             const mainEl = document.querySelector("main");
             try {
                 if (window.Alpine && Alpine.destroyTree)
                     Alpine.destroyTree(mainEl);
-            } catch (_) {}
+            } catch (_) { }
 
             let sanitized = html;
             try {
@@ -556,30 +556,30 @@ document.addEventListener("alpine:init", () => {
                     /<script[^>]*src=["'][^"']*alpine[^"']*["'][^>]*>\s*<\/script>/gi,
                     ""
                 );
-            } catch (_) {}
+            } catch (_) { }
 
             mainEl.innerHTML = sanitized;
             try {
                 if (window.Alpine) {
                     try {
                         if ("$nextTick" in window) delete window.$nextTick;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$watch" in window) delete window.$watch;
-                    } catch (_) {}
+                    } catch (_) { }
                     try {
                         if ("$dispatch" in window) delete window.$dispatch;
-                    } catch (_) {}
+                    } catch (_) { }
                     const roots = Array.from(
                         mainEl.querySelectorAll("[x-data]")
                     ).filter((el) => !el.__x);
                     for (const root of roots) {
                         try {
                             Alpine.initTree(root);
-                        } catch (_) {}
+                        } catch (_) { }
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
 
             // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
@@ -589,7 +589,7 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.rescan(mainEl);
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 if (
                     window.Livewire &&
@@ -597,10 +597,10 @@ document.addEventListener("alpine:init", () => {
                 ) {
                     window.Livewire.restart();
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 window.dispatchEvent(new Event("livewire:navigated"));
-            } catch (_) {}
+            } catch (_) { }
 
             this.restoreSidebarScrollPosition();
 
@@ -616,7 +616,7 @@ document.addEventListener("alpine:init", () => {
 
             try {
                 document.dispatchEvent(new CustomEvent("app:view-loaded"));
-            } catch (_) {}
+            } catch (_) { }
         },
 
         saveSidebarScrollPosition() {
@@ -648,7 +648,7 @@ document.addEventListener("alpine:init", () => {
             try {
                 const main = document.querySelector("main");
                 if (main) main.dataset.currentView = viewName;
-            } catch (_) {}
+            } catch (_) { }
             this.updateActiveLinks(url);
         },
 
@@ -735,7 +735,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     const main = document.querySelector("main");
                     if (main) main.dataset.currentView = "dashboard";
-                } catch (_) {}
+                } catch (_) { }
                 this.updateActiveLinks(path);
             }
         },
@@ -1039,17 +1039,17 @@ function destroyExistingCharts() {
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.cotizacionesChartInstance) {
             window.cotizacionesChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     try {
         if (window.proyectosChartInstance) {
             window.proyectosChartInstance.destroy();
         }
-    } catch (_) {}
+    } catch (_) { }
     window.ordenesChartInstance = null;
     window.cotizacionesChartInstance = null;
     window.proyectosChartInstance = null;
@@ -1077,7 +1077,7 @@ function initializeDashboardChartsWithRetry(retry = 0) {
 document.addEventListener("DOMContentLoaded", () => {
     try {
         window.__AUTH && window.__AUTH.ensureToken(false);
-    } catch (_) {}
+    } catch (_) { }
     initializeDashboardChartsWithRetry();
 });
 
@@ -1086,7 +1086,7 @@ function authHeaders() {
         if (window.__AUTH && typeof window.__AUTH.headers === "function") {
             return window.__AUTH.headers();
         }
-    } catch (_) {}
+    } catch (_) { }
 
     return { Accept: "application/json" };
 }
@@ -1168,7 +1168,7 @@ if (typeof window !== "undefined") {
                         this.adminPassword =
                             data.adminPassword || this.adminPassword;
                     }
-                } catch (_) {}
+                } catch (_) { }
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
@@ -1223,7 +1223,7 @@ if (typeof window !== "undefined") {
                         if (this.nombreSistema) {
                             document.title = this.nombreSistema;
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                     setTimeout(
                         () => (this.savedMessagePersonalizacion = ""),
                         2500
@@ -1782,7 +1782,7 @@ if (typeof window !== "undefined") {
                                 d.getMinutes()
                             )}`;
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 }
                 const id = String(
                     item.id_cotizacion_pk || item.id || item.id_cotizacion || ""
@@ -1832,8 +1832,8 @@ if (typeof window !== "undefined") {
                     try {
                         const opt = Array.isArray(this.estadosOrdenOptions)
                             ? this.estadosOrdenOptions.find(
-                                  (o) => String(o.value) === String(estadoId)
-                              )
+                                (o) => String(o.value) === String(estadoId)
+                            )
                             : null;
                         if (opt) estadoNombre = opt.label || `ID ${estadoId}`;
                     } catch (_) {
@@ -1870,8 +1870,8 @@ if (typeof window !== "undefined") {
                     id_tecnico: orden.id_tecnico_fk,
                     tecnico_nombre: tecnico.primer_nombre
                         ? [tecnico.primer_nombre, tecnico.primer_apellido]
-                              .filter(Boolean)
-                              .join(" ")
+                            .filter(Boolean)
+                            .join(" ")
                         : "",
                     tecnico_documento: tecnico.dni || "",
                     fecha_recepcion: fechaRecepcion,
@@ -1891,10 +1891,10 @@ if (typeof window !== "undefined") {
                         orden.repuestos_count !== undefined
                             ? orden.repuestos_count
                             : Array.isArray(
-                                  orden.repuestos || orden.raw?.repuestos
-                              )
-                            ? (orden.repuestos || orden.raw?.repuestos).length
-                            : null,
+                                orden.repuestos || orden.raw?.repuestos
+                            )
+                                ? (orden.repuestos || orden.raw?.repuestos).length
+                                : null,
                     repuestos_summary: (function () {
                         try {
                             const arr =
@@ -2014,7 +2014,7 @@ if (typeof window !== "undefined") {
                             (o) => String(o.value) === cotId
                         );
                         if (found && found.label) label = found.label;
-                    } catch (_) {}
+                    } catch (_) { }
                     this.ensureOption("cotizacionesOptions", cotId, label);
                 }
             },
@@ -2076,10 +2076,9 @@ if (typeof window !== "undefined") {
                             item.numero_solicitud_acf ||
                             item.numero_solicitud_cliente ||
                             item.nombre_solicitud ||
-                            `Solicitud #${
-                                item.id_solicitud_pk ||
-                                item.id ||
-                                item.id_solicitud
+                            `Solicitud #${item.id_solicitud_pk ||
+                            item.id ||
+                            item.id_solicitud
                             }`,
                     }));
 
@@ -2166,8 +2165,8 @@ if (typeof window !== "undefined") {
                     const opciones = (json.data || []).map((item) => ({
                         value: String(
                             item.id_cotizacion_pk ||
-                                item.id ||
-                                item.id_cotizacion
+                            item.id ||
+                            item.id_cotizacion
                         ),
                         label: this.formatCotLabel(item),
                     }));
@@ -2234,13 +2233,13 @@ if (typeof window !== "undefined") {
                     const raw = Array.isArray(parsed)
                         ? parsed
                         : Array.isArray(parsed?.data)
-                        ? parsed.data
-                        : [];
+                            ? parsed.data
+                            : [];
                     const opciones = (raw || []).map((item) => ({
                         value: String(
                             item.id_cotizacion_pk ||
-                                item.id ||
-                                item.id_cotizacion
+                            item.id ||
+                            item.id_cotizacion
                         ),
                         label: this.formatCotLabel(item),
                     }));
@@ -2251,7 +2250,7 @@ if (typeof window !== "undefined") {
                     // fallback to global list on error
                     try {
                         await this.fetchCotizaciones();
-                    } catch (_) {}
+                    } catch (_) { }
                 } finally {
                     this.loadingCatalogos.cotizaciones = false;
                 }
@@ -2379,7 +2378,7 @@ if (typeof window !== "undefined") {
             openCreateOrden() {
                 this.resetForm();
                 // Ensure product options available for repuestos
-                this.fetchProducts().catch(() => {});
+                this.fetchProducts().catch(() => { });
                 // reset touched flags so helpers don't show immediately
                 this.formOrdenAdd = this.formOrdenAdd || { _touched: {} };
                 this.formOrdenAdd._touched = {};
@@ -2416,16 +2415,16 @@ if (typeof window !== "undefined") {
                                 : "",
                             fecha_recepcion: this.toInputDatetime(
                                 mapped.fecha_recepcion ||
-                                    mapped.fecha_recepcion_formatted ||
-                                    mapped.fecha_recepcion_formatted
+                                mapped.fecha_recepcion_formatted ||
+                                mapped.fecha_recepcion_formatted
                             ),
                             fecha_inicio: this.toInputDatetime(
                                 mapped.fecha_inicio ||
-                                    mapped.fecha_inicio_formatted
+                                mapped.fecha_inicio_formatted
                             ),
                             fecha_finalizacion: this.toInputDatetime(
                                 mapped.fecha_finalizacion ||
-                                    mapped.fecha_finalizacion_formatted
+                                mapped.fecha_finalizacion_formatted
                             ),
                             observaciones: mapped.observaciones || "",
                             diagnostico_tecnico:
@@ -2440,21 +2439,21 @@ if (typeof window !== "undefined") {
                             repuestos:
                                 full.repuestos && Array.isArray(full.repuestos)
                                     ? full.repuestos.map((r) => ({
-                                          id_producto_fk:
-                                              r.id_producto_fk ||
-                                              r.id_producto ||
-                                              r.id_producto_fk,
-                                          cantidad: r.cantidad || r.cant || 1,
-                                          producto_nombre:
-                                              r.nombre ||
-                                              r.producto_nombre ||
-                                              r.repuesto ||
-                                              "",
-                                      }))
+                                        id_producto_fk:
+                                            r.id_producto_fk ||
+                                            r.id_producto ||
+                                            r.id_producto_fk,
+                                        cantidad: r.cantidad || r.cant || 1,
+                                        producto_nombre:
+                                            r.nombre ||
+                                            r.producto_nombre ||
+                                            r.repuesto ||
+                                            "",
+                                    }))
                                     : mapped.raw?.repuestos || [],
                         };
                         // Ensure product catalog loaded so product labels can be shown
-                        this.fetchProducts().catch(() => {});
+                        this.fetchProducts().catch(() => { });
                     } catch (e) {
                         console.error(e);
                         // Fallback a datos en memoria si falla la carga
@@ -2467,14 +2466,14 @@ if (typeof window !== "undefined") {
                                 : "",
                             fecha_recepcion: this.toInputDatetime(
                                 orden.raw?.fecha_recepcion ||
-                                    orden.fecha_recepcion
+                                orden.fecha_recepcion
                             ),
                             fecha_inicio: this.toInputDatetime(
                                 orden.raw?.fecha_inicio || orden.fecha_inicio
                             ),
                             fecha_finalizacion: this.toInputDatetime(
                                 orden.raw?.fecha_finalizacion ||
-                                    orden.fecha_finalizacion
+                                orden.fecha_finalizacion
                             ),
                             observaciones: orden.observaciones || "",
                             diagnostico_tecnico:
@@ -2543,12 +2542,12 @@ if (typeof window !== "undefined") {
                     // Include repuestos array if present; send minimal shape expected by backend
                     repuestos: Array.isArray(this.formOrden.repuestos)
                         ? this.formOrden.repuestos.map((r) => ({
-                              id_producto_fk:
-                                  Number(
-                                      r.id_producto_fk || r.id_producto || 0
-                                  ) || null,
-                              cantidad: Number(r.cantidad) || 1,
-                          }))
+                            id_producto_fk:
+                                Number(
+                                    r.id_producto_fk || r.id_producto || 0
+                                ) || null,
+                            cantidad: Number(r.cantidad) || 1,
+                        }))
                         : [],
                 };
             },
@@ -3012,6 +3011,7 @@ if (typeof window !== "undefined") {
             formSolicitud: {
                 id: null,
                 id_cliente_fk: "",
+                nombre_solicitud: "",
                 descripcion_problema: "",
                 id_estado_solicitud_fk: "",
                 id_contacto_fk: "",
@@ -3063,8 +3063,8 @@ if (typeof window !== "undefined") {
                     (type === "error"
                         ? "bg-red-600 text-white"
                         : type === "warn"
-                        ? "bg-yellow-600 text-white"
-                        : "bg-green-600 text-white");
+                            ? "bg-yellow-600 text-white"
+                            : "bg-green-600 text-white");
                 el.textContent = message;
                 document.body.appendChild(el);
                 setTimeout(() => el.remove(), 3500);
@@ -3074,6 +3074,7 @@ if (typeof window !== "undefined") {
                 this.formSolicitud = {
                     id: null,
                     id_cliente_fk: "",
+                    nombre_solicitud: "",
                     descripcion_problema: "",
                     id_estado_solicitud_fk: "",
                     id_contacto_fk: "",
@@ -3137,6 +3138,7 @@ if (typeof window !== "undefined") {
                     cliente_nombre: clienteNombre,
                     numero_solicitud_acf: item.numero_solicitud_acf,
                     numero_solicitud_cliente: item.numero_solicitud_cliente,
+                    nombre_solicitud: item.nombre_solicitud || "",
                     descripcion_problema: item.descripcion_problema,
                     id_estado_solicitud_fk: item.id_estado_solicitud_fk,
                     estado_nombre: estado.nombre_estado || "",
@@ -3165,10 +3167,10 @@ if (typeof window !== "undefined") {
                     const raw = Array.isArray(data?.data)
                         ? data.data
                         : Array.isArray(data?.data?.data)
-                        ? data.data.data
-                        : Array.isArray(data)
-                        ? data
-                        : [];
+                            ? data.data.data
+                            : Array.isArray(data)
+                                ? data
+                                : [];
                     const mapped = (raw || [])
                         .map((c) => {
                             let nombre;
@@ -3369,6 +3371,8 @@ if (typeof window !== "undefined") {
                     id_cliente_fk: this.formSolicitud.id_cliente_fk
                         ? Number(this.formSolicitud.id_cliente_fk)
                         : null,
+                    nombre_solicitud:
+                        this.formSolicitud.nombre_solicitud || null,
                     descripcion_problema:
                         this.formSolicitud.descripcion_problema || null,
                     id_estado_solicitud_fk: this.formSolicitud
@@ -3390,6 +3394,7 @@ if (typeof window !== "undefined") {
                 this.formSolicitud = {
                     id: item.id,
                     id_cliente_fk: item.id_cliente_fk ?? "",
+                    nombre_solicitud: item.nombre_solicitud ?? "",
                     descripcion_problema: item.descripcion_problema ?? "",
                     id_estado_solicitud_fk: item.id_estado_solicitud_fk ?? "",
                     id_contacto_fk: item.id_contacto_fk ?? "",
@@ -3421,7 +3426,7 @@ if (typeof window !== "undefined") {
                         try {
                             const errText = await res.text();
                             if (errText) msg += `: ${errText.slice(0, 300)}`;
-                        } catch (_) {}
+                        } catch (_) { }
                         throw new Error(msg);
                     }
                     const json = await res.json();
@@ -3538,6 +3543,15 @@ if (typeof window !== "undefined") {
                     errs.descripcion_problema = [
                         "La descripción es obligatoria.",
                     ];
+                // nombre_solicitud es opcional, pero si viene muy largo, marcar localmente
+                if (
+                    this.formSolicitud.nombre_solicitud &&
+                    String(this.formSolicitud.nombre_solicitud).length > 150
+                ) {
+                    errs.nombre_solicitud = [
+                        "Máximo 150 caracteres.",
+                    ];
+                }
                 if (!this.formSolicitud.id_estado_solicitud_fk)
                     errs.id_estado_solicitud_fk = ["Seleccione un estado."];
                 if (!this.formSolicitud.id_contacto_fk)
@@ -3865,10 +3879,10 @@ if (typeof window !== "undefined") {
                                     ""
                                 ).localeCompare(
                                     b.cliente_nombre ||
-                                        this.clienteLabelById(
-                                            b.id_cliente_fk
-                                        ) ||
-                                        "",
+                                    this.clienteLabelById(
+                                        b.id_cliente_fk
+                                    ) ||
+                                    "",
                                     "es"
                                 );
                             case "solicitud_acf":
