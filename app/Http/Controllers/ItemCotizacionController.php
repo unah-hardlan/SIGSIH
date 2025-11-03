@@ -128,12 +128,21 @@ class ItemCotizacionController extends Controller
         $cot = \App\Models\Cotizacion::find($cotizacionId);
         if (!$cot) return;
         $cot->imponible = $imponible;
-        // subtotal should be base amount (imponible)
+        // subtotal = imponible + impuestos de items (sin incluir impuesto_otros)
         $cot->subtotal = $imponible;
-        $cot->total_impuesto = $totalImpuesto;
-        $cot->impuesto = $totalImpuesto;
         $otros = (float) ($cot->otros_cargos ?? 0);
-        $cot->total = $imponible + $totalImpuesto + $otros;
+        // No recalcular aquí: respetar el valor persistido de impuesto_otros proveniente del flujo de UI
+        $otrosImp = (float) ($cot->impuesto_otros ?? 0.0);
+        $totalImp = round($totalImpuesto + $otrosImp, 2);
+        $cot->total_impuesto = $totalImp;
+        $cot->impuesto = $totalImp;
+        $cot->total = $imponible + $totalImpuesto + $otros + $otrosImp;
+        // Reglas de negocio: anticipo es 50% del total
+        try {
+            $cot->anticipo_requerido = round(($cot->total ?? 0) * 0.5, 2);
+        } catch (\Throwable $e) {
+            // no-op si falla el cálculo
+        }
         $cot->save();
     }
 }

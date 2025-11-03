@@ -6,7 +6,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCotizacionRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -19,6 +22,7 @@ class StoreCotizacionRequest extends FormRequest
             'impuesto' => 'required|numeric|min:0',
             'total_impuesto' => 'required|numeric|min:0',
             'otros_cargos' => 'nullable|numeric|min:0',
+            'impuesto_otros' => 'nullable|numeric|min:0',
             'anticipo_requerido' => 'nullable|numeric|min:0',
             'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
         ];

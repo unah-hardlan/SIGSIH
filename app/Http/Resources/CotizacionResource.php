@@ -19,6 +19,7 @@ class CotizacionResource extends JsonResource
             'impuesto' => (float) $this->impuesto,
             'total_impuesto' => (float) $this->total_impuesto,
             'otros_cargos' => $this->otros_cargos !== null ? (float) $this->otros_cargos : null,
+            'impuesto_otros' => $this->impuesto_otros !== null ? (float) $this->impuesto_otros : null,
             'anticipo_requerido' => $this->anticipo_requerido !== null ? (float) $this->anticipo_requerido : null,
             'id_cliente_fk' => $this->id_cliente_fk,
             'cliente_nombre' => $this->whenLoaded('cliente', function () {

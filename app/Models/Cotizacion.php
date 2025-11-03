@@ -22,6 +22,7 @@ class Cotizacion extends Model
         'impuesto',
         'total_impuesto',
         'otros_cargos',
+        'impuesto_otros',
         'anticipo_requerido',
         'id_cliente_fk',
         'id_orden_servicio_fk',
@@ -36,14 +37,15 @@ class Cotizacion extends Model
         'impuesto' => 'float',
         'total_impuesto' => 'float',
         'otros_cargos' => 'float',
+        'impuesto_otros' => 'float',
         'anticipo_requerido' => 'float',
     ];
 
     protected static function boot()
     {
         parent::boot();
-        static::creating(function($model){
-            if(!$model->fecha_cotizacion){
+        static::creating(function ($model) {
+            if (!$model->fecha_cotizacion) {
                 $model->fecha_cotizacion = now();
             }
         });
@@ -51,7 +53,7 @@ class Cotizacion extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class,'id_cliente_fk','id_cliente_pk');
+        return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
     public function ordenServicio()

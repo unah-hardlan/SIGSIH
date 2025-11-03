@@ -18,7 +18,7 @@
     // Catalog selector state
     catalogModal:false, catalogSearch:'', catalogLoading:false, catalogItems:[], catalogExisting:{}, catalogSelectedUser:{}, activeFormRef:'form',
     // Forms
-    form:{ id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] },
+    form:{ id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] },
     editForm:null,
     errors:{},
     // Computed helpers
@@ -38,13 +38,19 @@
             totalImp += imp;
             subtotal += (linea + imp);
         });
-        total = subtotal + (parseFloat(form.otros_cargos)||0);
+        const otros = parseFloat(form.otros_cargos)||0;
+    const otrosImp = form.apply_isv_otros ? +(otros * 0.15).toFixed(2) : 0;
+        total = subtotal + otros + otrosImp;
         form.imponible = +imponible.toFixed(2);
-        // Keep impuesto and total_impuesto as the sum of item.impuesto values
-        form.impuesto = +totalImp.toFixed(2);
-        form.total_impuesto = +totalImp.toFixed(2);
+        // Impuesto total incluye impuestos de items + (opcional) impuesto sobre otros cargos
+        const totalImpuesto = +(totalImp + otrosImp).toFixed(2);
+        form.impuesto = totalImpuesto;
+        form.total_impuesto = totalImpuesto;
+    form.impuesto_otros = otrosImp;
         form.subtotal = +subtotal.toFixed(2);
         form.total = +total.toFixed(2);
+        // Anticipo requerido: 50% del total
+        try { form.anticipo_requerido = +(form.total * 0.5).toFixed(2); } catch(e) { form.anticipo_requerido = 0; }
     },
     // Auth token (in-memory only; do NOT persist to localStorage)
     authToken:null,
@@ -223,11 +229,16 @@
         const totalImp = this.items.reduce((acc,it)=> acc + Number(it.impuesto||0), 0);
         const subtotal = imponible + totalImp;
         const otros = Number(row.otros_cargos ?? 0);
-        const total = subtotal + otros;
+    // Usar el valor persistido de impuesto_otros; no derivar desde un flag
+    const otrosImp = Number(row.impuesto_otros || 0);
+        const total = subtotal + otros + otrosImp;
         row.imponible = +imponible.toFixed(2);
-        row.total_impuesto = +totalImp.toFixed(2);
+        row.total_impuesto = +(totalImp + otrosImp).toFixed(2);
+        row.impuesto_otros = otrosImp;
         row.subtotal = +subtotal.toFixed(2);
         row.total = +total.toFixed(2);
+        // Anticipo requerido: 50% del total
+        try { row.anticipo_requerido = +(row.total * 0.5).toFixed(2); } catch(e) { row.anticipo_requerido = 0; }
         this.cotizaciones.splice(rowIndex,1,row);
     },
     openItems(c){ this.currentCotizacionId=c?.id; this.itemsModal=true; this.itemMode='list'; this.itemForm={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }; this.itemEditId=null; this.itemsSearch=''; this.$nextTick(()=>{ this.fetchItemsForCurrent(); }); },
@@ -278,7 +289,7 @@
         if(skipped>0) this.showToast(skipped + ' items ya estaban en la lista', 'error');
     },
     async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('sort', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
-            .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
+    .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
             .filter(c=>c.id!=null);
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
     async fetchClientes(){
@@ -307,17 +318,17 @@
             this.clientes = [];
         }
     },
-    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
-    resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] }; },
+    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
+    resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] }; },
     // Reset form but leave date and at least one blank item (used by some flows)
     resetFormEmpty(){
-        this.form = { id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, anticipo_requerido:0, total:0, items: [] };
+        this.form = { id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items: [] };
     },
     openCreate(){ this.resetFormEmpty(); this.generateCotizacionModal=true; },
     openEdit(c){
         // prepare header data for editing
         const clienteId = c?.cliente_id != null ? String(c.cliente_id) : '';
-    this.editForm = { ...c, id: c.id, id_cliente_fk: clienteId, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false } ] };
+    this.editForm = { ...c, id: c.id, id_cliente_fk: clienteId, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false } ], apply_isv_otros: Boolean(Number(c.impuesto_otros||0) > 0), impuesto_otros: Number(c.impuesto_otros||0) };
         // reset original ids tracking
         this._editOriginalItemIds = [];
         this.editModal = true;
@@ -328,7 +339,7 @@
         this.saving=true;
         this.calcTotals(this.form);
         try{
-            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk };
+            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, impuesto_otros:this.form.impuesto_otros||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk };
             const r=await this.doFetch('/api/cotizaciones',{ method:'POST', body:JSON.stringify(payload) });
             if(r.status===422){
                 // Extract validation errors and present them to the developer/user
@@ -365,8 +376,23 @@
         this.saving=true;
         try{
             this.calcTotals(this.editForm);
-            const payload={ valido_hasta:this.editForm.valido_hasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk };
+            // Normalizar válido_hasta para evitar 422 por fecha pasada
+            let vHasta = this.editForm.valido_hasta;
+            try{
+                const todayStr = new Date().toISOString().slice(0,10);
+                if(!vHasta || (new Date(vHasta) < new Date(todayStr))){ vHasta = todayStr; }
+            }catch(e){}
+            const payload={ valido_hasta:vHasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, impuesto_otros:this.editForm.impuesto_otros||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk };
             const r=await this.doFetch('/api/cotizaciones/'+this.editForm.id,{ method:'PUT', body:JSON.stringify(payload) });
+            if(r.status===422){
+                try{
+                    const body=await r.json();
+                    this.errors = body.errors || body;
+                    const msgs = Object.values(this.errors).flat().map(m=>Array.isArray(m)?m.join('; '):String(m)).join(' \n');
+                    this.showToast(msgs || 'Errores de validación', 'error');
+                }catch(e){ this.showToast('Errores de validación (422)', 'error'); }
+                throw new Error('validation');
+            }
             if(!r.ok) throw new Error('cotizacion update failed');
 
             // Sync items: create new, update existing, delete removed
@@ -930,6 +956,17 @@
                             @input="calcTotals(form)"
                             class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 pl-8 text-right" />
                     </div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label class="inline-flex items-center text-sm text-gray-400">
+                            <input type="checkbox" class="mr-2 h-4 w-4" x-model="form.apply_isv_otros"
+                                @change="calcTotals(form)" />
+                            Aplicar ISV 15% a Otros Cargos
+                        </label>
+                        <div class="text-sm text-gray-500 ml-4">Impuesto:
+                            <span
+                                x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format((form.apply_isv_otros ? (Number(form.otros_cargos||0) * 0.15) : 0))"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1095,6 +1132,17 @@
                                     x-model.number="editForm.otros_cargos" @input="calcTotals(editForm)"
                                     class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1 pl-8 text-right" />
                             </div>
+                            <div class="flex items-center gap-3 mt-2">
+                                <label class="inline-flex items-center text-sm text-gray-400">
+                                    <input type="checkbox" class="mr-2 h-4 w-4" x-model="editForm.apply_isv_otros"
+                                        @change="calcTotals(editForm)" />
+                                    Aplicar ISV 15% a Otros Cargos
+                                </label>
+                                <div class="text-sm text-gray-500 ml-4">Impuesto:
+                                    <span
+                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format((editForm.apply_isv_otros ? (Number(editForm.otros_cargos||0) * 0.15) : 0))"></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1176,10 +1224,10 @@
 </div>
 
 <style>
-/* Slightly smaller table typography for headers and data */
-table thead th,
-table tbody td {
-    font-size: 0.8125rem;
-    /* ~13px */
-}
+    /* Slightly smaller table typography for headers and data */
+    table thead th,
+    table tbody td {
+        font-size: 0.8125rem;
+        /* ~13px */
+    }
 </style>
