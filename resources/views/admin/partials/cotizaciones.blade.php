@@ -31,6 +31,9 @@
             if(it.aplicar_impuesto){
                 const calcImp = +(precio * cant * 0.15);
                 it.impuesto = +calcImp.toFixed(2);
+            } else {
+                // Si se desmarca, el impuesto del ítem debe ser 0
+                it.impuesto = 0;
             }
             const imp = parseFloat(it.impuesto)||0;
             const linea = precio * cant;
