@@ -11,21 +11,46 @@
         </div>
     </div>
 
-    <!-- Resumen -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <template x-for="card in resumen" :key="card.key">
-            <div class="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400" x-text="card.label"></p>
-                        <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100" x-text="card.valor"></p>
-                    </div>
-                    <div class="text-blue-500/30 dark:text-blue-400/30">
-                        <i :class="card.icon + ' text-3xl'"></i>
-                    </div>
+    <!-- Tarjetas resumen (mismo estilo que Órdenes) -->
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Total -->
+        <div class="w-full min-h-[96px] bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
+            <div class="flex items-center justify-between h-full">
+                <div>
+                    <p class="text-base font-medium opacity-90">Total</p>
+                    <p class="text-2xl md:text-3xl font-bold mt-2" x-text="totalFacturas"></p>
+                </div>
+                <div class="bg-white/20 p-4 rounded-full w-10 h-10 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-sm md:text-2xl"></i>
                 </div>
             </div>
-        </template>
+        </div>
+
+        <!-- Pagadas -->
+        <div class="w-full min-h-[96px] bg-gradient-to-r from-emerald-800 to-green-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
+            <div class="flex items-center justify-between h-full">
+                <div>
+                    <p class="text-base font-medium opacity-90">Pagadas</p>
+                    <p class="text-2xl md:text-3xl font-bold mt-2" x-text="pagadasCount"></p>
+                </div>
+                <div class="bg-white/20 p-4 rounded-full w-10 h-10 flex items-center justify-center">
+                    <i class="fas fa-check-circle text-sm md:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pendientes -->
+        <div class="w-full min-h-[96px] bg-gradient-to-r from-slate-800 to-slate-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
+            <div class="flex items-center justify-between h-full">
+                <div>
+                    <p class="text-base font-medium opacity-90">Pendientes</p>
+                    <p class="text-2xl md:text-3xl font-bold mt-2" x-text="pendientesCount"></p>
+                </div>
+                <div class="bg-white/20 p-4 rounded-full w-10 h-10 flex items-center justify-center">
+                    <i class="fas fa-hourglass-half text-sm md:text-2xl"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Filtros -->
@@ -227,18 +252,10 @@ if (typeof window.facturasCliente === 'undefined') {
                 'Vencida':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
                 'Anulada':'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
             }[e]||'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';},
-            get resumen(){
-                const total=this.datos.length;
-                const pagadas=this.datos.filter(d=>d.estado==='Pagada').length;
-                const pendiente=this.datos.filter(d=>d.estado==='Pendiente').length;
-                const monto='$'+this.datos.reduce((a,b)=>a+b.monto,0).toLocaleString();
-                return [
-                    {key:'tot',label:'Total',valor:total,icon:'fas fa-file-invoice'},
-                    {key:'pag',label:'Pagadas',valor:pagadas,icon:'fas fa-check-circle'},
-                    {key:'pen',label:'Pendientes',valor:pendiente,icon:'fas fa-hourglass-half'},
-                    {key:'mon',label:'Importe Total',valor:monto,icon:'fas fa-hand-holding-usd'}
-                ];
-            }
+            // Contadores para tarjetas resumen
+            get totalFacturas(){ return this.datos.length; },
+            get pagadasCount(){ return this.datos.filter(d=>d.estado==='Pagada').length; },
+            get pendientesCount(){ return this.datos.filter(d=>d.estado==='Pendiente').length; }
         }
     };
 }
