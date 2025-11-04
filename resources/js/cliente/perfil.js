@@ -45,7 +45,7 @@ window.perfilData = function (el) {
                         horario_atencion: data.horario_atencion || "",
                     };
                 }
-            } catch (_) { }
+            } catch (_) {}
             return {
                 nombre_comercial: "",
                 razon_social: "",
@@ -55,7 +55,8 @@ window.perfilData = function (el) {
             };
         })(),
 
-        twoFAEnabled: false,
+        twoFAEnabled: null, // null = no inicializado, true/false = estado real
+        twoFAReady: false,
         show2FASetup: false,
         twoFASetup: {
             loading: false,
@@ -152,7 +153,10 @@ window.perfilData = function (el) {
             const file = e.target.files[0];
             if (!file) return;
             if (file.size > 2 * 1024 * 1024) {
-                window.showToast?.("Archivo demasiado grande (máx 2MB)", "error");
+                window.showToast?.(
+                    "Archivo demasiado grande (máx 2MB)",
+                    "error"
+                );
                 return;
             }
             if (!file.type.startsWith("image/")) {
@@ -161,27 +165,35 @@ window.perfilData = function (el) {
             }
             this.empresaAvatarFile = file;
             try {
-                if (this.empresaAvatarPreviewUrl) URL.revokeObjectURL(this.empresaAvatarPreviewUrl);
+                if (this.empresaAvatarPreviewUrl)
+                    URL.revokeObjectURL(this.empresaAvatarPreviewUrl);
                 this.empresaAvatarPreviewUrl = URL.createObjectURL(file);
-            } catch (_) { }
+            } catch (_) {}
         },
 
         handleAvatarChange(event) {
             const file = event.target.files[0];
             if (file) {
                 if (file.size > 2 * 1024 * 1024) {
-                    window.showToast?.("El archivo es demasiado grande. Máximo 2MB.", "error");
+                    window.showToast?.(
+                        "El archivo es demasiado grande. Máximo 2MB.",
+                        "error"
+                    );
                     return;
                 }
                 if (!file.type.startsWith("image/")) {
-                    window.showToast?.("Solo se permiten archivos de imagen.", "warning");
+                    window.showToast?.(
+                        "Solo se permiten archivos de imagen.",
+                        "warning"
+                    );
                     return;
                 }
                 this.avatarFile = file;
                 try {
-                    if (this.avatarPreviewUrl) URL.revokeObjectURL(this.avatarPreviewUrl);
+                    if (this.avatarPreviewUrl)
+                        URL.revokeObjectURL(this.avatarPreviewUrl);
                     this.avatarPreviewUrl = URL.createObjectURL(file);
-                } catch (_) { }
+                } catch (_) {}
             }
         },
 
@@ -205,7 +217,10 @@ window.perfilData = function (el) {
                 return;
             }
             if (!this.formData.primer_apellido?.trim()) {
-                window.showToast?.("El primer apellido es requerido", "warning");
+                window.showToast?.(
+                    "El primer apellido es requerido",
+                    "warning"
+                );
                 return;
             }
             if (!this.formData.dni?.trim()) {
@@ -213,7 +228,10 @@ window.perfilData = function (el) {
                 return;
             }
             if (!updateUrl) {
-                window.showToast?.("No se encontró la URL de actualización.", "error");
+                window.showToast?.(
+                    "No se encontró la URL de actualización.",
+                    "error"
+                );
                 return;
             }
 
@@ -244,10 +262,15 @@ window.perfilData = function (el) {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    window.showToast?.("Perfil actualizado correctamente", "success");
+                    window.showToast?.(
+                        "Perfil actualizado correctamente",
+                        "success"
+                    );
                     // Refrescar encabezado sin recargar página
                     try {
-                        const headerName = document.getElementById("perfil-header-nombre");
+                        const headerName = document.getElementById(
+                            "perfil-header-nombre"
+                        );
                         if (headerName) {
                             const nombres = [
                                 this.formData.primer_nombre,
@@ -257,18 +280,21 @@ window.perfilData = function (el) {
                             ]
                                 .filter(Boolean)
                                 .join(" ");
-                            headerName.textContent = nombres || headerName.textContent;
+                            headerName.textContent =
+                                nombres || headerName.textContent;
                         }
 
                         if (this.avatarPreviewUrl) {
-                            const avatarBox = document.getElementById("perfil-header-avatar");
+                            const avatarBox = document.getElementById(
+                                "perfil-header-avatar"
+                            );
                             if (avatarBox) {
                                 avatarBox.innerHTML = `
                                     <img src="${this.avatarPreviewUrl}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300" />
                                 `;
                             }
                         }
-                    } catch (_) { }
+                    } catch (_) {}
 
                     // Actualizar estado local y cerrar modal
                     this.originalData = { ...this.formData };
@@ -276,7 +302,10 @@ window.perfilData = function (el) {
                     this.avatarFile = null;
                     // Mantener la vista previa actual para que el usuario la vea; no la revocamos de inmediato
                 } else {
-                    window.showToast?.(result.message || "Error al actualizar el perfil", "error");
+                    window.showToast?.(
+                        result.message || "Error al actualizar el perfil",
+                        "error"
+                    );
                 }
             } catch (e) {
                 console.error("Error:", e);
@@ -318,22 +347,34 @@ window.perfilData = function (el) {
                 });
                 const json = await resp.json();
                 if (json.success) {
-                    window.showToast?.("Empresa actualizada correctamente", "success");
+                    window.showToast?.(
+                        "Empresa actualizada correctamente",
+                        "success"
+                    );
                     try {
-                        const headerName = document.getElementById("perfil-header-nombre");
-                        if (headerName) headerName.textContent = this.empresaForm.nombre_comercial;
+                        const headerName = document.getElementById(
+                            "perfil-header-nombre"
+                        );
+                        if (headerName)
+                            headerName.textContent =
+                                this.empresaForm.nombre_comercial;
                         if (this.empresaAvatarPreviewUrl) {
-                            const avatarBox = document.getElementById("perfil-header-avatar");
+                            const avatarBox = document.getElementById(
+                                "perfil-header-avatar"
+                            );
                             if (avatarBox) {
                                 avatarBox.innerHTML = `
                                     <img src="${this.empresaAvatarPreviewUrl}" alt="Logo" class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300" />
                                 `;
                             }
                         }
-                    } catch (_) { }
+                    } catch (_) {}
                     this.closeEmpresaModal();
                 } else {
-                    window.showToast?.(json.message || "Error al actualizar empresa", "error");
+                    window.showToast?.(
+                        json.message || "Error al actualizar empresa",
+                        "error"
+                    );
                 }
             } catch (err) {
                 console.error(err);
@@ -362,6 +403,9 @@ window.perfilData = function (el) {
                 }
             } catch (error) {
                 console.error("Error loading 2FA status:", error);
+            } finally {
+                // Marcar que ya se resolvió el estado inicial para evitar parpadeos
+                this.twoFAReady = true;
             }
         },
 
@@ -392,11 +436,9 @@ window.perfilData = function (el) {
                     }),
                 });
                 if (!res.ok) {
-                    const err = await res
-                        .json()
-                        .catch(() => ({
-                            message: "No se pudo iniciar el setup 2FA",
-                        }));
+                    const err = await res.json().catch(() => ({
+                        message: "No se pudo iniciar el setup 2FA",
+                    }));
                     throw new Error(
                         err.message || "No se pudo iniciar el setup 2FA"
                     );
@@ -568,11 +610,9 @@ window.perfilData = function (el) {
                     }),
                 });
                 if (!res.ok) {
-                    const err = await res
-                        .json()
-                        .catch(() => ({
-                            message: "No se pudo desactivar 2FA",
-                        }));
+                    const err = await res.json().catch(() => ({
+                        message: "No se pudo desactivar 2FA",
+                    }));
                     throw new Error(err.message || "No se pudo desactivar 2FA");
                 }
                 this.twoFAEnabled = false;
@@ -644,7 +684,7 @@ window.perfilData = function (el) {
                 } else {
                     alert(
                         result.message ||
-                        "Error al generar códigos de recuperación"
+                            "Error al generar códigos de recuperación"
                     );
                 }
             } catch (error) {
