@@ -685,6 +685,9 @@ Route::prefix('cliente')
             // Viewer HTML reutilizando el formato de Admin (valida pertenencia)
             Route::get('formato-factura/{id}', [\App\Http\Controllers\Cliente\FacturaClienteController::class, 'viewer'])->name('facturas.viewer');
             Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
+            // Tickets (Portal Cliente)
+            Route::get('tickets', [\App\Http\Controllers\ClienteController::class, 'tickets'])->name('tickets');
+            Route::get('tickets-data', [\App\Http\Controllers\Cliente\TicketClienteController::class, 'index'])->name('tickets.data');
 
             // API-like para Solicitudes del cliente (SPA cookie-auth)
             Route::get('solicitudes-data', [\App\Http\Controllers\Cliente\SolicitudClienteController::class, 'index'])->name('solicitudes.data');

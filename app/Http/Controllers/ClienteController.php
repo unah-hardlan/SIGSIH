@@ -21,34 +21,34 @@ use App\Helpers\SpaHelper;
 
 class ClienteController extends Controller
 {
-    
+
     public function configurarPerfil(): View
     {
         $generos = Genero::all();
         return view('cliente.configurar-perfil', compact('generos'));
     }
 
-    
+
     public function configurarPerfilStore(ConfigurarPerfilClienteRequest $request): RedirectResponse
     {
         try {
             DB::beginTransaction();
 
             $user = auth()->user();
-            
+
             $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
-            
+
             $data = $request->validated();
-            
+
             if ($request->hasFile('avatar')) {
                 $avatar = $request->file('avatar');
                 $avatarName = 'avatar_' . $user->id_usuario_pk . '_' . time() . '.' . $avatar->getClientOriginalExtension();
                 $avatarPath = $avatar->storeAs('avatars', $avatarName, 'public');
                 $data['avatar_path'] = $avatarPath;
             }
-            
+
             $data['id_usuario_fk'] = $user->id_usuario_pk;
-            
+
             if ($persona) {
                 if ($request->hasFile('avatar') && $persona->avatar_path) {
                     Storage::disk('public')->delete($persona->avatar_path);
@@ -62,7 +62,7 @@ class ClienteController extends Controller
                 $clientePersona = DB::table('tbl_cliente_persona')
                     ->where('id_persona_fk', $persona->id_persona_pk)
                     ->first();
-                
+
                 if ($clientePersona) {
                     $cliente = Cliente::find($clientePersona->id_cliente_fk);
                 } else {
@@ -71,7 +71,7 @@ class ClienteController extends Controller
                         'estado_cliente' => 'activo',
                         'fecha_registro' => now(),
                     ]);
-                    
+
                     DB::table('tbl_cliente_persona')->insert([
                         'id_cliente_fk' => $cliente->id_cliente_pk,
                         'id_persona_fk' => $persona->id_persona_pk,
@@ -96,40 +96,39 @@ class ClienteController extends Controller
             DB::commit();
 
             return redirect()->route('cliente.perfil')->with('success', 'Perfil configurado correctamente. ¡Bienvenido!');
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return back()
                 ->withInput()
                 ->with('error', 'Error al guardar la información del perfil. Por favor, inténtalo de nuevo.');
         }
     }
 
-    
+
     public function perfil()
     {
         $user = auth()->user();
         $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->with('genero')->first();
         $generos = Genero::all();
-        
+
         $correoContacto = null;
         $cliente = null;
-        
+
         if ($persona) {
             $clientePersona = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->first();
-            
+
             if ($clientePersona) {
                 $correoContacto = Contacto::where('id_cliente_fk', $clientePersona->id_cliente_fk)
                     ->where('tipo_contacto', 'email')
                     ->value('valor_contacto');
-                
+
                 $cliente = Cliente::find($clientePersona->id_cliente_fk);
             }
         }
-        
+
         $empresa = null;
         $empresaDireccion = null;
         if ($cliente && $cliente->tipo_cliente === 'empresa') {
@@ -159,7 +158,7 @@ class ClienteController extends Controller
                 ];
             }
         }
-        
+
         // Preparar datos para el formulario de Alpine.js
         $personaData = $persona ? [
             'primer_nombre' => $persona->primer_nombre ?? '',
@@ -178,63 +177,69 @@ class ClienteController extends Controller
             'id_genero_fk' => '',
             'correo_contacto' => $correoContacto ?? ''
         ];
-        
+
         return SpaHelper::clienteView('cliente.perfil', compact('persona', 'empresa', 'generos', 'correoContacto', 'personaData', 'empresaDireccion'));
     }
 
-    
+
     public function ordenes()
     {
         return SpaHelper::clienteView('cliente.ordenes');
     }
 
-    
+
     public function facturas()
     {
         return SpaHelper::clienteView('cliente.facturas');
     }
 
-    
+
     public function cotizaciones()
     {
         return SpaHelper::clienteView('cliente.cotizaciones');
     }
 
-    
-    
+
+
+    public function tickets()
+    {
+        return SpaHelper::clienteView('cliente.tickets');
+    }
+
+
     public function solicitudes()
     {
         // Obtener correo de contacto del cliente
         $correoContacto = null;
         $user = auth()->user();
         $persona = $user?->persona;
-        
+
         if ($persona) {
             $clientePersona = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->first();
-            
+
             if ($clientePersona) {
                 $correoContacto = Contacto::where('id_cliente_fk', $clientePersona->id_cliente_fk)
                     ->where('tipo_contacto', 'email')
                     ->value('valor_contacto');
             }
         }
-        
+
         return SpaHelper::clienteView('cliente.solicitudes', compact('correoContacto'));
     }
 
-   
+
     public function configurarEmpresa(): View
     {
         $paises = Pais::orderBy('nombre_pais')->get();
         $departamentos = Departamento::with('pais')->orderBy('nombre_departamento')->get();
         $ciudades = Ciudad::with('departamento.pais')->orderBy('nombre_ciudad')->get();
-        
+
         return view('cliente.configurar-empresa', compact('paises', 'departamentos', 'ciudades'));
     }
 
-   
+
     public function configurarEmpresaStore(Request $request): RedirectResponse
     {
         $request->validate([
@@ -270,8 +275,8 @@ class ClienteController extends Controller
             DB::beginTransaction();
 
             $user = auth()->user();
-            
-            
+
+
             $persona = \App\Models\Persona::firstOrCreate(
                 ['id_usuario_fk' => $user->id_usuario_pk],
                 [
@@ -281,11 +286,11 @@ class ClienteController extends Controller
                     'id_genero_fk' => 1,
                 ]
             );
-            
+
             $clientePersona = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->first();
-            
+
             if ($clientePersona) {
                 $cliente = Cliente::find($clientePersona->id_cliente_fk);
                 $cliente->update(['tipo_cliente' => 'empresa']);
@@ -295,7 +300,7 @@ class ClienteController extends Controller
                     'estado_cliente' => 'activo',
                     'fecha_registro' => now()
                 ]);
-                
+
                 DB::table('tbl_cliente_persona')->insert([
                     'id_cliente_fk' => $cliente->id_cliente_pk,
                     'id_persona_fk' => $persona->id_persona_pk,
@@ -368,7 +373,6 @@ class ClienteController extends Controller
 
             return redirect()->route('cliente.perfil')
                 ->with('success', 'Datos de empresa guardados correctamente.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
@@ -377,7 +381,7 @@ class ClienteController extends Controller
         }
     }
 
-   
+
     private function isValidHorarioFormat($horario): bool
     {
         $horario = trim($horario);
@@ -432,12 +436,12 @@ class ClienteController extends Controller
         return true;
     }
 
-   
+
     public function perfilUpdate(Request $request)
     {
         try {
             $user = auth()->user();
-            
+
             $request->validate([
                 'primer_nombre' => 'required|string|max:50',
                 'segundo_nombre' => 'nullable|string|max:50',
@@ -451,14 +455,14 @@ class ClienteController extends Controller
             DB::beginTransaction();
 
             $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
-            
+
             if (!$persona) {
                 return response()->json(['success' => false, 'message' => 'Perfil no encontrado'], 404);
             }
 
             $data = $request->only([
                 'primer_nombre',
-                'segundo_nombre', 
+                'segundo_nombre',
                 'primer_apellido',
                 'segundo_apellido',
                 'dni',
@@ -484,7 +488,6 @@ class ClienteController extends Controller
                 'success' => true,
                 'message' => 'Perfil actualizado correctamente'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -494,7 +497,7 @@ class ClienteController extends Controller
         }
     }
 
-  
+
     public function empresaUpdate(Request $request)
     {
         try {
@@ -506,8 +509,10 @@ class ClienteController extends Controller
                 'rtn' => 'nullable|string|max:30',
                 'descripcion_empresa' => 'nullable|string|max:500',
                 'horario_atencion' => [
-                    'nullable','string','max:500',
-                    function ($attribute,$value,$fail){
+                    'nullable',
+                    'string',
+                    'max:500',
+                    function ($attribute, $value, $fail) {
                         if ($value && !$this->isValidHorarioFormat($value)) {
                             $fail('El formato del horario no es válido. Ejemplos: "L-V 8:00 AM-5:00 PM", "L-D 9:00 AM-6:00 PM", "24 horas"');
                         }
@@ -521,28 +526,28 @@ class ClienteController extends Controller
 
             $persona = Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
             if (!$persona) {
-                return response()->json(['success'=>false,'message'=>'Perfil no encontrado'],404);
+                return response()->json(['success' => false, 'message' => 'Perfil no encontrado'], 404);
             }
 
             $clientePersona = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->first();
-            
+
             if (!$clientePersona) {
-                return response()->json(['success'=>false,'message'=>'Cliente no encontrado'],404);
+                return response()->json(['success' => false, 'message' => 'Cliente no encontrado'], 404);
             }
 
             $cliente = Cliente::find($clientePersona->id_cliente_fk);
             if (!$cliente) {
-                return response()->json(['success'=>false,'message'=>'Cliente no encontrado'],404);
+                return response()->json(['success' => false, 'message' => 'Cliente no encontrado'], 404);
             }
 
-            $empresa = EmpresaCliente::where('id_cliente_fk',$cliente->id_cliente_pk)->first();
+            $empresa = EmpresaCliente::where('id_cliente_fk', $cliente->id_cliente_pk)->first();
             if (!$empresa) {
-                return response()->json(['success'=>false,'message'=>'Empresa no configurada'],404);
+                return response()->json(['success' => false, 'message' => 'Empresa no configurada'], 404);
             }
 
-            $data = $request->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']);
+            $data = $request->only(['nombre_comercial', 'razon_social', 'rtn', 'descripcion_empresa', 'horario_atencion']);
 
             // Avatar
             if ($request->hasFile('avatar')) {
@@ -550,8 +555,8 @@ class ClienteController extends Controller
                     Storage::disk('public')->delete($empresa->avatar);
                 }
                 $file = $request->file('avatar');
-                $name = 'empresa_'.$cliente->id_cliente_pk.'_'.time().'.'.$file->getClientOriginalExtension();
-                $path = $file->storeAs('avatars/empresas',$name,'public');
+                $name = 'empresa_' . $cliente->id_cliente_pk . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('avatars/empresas', $name, 'public');
                 $data['avatar'] = $path;
             }
 
@@ -571,28 +576,28 @@ class ClienteController extends Controller
             }
 
             DB::commit();
-            return response()->json(['success'=>true,'message'=>'Empresa actualizada correctamente']);
+            return response()->json(['success' => true, 'message' => 'Empresa actualizada correctamente']);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success'=>false,'message'=>'Error al actualizar la empresa: '.$e->getMessage()],500);
+            return response()->json(['success' => false, 'message' => 'Error al actualizar la empresa: ' . $e->getMessage()], 500);
         }
     }
 
-  
+
     private function validateTimeValues($horario): bool
     {
         preg_match_all('/\d{1,2}:\d{2}/', $horario, $matches);
-        
+
         foreach ($matches[0] as $time) {
             [$hour, $minute] = explode(':', $time);
             $hour = (int) $hour;
             $minute = (int) $minute;
-            
+
             if ($hour < 0 || $hour > 23 || $minute < 0 || $minute > 59) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
