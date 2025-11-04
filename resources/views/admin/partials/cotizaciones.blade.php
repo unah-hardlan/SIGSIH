@@ -600,11 +600,11 @@
                                 </td>
                                 <td class="py-2 px-4">
                                     <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
-                                              'bg-amber-200 text-amber-800': c.estado_codigo==='BRD',
-                                              'bg-green-200 text-green-800': c.estado_codigo==='APB',
-                                              'bg-red-200 text-red-800':   c.estado_codigo==='REC',
-                                              'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN',
-                                              'bg-gray-200 text-gray-800': !c.estado_codigo
+                                              'bg-amber-200 text-amber-800': c.estado_codigo==='BRD' || c.estado_codigo==='PEN' || (String(c.estado_nombre||'').toLowerCase().includes('pend')),
+                                              'bg-green-200 text-green-800': c.estado_codigo==='APB' || (String(c.estado_nombre||'').toLowerCase().includes('aproba')),
+                                              'bg-red-200 text-red-800':   c.estado_codigo==='REC' || (String(c.estado_nombre||'').toLowerCase().includes('rech')),
+                                              'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN' || (String(c.estado_nombre||'').toLowerCase().includes('venc')),
+                                              'bg-gray-200 text-gray-800': !c.estado_codigo && !c.estado_nombre
                                           }" x-text="c.estado_nombre || '—'"></span>
                                 </td>
                                 <td class="py-2 px-4 flex items-center gap-2">
@@ -654,11 +654,11 @@
                         </div>
                         <div class="flex justify-start">
                             <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="{
-                                                                        'bg-amber-200 text-amber-800': c.estado_codigo==='BRD',
-                                                                        'bg-green-200 text-green-800': c.estado_codigo==='APB',
-                                                                        'bg-red-200 text-red-800':   c.estado_codigo==='REC',
-                                                                        'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN',
-                                                                        'bg-gray-200 text-gray-800': !c.estado_codigo
+                                                                        'bg-amber-200 text-amber-800': c.estado_codigo==='BRD' || c.estado_codigo==='PEN' || (String(c.estado_nombre||'').toLowerCase().includes('pend')),
+                                                                        'bg-green-200 text-green-800': c.estado_codigo==='APB' || (String(c.estado_nombre||'').toLowerCase().includes('aproba')),
+                                                                        'bg-red-200 text-red-800':   c.estado_codigo==='REC' || (String(c.estado_nombre||'').toLowerCase().includes('rech')),
+                                                                        'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN' || (String(c.estado_nombre||'').toLowerCase().includes('venc')),
+                                                                        'bg-gray-200 text-gray-800': !c.estado_codigo && !c.estado_nombre
                                                                     }" x-text="c.estado_nombre || '—'"></span>
                         </div>
                         <p class="text-xs text-gray-400">
@@ -925,7 +925,7 @@
                         <option :value="String(cl.id)" x-text="cl.nombre"></option>
                     </template>
                 </select>
-                <small class="block mt-1 text-sm text-gray-500" 
+                <small class="block mt-1 text-sm text-gray-500"
                     :class="formCotizacion._touched && formCotizacion._touched.cliente && !form.id_cliente_fk ? 'text-red-500' : ''">
                     Requerido.
                 </small>
@@ -936,8 +936,7 @@
                 <label for="estadoId" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
                     Solicitud</label>
                 <select id="estadoId" name="estadoId" x-model="form.id_estado_cotizacion_fk"
-                    @change="formCotizacion._touched.estado = true"
-                    :disabled="!estadosCotizacion.length"
+                    @change="formCotizacion._touched.estado = true" :disabled="!estadosCotizacion.length"
                     :class="formCotizacion._touched && formCotizacion._touched.estado && !form.id_estado_cotizacion_fk ? 'border-red-500' : 'border-gray-400'"
                     class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                     <option value="" disabled
@@ -946,7 +945,7 @@
                         <option :value="String(e.id)" x-text="e.nombre"></option>
                     </template>
                 </select>
-                <small class="block mt-1 text-sm text-gray-500" 
+                <small class="block mt-1 text-sm text-gray-500"
                     :class="formCotizacion._touched && formCotizacion._touched.estado && !form.id_estado_cotizacion_fk ? 'text-red-500' : ''">
                     Requerido.
                 </small>
@@ -957,11 +956,11 @@
                 <label for="fechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
                     Cotización</label>
                 <input type="date" id="fechaCotizacion" name="fechaCotizacion" x-model="form.fecha_cotizacion"
-                    @input="formCotizacion._touched.fecha_cotizacion = true" 
+                    @input="formCotizacion._touched.fecha_cotizacion = true"
                     @blur="formCotizacion._touched.fecha_cotizacion = true"
                     :class="formCotizacion._touched && formCotizacion._touched.fecha_cotizacion && !form.fecha_cotizacion ? 'border-red-500' : 'border-gray-400'"
                     class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
-                <small class="block mt-1 text-sm text-gray-500" 
+                <small class="block mt-1 text-sm text-gray-500"
                     :class="formCotizacion._touched && formCotizacion._touched.fecha_cotizacion && !form.fecha_cotizacion ? 'text-red-500' : ''">
                     Requerido.
                 </small>
@@ -972,7 +971,7 @@
                 <label for="validoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
                     Hasta</label>
                 <input type="date" id="validoHasta" name="validoHasta" x-model="form.valido_hasta"
-                    @input="formCotizacion._touched.valido_hasta = true" 
+                    @input="formCotizacion._touched.valido_hasta = true"
                     @blur="formCotizacion._touched.valido_hasta = true"
                     class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                 <small class="block mt-1 text-sm text-gray-500">
@@ -996,11 +995,10 @@
                                         placeholder="Descripción Del Producto o Servicio (Opcional)"
                                         @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(form); formCotizacion._touched[`descripcion_${index}`] = true; }"
                                         @blur="formCotizacion._touched[`descripcion_${index}`] = true"
-                                        x-bind:title="description.descripcion"
-                                        maxlength="500"
+                                        x-bind:title="description.descripcion" maxlength="500"
                                         :class="formCotizacion._touched && formCotizacion._touched[`descripcion_${index}`] && description.descripcion && description.descripcion.length > 500 ? 'border-red-500' : 'border-gray-600'"
                                         class="w-full rounded-md border dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
-                                    <small class="block mt-1 text-xs text-gray-500" 
+                                    <small class="block mt-1 text-xs text-gray-500"
                                         :class="formCotizacion._touched && formCotizacion._touched[`descripcion_${index}`] && description.descripcion && description.descripcion.length > 500 ? 'text-red-500' : ''">
                                         Opcional. Máximo 500 caracteres.
                                     </small>
@@ -1023,25 +1021,28 @@
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                                 <div>
-                                    <label class="text-xs text-gray-400">Precio Unit. <span class="text-red-400">*</span></label>
-                                    <input type="number" step="0.01" min="0" x-model.number="description.precio_unitario"
+                                    <label class="text-xs text-gray-400">Precio Unit. <span
+                                            class="text-red-400">*</span></label>
+                                    <input type="number" step="0.01" min="0"
+                                        x-model.number="description.precio_unitario"
                                         @input="calcTotals(form); formCotizacion._touched[`precio_${index}`] = true"
                                         @blur="formCotizacion._touched[`precio_${index}`] = true"
                                         :class="formCotizacion._touched && formCotizacion._touched[`precio_${index}`] && (description.precio_unitario === null || description.precio_unitario === undefined || description.precio_unitario < 0) ? 'border-red-500' : 'border-gray-600'"
                                         class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
-                                    <small class="block text-xs text-gray-500 mt-1" 
+                                    <small class="block text-xs text-gray-500 mt-1"
                                         :class="formCotizacion._touched && formCotizacion._touched[`precio_${index}`] && (description.precio_unitario === null || description.precio_unitario === undefined || description.precio_unitario < 0) ? 'text-red-500' : ''">
                                         Requerido. Mín: 0
                                     </small>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-gray-400">Cantidad <span class="text-red-400">*</span></label>
+                                    <label class="text-xs text-gray-400">Cantidad <span
+                                            class="text-red-400">*</span></label>
                                     <input type="number" step="0.01" min="1" x-model.number="description.cantidad"
                                         @input="calcTotals(form); formCotizacion._touched[`cantidad_${index}`] = true"
                                         @blur="formCotizacion._touched[`cantidad_${index}`] = true"
                                         :class="formCotizacion._touched && formCotizacion._touched[`cantidad_${index}`] && (description.cantidad === null || description.cantidad === undefined || description.cantidad <= 0) ? 'border-red-500' : 'border-gray-600'"
                                         class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
-                                    <small class="block text-xs text-gray-500 mt-1" 
+                                    <small class="block text-xs text-gray-500 mt-1"
                                         :class="formCotizacion._touched && formCotizacion._touched[`cantidad_${index}`] && (description.cantidad === null || description.cantidad === undefined || description.cantidad <= 0) ? 'text-red-500' : ''">
                                         Requerido. Mín: 1
                                     </small>
@@ -1152,7 +1153,7 @@
                                 <option :value="String(cl.id)" x-text="cl.nombre"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" 
+                        <small class="block mt-1 text-sm text-gray-500"
                             :class="formEditCotizacion._touched && formEditCotizacion._touched.cliente && !editForm.id_cliente_fk ? 'text-red-500' : ''">
                             Requerido.
                         </small>
@@ -1163,8 +1164,7 @@
                         <label for="editEstadoId" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de
                             la Solicitud</label>
                         <select id="editEstadoId" name="editEstadoId" x-model="editForm.id_estado_cotizacion_fk"
-                            @change="formEditCotizacion._touched.estado = true"
-                            :disabled="!estadosCotizacion.length"
+                            @change="formEditCotizacion._touched.estado = true" :disabled="!estadosCotizacion.length"
                             :class="formEditCotizacion._touched && formEditCotizacion._touched.estado && !editForm.id_estado_cotizacion_fk ? 'border-red-500' : 'border-gray-400'"
                             class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                             <option value="" disabled
@@ -1174,7 +1174,7 @@
                                 <option :value="String(e.id)" x-text="e.nombre"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" 
+                        <small class="block mt-1 text-sm text-gray-500"
                             :class="formEditCotizacion._touched && formEditCotizacion._touched.estado && !editForm.id_estado_cotizacion_fk ? 'text-red-500' : ''">
                             Requerido.
                         </small>
@@ -1196,7 +1196,7 @@
                         <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
                             Hasta</label>
                         <input type="date" id="editValidoHasta" name="validoHasta"
-                            @input="formEditCotizacion._touched.valido_hasta = true" 
+                            @input="formEditCotizacion._touched.valido_hasta = true"
                             @blur="formEditCotizacion._touched.valido_hasta = true"
                             class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
                             x-model="editForm.valido_hasta">
@@ -1222,11 +1222,10 @@
                                                 placeholder="Descripción Del Producto o Servicio (Opcional)"
                                                 @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(editForm); formEditCotizacion._touched[`edit_descripcion_${index}`] = true; }"
                                                 @blur="formEditCotizacion._touched[`edit_descripcion_${index}`] = true"
-                                                x-bind:title="item.descripcion"
-                                                maxlength="500"
+                                                x-bind:title="item.descripcion" maxlength="500"
                                                 :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_descripcion_${index}`] && item.descripcion && item.descripcion.length > 500 ? 'border-red-500' : 'border-gray-600'"
                                                 class="w-full rounded-md border dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
-                                            <small class="block mt-1 text-xs text-gray-500" 
+                                            <small class="block mt-1 text-xs text-gray-500"
                                                 :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_descripcion_${index}`] && item.descripcion && item.descripcion.length > 500 ? 'text-red-500' : ''">
                                                 Opcional. Máximo 500 caracteres.
                                             </small>
@@ -1250,25 +1249,28 @@
                                     </div>
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                                         <div>
-                                            <label class="text-xs text-gray-400">Precio Unit. <span class="text-red-400">*</span></label>
-                                            <input type="number" step="0.01" min="0" x-model.number="item.precio_unitario"
+                                            <label class="text-xs text-gray-400">Precio Unit. <span
+                                                    class="text-red-400">*</span></label>
+                                            <input type="number" step="0.01" min="0"
+                                                x-model.number="item.precio_unitario"
                                                 @input="calcTotals(editForm); formEditCotizacion._touched[`edit_precio_${index}`] = true"
                                                 @blur="formEditCotizacion._touched[`edit_precio_${index}`] = true"
                                                 :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_precio_${index}`] && (item.precio_unitario === null || item.precio_unitario === undefined || item.precio_unitario < 0) ? 'border-red-500' : 'border-gray-600'"
                                                 class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
-                                            <small class="block text-xs text-gray-500 mt-1" 
+                                            <small class="block text-xs text-gray-500 mt-1"
                                                 :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_precio_${index}`] && (item.precio_unitario === null || item.precio_unitario === undefined || item.precio_unitario < 0) ? 'text-red-500' : ''">
                                                 Requerido. Mín: 0
                                             </small>
                                         </div>
                                         <div>
-                                            <label class="text-xs text-gray-400">Cantidad <span class="text-red-400">*</span></label>
+                                            <label class="text-xs text-gray-400">Cantidad <span
+                                                    class="text-red-400">*</span></label>
                                             <input type="number" step="0.01" min="1" x-model.number="item.cantidad"
                                                 @input="calcTotals(editForm); formEditCotizacion._touched[`edit_cantidad_${index}`] = true"
                                                 @blur="formEditCotizacion._touched[`edit_cantidad_${index}`] = true"
                                                 :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_cantidad_${index}`] && (item.cantidad === null || item.cantidad === undefined || item.cantidad <= 0) ? 'border-red-500' : 'border-gray-600'"
                                                 class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
-                                            <small class="block text-xs text-gray-500 mt-1" 
+                                            <small class="block text-xs text-gray-500 mt-1"
                                                 :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_cantidad_${index}`] && (item.cantidad === null || item.cantidad === undefined || item.cantidad <= 0) ? 'text-red-500' : ''">
                                                 Requerido. Mín: 1
                                             </small>
