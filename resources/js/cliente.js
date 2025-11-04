@@ -33,6 +33,7 @@ import {
     faClock,
     faUserCheck,
     faSpinner,
+    faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -63,7 +64,8 @@ library.add(
     faCalendarTimes,
     faClock,
     faUserCheck,
-    faSpinner
+    faSpinner,
+    faFolderOpen
 );
 
 dom.watch();
