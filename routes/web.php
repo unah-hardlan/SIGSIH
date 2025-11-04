@@ -679,6 +679,11 @@ Route::prefix('cliente')
             // Viewer de Orden para cliente con el mismo diseño que admin
             Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
+            // API-like para Facturas del cliente (SPA cookie-auth)
+            Route::get('facturas-data', [\App\Http\Controllers\Cliente\FacturaClienteController::class, 'index'])->name('facturas.data');
+            Route::get('facturas/{id}/data', [\App\Http\Controllers\Cliente\FacturaClienteController::class, 'show'])->name('facturas.show');
+            // Viewer HTML reutilizando el formato de Admin (valida pertenencia)
+            Route::get('formato-factura/{id}', [\App\Http\Controllers\Cliente\FacturaClienteController::class, 'viewer'])->name('facturas.viewer');
             Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
 
             // API-like para Solicitudes del cliente (SPA cookie-auth)
