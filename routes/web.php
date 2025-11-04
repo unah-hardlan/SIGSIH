@@ -554,6 +554,10 @@ Route::prefix('cliente')
         Route::get('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresa'])->name('configurar-empresa');
         Route::post('configurar-empresa', [\App\Http\Controllers\ClienteController::class, 'configurarEmpresaStore'])->name('configurar-empresa.store');
 
+        // API routes for location data
+        Route::get('api/departamentos/{paisId}', [\App\Http\Controllers\ClienteController::class, 'getDepartamentosByPais'])->name('api.departamentos');
+        Route::get('api/ciudades/{departamentoId}', [\App\Http\Controllers\ClienteController::class, 'getCiudadesByDepartamento'])->name('api.ciudades');
+
         // Rutas que requieren perfil completo
         Route::middleware(['check.cliente.perfil'])->group(function () {
             Route::get('perfil', [\App\Http\Controllers\ClienteController::class, 'perfil'])->name('perfil');

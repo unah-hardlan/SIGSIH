@@ -11,6 +11,9 @@ use App\Models\Genero;
 use App\Models\Cliente;
 use App\Models\EmpresaCliente;
 use App\Models\Contacto;
+use App\Models\Pais;
+use App\Models\Departamento;
+use App\Models\Ciudad;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\SpaHelper;
@@ -181,7 +184,8 @@ class ClienteController extends Controller
    
     public function configurarEmpresa(): View
     {
-        return view('cliente.configurar-empresa');
+        $paises = Pais::orderBy('nombre_pais')->get();
+        return view('cliente.configurar-empresa', compact('paises'));
     }
 
    
@@ -508,5 +512,37 @@ class ClienteController extends Controller
         }
         
         return true;
+    }
+
+    /**
+     * Get departamentos by país ID
+     */
+    public function getDepartamentosByPais($paisId)
+    {
+        try {
+            $departamentos = \App\Models\Departamento::where('id_pais_fk', $paisId)
+                ->orderBy('nombre_departamento')
+                ->get(['id_departamento_pk', 'nombre_departamento']);
+
+            return response()->json($departamentos);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al cargar departamentos'], 500);
+        }
+    }
+
+    /**
+     * Get ciudades by departamento ID
+     */
+    public function getCiudadesByDepartamento($departamentoId)
+    {
+        try {
+            $ciudades = \App\Models\Ciudad::where('id_departamento_fk', $departamentoId)
+                ->orderBy('nombre_ciudad')
+                ->get(['id_ciudad_pk', 'nombre_ciudad']);
+
+            return response()->json($ciudades);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al cargar ciudades'], 500);
+        }
     }
 }
