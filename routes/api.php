@@ -30,6 +30,7 @@ use App\Http\Controllers\EstadoCaiController;
 use App\Http\Controllers\CaiController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\DetalleFacturaController;
+use App\Http\Controllers\EstadoCotizacionController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\DetalleOrdenProductoController;
 use App\Http\Controllers\ObjetoController;
@@ -158,6 +159,10 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::apiResource('detalles-factura', DetalleFacturaController::class);
     Route::apiResource('servicios', ServicioController::class);
     Route::apiResource('detalles-orden-producto', DetalleOrdenProductoController::class);
+
+    // Catálogo: Estados de Cotización
+    Route::get('estados-cotizacion', [EstadoCotizacionController::class, 'index'])
+        ->withoutMiddleware('auto.permiso');
 
     // Notificaciones in-app
     Route::get('notifications', [NotificationController::class, 'index']);

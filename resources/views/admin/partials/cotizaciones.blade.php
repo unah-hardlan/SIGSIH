@@ -9,6 +9,7 @@
     // Data
     cotizaciones:[],
     clientes:[],
+    estadosCotizacion:[],
     filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
     ordenarPor:'',
     // Items manager (por cotización)
@@ -31,6 +32,9 @@
             if(it.aplicar_impuesto){
                 const calcImp = +(precio * cant * 0.15);
                 it.impuesto = +calcImp.toFixed(2);
+            } else {
+                // Si se desmarca, el impuesto del ítem debe ser 0
+                it.impuesto = 0;
             }
             const imp = parseFloat(it.impuesto)||0;
             const linea = precio * cant;
@@ -289,7 +293,7 @@
         if(skipped>0) this.showToast(skipped + ' items ya estaban en la lista', 'error');
     },
     async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('sort', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
-    .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }))
+    .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id: (c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }))
             .filter(c=>c.id!=null);
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
     async fetchClientes(){
@@ -318,28 +322,59 @@
             this.clientes = [];
         }
     },
-    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:c.id_cliente_fk, cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || '') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
-    resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] }; },
+    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:(c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
+    async fetchEstadosCotizacion(){
+        try{
+            const r = await this.doFetch('/api/estados-cotizacion?per_page=100');
+            if(!r.ok) throw new Error();
+            const j = await r.json();
+            const data = j.data || j || [];
+            this.estadosCotizacion = data.map(e=>({ id: e.id_estado_cotizacion_pk || e.id || e.id_estado || e.id_pk || null, codigo: e.codigo, nombre: e.nombre, es_final: !!(e.es_final), orden: e.orden }))
+                .filter(e=>e.id!=null);
+        }catch(e){ this.estadosCotizacion = []; }
+    },
+    resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', id_estado_cotizacion_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] }; },
     // Reset form but leave date and at least one blank item (used by some flows)
     resetFormEmpty(){
-        this.form = { id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items: [] };
+        this.form = { id:null, id_cliente_fk:'', id_estado_cotizacion_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items: [] };
     },
-    openCreate(){ this.resetFormEmpty(); this.generateCotizacionModal=true; },
+    openCreate(){
+        this.resetFormEmpty();
+        // Mostrar placeholder 'Seleccione un estado' por defecto; no preseleccionar automáticamente
+        this.generateCotizacionModal=true;
+    },
     openEdit(c){
         // prepare header data for editing
         const clienteId = c?.cliente_id != null ? String(c.cliente_id) : '';
-    this.editForm = { ...c, id: c.id, id_cliente_fk: clienteId, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false } ], apply_isv_otros: Boolean(Number(c.impuesto_otros||0) > 0), impuesto_otros: Number(c.impuesto_otros||0) };
+        // normalize estado id to string for proper select matching
+        let estadoId = (c.estado_id ?? c.id_estado_cotizacion_fk ?? '');
+        if(estadoId !== null && estadoId !== undefined && estadoId !== '') estadoId = String(estadoId);
+            this.editForm = { ...c, id: c.id, id_cliente_fk: clienteId, id_estado_cotizacion_fk: estadoId, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false } ], apply_isv_otros: Boolean(Number(c.impuesto_otros||0) > 0), impuesto_otros: Number(c.impuesto_otros||0) };
         // reset original ids tracking
         this._editOriginalItemIds = [];
         this.editModal = true;
-        // load items for this cotización so they appear in the edit form
-        this.$nextTick(()=>{ this.fetchItemsForEdit(c.id); });
+            // after rendering, force-select by toggling values to ensure browser picks the correct option
+            this.$nextTick(()=>{
+                try{
+                    const cid = clienteId || '';
+                    const eid = estadoId || '';
+                    // force a re-bind
+                    this.editForm.id_cliente_fk = '';
+                    this.editForm.id_estado_cotizacion_fk = '';
+                    setTimeout(()=>{
+                        this.editForm.id_cliente_fk = cid;
+                        this.editForm.id_estado_cotizacion_fk = eid;
+                    }, 0);
+                }catch(e){}
+                // load items for this cotización so they appear in the edit form
+                this.fetchItemsForEdit(c.id);
+            });
     },
     async createCotizacion(){
         this.saving=true;
         this.calcTotals(this.form);
         try{
-            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, impuesto_otros:this.form.impuesto_otros||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk };
+            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, impuesto_otros:this.form.impuesto_otros||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk, id_estado_cotizacion_fk: (this.form.id_estado_cotizacion_fk || undefined) };
             const r=await this.doFetch('/api/cotizaciones',{ method:'POST', body:JSON.stringify(payload) });
             if(r.status===422){
                 // Extract validation errors and present them to the developer/user
@@ -382,7 +417,7 @@
                 const todayStr = new Date().toISOString().slice(0,10);
                 if(!vHasta || (new Date(vHasta) < new Date(todayStr))){ vHasta = todayStr; }
             }catch(e){}
-            const payload={ valido_hasta:vHasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, impuesto_otros:this.editForm.impuesto_otros||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk };
+            const payload={ valido_hasta:vHasta, subtotal:this.editForm.subtotal, total:this.editForm.total, imponible:this.editForm.imponible, impuesto:this.editForm.total_impuesto, total_impuesto:this.editForm.total_impuesto, otros_cargos:this.editForm.otros_cargos||0, impuesto_otros:this.editForm.impuesto_otros||0, anticipo_requerido:this.editForm.anticipo_requerido||0, id_cliente_fk:this.editForm.id_cliente_fk, id_estado_cotizacion_fk: (this.editForm.id_estado_cotizacion_fk || undefined) };
             const r=await this.doFetch('/api/cotizaciones/'+this.editForm.id,{ method:'PUT', body:JSON.stringify(payload) });
             if(r.status===422){
                 try{
@@ -430,8 +465,8 @@
     async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await this.doFetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE' }); if(!r.ok) throw new Error(); this.cotizaciones=this.cotizaciones.filter(c=>c.id!==this.selectedItem); this.showToast('Eliminada'); }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
     init(){
         // Proactively ensure API auth from web session
-        this.ensureAuth();
-        this.fetchClientes(); this.fetchCotizaciones();
+    this.ensureAuth();
+    this.fetchClientes(); this.fetchEstadosCotizacion(); this.fetchCotizaciones();
         const debounce=(fn,ms=400)=>{let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms);};};
         this.$watch('filters.search',debounce(()=>this.fetchCotizaciones()));
         this.$watch('ordenarPor',debounce(()=>this.fetchCotizaciones()));
@@ -500,6 +535,7 @@
                             <th class="py-2 px-4 text-left">Otros Cargos</th>
                             <th class="py-2 px-4 text-left">Anticipo</th>
                             <th class="py-2 px-4 text-left">Total</th>
+                            <th class="py-2 px-4 text-left">Estado</th>
                             <th class="py-2 px-4 text-left">Acciones</th>
                         </tr>
                     </thead>
@@ -528,6 +564,15 @@
                                 <td class="py-2 px-4 text-right"
                                     x-text="'L.\u00A0'+(Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                 </td>
+                                <td class="py-2 px-4">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
+                                              'bg-amber-200 text-amber-800': c.estado_codigo==='BRD',
+                                              'bg-green-200 text-green-800': c.estado_codigo==='APB',
+                                              'bg-red-200 text-red-800':   c.estado_codigo==='REC',
+                                              'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN',
+                                              'bg-gray-200 text-gray-800': !c.estado_codigo
+                                          }" x-text="c.estado_nombre || '—'"></span>
+                                </td>
                                 <td class="py-2 px-4 flex items-center gap-2">
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
                                         class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1"><i
@@ -540,10 +585,10 @@
                             </tr>
                         </template>
                         <tr x-show="!cotizaciones.length && !loading">
-                            <td colspan="11" class="text-center text-gray-500 py-4">Sin datos</td>
+                            <td colspan="12" class="text-center text-gray-500 py-4">Sin datos</td>
                         </tr>
                         <tr x-show="loading">
-                            <td colspan="11" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
+                            <td colspan="12" class="text-center text-gray-500 py-4 animate-pulse">Cargando...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -572,6 +617,15 @@
                             <p class="text-lg font-bold text-gray-800 dark:text-white"
                                 x-text="'L. ' + (Number(c.total ?? 0)).toLocaleString('es-HN', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                             </p>
+                        </div>
+                        <div class="flex justify-start">
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="{
+                                                                        'bg-amber-200 text-amber-800': c.estado_codigo==='BRD',
+                                                                        'bg-green-200 text-green-800': c.estado_codigo==='APB',
+                                                                        'bg-red-200 text-red-800':   c.estado_codigo==='REC',
+                                                                        'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN',
+                                                                        'bg-gray-200 text-gray-800': !c.estado_codigo
+                                                                    }" x-text="c.estado_nombre || '—'"></span>
                         </div>
                         <p class="text-xs text-gray-400">
                             Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
@@ -632,7 +686,8 @@
                     <div class="space-y-4 sm:col-span-2">
                         <div>
                             <label for="item_descripcion"
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción</label>
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-200 nunito-bold">Descripción
+                                Del Producto o Servicio</label>
                             <input type="text" id="item_descripcion" x-model="itemForm.descripcion"
                                 class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
                             <template x-if="itemErrors.descripcion">
@@ -829,7 +884,22 @@
                     class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                     <option value="">Seleccione un cliente</option>
                     <template x-for="cl in clientes" :key="cl.id">
-                        <option :value="cl.id" x-text="cl.nombre"></option>
+                        <option :value="String(cl.id)" x-text="cl.nombre"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Estado de la Solicitud -->
+            <div>
+                <label for="estadoId" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
+                    Solicitud</label>
+                <select id="estadoId" name="estadoId" x-model="form.id_estado_cotizacion_fk"
+                    :disabled="!estadosCotizacion.length"
+                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    <option value="" disabled
+                        x-text="!estadosCotizacion.length ? 'Cargando estados...' : 'Seleccione un estado'"></option>
+                    <template x-for="e in estadosCotizacion" :key="e.id">
+                        <option :value="String(e.id)" x-text="e.nombre"></option>
                     </template>
                 </select>
             </div>
@@ -862,7 +932,8 @@
                         <div class="mb-3 p-3 rounded-md bg-white/5">
                             <div class="flex justify-between items-start">
                                 <div class="w-full">
-                                    <textarea x-model="description.descripcion" placeholder="Descripción"
+                                    <textarea x-model="description.descripcion"
+                                        placeholder="Descripción Del Producto o Servicio"
                                         @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(form); }"
                                         x-bind:title="description.descripcion"
                                         class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
@@ -916,7 +987,7 @@
                 <div class="flex gap-2 mt-2">
                     <button type="button" @click="addItem('form')"
                         class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
-                        <i class="fas fa-plus"></i> Añadir Descripción
+                        <i class="fas fa-plus"></i> Añadir Prod/Serv
                     </button>
                     <button type="button" @click="openCatalog('form')"
                         class="mt-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm nunito-regular">
@@ -997,7 +1068,23 @@
                             class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                             <option value="">Seleccione un cliente</option>
                             <template x-for="cl in clientes" :key="cl.id">
-                                <option :value="cl.id" x-text="cl.nombre"></option>
+                                <option :value="String(cl.id)" x-text="cl.nombre"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Estado de la Solicitud -->
+                    <div>
+                        <label for="editEstadoId" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de
+                            la Solicitud</label>
+                        <select id="editEstadoId" name="editEstadoId" x-model="editForm.id_estado_cotizacion_fk"
+                            :disabled="!estadosCotizacion.length"
+                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            <option value="" disabled
+                                x-text="!estadosCotizacion.length ? 'Cargando estados...' : 'Seleccione un estado'">
+                            </option>
+                            <template x-for="e in estadosCotizacion" :key="e.id">
+                                <option :value="String(e.id)" x-text="e.nombre"></option>
                             </template>
                         </select>
                     </div>
@@ -1027,7 +1114,8 @@
 
                     <!-- Descripción dinámica -->
                     <div class="col-span-1"> {{-- Aquí la clase col-span-1 es redundante pero no hace daño --}}
-                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                        <label class="block text-sm font-medium text-gray-700 nunito-bold">Descripción Del Producto o
+                            Servicio</label>
 
                         <div class="max-h-48 overflow-y-auto pr-2">
                             <template x-for="(item, index) in (editForm.items || [])"
@@ -1035,7 +1123,8 @@
                                 <div class="mb-3 p-3 rounded-md bg-white/5">
                                     <div class="flex justify-between items-start">
                                         <div class="w-full">
-                                            <textarea x-model="item.descripcion" placeholder="Descripción"
+                                            <textarea x-model="item.descripcion"
+                                                placeholder="Descripción Del Producto o Servicio"
                                                 @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(editForm); }"
                                                 x-bind:title="item.descripcion"
                                                 class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
@@ -1091,7 +1180,7 @@
                             <button type="button"
                                 @click="(function(){ editForm.items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null }); editForm.items = editForm.items.slice(); calcTotals(editForm); })()"
                                 class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm nunito-regular">
-                                <i class="fas fa-plus"></i> Añadir Descripción
+                                <i class="fas fa-plus"></i> Añadir Prod/Serv
                             </button>
                             <button type="button" @click="openCatalog('editForm')"
                                 class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm nunito-regular">
@@ -1199,8 +1288,7 @@
                             <tr
                                 class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
                                 <td class="py-2 px-3">
-                                    <input type="checkbox"
-                                        x-bind:checked="(catalogExisting[String(it.id)] || false) || (catalogSelectedUser[String(it.id)] || false)"
+                                    <input type="checkbox" :checked="!!catalogSelectedUser[String(it.id)]"
                                         @change="(e)=>{ catalogSelectedUser[String(it.id)] = e.target.checked; }" />
                                 </td>
                                 <td class="py-2 px-3" x-text="it.descripcion"></td>

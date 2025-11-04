@@ -64,6 +64,7 @@ class SolicitudController extends Controller
     {
         $validated = $request->validate([
             'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
+            'nombre_solicitud' => 'nullable|string|max:150',
             'descripcion_problema' => 'required|string|max:500',
             'id_estado_solicitud_fk' => 'required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
             'id_contacto_fk' => [
@@ -180,6 +181,7 @@ class SolicitudController extends Controller
 
         $validatedData = $request->validate([
             'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
+            'nombre_solicitud' => 'sometimes|nullable|string|max:150',
             'descripcion_problema' => 'sometimes|required|string|max:500',
             'id_estado_solicitud_fk' => 'sometimes|required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
             'id_contacto_fk' => [

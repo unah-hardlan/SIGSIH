@@ -27,7 +27,9 @@ window.perfilData = function (el) {
         loading: false,
         empresaLoading: false,
         avatarFile: null,
+        avatarPreviewUrl: null,
         empresaAvatarFile: null,
+        empresaAvatarPreviewUrl: null,
         originalData: originalData,
         formData: { ...originalData },
         empresaForm: (function () {
@@ -43,7 +45,7 @@ window.perfilData = function (el) {
                         horario_atencion: data.horario_atencion || "",
                     };
                 }
-            } catch (_) {}
+            } catch (_) { }
             return {
                 nombre_comercial: "",
                 razon_social: "",
@@ -150,28 +152,36 @@ window.perfilData = function (el) {
             const file = e.target.files[0];
             if (!file) return;
             if (file.size > 2 * 1024 * 1024) {
-                alert("Archivo demasiado grande (máx 2MB)");
+                window.showToast?.("Archivo demasiado grande (máx 2MB)", "error");
                 return;
             }
             if (!file.type.startsWith("image/")) {
-                alert("Solo imágenes");
+                window.showToast?.("Solo se permiten imágenes", "warning");
                 return;
             }
             this.empresaAvatarFile = file;
+            try {
+                if (this.empresaAvatarPreviewUrl) URL.revokeObjectURL(this.empresaAvatarPreviewUrl);
+                this.empresaAvatarPreviewUrl = URL.createObjectURL(file);
+            } catch (_) { }
         },
 
         handleAvatarChange(event) {
             const file = event.target.files[0];
             if (file) {
                 if (file.size > 2 * 1024 * 1024) {
-                    alert("El archivo es demasiado grande. Máximo 2MB.");
+                    window.showToast?.("El archivo es demasiado grande. Máximo 2MB.", "error");
                     return;
                 }
                 if (!file.type.startsWith("image/")) {
-                    alert("Solo se permiten archivos de imagen.");
+                    window.showToast?.("Solo se permiten archivos de imagen.", "warning");
                     return;
                 }
                 this.avatarFile = file;
+                try {
+                    if (this.avatarPreviewUrl) URL.revokeObjectURL(this.avatarPreviewUrl);
+                    this.avatarPreviewUrl = URL.createObjectURL(file);
+                } catch (_) { }
             }
         },
 
@@ -191,19 +201,19 @@ window.perfilData = function (el) {
 
         async updateProfile() {
             if (!this.formData.primer_nombre?.trim()) {
-                alert("El primer nombre es requerido");
+                window.showToast?.("El primer nombre es requerido", "warning");
                 return;
             }
             if (!this.formData.primer_apellido?.trim()) {
-                alert("El primer apellido es requerido");
+                window.showToast?.("El primer apellido es requerido", "warning");
                 return;
             }
             if (!this.formData.dni?.trim()) {
-                alert("El DNI es requerido");
+                window.showToast?.("El DNI es requerido", "warning");
                 return;
             }
             if (!updateUrl) {
-                alert("No se encontró la URL de actualización.");
+                window.showToast?.("No se encontró la URL de actualización.", "error");
                 return;
             }
 
@@ -234,15 +244,45 @@ window.perfilData = function (el) {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert("Perfil actualizado correctamente");
-                    window.location.reload();
+                    window.showToast?.("Perfil actualizado correctamente", "success");
+                    // Refrescar encabezado sin recargar página
+                    try {
+                        const headerName = document.getElementById("perfil-header-nombre");
+                        if (headerName) {
+                            const nombres = [
+                                this.formData.primer_nombre,
+                                this.formData.segundo_nombre,
+                                this.formData.primer_apellido,
+                                this.formData.segundo_apellido,
+                            ]
+                                .filter(Boolean)
+                                .join(" ");
+                            headerName.textContent = nombres || headerName.textContent;
+                        }
+
+                        if (this.avatarPreviewUrl) {
+                            const avatarBox = document.getElementById("perfil-header-avatar");
+                            if (avatarBox) {
+                                avatarBox.innerHTML = `
+                                    <img src="${this.avatarPreviewUrl}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300" />
+                                `;
+                            }
+                        }
+                    } catch (_) { }
+
+                    // Actualizar estado local y cerrar modal
+                    this.originalData = { ...this.formData };
+                    this.closeEditModal();
+                    this.avatarFile = null;
+                    // Mantener la vista previa actual para que el usuario la vea; no la revocamos de inmediato
                 } else {
-                    alert(result.message || "Error al actualizar el perfil");
+                    window.showToast?.(result.message || "Error al actualizar el perfil", "error");
                 }
             } catch (e) {
                 console.error("Error:", e);
-                alert(
-                    "Error al actualizar el perfil. Por favor, intenta nuevamente."
+                window.showToast?.(
+                    "Error al actualizar el perfil. Por favor, intenta nuevamente.",
+                    "error"
                 );
             } finally {
                 this.loading = false;
@@ -250,12 +290,12 @@ window.perfilData = function (el) {
         },
         async updateEmpresa() {
             if (!this.empresaForm.nombre_comercial.trim()) {
-                alert("Nombre comercial requerido");
+                window.showToast?.("Nombre comercial requerido", "warning");
                 return;
             }
             const empresaUrl = el?.dataset?.empresaUpdateUrl;
             if (!empresaUrl) {
-                alert("No se encontró URL de empresa");
+                window.showToast?.("No se encontró URL de empresa", "error");
                 return;
             }
             this.empresaLoading = true;
@@ -278,14 +318,26 @@ window.perfilData = function (el) {
                 });
                 const json = await resp.json();
                 if (json.success) {
-                    alert("Empresa actualizada correctamente");
-                    window.location.reload();
+                    window.showToast?.("Empresa actualizada correctamente", "success");
+                    try {
+                        const headerName = document.getElementById("perfil-header-nombre");
+                        if (headerName) headerName.textContent = this.empresaForm.nombre_comercial;
+                        if (this.empresaAvatarPreviewUrl) {
+                            const avatarBox = document.getElementById("perfil-header-avatar");
+                            if (avatarBox) {
+                                avatarBox.innerHTML = `
+                                    <img src="${this.empresaAvatarPreviewUrl}" alt="Logo" class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300" />
+                                `;
+                            }
+                        }
+                    } catch (_) { }
+                    this.closeEmpresaModal();
                 } else {
-                    alert(json.message || "Error al actualizar empresa");
+                    window.showToast?.(json.message || "Error al actualizar empresa", "error");
                 }
             } catch (err) {
                 console.error(err);
-                alert("Error al actualizar empresa");
+                window.showToast?.("Error al actualizar empresa", "error");
             } finally {
                 this.empresaLoading = false;
             }
@@ -592,7 +644,7 @@ window.perfilData = function (el) {
                 } else {
                     alert(
                         result.message ||
-                            "Error al generar códigos de recuperación"
+                        "Error al generar códigos de recuperación"
                     );
                 }
             } catch (error) {

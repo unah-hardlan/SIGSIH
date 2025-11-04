@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             ParametroSystemSeeder::class,
             CoreObjetosSeeder::class,
             EstadoOrdenServicioSeeder::class,
+            EstadoCotizacionSeeder::class,
         ]);
     }
 }

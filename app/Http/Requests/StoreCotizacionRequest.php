@@ -24,6 +24,7 @@ class StoreCotizacionRequest extends FormRequest
             'otros_cargos' => 'nullable|numeric|min:0',
             'impuesto_otros' => 'nullable|numeric|min:0',
             'anticipo_requerido' => 'nullable|numeric|min:0',
+            'id_estado_cotizacion_fk' => 'nullable|integer|exists:tbl_estado_cotizacion,id_estado_cotizacion_pk',
             'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
         ];
     }

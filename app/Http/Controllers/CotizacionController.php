@@ -12,7 +12,7 @@ class CotizacionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Cotizacion::query()->with(['cliente.empresa', 'cliente.personas']);
+        $query = Cotizacion::query()->with(['cliente.empresa', 'cliente.personas', 'estado']);
 
         if ($cliente = $request->input('id_cliente_fk')) {
             $query->where('id_cliente_fk', $cliente);
@@ -60,14 +60,14 @@ class CotizacionController extends Controller
     public function store(StoreCotizacionRequest $request)
     {
         $cotizacion = Cotizacion::create($request->validated());
-        $cotizacion->load(['cliente.empresa', 'cliente.personas']);
+        $cotizacion->load(['cliente.empresa', 'cliente.personas', 'estado']);
         return (new CotizacionResource($cotizacion))->response()->setStatusCode(201);
     }
 
     public function show($id)
     {
         // Traer datos del cliente suficientes para imprimir (empresa/persona)
-        $cotizacion = Cotizacion::with(['cliente.empresa', 'cliente.personas'])->find($id);
+        $cotizacion = Cotizacion::with(['cliente.empresa', 'cliente.personas', 'estado'])->find($id);
         if (!$cotizacion) return response()->json(['error' => 'Cotizacion no encontrada'], 404);
         return (new CotizacionResource($cotizacion))->response();
     }
@@ -77,7 +77,7 @@ class CotizacionController extends Controller
         $cotizacion = Cotizacion::find($id);
         if (!$cotizacion) return response()->json(['error' => 'Cotizacion no encontrada'], 404);
         $cotizacion->update($request->validated());
-        $cotizacion->load(['cliente.empresa', 'cliente.personas']);
+        $cotizacion->load(['cliente.empresa', 'cliente.personas', 'estado']);
         return (new CotizacionResource($cotizacion))->response();
     }
 
