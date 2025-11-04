@@ -16,9 +16,8 @@
     x-transition:leave-start="translate-x-0"
     x-transition:leave-end="-translate-x-full">
 
-    {{-- Los datos de navegación vienen del ClienteSidebarComposer --}}
     <nav class="flex-1 flex flex-col py-4 pr-3">
-        <ul class="font-sans space-y-3 flex-1 pl-2 pb-6">
+        <ul class="font-sans list-none space-y-3 flex-1 pl-2 pb-6">
             @foreach($navItems as $item)
             <li>
                 

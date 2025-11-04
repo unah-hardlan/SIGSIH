@@ -252,19 +252,19 @@
                     </p>
                 </div>
 
-                <div>
+                @if(isset($empresaDireccion))
+                <div class="md:col-span-2">
                     <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
-                        Teléfono Fijo de Contacto
+                        Dirección de la Empresa
                     </label>
-                    <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
+                    <p class="text-sm text-gray-900 dark:text-gray-100">
+                        {{ $empresaDireccion['formateada'] ?? '' }}
+                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        {{ ($empresaDireccion['ciudad'] ?? '') }}{{ ($empresaDireccion['ciudad'] ?? '') ? ', ' : '' }}{{ ($empresaDireccion['departamento'] ?? '') }}{{ ($empresaDireccion['departamento'] ?? '') ? ', ' : '' }}{{ ($empresaDireccion['pais'] ?? '') }}
+                    </p>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
-                        Teléfono Móvil de Contacto
-                    </label>
-                    <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
-                </div>
+                @endif
             </div>
             @else
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
