@@ -642,6 +642,30 @@ Route::prefix('cliente')
             Route::put('perfil', [\App\Http\Controllers\ClienteController::class, 'perfilUpdate'])->name('perfil.update');
             Route::put('empresa', [\App\Http\Controllers\ClienteController::class, 'empresaUpdate'])->name('empresa.update');
             Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
+            // API-like para Cotizaciones del cliente (SPA cookie-auth)
+            Route::get('cotizaciones-data', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'index'])->name('cotizaciones.data');
+            // PDF de cotización (cliente)
+            Route::get('cotizaciones/{id}/pdf', [\App\Http\Controllers\Cliente\CotizacionPdfController::class, 'show'])->name('cotizaciones.pdf');
+            // Viewer HTML con el mismo diseño que admin (cliente decide imprimir)
+            Route::get('detalle-cotizacion', function (Request $request) {
+                // Endpoints cliente para alimentar el diseño existente sin cambiarlo
+                $base = [
+                    'cot' => url('/cliente/cotizaciones/{id}/data'),
+                    'items' => url('/cliente/cotizaciones/{id}/items'),
+                ];
+                return view('admin.detalle-cotizacion', [
+                    'COTI_ENDPOINTS' => $base,
+                ]);
+            })->name('cotizaciones.viewer');
+
+            // Data endpoints para el viewer del cliente
+            Route::get('cotizaciones/{id}/data', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'show'])
+                ->name('cotizaciones.show');
+            Route::get('cotizaciones/{id}/items', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'items'])
+                ->name('cotizaciones.items');
+            // Cambiar estado desde el cliente (aprobar/rechazar)
+            Route::post('cotizaciones/{id}/cambiar-estado', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'updateEstado'])
+                ->name('cotizaciones.cambiar-estado');
             Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
             Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');

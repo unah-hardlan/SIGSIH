@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cotización - IT SUPPORT HARDLAN</title>
     <style>
@@ -290,6 +291,36 @@
         cursor: pointer;
     }
 
+    /* Estado badge (estilo ligero, sin Tailwind) */
+    .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .status-green {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-amber {
+        background-color: #fde68a;
+        color: #92400e;
+    }
+
+    .status-red {
+        background-color: #fecaca;
+        color: #7f1d1d;
+    }
+
+    .status-blue {
+        background-color: #bfdbfe;
+        color: #1e3a8a;
+    }
+
     @media print {
         body {
             margin: 0;
@@ -325,6 +356,11 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+    // Permite inyectar endpoints alternativos desde el servidor (p. ej., modo cliente)
+    window.COTI_ENDPOINTS = window.COTI_ENDPOINTS || <?php echo json_encode($COTI_ENDPOINTS ?? null); ?>;
+    </script>
+
 </head>
 
 <body>
@@ -362,6 +398,13 @@
                     <div class="detail-row">
                         <span>VALIDO HASTA</span>
                         <span class="value date" x-text="formatFecha(cotizacion?.valido_hasta)">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>ESTADO</span>
+                        <span class="value">
+                            <span :class="estadoBadgeClass()"
+                                x-text="(cotizacion?.estado_nombre||cotizacion?.estado_codigo)||'-'"></span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -458,6 +501,14 @@
                 style="background-color: #00008b; color: white; border: none; padding: 5px 10px; font-size: 14px; border-radius: 5px; cursor: pointer;">
                 Imprimir Cotización
             </button>
+            <template x-if="!!window.COTI_ENDPOINTS">
+                <span>
+                    <button @click="cambiarEstado('aprobada')"
+                        style="margin-left:10px; padding:6px 10px; border-radius:6px; border:1px solid #10b981; background:#d1fae5; color:#065f46; cursor:pointer; font-size:12px;">Aprobar</button>
+                    <button @click="cambiarEstado('rechazada')"
+                        style="margin-left:6px; padding:6px 10px; border-radius:6px; border:1px solid #ef4444; background:#fecaca; color:#7f1d1d; cursor:pointer; font-size:12px;">Rechazar</button>
+                </span>
+            </template>
         </div>
 
         <footer>
@@ -518,15 +569,64 @@
                 try {
                     const id = this.idFromQuery();
                     if (!id) return;
-                    const r = await this.fetchWithAuth(`/api/cotizaciones/${id}`);
+                    const END = window.COTI_ENDPOINTS || null;
+                    const cotUrl = END ? END.cot.replace('{id}', id) : `/api/cotizaciones/${id}`;
+                    const itemsUrl = END ? END.items.replace('{id}', id) :
+                        `/api/items-cotizacion?all=1&id_cotizacion_fk=${id}`;
+                    const r = await this.fetchWithAuth(cotUrl);
                     if (r.ok) {
                         const j = await r.json();
                         this.cotizacion = j.data || j;
                     }
-                    const ri = await this.fetchWithAuth(`/api/items-cotizacion?all=1&id_cotizacion_fk=${id}`);
+                    const ri = await this.fetchWithAuth(itemsUrl);
                     if (ri.ok) {
                         const ji = await ri.json();
                         this.items = (ji.data || ji || []);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            estadoBadgeClass() {
+                const code = (this.cotizacion?.estado_codigo || '').toString().toUpperCase();
+                const name = (this.cotizacion?.estado_nombre || '').toString().toLowerCase();
+                if (code === 'APB' || name.includes('aproba')) return 'status-badge status-green';
+                if (code === 'BRD' || name.includes('pend')) return 'status-badge status-amber';
+                if (code === 'REC' || name.includes('rech')) return 'status-badge status-red';
+                if (name.includes('venc')) return 'status-badge status-blue';
+                return 'status-badge';
+            },
+            async cambiarEstado(estado) {
+                try {
+                    const id = this.idFromQuery();
+                    const END = window.COTI_ENDPOINTS || null;
+                    if (!END || !id) return; // solo cliente
+                    const tokenEl = document.querySelector('meta[name="csrf-token"]');
+                    const csrf = tokenEl ? tokenEl.getAttribute('content') : '';
+                    const res = await fetch(`/cliente/cotizaciones/${id}/cambiar-estado`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            estado
+                        })
+                    });
+                    if (res.ok) {
+                        if (String(estado).toLowerCase().startsWith('apro')) {
+                            this.cotizacion = Object.assign({}, this.cotizacion, {
+                                estado_nombre: 'Aprobada',
+                                estado_codigo: 'APB'
+                            });
+                        } else if (String(estado).toLowerCase().startsWith('rech')) {
+                            this.cotizacion = Object.assign({}, this.cotizacion, {
+                                estado_nombre: 'Rechazada',
+                                estado_codigo: 'REC'
+                            });
+                        }
                     }
                 } catch (e) {
                     console.error(e);
