@@ -109,18 +109,9 @@
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Código del
                                 autenticador</label>
-                            <input type="text"
-                                inputmode="numeric"
-                                maxlength="6"
-                                x-model="twoFASetup.code"
-                                autocomplete="off"
-                                autocorrect="off"
-                                autocapitalize="off"
-                                spellcheck="false"
-                                name="noauto_2fa_code"
-                                data-lpignore="true"
-                                data-1p-ignore="true"
-                                data-bwignore="true"
+                            <input type="text" inputmode="numeric" maxlength="6" x-model="twoFASetup.code"
+                                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                name="noauto_2fa_code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true"
                                 data-form-type="other"
                                 x-on:input="twoFASetup.code = $event.target.value.replace(/\D/g, '').slice(0, 6)"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-sm"
@@ -814,15 +805,13 @@
 </div>
 
 <script type="application/json" id="persona-json">
-    @json($personaData)
+@json($personaData)
 </script>
 @if($empresa)
-@php $empresaJson =
-json_encode($empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion'])); @endphp
+@php($empresaPayload =
+$empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']))
 <script type="application/json" id="empresa-json">
-    {
-        !!$empresaJson!!
-    }
+@json($empresaPayload)
 </script>
 @endif
 
