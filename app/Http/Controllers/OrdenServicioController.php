@@ -13,6 +13,7 @@ use App\Models\Usuario;
 use App\Models\Rol;
 use App\Notifications\SystemNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class OrdenServicioController extends Controller
 {
@@ -138,6 +139,53 @@ class OrdenServicioController extends Controller
             }
         } catch (\Throwable $e) {
             // No interrumpir la creación por un problema al poblar repuestos
+        }
+
+        // Notificar a los usuarios del cliente cuando se crea una nueva Orden de Servicio
+        try {
+            $clienteId = $ordenServicio->solicitudServicio?->id_cliente_fk;
+            if ($clienteId) {
+                $userIds = DB::table('tbl_cliente_persona as cp')
+                    ->join('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                    ->join('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'p.id_usuario_fk')
+                    ->where('cp.id_cliente_fk', $clienteId)
+                    ->pluck('u.id_usuario_pk')
+                    ->all();
+
+                if (!empty($userIds)) {
+                    $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                    $clienteNombre = $ordenServicio->solicitudServicio?->cliente->nombre
+                        ?? ($ordenServicio->solicitudServicio?->cliente->empresa->nombre_comercial
+                            ?? ($ordenServicio->solicitudServicio?->cliente->empresa->razon_social ?? ''));
+
+                    $osNumero = $ordenServicio->numero_orden_servicio
+                        ?: sprintf('OS-%s-%06d', now()->format('Ym'), $ordenServicio->getKey());
+
+                    $payload = [
+                        'title' => 'Nueva Orden de Servicio creada',
+                        'body' => ($clienteNombre ? ($clienteNombre . ': ') : '') . "Hemos creado la Orden de Servicio {$osNumero}. Te avisaremos del avance.",
+                        'url' => '/cliente/ordenes',
+                        'icon' => 'fa-tools',
+                        'severity' => 'info',
+                        'module' => 'orden_servicio',
+                        'meta' => [
+                            'id_orden_servicio_pk' => $ordenServicio->getKey(),
+                            'id_cliente_fk' => $clienteId,
+                            'numero_orden_servicio' => $osNumero,
+                        ],
+                    ];
+
+                    foreach ($users as $u) {
+                        try {
+                            $u->notify(new SystemNotification($payload));
+                        } catch (\Throwable $t) {
+                            // Evitar que un fallo individual interrumpa el flujo
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error enviando notificación de creación de Orden de Servicio: ' . $e->getMessage());
         }
 
         return new OrdenServicioResource($ordenServicio);
@@ -293,6 +341,64 @@ class OrdenServicioController extends Controller
             }
         } catch (\Throwable $e) {
             Log::error('Error sending orden servicio state-change notifications: ' . $e->getMessage());
+        }
+
+        // Si la orden fue CERRADA (estado final), notificar a los usuarios del cliente
+        try {
+            if (isset($validatedData['id_estado_orden_servicio_fk']) && $ordenServicio->estado) {
+                $isClosed = false;
+                $nombreEstado = strtolower($ordenServicio->estado->nombre ?? '');
+                $codigoEstado = strtolower($ordenServicio->estado->codigo ?? '');
+                if (str_contains($nombreEstado, 'cerrad') || $codigoEstado === 'cer') {
+                    $isClosed = true;
+                }
+                // Alternativamente, si la tabla maneja bandera de final
+                if (!$isClosed) {
+                    try {
+                        $isClosed = (bool) \App\Models\EstadoOrdenServicio::where('id_estado_orden_servicio_pk', $ordenServicio->id_estado_orden_servicio_fk)
+                            ->value('es_final');
+                    } catch (\Throwable $_) { /* ignore */
+                    }
+                }
+
+                if ($isClosed) {
+                    $clienteId = $ordenServicio->solicitudServicio?->id_cliente_fk;
+                    if ($clienteId) {
+                        $userIds = DB::table('tbl_cliente_persona as cp')
+                            ->join('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                            ->join('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'p.id_usuario_fk')
+                            ->where('cp.id_cliente_fk', $clienteId)
+                            ->pluck('u.id_usuario_pk')
+                            ->all();
+                        if (!empty($userIds)) {
+                            $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                            $osNumero = $ordenServicio->numero_orden_servicio
+                                ?: ('OS-' . now()->format('Ym') . '-' . str_pad((string)$ordenServicio->getKey(), 6, '0', STR_PAD_LEFT));
+                            $payload = [
+                                'title' => 'Tu orden de servicio fue cerrada',
+                                'body' => "La Orden de Servicio {$osNumero} ha sido cerrada. Ahora puedes calificar el servicio.",
+                                'url' => '/cliente/detalle-orden?orden=' . $ordenServicio->getKey(),
+                                'icon' => 'fa-tools',
+                                'severity' => 'info',
+                                'module' => 'orden_servicio',
+                                'meta' => [
+                                    'id_orden_servicio_pk' => $ordenServicio->getKey(),
+                                    'numero_orden_servicio' => $osNumero,
+                                    'estado' => $ordenServicio->estado->nombre ?? 'Cerrada',
+                                ],
+                            ];
+                            foreach ($users as $u) {
+                                try {
+                                    $u->notify(new SystemNotification($payload));
+                                } catch (\Throwable $_) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error sending orden servicio CLOSED notification to client: ' . $e->getMessage());
         }
 
 

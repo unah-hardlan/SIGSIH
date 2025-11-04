@@ -667,6 +667,13 @@ Route::prefix('cliente')
             Route::post('cotizaciones/{id}/cambiar-estado', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'updateEstado'])
                 ->name('cotizaciones.cambiar-estado');
             Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
+            // API-like para Órdenes de Servicio del cliente (SPA cookie-auth)
+            Route::get('ordenes-data', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'index'])->name('ordenes.data');
+            Route::get('ordenes/{id}/data', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'show'])->name('ordenes.show');
+            // Calificar Orden de Servicio (cliente)
+            Route::post('ordenes/{id}/calificar', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'calificar'])->name('ordenes.calificar');
+            // Viewer de Orden para cliente con el mismo diseño que admin
+            Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
             Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
 
