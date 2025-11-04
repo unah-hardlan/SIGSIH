@@ -2,6 +2,7 @@
 @section('title','Cotizaciones - Cliente')
 @section('content')
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="cotizacionesCliente()">
+    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 serif">Cotizaciones</h1>
     <!-- Tarjetas resumen -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
         <!-- Total Cotizaciones -->
@@ -168,16 +169,14 @@
                                         <i class="fas fa-external-link-alt"></i>
                                         <span>Ver</span>
                                     </a>
-                                    <button @click="solicitarConfirmacion(c, 'aprobada')"
-                                        x-show="puedeGestionar(c)"
+                                    <button @click="solicitarConfirmacion(c, 'aprobada')" x-show="puedeGestionar(c)"
                                         :disabled="accion.loading && accion.id === c.id"
                                         :class="{'opacity-60 cursor-not-allowed': accion.loading && accion.id === c.id}"
                                         class="px-3 py-1.5 rounded-md text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition inline-flex items-center gap-1 disabled:hover:bg-emerald-600">
                                         <i class="fas fa-check"></i>
                                         <span>Aprobar</span>
                                     </button>
-                                    <button @click="solicitarConfirmacion(c, 'rechazada')"
-                                        x-show="puedeGestionar(c)"
+                                    <button @click="solicitarConfirmacion(c, 'rechazada')" x-show="puedeGestionar(c)"
                                         :disabled="accion.loading && accion.id === c.id"
                                         :class="{'opacity-60 cursor-not-allowed': accion.loading && accion.id === c.id}"
                                         class="px-3 py-1.5 rounded-md text-[11px] bg-red-600 hover:bg-red-700 text-white font-medium transition inline-flex items-center gap-1 disabled:hover:bg-red-600">
@@ -207,20 +206,14 @@
 
     <!-- Modal de confirmación con teleport -->
     <template x-teleport="body">
-        <div x-show="confirmacion.open"
-             x-cloak
-             x-transition.opacity.duration.300ms
-             class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/65 dark:bg-black/75 backdrop-blur-sm"
-             @click.self="cancelarConfirmacion()"
-             @keydown.window.escape="cancelarConfirmacion()">
-            <div x-show="confirmacion.open"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 class="relative z-50 w-full max-w-md mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-                 @click.stop>
-                <div :class="confirmAccent('header')"
-                    class="px-4 py-3 font-semibold flex items-center gap-2">
+        <div x-show="confirmacion.open" x-cloak x-transition.opacity.duration.300ms
+            class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/65 dark:bg-black/75 backdrop-blur-sm"
+            @click.self="cancelarConfirmacion()" @keydown.window.escape="cancelarConfirmacion()">
+            <div x-show="confirmacion.open" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative z-50 w-full max-w-md mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                @click.stop>
+                <div :class="confirmAccent('header')" class="px-4 py-3 font-semibold flex items-center gap-2">
                     <i :class="confirmIcon()"></i>
                     <span x-text="confirmTitle()"></span>
                 </div>
@@ -234,8 +227,7 @@
                         :disabled="accion.loading">
                         Cancelar
                     </button>
-                    <button @click="confirmarAccion()"
-                        :disabled="accion.loading"
+                    <button @click="confirmarAccion()" :disabled="accion.loading"
                         class="px-4 py-2 rounded-md text-sm font-semibold transition"
                         :class="[confirmAccent('button'), {'opacity-60 cursor-not-allowed': accion.loading}]">
                         Confirmar
@@ -247,18 +239,13 @@
 
     <!-- Modal feedback con teleport -->
     <template x-teleport="body">
-        <div x-show="feedback.open" 
-             x-cloak
-             x-transition.opacity.duration.300ms
-             class="fixed inset-0 z-[10002] flex items-center justify-center bg-black/70 dark:bg-black/80 backdrop-blur-sm"
-             @click.self="closeFeedback()" 
-             @keydown.window.escape="closeFeedback()">
-            <div x-show="feedback.open"
-                 x-transition:enter="transition ease-out duration-300" 
-                 x-transition:enter-start="opacity-0 scale-95" 
-                 x-transition:enter-end="opacity-100 scale-100"
-                 class="relative z-50 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-                 @click.stop>
+        <div x-show="feedback.open" x-cloak x-transition.opacity.duration.300ms
+            class="fixed inset-0 z-[10002] flex items-center justify-center bg-black/70 dark:bg-black/80 backdrop-blur-sm"
+            @click.self="closeFeedback()" @keydown.window.escape="closeFeedback()">
+            <div x-show="feedback.open" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                class="relative z-50 w-full max-w-sm mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+                @click.stop>
                 <div :class="feedback.variant==='success' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200'"
                     class="px-4 py-3 font-semibold flex items-center gap-2">
                     <i :class="feedback.variant==='success' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
@@ -485,7 +472,8 @@ if (typeof window.cotizacionesCliente === 'undefined') {
             },
             confirmMessage() {
                 const est = String(this.confirmacion.estado || '').toLowerCase();
-                const accion = est.startsWith('aprob') ? 'aprobar' : est.startsWith('rech') ? 'rechazar' : 'gestionar';
+                const accion = est.startsWith('aprob') ? 'aprobar' : est.startsWith('rech') ? 'rechazar' :
+                    'gestionar';
                 const codigo = this.confirmacion.cotizacion?.codigo;
                 const objetivo = codigo ? `la cotización ${codigo}` : 'esta cotización';
                 return `¿Está seguro de ${accion} ${objetivo}? Esta acción no se puede deshacer.`;
@@ -499,18 +487,18 @@ if (typeof window.cotizacionesCliente === 'undefined') {
             confirmAccent(part = 'header') {
                 const est = String(this.confirmacion.estado || '').toLowerCase();
                 if (est.startsWith('aprob')) {
-                    return part === 'header'
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white';
+                    return part === 'header' ?
+                        'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200' :
+                        'bg-emerald-600 hover:bg-emerald-700 text-white';
                 }
                 if (est.startsWith('rech')) {
-                    return part === 'header'
-                        ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200'
-                        : 'bg-red-600 hover:bg-red-700 text-white';
+                    return part === 'header' ?
+                        'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-200' :
+                        'bg-red-600 hover:bg-red-700 text-white';
                 }
-                return part === 'header'
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white';
+                return part === 'header' ?
+                    'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200' :
+                    'bg-blue-600 hover:bg-blue-700 text-white';
             },
             async cambiarEstado(c, estado) {
                 if (!c || !c.id) return;
@@ -537,17 +525,19 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                         if (String(estado).toLowerCase() === 'aprobada') {
                             c.estado_nombre = 'Aprobada';
                             c.estado_codigo = 'APB';
-                            this.showFeedback('Cotización aprobada', 'La cotización fue aprobada correctamente.', 'success');
+                            this.showFeedback('Cotización aprobada',
+                                'La cotización fue aprobada correctamente.', 'success');
                         } else if (String(estado).toLowerCase() === 'rechazada') {
                             c.estado_nombre = 'Rechazada';
                             c.estado_codigo = 'REC';
-                            this.showFeedback('Cotización rechazada', 'La cotización fue rechazada correctamente.', 'success');
+                            this.showFeedback('Cotización rechazada',
+                                'La cotización fue rechazada correctamente.', 'success');
                         }
                     } else {
                         let msg = 'No se pudo cambiar el estado de la cotización.';
                         try {
                             const err = await res.json();
-                            const detail = err?.message || err?.error || err?.errors?.estado?.[0];
+                            const detail = err?.message || err?.error || err?.errors?.estado?. [0];
                             if (detail) msg = detail;
                         } catch (parseErr) {}
                         this.showFeedback('Error', msg, 'error');
@@ -567,10 +557,12 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                     String(d.estado_nombre || '').toLowerCase() === 'aprobada').length;
                 const pend = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'BRD' ||
                     String(d.estado_nombre || '').toLowerCase() === 'pendiente').length;
-                const rec = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'REC' ||
-                    ['rechazada','rechazado'].includes(String(d.estado_nombre || '').toLowerCase())).length;
-                const ven = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'VEN' ||
-                    ['vencida','vencido'].includes(String(d.estado_nombre || '').toLowerCase())).length;
+                const rec = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'REC' || [
+                    'rechazada', 'rechazado'
+                ].includes(String(d.estado_nombre || '').toLowerCase())).length;
+                const ven = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'VEN' || [
+                    'vencida', 'vencido'
+                ].includes(String(d.estado_nombre || '').toLowerCase())).length;
                 return {
                     total,
                     aprobadas: aprob,
