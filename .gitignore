@@ -30,5 +30,9 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 
+# Backups
+/public/C/backups/
+*.sql
+
 # Vite
 /public/hot/public/build/
