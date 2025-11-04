@@ -47,7 +47,12 @@ class ClienteSPA {
                 const link = e.target.closest(
                     'a[data-spa-link], a[href^="/cliente/"]'
                 );
-                if (link && !link.hasAttribute("data-no-spa")) {
+                if (
+                    link &&
+                    !link.hasAttribute("data-no-spa") &&
+                    link.getAttribute("target") !== "_blank" &&
+                    !link.hasAttribute("download")
+                ) {
                     const href = link.getAttribute("href");
                     if (
                         href &&
@@ -62,7 +67,7 @@ class ClienteSPA {
         );
     }
 
-    createLoadingOverlay() {}
+    createLoadingOverlay() { }
 
     setupEventListeners() {
         document.addEventListener("spa:navigate", (e) => {
@@ -83,13 +88,25 @@ class ClienteSPA {
                 const link = e.target.closest(
                     'a[data-spa-link], a[href^="/cliente/"]'
                 );
-                if (link && !link.hasAttribute("data-no-spa")) {
+                if (
+                    link &&
+                    !link.hasAttribute("data-no-spa") &&
+                    link.getAttribute("target") !== "_blank" &&
+                    !link.hasAttribute("download")
+                ) {
                     const href = link.getAttribute("href");
                     if (
                         href &&
                         (href.startsWith("/cliente/") ||
                             link.hasAttribute("data-spa-link"))
                     ) {
+                        // Evitar interceptar rutas de visor/impresión que no devuelven <main>
+                        if (
+                            href.startsWith("/cliente/formato-factura/") ||
+                            href.startsWith("/cliente/cotizaciones/") && href.endsWith("/pdf")
+                        ) {
+                            return; // navegación normal
+                        }
                         e.preventDefault();
                         e.stopPropagation();
                         this.navigateTo(href);
@@ -116,6 +133,7 @@ class ClienteSPA {
     async loadPage(path, updateHistory = false) {
         if (this.isLoading) return;
         this.isLoading = true;
+        this._pendingPath = path;
 
         let contentFromCache = this.cache.has(path);
         if (!contentFromCache) {
@@ -130,7 +148,7 @@ class ClienteSPA {
                 html = await this.fetchPage(path);
                 this.cache.set(path, html);
             }
-            this.updateContent(html);
+            this.updateContent(html, path);
             this.currentRoute = path;
             this.updateActiveLink(path);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -158,14 +176,22 @@ class ClienteSPA {
         return html;
     }
 
-    updateContent(html) {
+    updateContent(html, path) {
         const temp = document.createElement("div");
         temp.innerHTML = html;
-        this.contentContainer.innerHTML = temp.querySelector("main").innerHTML;
+        const main = temp.querySelector("main");
+        if (!main) {
+            // La respuesta no es contenido SPA, realizar navegación completa
+            if (path) {
+                window.location.href = path;
+                return;
+            }
+        }
+        this.contentContainer.innerHTML = main.innerHTML;
         this.reinitializeScripts(this.contentContainer);
         try {
             document.dispatchEvent(new CustomEvent("app:view-loaded"));
-        } catch (_) {}
+        } catch (_) { }
     }
 
     reinitializeScripts(container) {
@@ -193,7 +219,7 @@ class ClienteSPA {
         let targetPath = path || window.location.pathname;
         try {
             targetPath = new URL(targetPath, window.location.origin).pathname;
-        } catch (e) {}
+        } catch (e) { }
 
         const links = document.querySelectorAll("aside nav a[data-spa-link]");
         const activeClasses = [
@@ -208,7 +234,7 @@ class ClienteSPA {
             let href = link.getAttribute("href") || "";
             try {
                 href = new URL(href, window.location.origin).pathname;
-            } catch (e) {}
+            } catch (e) { }
 
             const isActive = targetPath.startsWith(href) && href !== "/";
 

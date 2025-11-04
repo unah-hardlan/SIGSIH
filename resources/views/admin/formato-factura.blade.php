@@ -79,9 +79,7 @@
                 </p>
                 <p><strong>Rango Autorizado:</strong><br>{{ $factura->cai->rango_inicio ?? '—' }}
                     al<br>{{ $factura->cai->rango_fin ?? '—' }}</p>
-                <p><strong>Fecha límite de
-                        emisión:</strong><br>{{ optional($factura->cai)->fecha_limite_emision ? (\Carbon\Carbon::parse(optional($factura->cai)->fecha_limite_emision)->format('d/m/Y')) : (optional($factura->cai)->fecha_limite_emision ?? '—') }}
-                </p>
+
                 @php
                 // Probar varios nombres de campo usados en el proyecto. Priorizar campo en la factura,
                 // luego fallback al CAI. Algunos lugares usan `fecha_limite` y otros `fecha_limite_emision`.
@@ -302,172 +300,172 @@
 
     <!-- CSS -->
     <style>
-        @page {
-            size: letter;
-            margin: 20mm;
-        }
+    @page {
+        size: letter;
+        margin: 20mm;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f1f1f1;
-            padding: 30px 0;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        background: #f1f1f1;
+        padding: 30px 0;
+    }
 
-        .factura {
-            width: 820px;
-            margin: auto;
-            background: white;
-            padding: 28px 34px;
-            min-height: 1100px;
-            /* taller printable area to match original elongated layout */
-            box-sizing: border-box;
-        }
+    .factura {
+        width: 820px;
+        margin: auto;
+        background: white;
+        padding: 28px 34px;
+        min-height: 1100px;
+        /* taller printable area to match original elongated layout */
+        box-sizing: border-box;
+    }
 
-        .encabezado-completo {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0;
-        }
+    .encabezado-completo {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0;
+    }
 
-        .bloque-encabezado {
-            width: 65%;
-            background: #4a4a4a;
-            color: white;
-            padding: 20px;
-            font-size: 13px;
-        }
+    .bloque-encabezado {
+        width: 65%;
+        background: #4a4a4a;
+        color: white;
+        padding: 20px;
+        font-size: 13px;
+    }
 
-        .bloque-encabezado h1 {
-            margin: 5px 0 10px;
-        }
+    .bloque-encabezado h1 {
+        margin: 5px 0 10px;
+    }
 
-        .bloque-encabezado .titulo {
-            font-size: 13px;
-            text-transform: uppercase;
-            opacity: 0.85;
-        }
+    .bloque-encabezado .titulo {
+        font-size: 13px;
+        text-transform: uppercase;
+        opacity: 0.85;
+    }
 
-        .bloque-factura {
-            width: 34%;
-            background: #e30613;
-            color: white;
-            padding: 20px;
-            font-size: 13px;
-        }
+    .bloque-factura {
+        width: 34%;
+        background: #e30613;
+        color: white;
+        padding: 20px;
+        font-size: 13px;
+    }
 
-        .bloque-factura h3 {
-            margin: 0 0 8px;
-            font-size: 16px;
-        }
+    .bloque-factura h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+    }
 
-        .bloque-cliente {
-            background: #f9f9f9;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-        }
+    .bloque-cliente {
+        background: #f9f9f9;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+    }
 
-        .bloque-cliente .col {
-            width: 30%;
-        }
+    .bloque-cliente .col {
+        width: 30%;
+    }
 
-        .bloque-cliente .letras {
-            width: 35%;
-            text-align: right;
-        }
+    .bloque-cliente .letras {
+        width: 35%;
+        text-align: right;
+    }
 
-        .detalle {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            margin-top: 0;
-        }
+    .detalle {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 0;
+    }
 
-        .detalle thead {
-            background: #e30613;
-            color: white;
-        }
+    .detalle thead {
+        background: #e30613;
+        color: white;
+    }
 
-        .detalle th,
-        .detalle td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+    .detalle th,
+    .detalle td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
 
-        .totales {
-            width: 100%;
-            padding: 30px 0;
-            text-align: right;
-            font-size: 14px;
-        }
+    .totales {
+        width: 100%;
+        padding: 30px 0;
+        text-align: right;
+        font-size: 14px;
+    }
 
-        .totales p {
-            margin: 5px 30px 5px 0;
-        }
+    .totales p {
+        margin: 5px 30px 5px 0;
+    }
 
-        .totales span {
-            display: inline-block;
-            min-width: 120px;
-            text-align: right;
-        }
+    .totales span {
+        display: inline-block;
+        min-width: 120px;
+        text-align: right;
+    }
 
-        .totales .total {
-            font-weight: bold;
-            font-size: 15px;
-            border-top: 1px solid black;
-            padding-top: 5px;
-        }
+    .totales .total {
+        font-weight: bold;
+        font-size: 15px;
+        border-top: 1px solid black;
+        padding-top: 5px;
+    }
 
-        .encabezado-completo {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
+    .encabezado-completo {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
 
-        .bloque-encabezado {
-            width: 65%;
-            background: #4a4a4a;
-            color: white;
-            padding: 20px;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
+    .bloque-encabezado {
+        width: 65%;
+        background: #4a4a4a;
+        color: white;
+        padding: 20px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
 
-        .bloque-factura {
-            width: 35%;
-            background: #e30613;
-            color: white;
-            padding: 20px;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
+    .bloque-factura {
+        width: 35%;
+        background: #e30613;
+        color: white;
+        padding: 20px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
 
-        .fila-superior {
-            margin-bottom: 10px;
-        }
+    .fila-superior {
+        margin-bottom: 10px;
+    }
 
-        .fila-superior h1 {
-            margin: 0 0 10px;
-        }
+    .fila-superior h1 {
+        margin: 0 0 10px;
+    }
 
-        .titulo {
-            font-size: 13px;
-            text-transform: uppercase;
-            opacity: 0.85;
-            margin: 0;
-        }
+    .titulo {
+        font-size: 13px;
+        text-transform: uppercase;
+        opacity: 0.85;
+        margin: 0;
+    }
 
-        .fila-inferior {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
+    .fila-inferior {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
 
-        .fila-inferior .col {
-            width: 32%;
-        }
+    .fila-inferior .col {
+        width: 32%;
+    }
     </style>
 </body>
 
