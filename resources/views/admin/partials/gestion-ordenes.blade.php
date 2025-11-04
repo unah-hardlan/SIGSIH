@@ -272,13 +272,11 @@
                 <input type="datetime-local" id="fecha_inicio" name="fecha_inicio" x-model="formOrden.fecha_inicio"
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_inicio = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_inicio = true)"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_inicio = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_inicio = true)"
-                    :class="((formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_inicio) || errors.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenAdd._touched && formOrdenAdd._touched.fecha_inicio && !formOrden.fecha_inicio ? 'text-red-500' : ''">Requerido.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional.</small>
             </div>
             <div>
                 <label for="fecha_finalizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
@@ -287,13 +285,11 @@
                     x-model="formOrden.fecha_finalizacion"
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_finalizacion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_finalizacion = true)"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.fecha_finalizacion = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.fecha_finalizacion = true)"
-                    :class="((formOrdenAdd && formOrdenAdd._touched && !formOrden.fecha_finalizacion) || errors.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenAdd._touched && formOrdenAdd._touched.fecha_finalizacion && !formOrden.fecha_finalizacion ? 'text-red-500' : ''">Requerido.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional.</small>
             </div>
             <div class="col-span-2">
                 <label for="observaciones"
@@ -302,14 +298,12 @@
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.observaciones = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.observaciones = true); (typeof validateTexto === 'function') ? formOrden.observaciones = validateTexto($event.target.value, 'observaciones', 500) : formOrden.observaciones = $event.target.value"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.observaciones = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.observaciones = true)"
                     maxlength="500"
-                    :class="(formOrdenAdd && formOrdenAdd._touched && (!formOrden.observaciones || formOrden.observaciones.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'
-                    ">
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
                 </textarea>
                 <template x-if="errors.observaciones">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.observaciones[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenAdd._touched && formOrdenAdd._touched.observaciones && (!formOrden.observaciones || formOrden.observaciones.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional. Máximo 500 caracteres.</small>
                 <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.observaciones || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
@@ -320,13 +314,12 @@
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_tecnico = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_tecnico = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_tecnico = validateTexto($event.target.value, 'diagnostico_tecnico', 500) : formOrden.diagnostico_tecnico = $event.target.value"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_tecnico = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_tecnico = true)"
                     maxlength="500"
-                    :class="(formOrdenAdd && formOrdenAdd._touched && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
-                    ></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                </textarea>
                 <template x-if="errors.diagnostico_tecnico">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_tecnico[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenAdd._touched && formOrdenAdd._touched.diagnostico_tecnico && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional. Máximo 500 caracteres.</small>
                 <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_tecnico || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
@@ -337,13 +330,12 @@
                     @input="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_cliente = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_cliente = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_cliente = validateTexto($event.target.value, 'diagnostico_cliente', 500) : formOrden.diagnostico_cliente = $event.target.value"
                     @blur="(formOrdenAdd && formOrdenAdd._touched) ? formOrdenAdd._touched.diagnostico_cliente = true : (formOrdenAdd = formOrdenAdd || { _touched: {} }, formOrdenAdd._touched.diagnostico_cliente = true)"
                     maxlength="500"
-                    :class="(formOrdenAdd && formOrdenAdd._touched && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
-                    ></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                </textarea>
                 <template x-if="errors.diagnostico_cliente">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_cliente[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenAdd._touched && formOrdenAdd._touched.diagnostico_cliente && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional. Máximo 500 caracteres.</small>
                 <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_cliente || '').length + ' / 500'"></small>
             </div>
 
@@ -537,13 +529,11 @@
                     x-model="formOrden.fecha_inicio"
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_inicio = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_inicio = true)"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_inicio = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_inicio = true)"
-                    :class="((formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_inicio) || errors.fecha_inicio) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_inicio">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenEdit._touched && formOrdenEdit._touched.fecha_inicio && !formOrden.fecha_inicio ? 'text-red-500' : ''">Requerido.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional.</small>
             </div>
             <div>
                 <label for="edit_fecha_finalizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
@@ -552,13 +542,11 @@
                     x-model="formOrden.fecha_finalizacion"
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_finalizacion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_finalizacion = true)"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.fecha_finalizacion = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.fecha_finalizacion = true)"
-                    :class="((formOrdenEdit && formOrdenEdit._touched && !formOrden.fecha_finalizacion) || errors.fecha_finalizacion) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                 <template x-if="errors.fecha_finalizacion">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenEdit._touched && formOrdenEdit._touched.fecha_finalizacion && !formOrden.fecha_finalizacion ? 'text-red-500' : ''">Requerido.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional.</small>
             </div>
             <div class="col-span-2">
                 <label for="edit_observaciones"
@@ -567,13 +555,12 @@
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.observaciones = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.observaciones = true); (typeof validateTexto === 'function') ? formOrden.observaciones = validateTexto($event.target.value, 'observaciones', 500) : formOrden.observaciones = $event.target.value"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.observaciones = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.observaciones = true)"
                     maxlength="500"
-                    :class="(formOrdenEdit && formOrdenEdit._touched && (!formOrden.observaciones || formOrden.observaciones.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
-                    ></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                </textarea>
                 <template x-if="errors.observaciones">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.observaciones[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenEdit._touched && formOrdenEdit._touched.observaciones && (!formOrden.observaciones || formOrden.observaciones.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional. Máximo 500 caracteres.</small>
                 <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.observaciones || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
@@ -584,13 +571,12 @@
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_tecnico = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_tecnico = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_tecnico = validateTexto($event.target.value, 'diagnostico_tecnico', 500) : formOrden.diagnostico_tecnico = $event.target.value"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_tecnico = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_tecnico = true)"
                     maxlength="500"
-                    :class="(formOrdenEdit && formOrdenEdit._touched && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
-                    ></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                </textarea>
                 <template x-if="errors.diagnostico_tecnico">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_tecnico[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenEdit._touched && formOrdenEdit._touched.diagnostico_tecnico && (!formOrden.diagnostico_tecnico || formOrden.diagnostico_tecnico.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional. Máximo 500 caracteres.</small>
                 <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_tecnico || '').length + ' / 500'"></small>
             </div>
             <div class="col-span-2">
@@ -601,13 +587,12 @@
                     @input="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_cliente = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_cliente = true); (typeof validateTexto === 'function') ? formOrden.diagnostico_cliente = validateTexto($event.target.value, 'diagnostico_cliente', 500) : formOrden.diagnostico_cliente = $event.target.value"
                     @blur="(formOrdenEdit && formOrdenEdit._touched) ? formOrdenEdit._touched.diagnostico_cliente = true : (formOrdenEdit = formOrdenEdit || { _touched: {} }, formOrdenEdit._touched.diagnostico_cliente = true)"
                     maxlength="500"
-                    :class="(formOrdenEdit && formOrdenEdit._touched && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0)) ? 'mt-1 block w-full rounded-md border-red-500 shadow-sm border focus:border-red-500 nunito-regular px-2' : 'mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2'"
-                    ></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                </textarea>
                 <template x-if="errors.diagnostico_cliente">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.diagnostico_cliente[0]"></p>
                 </template>
-                <small class="block mt-1 text-sm text-gray-500"
-                    :class="formOrdenEdit._touched && formOrdenEdit._touched.diagnostico_cliente && (!formOrden.diagnostico_cliente || formOrden.diagnostico_cliente.length === 0) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                <small class="block mt-1 text-sm text-gray-500">Opcional. Máximo 500 caracteres.</small>
                 <small class="block mt-1 text-sm text-gray-500" x-text="(formOrden.diagnostico_cliente || '').length + ' / 500'"></small>
             </div>
 
