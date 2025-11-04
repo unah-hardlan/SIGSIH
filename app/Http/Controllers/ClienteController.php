@@ -14,6 +14,7 @@ use App\Models\Contacto;
 use App\Models\Pais;
 use App\Models\Departamento;
 use App\Models\Ciudad;
+use App\Models\Direccion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\SpaHelper;
@@ -130,8 +131,33 @@ class ClienteController extends Controller
         }
         
         $empresa = null;
+        $empresaDireccion = null;
         if ($cliente && $cliente->tipo_cliente === 'empresa') {
             $empresa = EmpresaCliente::where('id_cliente_fk', $cliente->id_cliente_pk)->first();
+
+            // Obtener la primera agencia vinculada al cliente con su dirección completa
+            $agencia = $cliente->agencias()
+                ->with(['direccion.ciudad.departamento.pais'])
+                ->first();
+
+            if ($agencia && $agencia->direccion) {
+                $dir = $agencia->direccion;
+                $ciudad = $dir->ciudad;
+                $departamento = $ciudad?->departamento;
+                $pais = $departamento?->pais;
+
+                $empresaDireccion = [
+                    'calle' => $dir->calle,
+                    'numero' => $dir->numero,
+                    'colonia' => $dir->colonia,
+                    'codigo_postal' => $dir->codigo_postal,
+                    'referencia' => $dir->referencia,
+                    'ciudad' => $ciudad?->nombre_ciudad,
+                    'departamento' => $departamento?->nombre_departamento,
+                    'pais' => $pais?->nombre_pais,
+                    'formateada' => trim(($dir->calle . ' ' . $dir->numero . ', ' . $dir->colonia . ', ' . ($ciudad?->nombre_ciudad ?? '') . ', ' . ($departamento?->nombre_departamento ?? '') . ', ' . ($pais?->nombre_pais ?? '') . ' CP ' . $dir->codigo_postal))
+                ];
+            }
         }
         
         // Preparar datos para el formulario de Alpine.js
@@ -153,7 +179,7 @@ class ClienteController extends Controller
             'correo_contacto' => $correoContacto ?? ''
         ];
         
-        return SpaHelper::clienteView('cliente.perfil', compact('persona', 'empresa', 'generos', 'correoContacto', 'personaData'));
+        return SpaHelper::clienteView('cliente.perfil', compact('persona', 'empresa', 'generos', 'correoContacto', 'personaData', 'empresaDireccion'));
     }
 
     
@@ -185,7 +211,10 @@ class ClienteController extends Controller
     public function configurarEmpresa(): View
     {
         $paises = Pais::orderBy('nombre_pais')->get();
-        return view('cliente.configurar-empresa', compact('paises'));
+        $departamentos = Departamento::with('pais')->orderBy('nombre_departamento')->get();
+        $ciudades = Ciudad::with('departamento.pais')->orderBy('nombre_ciudad')->get();
+        
+        return view('cliente.configurar-empresa', compact('paises', 'departamentos', 'ciudades'));
     }
 
    
@@ -196,6 +225,16 @@ class ClienteController extends Controller
             'razon_social' => 'nullable|string|max:150',
             'rtn' => 'nullable|string|max:30',
             'descripcion_empresa' => 'nullable|string|max:500',
+            // Ubicación
+            'id_pais_fk' => 'required|exists:tbl_pais,id_pais_pk',
+            'id_departamento_fk' => 'required|exists:tbl_departamento,id_departamento_pk',
+            'id_ciudad_fk' => 'required|exists:tbl_ciudad,id_ciudad_pk',
+            // Dirección
+            'calle' => 'required|string|max:100',
+            'numero' => 'required|string|max:20',
+            'colonia' => 'required|string|max:100',
+            'codigo_postal' => 'required|string|max:10',
+            'referencia' => 'required|string',
             'horario_atencion' => [
                 'nullable',
                 'string',
@@ -268,6 +307,32 @@ class ClienteController extends Controller
                 ['id_cliente_fk' => $cliente->id_cliente_pk],
                 $empresaData
             );
+
+            // Crear o actualizar dirección principal de la empresa
+            $direccion = Direccion::create([
+                'id_ciudad_fk' => $request->id_ciudad_fk,
+                'calle' => $request->calle,
+                'numero' => $request->numero,
+                'colonia' => $request->colonia,
+                'codigo_postal' => $request->codigo_postal,
+                'referencia' => $request->referencia,
+            ]);
+
+            // Crear o actualizar agencia principal del cliente y asociarla a la dirección
+            $agencia = $cliente->agencias()->first();
+            $agenciaData = [
+                'nombre_agencia' => $request->nombre_comercial,
+                'horario_agencia' => $request->horario_atencion,
+                'id_direccion_fk' => $direccion->id_direccion_pk,
+            ];
+
+            if ($agencia) {
+                $agencia->update($agenciaData);
+            } else {
+                $agencia = \App\Models\Agencia::create($agenciaData);
+                // Vincular agencia con el cliente en la tabla pivote
+                $cliente->agencias()->attach($agencia->id_agencias_pk);
+            }
 
             $emailContacto = $request->input('email_contacto');
             if ($emailContacto) {
@@ -520,7 +585,8 @@ class ClienteController extends Controller
     public function getDepartamentosByPais($paisId)
     {
         try {
-            $departamentos = \App\Models\Departamento::where('id_pais_fk', $paisId)
+            // En la tabla de departamentos, la columna FK hacia país es 'id_pais_pk'
+            $departamentos = \App\Models\Departamento::where('id_pais_pk', $paisId)
                 ->orderBy('nombre_departamento')
                 ->get(['id_departamento_pk', 'nombre_departamento']);
 

@@ -90,11 +90,17 @@ async function loadDepartamentos(paisId) {
         departamentoSelect.innerHTML =
             '<option value="">Seleccione un departamento</option>';
 
-        // Agregar opciones
-        data.departamentos.forEach((departamento) => {
+        // Agregar opciones (acepta formato envuelto u array plano)
+        const departamentos = Array.isArray(data)
+            ? data
+            : data.departamentos || [];
+        departamentos.forEach((departamento) => {
             const option = document.createElement("option");
-            option.value = departamento.id;
-            option.textContent = departamento.nombre;
+            const id = departamento.id ?? departamento.id_departamento_pk ?? "";
+            const nombre =
+                departamento.nombre ?? departamento.nombre_departamento ?? "";
+            option.value = id;
+            option.textContent = nombre;
             departamentoSelect.appendChild(option);
         });
 
@@ -133,11 +139,14 @@ async function loadCiudades(departamentoId) {
         ciudadSelect.innerHTML =
             '<option value="">Seleccione una ciudad</option>';
 
-        // Agregar opciones
-        data.ciudades.forEach((ciudad) => {
+        // Agregar opciones (acepta formato envuelto u array plano)
+        const ciudades = Array.isArray(data) ? data : data.ciudades || [];
+        ciudades.forEach((ciudad) => {
             const option = document.createElement("option");
-            option.value = ciudad.id;
-            option.textContent = ciudad.nombre;
+            const id = ciudad.id ?? ciudad.id_ciudad_pk ?? "";
+            const nombre = ciudad.nombre ?? ciudad.nombre_ciudad ?? "";
+            option.value = id;
+            option.textContent = nombre;
             ciudadSelect.appendChild(option);
         });
 

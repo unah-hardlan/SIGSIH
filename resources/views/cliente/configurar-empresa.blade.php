@@ -233,18 +233,15 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-1">
-                            <label for="id_pais_fk" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            <label for="pais_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 País <span class="text-red-500">*</span>
                             </label>
                             <select 
-                                id="id_pais_fk" 
+                                id="pais_id" 
                                 name="id_pais_fk" 
                                 required
                                 class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                                data-paises="{{ json_encode($paises ?? []) }}"
-                                data-old-pais="{{ old('id_pais_fk') }}"
-                                data-old-departamento="{{ old('id_departamento_fk') }}"
-                                data-old-ciudad="{{ old('id_ciudad_fk') }}"
+                                data-old-value="{{ old('id_pais_fk') }}"
                             >
                                 <option value="">Seleccionar país</option>
                                 @if(isset($paises))
@@ -262,15 +259,16 @@
                         </div>
 
                         <div class="space-y-1">
-                            <label for="id_departamento_fk" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            <label for="departamento_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Departamento <span class="text-red-500">*</span>
                             </label>
                             <select 
-                                id="id_departamento_fk" 
+                                id="departamento_id" 
                                 name="id_departamento_fk" 
                                 required
                                 disabled
                                 class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400"
+                                data-old-value="{{ old('id_departamento_fk') }}"
                             >
                                 <option value="">Seleccionar departamento</option>
                             </select>
@@ -281,20 +279,121 @@
                         </div>
 
                         <div class="space-y-1">
-                            <label for="id_ciudad_fk" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            <label for="ciudad_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Ciudad <span class="text-red-500">*</span>
                             </label>
                             <select 
-                                id="id_ciudad_fk" 
+                                id="ciudad_id" 
                                 name="id_ciudad_fk" 
                                 required
                                 disabled
                                 class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400"
+                                data-old-value="{{ old('id_ciudad_fk') }}"
                             >
                                 <option value="">Seleccionar ciudad</option>
                             </select>
                             <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="id_ciudad_fk"></p>
                             @error('id_ciudad_fk')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        Dirección
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1 md:col-span-2">
+                            <label for="calle" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Calle <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="calle" 
+                                name="calle" 
+                                type="text" 
+                                required
+                                maxlength="100"
+                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                placeholder="Ej. Avenida Principal, Blvd. Morazán"
+                                value="{{ old('calle') }}"
+                            >
+                            @error('calle')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="numero" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Número <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="numero" 
+                                name="numero" 
+                                type="text" 
+                                required
+                                maxlength="20"
+                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                placeholder="Ej. Casa 24, #125B"
+                                value="{{ old('numero') }}"
+                            >
+                            @error('numero')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1 md:col-span-2">
+                            <label for="colonia" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Colonia / Barrio <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="colonia" 
+                                name="colonia" 
+                                type="text" 
+                                required
+                                maxlength="100"
+                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                placeholder="Ej. Col. Las Uvas"
+                                value="{{ old('colonia') }}"
+                            >
+                            @error('colonia')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="codigo_postal" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Código Postal <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="codigo_postal" 
+                                name="codigo_postal" 
+                                type="text" 
+                                required
+                                maxlength="10"
+                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                placeholder="Ej. 11101"
+                                value="{{ old('codigo_postal') }}"
+                            >
+                            @error('codigo_postal')
+                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1 md:col-span-3">
+                            <label for="referencia" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Referencia <span class="text-red-500">*</span>
+                            </label>
+                            <textarea 
+                                id="referencia" 
+                                name="referencia" 
+                                rows="3"
+                                required
+                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                                placeholder="Ej. Frente a la gasolinera X, edificio gris de 2 pisos"
+                            >{{ old('referencia') }}</textarea>
+                            @error('referencia')
                                 <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
