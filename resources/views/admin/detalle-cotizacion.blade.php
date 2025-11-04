@@ -471,27 +471,27 @@
             <div class="summary">
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span class="amount" x-text="money(cotizacion?.subtotal)">$ 0.00</span>
+                    <span class="amount" x-text="money(cotizacion?.subtotal)">L 0.00</span>
                 </div>
                 <div class="summary-row">
                     <span>Imponible</span>
-                    <span class="amount" x-text="money(cotizacion?.imponible)">$ 0.00</span>
+                    <span class="amount" x-text="money(cotizacion?.imponible)">L 0.00</span>
                 </div>
                 <div class="summary-row">
                     <span>Total Impuesto</span>
-                    <span class="amount" x-text="money(cotizacion?.total_impuesto)">$ 0.00</span>
+                    <span class="amount" x-text="money(cotizacion?.total_impuesto)">L 0.00</span>
                 </div>
                 <div class="summary-row">
                     <span>Otros</span>
-                    <span class="amount" x-text="money(cotizacion?.otros_cargos)">$ 0.00</span>
+                    <span class="amount" x-text="money(cotizacion?.otros_cargos)">L 0.00</span>
                 </div>
                 <div class="summary-row">
                     <span>Anticipo</span>
-                    <span class="amount" x-text="money(cotizacion?.anticipo_requerido)">$ 0.00</span>
+                    <span class="amount" x-text="money(cotizacion?.anticipo_requerido)">L 0.00</span>
                 </div>
                 <div class="summary-row total-row">
                     <span>TOTAL</span>
-                    <span class="amount" x-text="money(cotizacion?.total)">$ 0.00</span>
+                    <span class="amount" x-text="money(cotizacion?.total)">L 0.00</span>
                 </div>
             </div>
         </div>
@@ -501,14 +501,6 @@
                 style="background-color: #00008b; color: white; border: none; padding: 5px 10px; font-size: 14px; border-radius: 5px; cursor: pointer;">
                 Imprimir Cotización
             </button>
-            <template x-if="!!window.COTI_ENDPOINTS">
-                <span>
-                    <button @click="cambiarEstado('aprobada')"
-                        style="margin-left:10px; padding:6px 10px; border-radius:6px; border:1px solid #10b981; background:#d1fae5; color:#065f46; cursor:pointer; font-size:12px;">Aprobar</button>
-                    <button @click="cambiarEstado('rechazada')"
-                        style="margin-left:6px; padding:6px 10px; border-radius:6px; border:1px solid #ef4444; background:#fecaca; color:#7f1d1d; cursor:pointer; font-size:12px;">Rechazar</button>
-                </span>
-            </template>
         </div>
 
         <footer>
@@ -557,8 +549,13 @@
                 return Number(n).toFixed(2);
             },
             money(n) {
-                if (n == null) return '$ 0.00';
-                return '$ ' + Number(n).toFixed(2);
+                if (n == null) return 'L 0.00';
+                try {
+                    // Use locale-based formatting for HNL where available; fallback to simple prefix
+                    return new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(Number(n));
+                } catch (e) {
+                    return 'L ' + Number(n).toFixed(2);
+                }
             },
             formatFecha(s) {
                 if (!s) return '--';
