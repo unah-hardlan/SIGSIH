@@ -213,6 +213,14 @@ class FacturaController extends Controller
 
     public function destroy(Factura $factura)
     {
+        // Verificar si la factura tiene detalles asociados
+        if ($factura->detalles()->count() > 0) {
+            return response()->json([
+                'success' => false, 
+                'error' => 'No se puede eliminar la factura porque tiene detalles asociados. Elimine primero los detalles de la factura.'
+            ], 422);
+        }
+
         $factura->delete();
         return response()->json(['success' => true, 'message' => 'Factura eliminada']);
     }

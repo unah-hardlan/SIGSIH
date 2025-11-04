@@ -60,7 +60,15 @@
         </div>
 
         <div class="px-6 py-4">
-            <template x-if="twoFAEnabled">
+            <div x-show="!twoFAReady" x-cloak
+                class="flex items-center justify-between bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 rounded-lg p-3 animate-pulse">
+                <div class="w-full">
+                    <div class="h-3 w-28 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                    <div class="h-2 w-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+                <div class="ml-4 h-8 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <template x-if="twoFAEnabled === true" x-cloak>
                 <div
                     class="flex items-center justify-between bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-600 rounded-lg p-3">
                     <div>
@@ -75,7 +83,7 @@
                 </div>
             </template>
 
-            <template x-if="!twoFAEnabled">
+            <template x-if="twoFAEnabled === false" x-cloak>
                 <div
                     class="flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3">
                     <div>
