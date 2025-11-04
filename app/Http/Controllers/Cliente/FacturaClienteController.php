@@ -35,15 +35,36 @@ class FacturaClienteController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            // Subselect para sumar descuentos de los detalles por factura
+            // Subselects desde detalles: descuentos, base_subtotal y suma de impuestos
             $subDescuentos = DB::table('tbl_detalle_factura as df')
-                ->select(['df.id_factura_fk', DB::raw('SUM(COALESCE(df.descuento,0)) as total_descuento')])
+                ->select([
+                    'df.id_factura_fk',
+                    DB::raw('SUM(COALESCE(df.descuento,0)) as total_descuento')
+                ])
+                ->groupBy('df.id_factura_fk');
+
+            $subTotales = DB::table('tbl_detalle_factura as df')
+                ->select([
+                    'df.id_factura_fk',
+                    // base_subtotal = precio_unitario * qty - descuento (sin impuesto)
+                    DB::raw('SUM(COALESCE(df.precio_unitario,0) * (
+                        CASE 
+                            WHEN COALESCE(df.cantidad,0) <> 0 THEN COALESCE(df.cantidad,0)
+                            WHEN COALESCE(df.horas,0) <> 0 THEN COALESCE(df.horas,0)
+                            ELSE 1
+                        END
+                    ) - COALESCE(df.descuento,0)) as base_subtotal'),
+                    DB::raw('SUM(COALESCE(df.impuesto,0)) as sum_impuesto')
+                ])
                 ->groupBy('df.id_factura_fk');
 
             $rows = DB::table('tbl_factura as f')
                 ->leftJoin('tbl_estado_factura as e', 'e.id_estado_factura_pk', '=', 'f.id_estado_factura_fk')
                 ->leftJoinSub($subDescuentos, 'd', function ($join) {
                     $join->on('d.id_factura_fk', '=', 'f.id_factura_pk');
+                })
+                ->leftJoinSub($subTotales, 't', function ($join) {
+                    $join->on('t.id_factura_fk', '=', 'f.id_factura_pk');
                 })
                 ->whereIn('f.id_cliente_fk', $clienteIds)
                 ->orderByDesc('f.id_factura_pk')
@@ -55,6 +76,8 @@ class FacturaClienteController extends Controller
                     'f.subtotal',
                     'f.impuesto',
                     'f.total',
+                    DB::raw('COALESCE(t.base_subtotal,0) as computed_subtotal'),
+                    DB::raw('COALESCE(t.sum_impuesto,0) as computed_impuesto'),
                     DB::raw('COALESCE(d.total_descuento,0) as descuento'),
                     DB::raw('COALESCE(e.nombre, "") as estado')
                 ]);
@@ -65,15 +88,25 @@ class FacturaClienteController extends Controller
 
             $items = $rows->map(function ($r) use ($fmtMoney) {
                 $fecha = $r->fecha ? substr((string)$r->fecha, 0, 10) : null;
+                // Fallbacks cuando los valores de la factura están vacíos/0
+                $subtotal = (float) ($r->subtotal ?? 0);
+                $impuesto = (float) ($r->impuesto ?? 0);
+                $computedSubtotal = (float) ($r->computed_subtotal ?? 0);
+                $computedImpuesto = (float) ($r->computed_impuesto ?? 0);
+
+                $subtotalFinal = $subtotal > 0 ? $subtotal : $computedSubtotal;
+                $impuestoFinal = $impuesto > 0 ? $impuesto : ($computedImpuesto > 0 ? $computedImpuesto : round($subtotalFinal * 0.15, 2));
+                $totalDb = (float) ($r->total ?? 0);
+                $totalFinal = $totalDb > 0 ? $totalDb : ($subtotalFinal + $impuestoFinal);
                 return [
                     'id' => (int) ($r->id ?? 0),
                     'numero' => (string) ($r->numero ?? ''),
                     'fecha' => $fecha,
                     'oc' => (string) ($r->oc ?? ''),
-                    'subtotal' => $fmtMoney($r->subtotal ?? null),
-                    'impuesto' => $fmtMoney($r->impuesto ?? null),
+                    'subtotal' => $fmtMoney($subtotalFinal),
+                    'impuesto' => $fmtMoney($impuestoFinal),
                     'descuento' => $fmtMoney($r->descuento ?? null),
-                    'total' => $fmtMoney($r->total ?? null),
+                    'total' => $fmtMoney($totalFinal),
                     'estado' => (string) ($r->estado ?? ''),
                 ];
             });
