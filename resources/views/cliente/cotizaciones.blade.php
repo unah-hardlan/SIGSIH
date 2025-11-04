@@ -210,10 +210,9 @@
         <div x-show="confirmacion.open"
              x-cloak
              x-transition.opacity.duration.300ms
-             class="fixed inset-0 z-[9998] flex items-center justify-center bg-black/65 dark:bg-black/75 backdrop-blur-sm"
+             class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/65 dark:bg-black/75 backdrop-blur-sm"
              @click.self="cancelarConfirmacion()"
-             @keydown.window.escape="cancelarConfirmacion()"
-             style="margin: 0;">
+             @keydown.window.escape="cancelarConfirmacion()">
             <div x-show="confirmacion.open"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 scale-95"
@@ -251,10 +250,9 @@
         <div x-show="feedback.open" 
              x-cloak
              x-transition.opacity.duration.300ms
-             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 dark:bg-black/80 backdrop-blur-sm"
+             class="fixed inset-0 z-[10002] flex items-center justify-center bg-black/70 dark:bg-black/80 backdrop-blur-sm"
              @click.self="closeFeedback()" 
-             @keydown.window.escape="closeFeedback()"
-             style="margin: 0;">
+             @keydown.window.escape="closeFeedback()">
             <div x-show="feedback.open"
                  x-transition:enter="transition ease-out duration-300" 
                  x-transition:enter-start="opacity-0 scale-95" 
