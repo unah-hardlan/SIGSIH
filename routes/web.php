@@ -153,6 +153,88 @@ Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsCon
     ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('system.settings.update.web');
 
+// Notificaciones (cookie-auth para admin y cliente)
+Route::get('/api/notificaciones', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['data' => [], 'meta' => ['unread' => 0]]);
+    }
+
+    try {
+        $items = \App\Models\DbNotification::query()
+            ->where('tipo_notificable', \App\Models\Usuario::class)
+            ->where('id_notificable', $user->id_usuario_pk)
+            ->orderByDesc('fecha_creacion')
+            ->limit(20)
+            ->get();
+
+        $mapped = $items->map(function ($n) {
+            return [
+                'id' => $n->id_notificacion ?? $n->id,
+                'title' => $n->data['title'] ?? '',
+                'body' => $n->data['body'] ?? '',
+                'url' => $n->data['url'] ?? '#',
+                'icon' => $n->data['icon'] ?? 'fa-bell',
+                'severity' => $n->data['severity'] ?? 'info',
+                'module' => $n->data['module'] ?? null,
+                'created_at' => optional($n->fecha_creacion)->toDateTimeString(),
+                'read_at' => optional($n->fecha_lectura)->toDateTimeString(),
+            ];
+        });
+
+        return response()->json([
+            'data' => $mapped,
+            'meta' => [
+                'unread' => $items->whereNull('fecha_lectura')->count(),
+            ],
+        ]);
+    } catch (\Throwable $e) {
+        // Si hay algún problema con la tabla/columnas, devolver vacío para no romper el SPA
+        return response()->json(['data' => [], 'meta' => ['unread' => 0]]);
+    }
+})->middleware(['auth.jwt.web', 'jwt.refresh'])->name('api.notificaciones');
+
+// Marcar todas como leídas (cookie-auth) para Admin y Cliente
+Route::post('/api/notificaciones/mark-all-read', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['ok' => false], 401);
+    }
+    try {
+
+        \App\Models\DbNotification::query()
+            ->where('tipo_notificable', \App\Models\Usuario::class)
+            ->where('id_notificable', $user->id_usuario_pk)
+            ->whereNull('fecha_lectura')
+            ->update(['fecha_lectura' => now()]);
+
+        return response()->json(['ok' => true]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false], 500);
+    }
+})->middleware(['auth.jwt.web', 'jwt.refresh'])->name('api.notificaciones.markAll');
+
+// Marcar una como leída (cookie-auth)
+Route::post('/api/notificaciones/{id}/read', function ($id) {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['ok' => false], 401);
+    }
+    try {
+        $n = \App\Models\DbNotification::query()
+            ->where('id_notificacion', $id)
+            ->where('tipo_notificable', \App\Models\Usuario::class)
+            ->where('id_notificable', $user->id_usuario_pk)
+            ->first();
+        if ($n) {
+            $n->markAsRead();
+        }
+        return response()->json(['ok' => true]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false], 500);
+    }
+})->middleware(['auth.jwt.web', 'jwt.refresh'])->name('api.notificaciones.read');
+
 // API-like fallbacks para Reportes (cookie-based auth)
 Route::middleware(['auth.jwt.web', 'admin.only'])->group(function () {
     // Reportes de visita CRUD básico
@@ -560,9 +642,44 @@ Route::prefix('cliente')
             Route::put('perfil', [\App\Http\Controllers\ClienteController::class, 'perfilUpdate'])->name('perfil.update');
             Route::put('empresa', [\App\Http\Controllers\ClienteController::class, 'empresaUpdate'])->name('empresa.update');
             Route::get('cotizaciones', [\App\Http\Controllers\ClienteController::class, 'cotizaciones'])->name('cotizaciones');
+            // API-like para Cotizaciones del cliente (SPA cookie-auth)
+            Route::get('cotizaciones-data', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'index'])->name('cotizaciones.data');
+            // PDF de cotización (cliente)
+            Route::get('cotizaciones/{id}/pdf', [\App\Http\Controllers\Cliente\CotizacionPdfController::class, 'show'])->name('cotizaciones.pdf');
+            // Viewer HTML con el mismo diseño que admin (cliente decide imprimir)
+            Route::get('detalle-cotizacion', function (Request $request) {
+                // Endpoints cliente para alimentar el diseño existente sin cambiarlo
+                $base = [
+                    'cot' => url('/cliente/cotizaciones/{id}/data'),
+                    'items' => url('/cliente/cotizaciones/{id}/items'),
+                ];
+                return view('admin.detalle-cotizacion', [
+                    'COTI_ENDPOINTS' => $base,
+                ]);
+            })->name('cotizaciones.viewer');
+
+            // Data endpoints para el viewer del cliente
+            Route::get('cotizaciones/{id}/data', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'show'])
+                ->name('cotizaciones.show');
+            Route::get('cotizaciones/{id}/items', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'items'])
+                ->name('cotizaciones.items');
+            // Cambiar estado desde el cliente (aprobar/rechazar)
+            Route::post('cotizaciones/{id}/cambiar-estado', [\App\Http\Controllers\Cliente\CotizacionClienteController::class, 'updateEstado'])
+                ->name('cotizaciones.cambiar-estado');
             Route::get('ordenes', [\App\Http\Controllers\ClienteController::class, 'ordenes'])->name('ordenes');
+            // API-like para Órdenes de Servicio del cliente (SPA cookie-auth)
+            Route::get('ordenes-data', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'index'])->name('ordenes.data');
+            Route::get('ordenes/{id}/data', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'show'])->name('ordenes.show');
+            // Calificar Orden de Servicio (cliente)
+            Route::post('ordenes/{id}/calificar', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'calificar'])->name('ordenes.calificar');
+            // Viewer de Orden para cliente con el mismo diseño que admin
+            Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
             Route::get('solicitudes', [\App\Http\Controllers\ClienteController::class, 'solicitudes'])->name('solicitudes');
+
+            // API-like para Solicitudes del cliente (SPA cookie-auth)
+            Route::get('solicitudes-data', [\App\Http\Controllers\Cliente\SolicitudClienteController::class, 'index'])->name('solicitudes.data');
+            Route::post('solicitudes', [\App\Http\Controllers\Cliente\SolicitudClienteController::class, 'store'])->name('solicitudes.store');
 
             // Rutas de 2FA para clientes (mismo patrón que admin)
             Route::get('2fa/status', [\App\Http\Controllers\Cliente\TwoFactorController::class, 'status'])->name('2fa.status');

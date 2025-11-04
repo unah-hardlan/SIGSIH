@@ -157,8 +157,81 @@ class TicketController extends Controller
         }
 
         $validated = $request->validated();
+        $oldEstadoId = $ticket->id_estado_ticket_fk;
         $ticket->update($validated);
         $ticket->load(['estado', 'tecnico', 'cliente']);
+
+        // Si cambió el estado, notificar a los usuarios del cliente con un mensaje específico
+        try {
+            if (array_key_exists('id_estado_ticket_fk', $validated)) {
+                $newEstadoId = (int) $validated['id_estado_ticket_fk'];
+                if ((int) $oldEstadoId !== $newEstadoId) {
+                    $oldNombre = optional(\App\Models\EstadoTicket::find($oldEstadoId))->nombre ?? 'N/A';
+                    $newNombre = optional(\App\Models\EstadoTicket::find($newEstadoId))->nombre ?? 'N/A';
+
+                    // Buscar usuarios (clientes) vinculados al cliente de este ticket
+                    $userIds = \Illuminate\Support\Facades\DB::table('tbl_cliente_persona as cp')
+                        ->join('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                        ->join('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'p.id_usuario_fk')
+                        ->where('cp.id_cliente_fk', $ticket->id_cliente_fk)
+                        ->pluck('u.id_usuario_pk')
+                        ->all();
+
+                    if (!empty($userIds)) {
+                        $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+
+                        // Etiqueta del ticket solo para UI (no almacenada)
+                        $tckFmt = 'TCK-' . now()->format('Ymd') . '-' . $ticket->getKey();
+                        $tecNombre = $ticket->tecnico ? trim(($ticket->tecnico->primer_nombre ?? '') . ' ' . ($ticket->tecnico->primer_apellido ?? '')) : null;
+
+                        // Mensajes según estado destino (evitar duplicidad con Solicitud)
+                        $titulo = 'Actualización de ticket';
+                        $cuerpo = "Tu ticket {$tckFmt} cambió de {$oldNombre} a {$newNombre}";
+                        $sev = 'info';
+
+                        $ln = strtolower($newNombre);
+                        if (str_contains($ln, 'program') || str_contains($ln, 'agenda')) {
+                            $titulo = 'Visita programada para tu ticket';
+                            $cuerpo = "Hemos programado atención para el ticket {$tckFmt}" . ($tecNombre ? ", técnico: {$tecNombre}" : '');
+                        } elseif (str_contains($ln, 'proceso') || str_contains($ln, 'trabaj')) {
+                            $titulo = 'Estamos trabajando en tu ticket';
+                            $cuerpo = "Nuestro equipo inició trabajo en el ticket {$tckFmt}" . ($tecNombre ? ", técnico: {$tecNombre}" : '');
+                        } elseif (str_contains($ln, 'inform') || str_contains($ln, 'confirm')) {
+                            $titulo = 'Requerimos tu ayuda';
+                            $cuerpo = "Necesitamos información o confirmación sobre el ticket {$tckFmt}. Por favor revisa el portal.";
+                            $sev = 'warn';
+                        } elseif (str_contains($ln, 'final') || str_contains($ln, 'resuel') || str_contains($ln, 'cerr')) {
+                            $titulo = 'Tu ticket fue finalizado';
+                            $cuerpo = "El ticket {$tckFmt} se marcó como {$newNombre}. Ayúdanos calificando el servicio.";
+                        }
+
+                        $payload = [
+                            'title' => $titulo,
+                            'body' => $cuerpo,
+                            'url' => '/cliente/solicitudes',
+                            'icon' => 'fa-headset',
+                            'severity' => $sev,
+                            'module' => 'tickets',
+                            'meta' => [
+                                'id_ticket_pk' => $ticket->getKey(),
+                                'old_estado' => $oldNombre,
+                                'new_estado' => $newNombre,
+                            ],
+                        ];
+
+                        foreach ($users as $u) {
+                            try {
+                                $u->notify(new SystemNotification($payload));
+                            } catch (\Throwable $t) {
+                                Log::warning('Failed to notify client user ' . $u->id_usuario_pk . ' about ticket status change: ' . $t->getMessage());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error notifying client on ticket status change: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,

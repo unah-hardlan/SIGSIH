@@ -109,8 +109,8 @@
                                 <td class="py-2 px-4"
                                     x-text="sol.cliente_nombre || clienteLabelById(sol.id_cliente_fk) || '—'"></td>
                                 <td class="py-2 px-4" x-text="sol.nombre_solicitud || '—'"></td>
-                                <td class="py-2 px-4" x-text="sol.numero_solicitud_acf || '—'"></td>
-                                <td class="py-2 px-4" x-text="sol.numero_solicitud_cliente || '—'"></td>
+                                <td class="py-2 px-4" x-text="sol.numero_solicitud_acf ? ('ACF-' + String(sol.numero_solicitud_acf).padStart(3,'0')) : '—'"></td>
+                                <td class="py-2 px-4" x-text="(sol.id || sol.numero_solicitud_cliente) ? ('CLI-' + (new Date().toISOString().slice(0,10).replace(/-/g,'')) + '-' + (sol.id || sol.numero_solicitud_cliente)) : '—'"></td>
                                 <td class="py-2 px-4" x-text="sol.descripcion_problema || '—'"></td>
                                 <td class="py-2 px-4" x-text="sol.contacto_valor || '—'"></td>
                                 <td class="py-2 px-4"><span
@@ -147,9 +147,9 @@
                                 </p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400"><span
                                         class="nunito-bold">ACF:</span> <span
-                                        x-text="sol.numero_solicitud_acf || '—'"></span> • <span
+                                        x-text="sol.numero_solicitud_acf ? ('ACF-' + String(sol.numero_solicitud_acf).padStart(3,'0')) : '—'"></span> • <span
                                         class="nunito-bold">Cliente:</span> <span
-                                        x-text="sol.numero_solicitud_cliente || '—'"></span></p>
+                                        x-text="(sol.id || sol.numero_solicitud_cliente) ? ('CLI-' + (new Date().toISOString().slice(0,10).replace(/-/g,'')) + '-' + (sol.id || sol.numero_solicitud_cliente)) : '—'"></span></p>
                             </div>
                             <span
                                 class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
@@ -380,6 +380,7 @@
                         class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                     <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk"
                         @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
+                        x-effect="if (isEditModalOpen && formSolicitud?.id_cliente_fk) { try { onClienteChange() } catch(_) {} }"
                         :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un cliente</option>

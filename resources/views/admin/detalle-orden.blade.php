@@ -573,7 +573,11 @@
                     .filter(Boolean).join(' ').trim();
             };
 
-            fetch('/api/ordenes-servicio/' + encodeURIComponent(id), {
+            const isCliente = (location.pathname || '').indexOf('/cliente/') === 0;
+            const endpoint = isCliente ?
+                ('/cliente/ordenes/' + encodeURIComponent(id) + '/data') :
+                ('/api/ordenes-servicio/' + encodeURIComponent(id));
+            fetch(endpoint, {
                     headers: {
                         'Accept': 'application/json'
                     }
