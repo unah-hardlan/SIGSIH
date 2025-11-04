@@ -12,6 +12,11 @@
     estadosCotizacion:[],
     filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
     ordenarPor:'',
+    // Pagination
+    currentPage: 1,
+    perPage: 10,
+    // alias expected by the pagination component (component checks `numbers.length`)
+    numbers: [],
     // Items manager (por cotización)
     itemsModal:false, currentCotizacionId:null, itemsLoading:false, itemsSearch:'', items:[],
     itemMode:'list', itemForm:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false }, itemEditId:null, itemErrors:{},
@@ -22,6 +27,9 @@
     form:{ id:null, id_cliente_fk:'', fecha_cotizacion:'', valido_hasta:'', imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] },
     editForm:null,
     errors:{},
+    // Form validation trackers
+    formCotizacion: { _touched: {} },
+    formEditCotizacion: { _touched: {} },
     // Computed helpers
     calcTotals(form){
         let imponible=0; let totalImp=0; let subtotal=0; let total=0; const items=form.items||[];
@@ -292,9 +300,31 @@
         if(added>0) this.showToast(added + ' items agregados');
         if(skipped>0) this.showToast(skipped + ' items ya estaban en la lista', 'error');
     },
+    // Pagination functions
+    paginatedCotizaciones() {
+        return this.cotizaciones.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+    },
+    totalPages() {
+        return Math.ceil(this.cotizaciones.length / this.perPage);
+    },
+    nextPage() {
+        if (this.currentPage < this.totalPages()) {
+            this.currentPage++;
+        }
+    },
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+        }
+    },
+    goToPage(page) {
+        this.currentPage = page;
+    },
     async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('sort', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
     .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id: (c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }))
             .filter(c=>c.id!=null);
+        // keep the pagination component's alias in sync
+        this.numbers = this.cotizaciones;
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
     async fetchClientes(){
         try{
@@ -340,6 +370,8 @@
     },
     openCreate(){
         this.resetFormEmpty();
+        // Reset validation tracker
+        this.formCotizacion = { _touched: {} };
         // Mostrar placeholder 'Seleccione un estado' por defecto; no preseleccionar automáticamente
         this.generateCotizacionModal=true;
     },
@@ -352,6 +384,8 @@
             this.editForm = { ...c, id: c.id, id_cliente_fk: clienteId, id_estado_cotizacion_fk: estadoId, fecha_cotizacion: c.fecha, items: [ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_producto_fk:null, aplicar_impuesto:false } ], apply_isv_otros: Boolean(Number(c.impuesto_otros||0) > 0), impuesto_otros: Number(c.impuesto_otros||0) };
         // reset original ids tracking
         this._editOriginalItemIds = [];
+        // Reset validation tracker
+        this.formEditCotizacion = { _touched: {} };
         this.editModal = true;
             // after rendering, force-select by toggling values to ensure browser picks the correct option
             this.$nextTick(()=>{
@@ -468,13 +502,13 @@
     this.ensureAuth();
     this.fetchClientes(); this.fetchEstadosCotizacion(); this.fetchCotizaciones();
         const debounce=(fn,ms=400)=>{let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms);};};
-        this.$watch('filters.search',debounce(()=>this.fetchCotizaciones()));
-        this.$watch('ordenarPor',debounce(()=>this.fetchCotizaciones()));
-        this.$watch('filters.cliente',debounce(()=>this.fetchCotizaciones()));
+        this.$watch('filters.search',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
+        this.$watch('ordenarPor',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
+        this.$watch('filters.cliente',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
         // Clear/reset modal-related state when modals close
-    this.$watch('generateCotizacionModal', val=>{ if(!val){ /* wait for Alpine to finish modal closing animation, then clear form to avoid flicker */ setTimeout(()=>{ this.resetFormEmpty(); }, 220); } });
-        this.$watch('editModal', val=>{ if(!val){ this.editForm = null; } });
+    this.$watch('generateCotizacionModal', val=>{ if(!val){ /* wait for Alpine to finish modal closing animation, then clear form to avoid flicker */ setTimeout(()=>{ this.resetFormEmpty(); this.formCotizacion = { _touched: {} }; }, 220); } });
+        this.$watch('editModal', val=>{ if(!val){ this.editForm = null; this.formEditCotizacion = { _touched: {} }; } });
     this.$watch('catalogModal', val=>{ if(!val){ this.catalogSelectedUser = {}; this.catalogExisting = {}; this.catalogItems = []; this.catalogSearch = ''; } });
         this.$watch('itemsModal', val=>{ if(!val){ this.items = []; this.currentCotizacionId = null; this.itemMode='list'; this.itemForm = { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }; this.itemEditId = null; } });
     }
@@ -540,7 +574,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="c in cotizaciones" :key="c.id">
+                        <template x-for="c in paginatedCotizaciones()" :key="c.id">
                             <tr class="border-b dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4" x-text="formatCotId(c)"></td>
                                 <td class="py-2 px-4" x-text="c.cliente_nombre || 'Sin cliente'"></td>
@@ -604,7 +638,7 @@
                 <template x-if="!loading && cotizaciones.length === 0">
                     <div class="p-4 text-center text-gray-500">No hay cotizaciones para mostrar.</div>
                 </template>
-                <template x-for="c in cotizaciones" :key="c.id">
+                <template x-for="c in paginatedCotizaciones()" :key="c.id">
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
@@ -654,6 +688,8 @@
         </x-slot>
 
     </x-responsive-table>
+
+    <x-pagination />
 
     <x-admin.form-modal class="nunito-bold" modalName="itemsModal" title="Items de la Cotización" submitLabel="Guardar"
         formId="items-manager" maxWidth="max-w-5xl">
@@ -881,12 +917,18 @@
                 <label for="clienteId" class="block text-sm font-medium text-gray-700 nunito-bold">
                     Cliente</label>
                 <select id="clienteId" name="clienteId" x-model="form.id_cliente_fk"
-                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    @change="formCotizacion._touched.cliente = true"
+                    :class="formCotizacion._touched && formCotizacion._touched.cliente && !form.id_cliente_fk ? 'border-red-500' : 'border-gray-400'"
+                    class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                     <option value="">Seleccione un cliente</option>
                     <template x-for="cl in clientes" :key="cl.id">
                         <option :value="String(cl.id)" x-text="cl.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" 
+                    :class="formCotizacion._touched && formCotizacion._touched.cliente && !form.id_cliente_fk ? 'text-red-500' : ''">
+                    Requerido.
+                </small>
             </div>
 
             <!-- Estado de la Solicitud -->
@@ -894,14 +936,20 @@
                 <label for="estadoId" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
                     Solicitud</label>
                 <select id="estadoId" name="estadoId" x-model="form.id_estado_cotizacion_fk"
+                    @change="formCotizacion._touched.estado = true"
                     :disabled="!estadosCotizacion.length"
-                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    :class="formCotizacion._touched && formCotizacion._touched.estado && !form.id_estado_cotizacion_fk ? 'border-red-500' : 'border-gray-400'"
+                    class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                     <option value="" disabled
                         x-text="!estadosCotizacion.length ? 'Cargando estados...' : 'Seleccione un estado'"></option>
                     <template x-for="e in estadosCotizacion" :key="e.id">
                         <option :value="String(e.id)" x-text="e.nombre"></option>
                     </template>
                 </select>
+                <small class="block mt-1 text-sm text-gray-500" 
+                    :class="formCotizacion._touched && formCotizacion._touched.estado && !form.id_estado_cotizacion_fk ? 'text-red-500' : ''">
+                    Requerido.
+                </small>
             </div>
 
             <!-- Fecha de Cotización -->
@@ -909,7 +957,14 @@
                 <label for="fechaCotizacion" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha de
                     Cotización</label>
                 <input type="date" id="fechaCotizacion" name="fechaCotizacion" x-model="form.fecha_cotizacion"
-                    class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                    @input="formCotizacion._touched.fecha_cotizacion = true" 
+                    @blur="formCotizacion._touched.fecha_cotizacion = true"
+                    :class="formCotizacion._touched && formCotizacion._touched.fecha_cotizacion && !form.fecha_cotizacion ? 'border-red-500' : 'border-gray-400'"
+                    class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                <small class="block mt-1 text-sm text-gray-500" 
+                    :class="formCotizacion._touched && formCotizacion._touched.fecha_cotizacion && !form.fecha_cotizacion ? 'text-red-500' : ''">
+                    Requerido.
+                </small>
             </div>
 
             <!-- Válido Hasta -->
@@ -917,7 +972,12 @@
                 <label for="validoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
                     Hasta</label>
                 <input type="date" id="validoHasta" name="validoHasta" x-model="form.valido_hasta"
+                    @input="formCotizacion._touched.valido_hasta = true" 
+                    @blur="formCotizacion._touched.valido_hasta = true"
                     class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                <small class="block mt-1 text-sm text-gray-500">
+                    Opcional.
+                </small>
             </div>
 
 
@@ -933,10 +993,17 @@
                             <div class="flex justify-between items-start">
                                 <div class="w-full">
                                     <textarea x-model="description.descripcion"
-                                        placeholder="Descripción Del Producto o Servicio"
-                                        @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(form); }"
+                                        placeholder="Descripción Del Producto o Servicio (Opcional)"
+                                        @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(form); formCotizacion._touched[`descripcion_${index}`] = true; }"
+                                        @blur="formCotizacion._touched[`descripcion_${index}`] = true"
                                         x-bind:title="description.descripcion"
-                                        class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                        maxlength="500"
+                                        :class="formCotizacion._touched && formCotizacion._touched[`descripcion_${index}`] && description.descripcion && description.descripcion.length > 500 ? 'border-red-500' : 'border-gray-600'"
+                                        class="w-full rounded-md border dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                    <small class="block mt-1 text-xs text-gray-500" 
+                                        :class="formCotizacion._touched && formCotizacion._touched[`descripcion_${index}`] && description.descripcion && description.descripcion.length > 500 ? 'text-red-500' : ''">
+                                        Opcional. Máximo 500 caracteres.
+                                    </small>
                                     <div class="flex items-center gap-3 mt-2">
                                         <label class="inline-flex items-center text-sm text-gray-400">
                                             <input type="checkbox" class="mr-2 h-4 w-4"
@@ -956,16 +1023,28 @@
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                                 <div>
-                                    <label class="text-xs text-gray-400">Precio Unit.</label>
-                                    <input type="number" step="0.01" x-model.number="description.precio_unitario"
-                                        @input="calcTotals(form)"
-                                        class="w-full rounded-md border border-gray-600 dark:border-gray-700 p-2 text-sm text-right" />
+                                    <label class="text-xs text-gray-400">Precio Unit. <span class="text-red-400">*</span></label>
+                                    <input type="number" step="0.01" min="0" x-model.number="description.precio_unitario"
+                                        @input="calcTotals(form); formCotizacion._touched[`precio_${index}`] = true"
+                                        @blur="formCotizacion._touched[`precio_${index}`] = true"
+                                        :class="formCotizacion._touched && formCotizacion._touched[`precio_${index}`] && (description.precio_unitario === null || description.precio_unitario === undefined || description.precio_unitario < 0) ? 'border-red-500' : 'border-gray-600'"
+                                        class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
+                                    <small class="block text-xs text-gray-500 mt-1" 
+                                        :class="formCotizacion._touched && formCotizacion._touched[`precio_${index}`] && (description.precio_unitario === null || description.precio_unitario === undefined || description.precio_unitario < 0) ? 'text-red-500' : ''">
+                                        Requerido. Mín: 0
+                                    </small>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-gray-400">Cantidad</label>
-                                    <input type="number" step="0.01" x-model.number="description.cantidad"
-                                        @input="calcTotals(form)"
-                                        class="w-full rounded-md border border-gray-600 dark:border-gray-700 p-2 text-sm text-right" />
+                                    <label class="text-xs text-gray-400">Cantidad <span class="text-red-400">*</span></label>
+                                    <input type="number" step="0.01" min="1" x-model.number="description.cantidad"
+                                        @input="calcTotals(form); formCotizacion._touched[`cantidad_${index}`] = true"
+                                        @blur="formCotizacion._touched[`cantidad_${index}`] = true"
+                                        :class="formCotizacion._touched && formCotizacion._touched[`cantidad_${index}`] && (description.cantidad === null || description.cantidad === undefined || description.cantidad <= 0) ? 'border-red-500' : 'border-gray-600'"
+                                        class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
+                                    <small class="block text-xs text-gray-500 mt-1" 
+                                        :class="formCotizacion._touched && formCotizacion._touched[`cantidad_${index}`] && (description.cantidad === null || description.cantidad === undefined || description.cantidad <= 0) ? 'text-red-500' : ''">
+                                        Requerido. Mín: 1
+                                    </small>
                                 </div>
                                 <div>
                                     <label class="text-xs text-gray-400">Impuesto</label>
@@ -1065,12 +1144,18 @@
                         <label for="editClienteId" class="block text-sm font-medium text-gray-700 nunito-bold">
                             Cliente</label>
                         <select id="editClienteId" name="clienteId" x-model="editForm.id_cliente_fk"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            @change="formEditCotizacion._touched.cliente = true"
+                            :class="formEditCotizacion._touched && formEditCotizacion._touched.cliente && !editForm.id_cliente_fk ? 'border-red-500' : 'border-gray-400'"
+                            class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                             <option value="">Seleccione un cliente</option>
                             <template x-for="cl in clientes" :key="cl.id">
                                 <option :value="String(cl.id)" x-text="cl.nombre"></option>
                             </template>
                         </select>
+                        <small class="block mt-1 text-sm text-gray-500" 
+                            :class="formEditCotizacion._touched && formEditCotizacion._touched.cliente && !editForm.id_cliente_fk ? 'text-red-500' : ''">
+                            Requerido.
+                        </small>
                     </div>
 
                     <!-- Estado de la Solicitud -->
@@ -1078,8 +1163,10 @@
                         <label for="editEstadoId" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de
                             la Solicitud</label>
                         <select id="editEstadoId" name="editEstadoId" x-model="editForm.id_estado_cotizacion_fk"
+                            @change="formEditCotizacion._touched.estado = true"
                             :disabled="!estadosCotizacion.length"
-                            class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
+                            :class="formEditCotizacion._touched && formEditCotizacion._touched.estado && !editForm.id_estado_cotizacion_fk ? 'border-red-500' : 'border-gray-400'"
+                            class="mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1">
                             <option value="" disabled
                                 x-text="!estadosCotizacion.length ? 'Cargando estados...' : 'Seleccione un estado'">
                             </option>
@@ -1087,6 +1174,10 @@
                                 <option :value="String(e.id)" x-text="e.nombre"></option>
                             </template>
                         </select>
+                        <small class="block mt-1 text-sm text-gray-500" 
+                            :class="formEditCotizacion._touched && formEditCotizacion._touched.estado && !editForm.id_estado_cotizacion_fk ? 'text-red-500' : ''">
+                            Requerido.
+                        </small>
                     </div>
 
                     <!-- Fecha de Cotización -->
@@ -1104,10 +1195,14 @@
                     <div>
                         <label for="editValidoHasta" class="block text-sm font-medium text-gray-700 nunito-bold">Válido
                             Hasta</label>
-                        Hasta</label>
                         <input type="date" id="editValidoHasta" name="validoHasta"
+                            @input="formEditCotizacion._touched.valido_hasta = true" 
+                            @blur="formEditCotizacion._touched.valido_hasta = true"
                             class="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 nunito-regular p-1"
                             x-model="editForm.valido_hasta">
+                        <small class="block mt-1 text-sm text-gray-500">
+                            Opcional.
+                        </small>
                     </div>
 
 
@@ -1124,10 +1219,17 @@
                                     <div class="flex justify-between items-start">
                                         <div class="w-full">
                                             <textarea x-model="item.descripcion"
-                                                placeholder="Descripción Del Producto o Servicio"
-                                                @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(editForm); }"
+                                                placeholder="Descripción Del Producto o Servicio (Opcional)"
+                                                @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; calcTotals(editForm); formEditCotizacion._touched[`edit_descripcion_${index}`] = true; }"
+                                                @blur="formEditCotizacion._touched[`edit_descripcion_${index}`] = true"
                                                 x-bind:title="item.descripcion"
-                                                class="w-full rounded-md border border-gray-600 dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                                maxlength="500"
+                                                :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_descripcion_${index}`] && item.descripcion && item.descripcion.length > 500 ? 'border-red-500' : 'border-gray-600'"
+                                                class="w-full rounded-md border dark:border-gray-700 bg-transparent focus:border-blue-500 focus:ring-blue-500 nunito-regular p-2 text-sm resize-none overflow-hidden"></textarea>
+                                            <small class="block mt-1 text-xs text-gray-500" 
+                                                :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_descripcion_${index}`] && item.descripcion && item.descripcion.length > 500 ? 'text-red-500' : ''">
+                                                Opcional. Máximo 500 caracteres.
+                                            </small>
                                             <div class="flex items-center gap-3 mt-2">
                                                 <label class="inline-flex items-center text-sm text-gray-400">
                                                     <input type="checkbox" class="mr-2 h-4 w-4"
@@ -1148,16 +1250,28 @@
                                     </div>
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                                         <div>
-                                            <label class="text-xs text-gray-400">Precio Unit.</label>
-                                            <input type="number" step="0.01" x-model.number="item.precio_unitario"
-                                                @input="calcTotals(editForm)"
-                                                class="w-full rounded-md border border-gray-600 dark:border-gray-700 p-2 text-sm text-right" />
+                                            <label class="text-xs text-gray-400">Precio Unit. <span class="text-red-400">*</span></label>
+                                            <input type="number" step="0.01" min="0" x-model.number="item.precio_unitario"
+                                                @input="calcTotals(editForm); formEditCotizacion._touched[`edit_precio_${index}`] = true"
+                                                @blur="formEditCotizacion._touched[`edit_precio_${index}`] = true"
+                                                :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_precio_${index}`] && (item.precio_unitario === null || item.precio_unitario === undefined || item.precio_unitario < 0) ? 'border-red-500' : 'border-gray-600'"
+                                                class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
+                                            <small class="block text-xs text-gray-500 mt-1" 
+                                                :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_precio_${index}`] && (item.precio_unitario === null || item.precio_unitario === undefined || item.precio_unitario < 0) ? 'text-red-500' : ''">
+                                                Requerido. Mín: 0
+                                            </small>
                                         </div>
                                         <div>
-                                            <label class="text-xs text-gray-400">Cantidad</label>
-                                            <input type="number" step="0.01" x-model.number="item.cantidad"
-                                                @input="calcTotals(editForm)"
-                                                class="w-full rounded-md border border-gray-600 dark:border-gray-700 p-2 text-sm text-right" />
+                                            <label class="text-xs text-gray-400">Cantidad <span class="text-red-400">*</span></label>
+                                            <input type="number" step="0.01" min="1" x-model.number="item.cantidad"
+                                                @input="calcTotals(editForm); formEditCotizacion._touched[`edit_cantidad_${index}`] = true"
+                                                @blur="formEditCotizacion._touched[`edit_cantidad_${index}`] = true"
+                                                :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_cantidad_${index}`] && (item.cantidad === null || item.cantidad === undefined || item.cantidad <= 0) ? 'border-red-500' : 'border-gray-600'"
+                                                class="w-full rounded-md border dark:border-gray-700 p-2 text-sm text-right" />
+                                            <small class="block text-xs text-gray-500 mt-1" 
+                                                :class="formEditCotizacion._touched && formEditCotizacion._touched[`edit_cantidad_${index}`] && (item.cantidad === null || item.cantidad === undefined || item.cantidad <= 0) ? 'text-red-500' : ''">
+                                                Requerido. Mín: 1
+                                            </small>
                                         </div>
                                         <div>
                                             <label class="text-xs text-gray-400">Impuesto</label>
