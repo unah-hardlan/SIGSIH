@@ -3,13 +3,8 @@
 @section('content')
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="facturasCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Facturación</h1>
-        <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span class="px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">Portal
-                Cliente</span>
-            <span>/</span>
-            <span class="text-gray-600 dark:text-gray-300">Facturas</span>
-        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Facturación</h1>
+        
     </div>
 
     <!-- Tarjetas resumen (mismo estilo que Órdenes) -->
@@ -81,7 +76,7 @@
                 <input x-model="filtros.hasta" type="date"
                     class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                 <button @click="resetFiltros()"
-                    class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Reset</button>
+                    class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Reiniciar</button>
             </div>
         </div>
     </div>
@@ -153,9 +148,9 @@
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <button @click="verDetalle(f)"
+                                    <!-- <button @click="verDetalle(f)"
                                         class="px-2.5 py-1.5 rounded-md text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition flex items-center gap-1"><i
-                                            class="fas fa-eye"></i><span>Ver</span></button>
+                                            class="fas fa-eye"></i><span>Ver</span></button> -->
                                     <a :href="`/cliente/formato-factura/${f.id}`" target="_blank" rel="noopener" data-no-spa
                                         class="px-2.5 py-1.5 rounded-md text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition flex items-center gap-1">
                                         <i class="fas fa-file-invoice"></i><span>Ver factura</span>
@@ -173,9 +168,9 @@
                 x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + filtradas.length"></div>
             <div class="flex items-center gap-1">
                 <button @click="prev()" :disabled="page===1"
-                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Prev</button>
+                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Anterior</button>
                 <button @click="next()" :disabled="page===totalPages"
-                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Next</button>
+                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Siguiente</button>
             </div>
         </div>
     </div>
