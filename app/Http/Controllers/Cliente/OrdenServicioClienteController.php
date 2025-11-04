@@ -239,8 +239,39 @@ class OrdenServicioClienteController extends Controller
         $os = OrdenServicio::find((int)$id);
         if (!$os) return response()->json(['success' => false, 'message' => 'Orden no encontrada'], 404);
 
-        $os->calificacion_servicio = $request->string('calificacion')->lower();
+        $calificacion = $request->string('calificacion')->lower();
+        $os->calificacion_servicio = $calificacion;
         $os->save();
+
+        // Notificar al técnico asignado
+        try {
+            $os->loadMissing(['tecnico.usuario']);
+            $tecnicoUser = optional($os->tecnico)->usuario;
+            if ($tecnicoUser) {
+                $osNumero = $os->numero_orden_servicio
+                    ?: ('OS-' . now()->format('Ym') . '-' . str_pad((string)$os->getKey(), 6, '0', STR_PAD_LEFT));
+                $payload = [
+                    'title' => 'Cliente calificó el servicio',
+                    'body' => "La Orden de Servicio {$osNumero} fue calificada como '{$calificacion}'.",
+                    'url' => '/admin/orden-servicio',
+                    'icon' => 'fa-star',
+                    'severity' => 'success',
+                    'module' => 'orden_servicio',
+                    'meta' => [
+                        'id_orden_servicio_pk' => $os->getKey(),
+                        'numero_orden_servicio' => $osNumero,
+                        'calificacion' => $calificacion,
+                    ],
+                ];
+                try {
+                    $tecnicoUser->notify(new \App\Notifications\SystemNotification($payload));
+                } catch (\Throwable $e) {
+                    // intentionally ignore notification failures for technician
+                }
+            }
+        } catch (\Throwable $_) {
+            // no-op
+        }
 
         return response()->json(['success' => true]);
     }
