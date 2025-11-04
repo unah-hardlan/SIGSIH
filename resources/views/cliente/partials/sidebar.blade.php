@@ -7,7 +7,7 @@
         'brightness-50 pointer-events-none': $store.clienteLogout?.modalOpen,
         'brightness-100 pointer-events-auto': !$store.clienteLogout?.modalOpen,
     }"
-    class="client-sidebar transform text-gray-800 dark:text-white flex flex-col flex-shrink-0 p-4 shadow-lg border border-gray-500/40 dark:border-gray-700 rounded-xl transition-all duration-300 ease-in-out overflow-y-auto"
+    class="dark:bg-gray-900 client-sidebar transform text-gray-800 dark:text-white flex flex-col flex-shrink-0 p-4 shadow-lg border border-gray-500/40 dark:border-gray-700 rounded-xl transition-all duration-300 ease-in-out overflow-y-auto"
     style="scrollbar-width: thin; scrollbar-color: #D1D5DB #FFFFFF; -webkit-overflow-scrolling: touch;"
     x-transition:enter="transition transform ease-out duration-300"
     x-transition:enter-start="-translate-x-full"

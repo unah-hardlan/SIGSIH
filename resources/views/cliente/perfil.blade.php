@@ -62,10 +62,10 @@
         <div class="px-6 py-4">
             <template x-if="twoFAEnabled">
                 <div
-                    class="flex items-center justify-between bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-3">
+                    class="flex items-center justify-between bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-600 rounded-lg p-3">
                     <div>
-                        <p class="text-green-700 dark:text-green-300 font-semibold">2FA activo</p>
-                        <p class="text-xs text-green-700/80 dark:text-green-300/80">Se te pedirá un código al iniciar
+                        <p class="text-green-800 dark:text-green-200 font-semibold">2FA activo</p>
+                        <p class="text-xs text-green-800/90 dark:text-green-200/90">Se te pedirá un código al iniciar
                             sesión.</p>
                     </div>
                     <button type="button" @click="disable2FA()" :disabled="twoFASetup.loading"
@@ -77,10 +77,10 @@
 
             <template x-if="!twoFAEnabled">
                 <div
-                    class="flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                    class="flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3">
                     <div>
-                        <p class="text-yellow-800 dark:text-yellow-200 font-semibold">2FA desactivado</p>
-                        <p class="text-xs text-yellow-800/80 dark:text-yellow-200/80">Actívalo para mayor seguridad.</p>
+                        <p class="text-indigo-700 dark:text-indigo-300 font-semibold">2FA desactivado</p>
+                        <p class="text-xs text-indigo-700/80 dark:text-indigo-300/80">Actívalo para mayor seguridad.</p>
                     </div>
                     <button type="button" @click="start2FA()" :disabled="twoFASetup.loading"
                         class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold disabled:opacity-50">
@@ -109,7 +109,20 @@
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Código del
                                 autenticador</label>
-                            <input type="text" inputmode="numeric" maxlength="10" x-model="twoFASetup.code"
+                            <input type="text"
+                                inputmode="numeric"
+                                maxlength="6"
+                                x-model="twoFASetup.code"
+                                autocomplete="off"
+                                autocorrect="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                                name="noauto_2fa_code"
+                                data-lpignore="true"
+                                data-1p-ignore="true"
+                                data-bwignore="true"
+                                data-form-type="other"
+                                x-on:input="twoFASetup.code = $event.target.value.replace(/\D/g, '').slice(0, 6)"
                                 class="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-sm"
                                 placeholder="6 dígitos" />
                             <p x-show="twoFASetup.error" class="mt-1 text-xs text-red-600" x-text="twoFASetup.error">
@@ -252,19 +265,19 @@
                     </p>
                 </div>
 
-                @if(isset($empresaDireccion))
-                <div class="md:col-span-2">
+                <div>
                     <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
-                        Dirección de la Empresa
+                        Teléfono Fijo de Contacto
                     </label>
-                    <p class="text-sm text-gray-900 dark:text-gray-100">
-                        {{ $empresaDireccion['formateada'] ?? '' }}
-                    </p>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        {{ ($empresaDireccion['ciudad'] ?? '') }}{{ ($empresaDireccion['ciudad'] ?? '') ? ', ' : '' }}{{ ($empresaDireccion['departamento'] ?? '') }}{{ ($empresaDireccion['departamento'] ?? '') ? ', ' : '' }}{{ ($empresaDireccion['pais'] ?? '') }}
-                    </p>
+                    <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
                 </div>
-                @endif
+
+                <div>
+                    <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-1">
+                        Teléfono Móvil de Contacto
+                    </label>
+                    <p class="text-sm serif text-gray-900 dark:text-gray-100">+504 83829020</p>
+                </div>
             </div>
             @else
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -673,33 +686,33 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre
                                 Comercial *</label>
                             <input type="text" x-model="empresaForm.nombre_comercial" required
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Razón
                                 Social</label>
                             <input type="text" x-model="empresaForm.razon_social"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100" />
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">RTN</label>
                             <input type="text" x-model="empresaForm.rtn"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Horario de
                                 Atención</label>
                             <input type="text" x-model="empresaForm.horario_atencion" placeholder="L-V 8:00-17:00"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción de la
                             Empresa</label>
                         <textarea x-model="empresaForm.descripcion_empresa" rows="3"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100"></textarea>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
@@ -775,7 +788,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña
                                 actual</label>
                             <input type="password"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="••••••••" x-model="passwordModal.password"
                                 @keydown.enter.prevent="submitPasswordModal()" autofocus />
                             <p class="mt-2 text-xs text-red-600" x-show="modalError" x-text="modalError"></p>

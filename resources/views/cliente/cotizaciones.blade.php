@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="cotizacionesCliente()">
     <!-- Tarjetas resumen -->
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 serif">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
         <!-- Total Cotizaciones -->
         <div
             class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -32,16 +32,44 @@
             </div>
         </div>
 
-        <!-- Cotizaciones Pendientes -->
+        <!-- Cotizaciones en Borrador -->
         <div
-            class="bg-gradient-to-r from-cyan-800 to-cyan-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            class="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium opacity-90">Pendientes</p>
-                    <p class="text-3xl font-bold mt-2" x-text="resumen.pendientes"></p>
+                    <p class="text-sm font-medium opacity-90">Borrador</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.borrador"></p>
                 </div>
                 <div class="bg-white/20 p-3 rounded-full">
-                    <i class="fas fa-hourglass-half text-2xl"></i>
+                    <i class="fas fa-file-pen text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cotizaciones Rechazadas -->
+        <div
+            class="bg-gradient-to-r from-red-500 to-red-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Rechazadas</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.rechazadas"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-times-circle text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cotizaciones Vencidas -->
+        <div
+            class="bg-gradient-to-r from-slate-600 to-slate-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Vencidas</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.vencidas"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-calendar-times text-2xl"></i>
                 </div>
             </div>
         </div>
@@ -295,6 +323,7 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                 if (byCode) return byCode;
                 // Fallback por nombre textual
                 return {
+                    'borrador': 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
                     'pendiente': 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
                     'aprobada': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
                     'rechazada': 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
@@ -351,9 +380,17 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                     String(d.estado_nombre || '').toLowerCase() === 'aprobada').length;
                 const pend = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'BRD' ||
                     String(d.estado_nombre || '').toLowerCase() === 'pendiente').length;
+                const rec = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'REC' ||
+                    ['rechazada','rechazado'].includes(String(d.estado_nombre || '').toLowerCase())).length;
+                const ven = this.datos.filter(d => String(d.estado_codigo || '').toUpperCase() === 'VEN' ||
+                    ['vencida','vencido'].includes(String(d.estado_nombre || '').toLowerCase())).length;
                 return {
                     total,
                     aprobadas: aprob,
+                    borrador: pend,
+                    vencidas: ven,
+                    rechazadas: rec,
+                    // compatibilidad si alguna parte aún lee 'pendientes'
                     pendientes: pend
                 };
             }

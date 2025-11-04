@@ -27,6 +27,12 @@ import {
     faHourglass,
     faCheck,
     faBan,
+    faFilePen,
+    faTimesCircle,
+    faCalendarTimes,
+    faClock,
+    faUserCheck,
+    faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -51,7 +57,13 @@ library.add(
     faList,
     faHourglass,
     faCheck,
-    faBan
+    faBan,
+    faFilePen,
+    faTimesCircle,
+    faCalendarTimes,
+    faClock,
+    faUserCheck,
+    faSpinner
 );
 
 dom.watch();

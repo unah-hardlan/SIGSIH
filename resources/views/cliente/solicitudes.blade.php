@@ -14,6 +14,74 @@
         cotización de su solicitud.
     </div>
 
+    <!-- Tarjetas resumen -->
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
+        <!-- En espera -->
+        <div class="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">En espera</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.enEspera"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-clock text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asignadas -->
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Asignadas</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.asignadas"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-user-check text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- En proceso -->
+        <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">En proceso</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.enProceso"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-spinner text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rechazadas -->
+        <div class="bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Rechazadas</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.rechazadas"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-times-circle text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finalizadas -->
+        <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium opacity-90">Finalizadas</p>
+                    <p class="text-3xl font-bold mt-2" x-text="resumen.finalizadas"></p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <button @click="modalNueva = true"
         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
         <i class="fas fa-plus"></i>
@@ -227,11 +295,19 @@ if (typeof window.solicitudesCliente === 'undefined') {
             },
 
             get resumen() {
+                const norm = (v) => (v ?? '').toString().trim().toLowerCase();
+                const enEspera = this.solicitudes.filter(s => ['pendiente','en espera','espera'].includes(norm(s.estado))).length;
+                const asignadas = this.solicitudes.filter(s => ['asignada','asignadas','asignado','asignados'].includes(norm(s.estado))).length;
+                const enProceso = this.solicitudes.filter(s => ['en proceso','proceso'].includes(norm(s.estado))).length;
+                const rechazadas = this.solicitudes.filter(s => ['rechazada','rechazadas','rechazado','rechazados'].includes(norm(s.estado))).length;
+                const finalizadas = this.solicitudes.filter(s => ['finalizada','finalizadas','finalizado','finalizados','resuelta','resueltas','resuelto','resueltos','cerrada','cerradas','cerrado','cerrados'].includes(norm(s.estado))).length;
                 return {
                     total: this.solicitudes.length,
-                    pendientes: this.solicitudes.filter(s => s.estado === 'Pendiente').length,
-                    proceso: this.solicitudes.filter(s => s.estado === 'En Proceso').length,
-                    resueltas: this.solicitudes.filter(s => s.estado === 'Resuelta').length
+                    enEspera,
+                    asignadas,
+                    enProceso,
+                    rechazadas,
+                    finalizadas
                 };
             },
 
