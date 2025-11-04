@@ -204,7 +204,24 @@ class ClienteController extends Controller
     
     public function solicitudes()
     {
-        return SpaHelper::clienteView('cliente.solicitudes');
+        // Obtener correo de contacto del cliente
+        $correoContacto = null;
+        $user = auth()->user();
+        $persona = $user?->persona;
+        
+        if ($persona) {
+            $clientePersona = DB::table('tbl_cliente_persona')
+                ->where('id_persona_fk', $persona->id_persona_pk)
+                ->first();
+            
+            if ($clientePersona) {
+                $correoContacto = Contacto::where('id_cliente_fk', $clientePersona->id_cliente_fk)
+                    ->where('tipo_contacto', 'email')
+                    ->value('valor_contacto');
+            }
+        }
+        
+        return SpaHelper::clienteView('cliente.solicitudes', compact('correoContacto'));
     }
 
    

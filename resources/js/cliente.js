@@ -34,6 +34,10 @@ import {
     faUserCheck,
     faSpinner,
     faFolderOpen,
+    faHeadset,
+    faTicketAlt,
+    faExternalLinkAlt,
+    faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -65,7 +69,11 @@ library.add(
     faClock,
     faUserCheck,
     faSpinner,
-    faFolderOpen
+    faFolderOpen,
+    faHeadset,
+    faTicketAlt,
+    faExternalLinkAlt,
+    faExclamationCircle
 );
 
 dom.watch();

@@ -141,8 +141,19 @@
                                 x-text="solicitud.nombre_solicitud"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="solicitud.descripcion_problema"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="solicitud.estado"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-nunito">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                                    :class="{
+                                        'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300': solicitud.estado?.toLowerCase().includes('espera') || solicitud.estado?.toLowerCase().includes('pendiente'),
+                                        'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300': solicitud.estado?.toLowerCase().includes('asignada') || solicitud.estado?.toLowerCase().includes('asignado'),
+                                        'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300': solicitud.estado?.toLowerCase().includes('proceso'),
+                                        'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300': solicitud.estado?.toLowerCase().includes('rechazada') || solicitud.estado?.toLowerCase().includes('rechazado'),
+                                        'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300': solicitud.estado?.toLowerCase().includes('finalizada') || solicitud.estado?.toLowerCase().includes('finalizado') || solicitud.estado?.toLowerCase().includes('resuelta') || solicitud.estado?.toLowerCase().includes('cerrada'),
+                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300': !solicitud.estado || (!solicitud.estado?.toLowerCase().includes('espera') && !solicitud.estado?.toLowerCase().includes('pendiente') && !solicitud.estado?.toLowerCase().includes('asignada') && !solicitud.estado?.toLowerCase().includes('asignado') && !solicitud.estado?.toLowerCase().includes('proceso') && !solicitud.estado?.toLowerCase().includes('rechazada') && !solicitud.estado?.toLowerCase().includes('rechazado') && !solicitud.estado?.toLowerCase().includes('finalizada') && !solicitud.estado?.toLowerCase().includes('finalizado') && !solicitud.estado?.toLowerCase().includes('resuelta') && !solicitud.estado?.toLowerCase().includes('cerrada'))
+                                    }" 
+                                    x-text="solicitud.estado">
+                                </span>
+                            </td>
                         </tr>
                     </template>
                     <tr x-show="solicitudesFiltradas.length === 0">
@@ -194,8 +205,14 @@
                             class="block text-sm font-medium text-gray-700 dark:text-gray-200">Correo de
                             contacto</label>
                         <input id="correo_contacto" x-model="nuevaSolicitud.correo_contacto" type="email"
-                            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200"
-                            placeholder="tu@correo.com" required />
+                            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                            value="{{ $correoContacto ?: auth()->user()->correo_electronico }}" readonly />
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <svg class="w-3 h-3 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Este correo se toma de tu perfil de contacto, lo usaremos para comunicarnos contigo sobre esta solicitud. O puedes ver tus notificaciones en cuanto tu solicitud sea aprobada.
+                        </p>
                     </div>
                     <div class="flex justify-end gap-3 pt-4">
                         <button type="button" @click="modalNueva = false"
@@ -291,7 +308,7 @@ if (typeof window.solicitudesCliente === 'undefined') {
             nuevaSolicitud: {
                 nombre_solicitud: '',
                 descripcion_problema: '',
-                correo_contacto: ''
+                correo_contacto: '{{ $correoContacto ?: auth()->user()->correo_electronico }}'
             },
 
             get resumen() {
@@ -366,7 +383,7 @@ if (typeof window.solicitudesCliente === 'undefined') {
                     this.nuevaSolicitud = {
                         nombre_solicitud: '',
                         descripcion_problema: '',
-                        correo_contacto: ''
+                        correo_contacto: '{{ $correoContacto ?: auth()->user()->correo_electronico }}'
                     };
                 } catch (e) {
                     console.error(e);
