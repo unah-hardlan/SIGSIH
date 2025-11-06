@@ -157,6 +157,7 @@ class AutoPermissionMiddleware
             // Clientes: Empresas, Solicitudes, Cotizaciones, Órdenes de Servicio y auxiliares
             'EmpresasCliente' => ['Empresas', 'Gestión de Empresas', 'Gestion de Empresas'],
             'Cotizacion' => ['Cotizaciones', 'Gestión de Cotizaciones', 'Gestion de Cotizaciones'],
+            'ItemCotizacion' => ['Cotizaciones', 'Gestión de Cotizaciones', 'Gestion de Cotizaciones'],
             'OrdenServicio' => ['Órdenes de Servicios', 'Ordenes de Servicios', 'Ordenes de Servicio'],
             'Contacto' => ['Contactos', 'Solicitudes'],
             'NombresEmpresa' => ['Empresas'],
