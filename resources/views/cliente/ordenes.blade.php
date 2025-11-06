@@ -107,7 +107,7 @@
                             class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Técnico</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Acción</th>
                     </tr>
                 </thead>
@@ -135,7 +135,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="o.tecnico"></td>
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito text-center">
+                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito flex items-center justify-center">
                                 <div class="flex items-center justify-center gap-2">
                                     <a :href="'/cliente/detalle-orden?orden=' + o.id" target="_blank" rel="noopener"
                                         data-no-spa

@@ -94,10 +94,11 @@
                 </div>
                 <select x-model="filtros.estado"
                     class="w-40 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200">
-                    <option value="">Estado</option>
-                    <template x-for="e in estados" :key="e.codigo || e">
-                        <option :value="e.codigo || e" x-text="e.nombre || e"></option>
-                    </template>
+                    <option value="">Todos los estados</option>
+                    <option value="BRD">Borrador</option>
+                    <option value="APB">Aprobada</option>
+                    <option value="REC">Rechazada</option>
+                    <option value="VEN">Vencida</option>
                 </select>
             </div>
             <div class="flex items-center gap-2">
@@ -137,7 +138,7 @@
                             class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Estado</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Acción</th>
                     </tr>
                 </thead>
@@ -151,18 +152,18 @@
                     </template>
                     <template x-for="c in paginadas" :key="c.codigo">
                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="c.codigo"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="c.fecha"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="c.valido_hasta"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="formatHNL(c.subtotal)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="formatHNL(c.total)"></td>
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
+                                class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito">
                                 <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide"
                                     :class="estadoBadge(c)" x-text="c.estado_nombre || '—'"></span>
                             </td>
@@ -355,8 +356,34 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                 const s = (this.filtros.search || '').toLowerCase();
                 const est = (this.filtros.estado || '').toLowerCase();
                 return this.datos.filter(d => {
-                    const estadoOk = !est || (String(d.estado_codigo || '').toLowerCase() === est) || (
-                        String(d.estado_nombre || '').toLowerCase() === est);
+                    // Filtro por estado
+                    let estadoOk = true;
+                    if (est) {
+                        const estadoCodigo = String(d.estado_codigo || '').toLowerCase();
+                        const estadoNombre = String(d.estado_nombre || '').toLowerCase();
+                        
+                        switch(est) {
+                            case 'brd':
+                                estadoOk = ['brd', 'borrador', 'pendiente'].includes(estadoCodigo) || 
+                                          ['borrador', 'pendiente'].includes(estadoNombre);
+                                break;
+                            case 'apb':
+                                estadoOk = ['apb', 'aprobada', 'aprobado'].includes(estadoCodigo) || 
+                                          ['aprobada', 'aprobado', 'aprobadas', 'aprobados'].includes(estadoNombre);
+                                break;
+                            case 'rec':
+                                estadoOk = ['rec', 'rechazada', 'rechazado'].includes(estadoCodigo) || 
+                                          ['rechazada', 'rechazado', 'rechazadas', 'rechazados'].includes(estadoNombre);
+                                break;
+                            case 'ven':
+                                estadoOk = ['ven', 'vencida', 'vencido'].includes(estadoCodigo) || 
+                                          ['vencida', 'vencido', 'vencidas', 'vencidos'].includes(estadoNombre);
+                                break;
+                            default:
+                                estadoOk = estadoCodigo === est || estadoNombre === est;
+                        }
+                    }
+                    
                     const textoOk = !s || String(d.codigo || '').toLowerCase().includes(s);
                     const desdeOk = !this.filtros.desde || String(d.fecha || '') >= this.filtros.desde;
                     const hastaOk = !this.filtros.hasta || String(d.fecha || '') <= this.filtros.hasta;

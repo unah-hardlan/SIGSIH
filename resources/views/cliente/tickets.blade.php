@@ -23,7 +23,7 @@
                 </div>
                 <select x-model="filtros.estado"
                     class="w-40 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200">
-                    <option value="">Estado</option>
+                    <option value="">Todos los estados</option>
                     <template x-for="e in estados" :key="e">
                         <option :value="e" x-text="e"></option>
                     </template>
@@ -74,13 +74,13 @@
                     </template>
                     <template x-for="t in paginadas" :key="t.id">
                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="t.numero"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="t.fecha_creacion"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito" x-text="t.numero"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito" x-text="t.fecha_creacion"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito">
                                 <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide" :class="estadoBadge(t.estado)" x-text="t.estado"></span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="t.tecnico"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="t.descripcion"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito" x-text="t.tecnico"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito" x-text="t.descripcion"></td>
                         </tr>
                     </template>
                 </tbody>

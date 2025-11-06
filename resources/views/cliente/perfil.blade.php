@@ -316,7 +316,7 @@
             <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 font-serif">Mi Actividad</h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                     <div
                         class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center justify-between mb-3">
@@ -337,15 +337,15 @@
                         <div class="space-y-2">
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Total:</span>
-                                <span class="font-semibold text-gray-900 dark:text-gray-100">0</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100" x-text="actividadData.facturas.total">0</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Pagadas:</span>
-                                <span class="font-semibold text-green-600 dark:text-green-400">0</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400" x-text="actividadData.facturas.pagadas">0</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Pendientes:</span>
-                                <span class="font-semibold text-orange-600 dark:text-orange-400">0</span>
+                                <span class="font-semibold text-orange-600 dark:text-orange-400" x-text="actividadData.facturas.pendientes">0</span>
                             </div>
                         </div>
                         <div class="mt-4">
@@ -375,15 +375,15 @@
                         <div class="space-y-2">
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Total:</span>
-                                <span class="font-semibold text-gray-900 dark:text-gray-100">0</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100" x-text="actividadData.cotizaciones.total">0</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Aprobadas:</span>
-                                <span class="font-semibold text-green-600 dark:text-green-400">0</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400" x-text="actividadData.cotizaciones.aprobadas">0</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">En revisión:</span>
-                                <span class="font-semibold text-yellow-600 dark:text-yellow-400">0</span>
+                                <span class="font-semibold text-yellow-600 dark:text-yellow-400" x-text="actividadData.cotizaciones.enRevision">0</span>
                             </div>
                         </div>
                         <div class="mt-4">
@@ -413,21 +413,95 @@
                         <div class="space-y-2">
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Total:</span>
-                                <span class="font-semibold text-gray-900 dark:text-gray-100">0</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100" x-text="actividadData.ordenes.total">0</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">Completadas:</span>
-                                <span class="font-semibold text-green-600 dark:text-green-400">0</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400" x-text="actividadData.ordenes.completadas">0</span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600 dark:text-gray-400">En proceso:</span>
-                                <span class="font-semibold text-blue-600 dark:text-blue-400">0</span>
+                                <span class="font-semibold text-blue-600 dark:text-blue-400" x-text="actividadData.ordenes.enProceso">0</span>
                             </div>
                         </div>
                         <div class="mt-4">
                             <a href="{{ route('cliente.ordenes') }}" data-spa-link
                                 class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las órdenes
                                 →</a>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Solicitudes -->
+                    <div
+                        class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 font-serif">Tus Solicitudes</h4>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Total:</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100" x-text="actividadData.solicitudes.total">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Resueltas:</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400" x-text="actividadData.solicitudes.resueltas">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">En proceso:</span>
+                                <span class="font-semibold text-blue-600 dark:text-blue-400" x-text="actividadData.solicitudes.enProceso">0</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{{ route('cliente.solicitudes') }}" data-spa-link
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas las solicitudes →</a>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Tickets -->
+                    <div
+                        class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center mr-3">
+                                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 font-serif">Tus Tickets</h4>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Total:</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100" x-text="actividadData.tickets.total">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Cerrados:</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400" x-text="actividadData.tickets.cerrados">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Abiertos:</span>
+                                <span class="font-semibold text-amber-600 dark:text-amber-400" x-text="actividadData.tickets.abiertos">0</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{{ route('cliente.tickets') }}" data-spa-link
+                                class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todos los tickets →</a>
                         </div>
                     </div>
                 </div>
@@ -709,6 +783,59 @@
                         <textarea x-model="empresaForm.descripcion_empresa" rows="3"
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100"></textarea>
                     </div>
+                    
+                    <!-- Sección de Dirección -->
+                    <div class="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dirección</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Calle *
+                                </label>
+                                <input type="text" x-model="empresaForm.calle" required maxlength="100"
+                                    placeholder="Ej. Avenida Principal, Blvd. Morazán"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Número *
+                                </label>
+                                <input type="text" x-model="empresaForm.numero" required maxlength="20"
+                                    placeholder="Ej. Casa 24, #125B"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Colonia / Barrio *
+                                </label>
+                                <input type="text" x-model="empresaForm.colonia" required maxlength="100"
+                                    placeholder="Ej. Col. Las Uvas"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Código Postal *
+                                </label>
+                                <input type="text" x-model="empresaForm.codigo_postal" required maxlength="10"
+                                    placeholder="Ej. 11101"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
+                            </div>
+                            
+                            <div class="md:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Referencia *
+                                </label>
+                                <textarea x-model="empresaForm.referencia" rows="3" required
+                                    placeholder="Ej. Frente a la gasolinera X, edificio gris de 2 pisos"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
@@ -799,8 +926,16 @@
 @json($personaData)
 </script>
 @if($empresa)
-@php($empresaPayload =
-$empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']))
+@php
+    $empresaPayload = $empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']);
+    if ($empresaDireccion) {
+        $empresaPayload['calle'] = $empresaDireccion['calle'] ?? '';
+        $empresaPayload['numero'] = $empresaDireccion['numero'] ?? '';
+        $empresaPayload['colonia'] = $empresaDireccion['colonia'] ?? '';
+        $empresaPayload['codigo_postal'] = $empresaDireccion['codigo_postal'] ?? '';
+        $empresaPayload['referencia'] = $empresaDireccion['referencia'] ?? '';
+    }
+@endphp
 <script type="application/json" id="empresa-json">
 @json($empresaPayload)
 </script>

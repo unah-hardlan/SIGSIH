@@ -43,6 +43,11 @@ window.perfilData = function (el) {
                         rtn: data.rtn || "",
                         descripcion_empresa: data.descripcion_empresa || "",
                         horario_atencion: data.horario_atencion || "",
+                        calle: data.calle || "",
+                        numero: data.numero || "",
+                        colonia: data.colonia || "",
+                        codigo_postal: data.codigo_postal || "",
+                        referencia: data.referencia || "",
                     };
                 }
             } catch (_) {}
@@ -52,6 +57,11 @@ window.perfilData = function (el) {
                 rtn: "",
                 descripcion_empresa: "",
                 horario_atencion: "",
+                calle: "",
+                numero: "",
+                colonia: "",
+                codigo_postal: "",
+                referencia: "",
             };
         })(),
 
@@ -77,6 +87,15 @@ window.perfilData = function (el) {
             loading: false,
         },
         pendingAction: null,
+
+        // Datos de actividad
+        actividadData: {
+            facturas: { total: 0, pagadas: 0, pendientes: 0 },
+            cotizaciones: { total: 0, aprobadas: 0, enRevision: 0 },
+            ordenes: { total: 0, completadas: 0, enProceso: 0 },
+            solicitudes: { total: 0, resueltas: 0, enProceso: 0 },
+            tickets: { total: 0, cerrados: 0, abiertos: 0 },
+        },
 
         openEditModal() {
             this.showEditModal = true;
@@ -351,25 +370,11 @@ window.perfilData = function (el) {
                         "Empresa actualizada correctamente",
                         "success"
                     );
-                    try {
-                        const headerName = document.getElementById(
-                            "perfil-header-nombre"
-                        );
-                        if (headerName)
-                            headerName.textContent =
-                                this.empresaForm.nombre_comercial;
-                        if (this.empresaAvatarPreviewUrl) {
-                            const avatarBox = document.getElementById(
-                                "perfil-header-avatar"
-                            );
-                            if (avatarBox) {
-                                avatarBox.innerHTML = `
-                                    <img src="${this.empresaAvatarPreviewUrl}" alt="Logo" class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300" />
-                                `;
-                            }
-                        }
-                    } catch (_) {}
-                    this.closeEmpresaModal();
+
+                    // Recargar la página después de un breve delay para que el usuario vea el mensaje
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     window.showToast?.(
                         json.message || "Error al actualizar empresa",
@@ -695,8 +700,238 @@ window.perfilData = function (el) {
             }
         },
 
+        async loadActividadData() {
+            try {
+                // Cargar datos de facturas
+                const resFacturas = await fetch("/cliente/facturas-data", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                if (resFacturas.ok) {
+                    const dataFacturas = await resFacturas.json();
+                    const facturas = Array.isArray(dataFacturas.data)
+                        ? dataFacturas.data
+                        : [];
+
+                    this.actividadData.facturas.total = facturas.length;
+                    this.actividadData.facturas.pagadas = facturas.filter(
+                        (f) => {
+                            const estado = String(f.estado || "").toLowerCase();
+                            return [
+                                "pagada",
+                                "pagado",
+                                "pagadas",
+                                "pagados",
+                            ].includes(estado);
+                        }
+                    ).length;
+                    this.actividadData.facturas.pendientes = facturas.filter(
+                        (f) => {
+                            const estado = String(f.estado || "").toLowerCase();
+                            return [
+                                "pendiente",
+                                "pendientes",
+                                "por pagar",
+                            ].includes(estado);
+                        }
+                    ).length;
+                }
+
+                // Cargar datos de cotizaciones
+                const resCotizaciones = await fetch(
+                    "/cliente/cotizaciones-data",
+                    {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                    }
+                );
+                if (resCotizaciones.ok) {
+                    const dataCotizaciones = await resCotizaciones.json();
+                    const cotizaciones = Array.isArray(dataCotizaciones.data)
+                        ? dataCotizaciones.data
+                        : [];
+
+                    this.actividadData.cotizaciones.total = cotizaciones.length;
+                    this.actividadData.cotizaciones.aprobadas =
+                        cotizaciones.filter((c) => {
+                            const codigo = String(
+                                c.estado_codigo || ""
+                            ).toLowerCase();
+                            const nombre = String(
+                                c.estado_nombre || ""
+                            ).toLowerCase();
+                            return (
+                                codigo === "apb" ||
+                                [
+                                    "aprobada",
+                                    "aprobado",
+                                    "aprobadas",
+                                    "aprobados",
+                                ].includes(nombre)
+                            );
+                        }).length;
+                    this.actividadData.cotizaciones.enRevision =
+                        cotizaciones.filter((c) => {
+                            const codigo = String(
+                                c.estado_codigo || ""
+                            ).toLowerCase();
+                            const nombre = String(
+                                c.estado_nombre || ""
+                            ).toLowerCase();
+                            return (
+                                codigo === "brd" ||
+                                [
+                                    "borrador",
+                                    "pendiente",
+                                    "en revisión",
+                                    "revision",
+                                ].includes(nombre)
+                            );
+                        }).length;
+                }
+
+                // Cargar datos de órdenes
+                const resOrdenes = await fetch("/cliente/ordenes-data", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                if (resOrdenes.ok) {
+                    const dataOrdenes = await resOrdenes.json();
+                    const ordenes = Array.isArray(dataOrdenes.data)
+                        ? dataOrdenes.data
+                        : [];
+
+                    this.actividadData.ordenes.total = ordenes.length;
+                    this.actividadData.ordenes.completadas = ordenes.filter(
+                        (o) => {
+                            const estado = String(o.estado || "").toLowerCase();
+                            return [
+                                "completada",
+                                "completado",
+                                "completadas",
+                                "completados",
+                                "finalizada",
+                                "finalizado",
+                                "finalizadas",
+                                "finalizados",
+                            ].includes(estado);
+                        }
+                    ).length;
+                    this.actividadData.ordenes.enProceso = ordenes.filter(
+                        (o) => {
+                            const estado = String(o.estado || "").toLowerCase();
+                            return [
+                                "en proceso",
+                                "proceso",
+                                "en progreso",
+                                "progreso",
+                                "activa",
+                                "activo",
+                                "activas",
+                                "activos",
+                            ].includes(estado);
+                        }
+                    ).length;
+                }
+
+                // Cargar datos de solicitudes
+                const resSolicitudes = await fetch(
+                    "/cliente/solicitudes-data",
+                    {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                    }
+                );
+                if (resSolicitudes.ok) {
+                    const dataSolicitudes = await resSolicitudes.json();
+                    const solicitudes = Array.isArray(dataSolicitudes.data)
+                        ? dataSolicitudes.data
+                        : [];
+
+                    this.actividadData.solicitudes.total = solicitudes.length;
+                    this.actividadData.solicitudes.resueltas =
+                        solicitudes.filter((s) => {
+                            const estado = String(s.estado || "").toLowerCase();
+                            return [
+                                "finalizada",
+                                "finalizado",
+                                "resuelta",
+                                "resuelto",
+                                "cerrada",
+                                "cerrado",
+                                "finalizadas",
+                                "finalizados",
+                                "resueltas",
+                                "resueltos",
+                                "cerradas",
+                                "cerrados",
+                            ].includes(estado);
+                        }).length;
+                    this.actividadData.solicitudes.enProceso =
+                        solicitudes.filter((s) => {
+                            const estado = String(s.estado || "").toLowerCase();
+                            return [
+                                "asignada",
+                                "asignado",
+                                "asignadas",
+                                "asignados",
+                                "en proceso",
+                                "proceso",
+                            ].includes(estado);
+                        }).length;
+                }
+
+                // Cargar datos de tickets
+                const resTickets = await fetch("/cliente/tickets-data", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                if (resTickets.ok) {
+                    const dataTickets = await resTickets.json();
+                    const tickets = Array.isArray(dataTickets.data)
+                        ? dataTickets.data
+                        : [];
+
+                    this.actividadData.tickets.total = tickets.length;
+                    this.actividadData.tickets.cerrados = tickets.filter(
+                        (t) => {
+                            const estado = String(t.estado || "").toLowerCase();
+                            return [
+                                "cerrado",
+                                "cerrada",
+                                "cerrados",
+                                "cerradas",
+                                "finalizado",
+                                "finalizada",
+                                "finalizados",
+                                "finalizadas",
+                            ].includes(estado);
+                        }
+                    ).length;
+                    this.actividadData.tickets.abiertos = tickets.filter(
+                        (t) => {
+                            const estado = String(t.estado || "").toLowerCase();
+                            return [
+                                "abierto",
+                                "abierta",
+                                "abiertos",
+                                "abiertas",
+                                "pendiente",
+                                "pendientes",
+                                "en proceso",
+                                "proceso",
+                            ].includes(estado);
+                        }
+                    ).length;
+                }
+            } catch (error) {
+                console.error("Error cargando datos de actividad:", error);
+            }
+        },
+
         init() {
             this.load2FAStatus();
+            this.loadActividadData();
         },
     };
 };

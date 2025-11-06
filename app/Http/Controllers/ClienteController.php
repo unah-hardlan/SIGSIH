@@ -520,6 +520,12 @@ class ClienteController extends Controller
                 ],
                 'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
                 'email_contacto' => 'sometimes|email|max:255',
+                // Validación de campos de dirección
+                'calle' => 'required|string|max:100',
+                'numero' => 'required|string|max:20',
+                'colonia' => 'required|string|max:100',
+                'codigo_postal' => 'required|string|max:10',
+                'referencia' => 'required|string|max:255',
             ]);
 
             DB::beginTransaction();
@@ -573,6 +579,26 @@ class ClienteController extends Controller
                         'valor_contacto' => $email,
                     ]
                 );
+            }
+
+            // Actualizar dirección de la agencia
+            if ($request->filled(['calle', 'numero', 'colonia', 'codigo_postal', 'referencia'])) {
+                // Obtener la primera agencia del cliente
+                $agencia = $cliente->agencias()->first();
+                
+                if ($agencia && $agencia->id_direccion_fk) {
+                    // Actualizar la dirección existente
+                    $direccion = \App\Models\Direccion::find($agencia->id_direccion_fk);
+                    if ($direccion) {
+                        $direccion->update([
+                            'calle' => $request->input('calle'),
+                            'numero' => $request->input('numero'),
+                            'colonia' => $request->input('colonia'),
+                            'codigo_postal' => $request->input('codigo_postal'),
+                            'referencia' => $request->input('referencia'),
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
