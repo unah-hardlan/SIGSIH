@@ -32,7 +32,8 @@ class ConfiguracionAccesoReporteController extends Controller
         $matriz = collect();
         // Alinear columnas con la UI (Ver, Crear, Editar, Eliminar)
         $permColumns = [
-            ['field' => 'permiso_consultar', 'label' => 'Ver'],
+            ['field' => 'permiso_ver', 'label' => 'Ver'],
+            ['field' => 'permiso_consultar', 'label' => 'Leer'],
             ['field' => 'permiso_insercion', 'label' => 'Crear'],
             ['field' => 'permiso_actualizar', 'label' => 'Editar'],
             ['field' => 'permiso_eliminacion', 'label' => 'Eliminar'],
@@ -142,24 +143,44 @@ class ConfiguracionAccesoReporteController extends Controller
             if ($rol) {
                 // Configuración para ordenar/agrupar como el sidebar
                 $SIDEBAR_ORDER = [
-                    ['title' => 'Seguridad', 'items' => ['Usuarios','Parámetros','Parametros','Configuración de accesos','Configuracion de accesos']],
-                    ['title' => 'Clientes', 'items' => ['Empresas','Cotizaciones','Solicitudes','Órdenes de Servicios','Ordenes de Servicios']],
-                    ['title' => 'Proyectos', 'items' => ['Proyectos','Gestión de proyectos','Gestion de proyectos','Vista de proyectos']],
-                    ['title' => 'Tickets', 'items' => ['Gestión de tickets','Gestion de tickets','Tickets']],
-                    ['title' => 'Calendario', 'items' => ['Agencias','Calendario','Gestión de Calendario','Gestion de Calendario']],
-                    ['title' => 'Facturación', 'items' => ['Facturas','CAI','Facturacion']],
-                    ['title' => 'Reportes', 'items' => ['Gestión de Reportes','Gestion de Reportes','Reportes']],
-                    ['title' => 'Inventario', 'items' => ['Productos','Kardex']],
-                    ['title' => 'Administración', 'items' => ['Gestión de personas','Gestion de personas','Mi perfil','Perfil','Profile','Bitácora','Bitacora','Gestión de base de datos','Gestion de base de datos','Administracion']],
-                    ['title' => 'Mantenimiento', 'items' => ['Mantenimiento del Sistema','Mantenimiento del sistema']],
+                    ['title' => 'Seguridad', 'items' => ['Usuarios', 'Parámetros', 'Parametros', 'Configuración de accesos', 'Configuracion de accesos']],
+                    ['title' => 'Clientes', 'items' => ['Empresas', 'Cotizaciones', 'Solicitudes', 'Órdenes de Servicios', 'Ordenes de Servicios']],
+                    ['title' => 'Proyectos', 'items' => ['Proyectos', 'Gestión de proyectos', 'Gestion de proyectos', 'Vista de proyectos']],
+                    ['title' => 'Tickets', 'items' => ['Gestión de tickets', 'Gestion de tickets', 'Tickets']],
+                    ['title' => 'Calendario', 'items' => ['Agencias', 'Calendario', 'Gestión de Calendario', 'Gestion de Calendario']],
+                    ['title' => 'Facturación', 'items' => ['Facturas', 'CAI', 'Facturacion']],
+                    ['title' => 'Reportes', 'items' => ['Gestión de Reportes', 'Gestion de Reportes', 'Reportes']],
+                    ['title' => 'Inventario', 'items' => ['Productos', 'Kardex']],
+                    ['title' => 'Administración', 'items' => ['Gestión de personas', 'Gestion de personas', 'Mi perfil', 'Perfil', 'Profile', 'Bitácora', 'Bitacora', 'Gestión de base de datos', 'Gestion de base de datos', 'Administracion']],
+                    ['title' => 'Mantenimiento', 'items' => ['Mantenimiento del Sistema', 'Mantenimiento del sistema']],
                     ['title' => 'Catalogo', 'items' => [
-                        'Acciones Realizadas','Administración de Facturas','Administracion de Facturas','Categorias de Ingresos y Gastos','Categorías de Ingresos y Gastos',
-                        'Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del Calendario','Género','Genero','Perfiles',
-                        'Servicio Factura','Servicios Realizados','Tipo de Movimiento','Tipo de Objeto','Tipo de Personas','Tipo de Producto','Tipo de Visita','Ubicaciones'
+                        'Acciones Realizadas',
+                        'Administración de Facturas',
+                        'Administracion de Facturas',
+                        'Categorias de Ingresos y Gastos',
+                        'Categorías de Ingresos y Gastos',
+                        'Estados CAI',
+                        'Estados de Proyecto',
+                        'Estados de Solicitud',
+                        'Estados de Tickets',
+                        'Estados del Calendario',
+                        'Género',
+                        'Genero',
+                        'Perfiles',
+                        'Servicio Factura',
+                        'Servicios Realizados',
+                        'Tipo de Movimiento',
+                        'Tipo de Objeto',
+                        'Tipo de Personas',
+                        'Tipo de Producto',
+                        'Tipo de Visita',
+                        'Ubicaciones'
                     ]],
                 ];
-                $HIDDEN_FALLBACK_GROUPS = collect(['configuracion','modulo']);
-                $norm = function ($s) { return Str::of($s ?? '')->lower()->ascii()->trim()->value(); };
+                $HIDDEN_FALLBACK_GROUPS = collect(['configuracion', 'modulo']);
+                $norm = function ($s) {
+                    return Str::of($s ?? '')->lower()->ascii()->trim()->value();
+                };
 
                 $objs = Objeto::with('tipoObjeto:id_tipo_objeto_pk,nombre_tipo_objeto')
                     ->orderBy('nombre_objeto', 'asc')
@@ -170,6 +191,7 @@ class ConfiguracionAccesoReporteController extends Controller
                     $p = $perms->get($o->id_objetos_pk);
                     return [
                         'objeto' => $o->nombre_objeto,
+                        'permiso_ver' => (bool)optional($p)->permiso_ver,
                         'permiso_insercion' => (bool)optional($p)->permiso_insercion,
                         'permiso_consultar' => (bool)optional($p)->permiso_consultar,
                         'permiso_actualizar' => (bool)optional($p)->permiso_actualizar,
@@ -201,14 +223,18 @@ class ConfiguracionAccesoReporteController extends Controller
                     }
                     if ($rows->isNotEmpty()) {
                         $mat->push(['is_header' => true, 'title' => Str::upper($moduleTitle)]);
-                        foreach ($rows as $r) { $mat->push($r); }
+                        foreach ($rows as $r) {
+                            $mat->push($r);
+                        }
                     }
                 }
 
                 // Fallback: agrupar el resto por tipo
                 $rest = $objs->reject(fn($o) => $assigned->has($o->id_objetos_pk));
                 if ($rest->isNotEmpty()) {
-                    $byTipo = $rest->groupBy(function ($o) { return optional($o->tipoObjeto)->nombre_tipo_objeto ?? 'Otros'; });
+                    $byTipo = $rest->groupBy(function ($o) {
+                        return optional($o->tipoObjeto)->nombre_tipo_objeto ?? 'Otros';
+                    });
                     foreach ($byTipo as $tname => $arr) {
                         if ($HIDDEN_FALLBACK_GROUPS->contains($norm($tname))) continue;
                         $mat->push(['is_header' => true, 'title' => Str::upper($tname ?: 'Otros')]);
@@ -241,7 +267,19 @@ class ConfiguracionAccesoReporteController extends Controller
         }
 
         return view('admin.reporte-configuracion-accesos', compact(
-            'fecha', 'modulo', 'seccion', 'roles', 'objetos', 'usuarios', 'matriz', 'permColumns', 'rol', 'sort', 'direction', 'q', 'stats'
+            'fecha',
+            'modulo',
+            'seccion',
+            'roles',
+            'objetos',
+            'usuarios',
+            'matriz',
+            'permColumns',
+            'rol',
+            'sort',
+            'direction',
+            'q',
+            'stats'
         ));
     }
 }

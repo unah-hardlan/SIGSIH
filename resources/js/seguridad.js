@@ -228,7 +228,8 @@
       permsByObj: {},
       _lastGuardToast: 0,
       permColumns: [
-        { field: 'permiso_consultar', label: 'Ver' },
+        { field: 'permiso_ver', label: 'Ver' },
+        { field: 'permiso_consultar', label: 'Leer' },
         { field: 'permiso_insercion', label: 'Crear' },
         { field: 'permiso_actualizar', label: 'Editar' },
         { field: 'permiso_eliminacion', label: 'Eliminar' },
@@ -392,11 +393,11 @@
         if (!g) return false;
         // Si existe un Objeto para el Módulo, usarlo como fuente de verdad
         if (g.moduleObjId != null) {
-          return this.isChecked(g.moduleObjId, 'permiso_consultar');
+          return this.isChecked(g.moduleObjId, 'permiso_ver');
         }
         // Fallback: si cualquier submódulo tiene Ver
         const objs = g.objetos || [];
-        for (const o of objs) { if (this.isChecked(o.id, 'permiso_consultar')) return true; }
+        for (const o of objs) { if (this.isChecked(o.id, 'permiso_ver')) return true; }
         return false;
       },
       async toggleModulo(groupId, desired) {
@@ -410,15 +411,15 @@
         }
         // Preferir togglear el Objeto del Módulo si existe
         if (g.moduleObjId != null) {
-          const cur = this.isChecked(g.moduleObjId, 'permiso_consultar');
+          const cur = this.isChecked(g.moduleObjId, 'permiso_ver');
           if (cur !== target) {
             // set explicit desired value
             const rec = this.permsByObj[g.moduleObjId];
             if (rec) {
-              rec.permiso_consultar = target;
-              this.scheduleCommit(g.moduleObjId, 'permiso_consultar');
+              rec.permiso_ver = target;
+              this.scheduleCommit(g.moduleObjId, 'permiso_ver');
             } else {
-              await this.toggle(g.moduleObjId, 'permiso_consultar');
+              await this.toggle(g.moduleObjId, 'permiso_ver');
             }
           }
           return;
@@ -426,8 +427,8 @@
         // Fallback: aplicar sobre todos los submódulos visibles del grupo
         const objs = g.objetos || [];
         for (const o of objs) {
-          const cur = this.isChecked(o.id, 'permiso_consultar');
-          if (cur !== target) { await this.toggle(o.id, 'permiso_consultar'); }
+          const cur = this.isChecked(o.id, 'permiso_ver');
+          if (cur !== target) { await this.toggle(o.id, 'permiso_ver'); }
         }
       },
 
@@ -468,6 +469,7 @@
                 id: null,
                 id_rol_fk: roleId,
                 id_objeto_fk: o.id,
+                permiso_ver: false,
                 permiso_consultar: false,
                 permiso_insercion: false,
                 permiso_actualizar: false,
@@ -481,6 +483,7 @@
                   id: p.id ?? p.id_permiso_pk ?? null,
                   id_rol_fk: p.id_rol_fk ?? roleId,
                   id_objeto_fk: objId,
+                  permiso_ver: !!p.permiso_ver,
                   permiso_consultar: !!p.permiso_consultar,
                   permiso_insercion: !!p.permiso_insercion,
                   permiso_actualizar: !!p.permiso_actualizar,
@@ -555,6 +558,7 @@
             const updated = await apiSend(`${API.permisos}/${rec.id}`, 'PUT', payload, { signal: controller.signal });
             const data = updated?.data || updated;
             if (data && this.pending[key]?.token === token) {
+              rec.permiso_ver = !!data.permiso_ver;
               rec.permiso_consultar = !!data.permiso_consultar;
               rec.permiso_insercion = !!data.permiso_insercion;
               rec.permiso_actualizar = !!data.permiso_actualizar;
@@ -567,6 +571,7 @@
               const data = updated?.data || updated;
               if (data && this.pending[key]?.token === token) {
                 rec.id = data.id ?? rec.id;
+                rec.permiso_ver = !!data.permiso_ver;
                 rec.permiso_consultar = !!data.permiso_consultar;
                 rec.permiso_insercion = !!data.permiso_insercion;
                 rec.permiso_actualizar = !!data.permiso_actualizar;
@@ -579,6 +584,7 @@
                 const foundId = first.id ?? first.id_permiso_pk;
                 if (foundId) {
                   const full = {
+                    permiso_ver: !!rec.permiso_ver,
                     permiso_consultar: !!rec.permiso_consultar,
                     permiso_insercion: !!rec.permiso_insercion,
                     permiso_actualizar: !!rec.permiso_actualizar,
@@ -587,6 +593,7 @@
                   const upd = await apiSend(`${API.permisos}/${foundId}`, 'PUT', full, { signal: controller.signal });
                   const d2 = upd?.data || upd; if (this.pending[key]?.token === token) {
                     rec.id = foundId;
+                    rec.permiso_ver = !!d2.permiso_ver;
                     rec.permiso_consultar = !!d2.permiso_consultar;
                     rec.permiso_insercion = !!d2.permiso_insercion;
                     rec.permiso_actualizar = !!d2.permiso_actualizar;
@@ -599,6 +606,7 @@
                 const createPayload = {
                   id_rol_fk: roleId,
                   id_objeto_fk: objId,
+                  permiso_ver: !!rec.permiso_ver,
                   permiso_consultar: !!rec.permiso_consultar,
                   permiso_insercion: !!rec.permiso_insercion,
                   permiso_actualizar: !!rec.permiso_actualizar,

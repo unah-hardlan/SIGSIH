@@ -15,10 +15,11 @@ class Permiso extends Model
     protected $fillable = [
         'id_rol_fk',
         'id_objeto_fk',
-    'permiso_insercion',
-    'permiso_eliminacion',
-    'permiso_actualizar',
-    'permiso_consultar',
+        'permiso_insercion',
+        'permiso_eliminacion',
+        'permiso_actualizar',
+        'permiso_consultar',
+        'permiso_ver',
         'creado_por',
         'fecha_creacion',
         'modificado_por',
@@ -26,10 +27,11 @@ class Permiso extends Model
     ];
 
     protected $casts = [
-    'permiso_insercion' => 'boolean',
-    'permiso_eliminacion' => 'boolean',
-    'permiso_actualizar' => 'boolean',
-    'permiso_consultar' => 'boolean',
+        'permiso_insercion' => 'boolean',
+        'permiso_eliminacion' => 'boolean',
+        'permiso_actualizar' => 'boolean',
+        'permiso_consultar' => 'boolean',
+        'permiso_ver' => 'boolean',
         'fecha_creacion' => 'datetime',
         'fecha_modificacion' => 'datetime',
     ];

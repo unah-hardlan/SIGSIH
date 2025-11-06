@@ -86,7 +86,8 @@ class PermisoController extends Controller
         $permiso = Permiso::create($data)->load(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto']);
         try {
             $flags = sprintf(
-                '[Ver:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                '[Ver:%s, Leer:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                $permiso->permiso_ver ? 'Sí' : 'No',
                 $permiso->permiso_consultar ? 'Sí' : 'No',
                 $permiso->permiso_insercion ? 'Sí' : 'No',
                 $permiso->permiso_actualizar ? 'Sí' : 'No',
@@ -137,7 +138,7 @@ class PermisoController extends Controller
 
     private function payloadRevokesSecurity(array $payload): bool
     {
-        foreach (['permiso_consultar', 'permiso_insercion', 'permiso_actualizar', 'permiso_eliminacion'] as $field) {
+        foreach (['permiso_ver', 'permiso_consultar', 'permiso_insercion', 'permiso_actualizar', 'permiso_eliminacion'] as $field) {
             if (array_key_exists($field, $payload) && $payload[$field] === false) {
                 return true;
             }
@@ -172,7 +173,8 @@ class PermisoController extends Controller
         $permiso->load(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto']);
         try {
             $flags = sprintf(
-                '[Ver:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                '[Ver:%s, Leer:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                $permiso->permiso_ver ? 'Sí' : 'No',
                 $permiso->permiso_consultar ? 'Sí' : 'No',
                 $permiso->permiso_insercion ? 'Sí' : 'No',
                 $permiso->permiso_actualizar ? 'Sí' : 'No',
@@ -212,6 +214,7 @@ class PermisoController extends Controller
         $validated = $request->validate([
             'permiso_insercion' => 'sometimes|boolean',
             'permiso_consultar' => 'sometimes|boolean',
+            'permiso_ver' => 'sometimes|boolean',
             'permiso_actualizar' => 'sometimes|boolean',
             'permiso_eliminacion' => 'sometimes|boolean',
         ]);
@@ -247,6 +250,7 @@ class PermisoController extends Controller
             $payload = array_merge([
                 'id_rol_fk' => (int)$idRol,
                 'id_objeto_fk' => (int)$idObjeto,
+                'permiso_ver' => false,
                 'permiso_insercion' => false,
                 'permiso_consultar' => false,
                 'permiso_actualizar' => false,
@@ -258,7 +262,8 @@ class PermisoController extends Controller
         $permiso->load(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto']);
         try {
             $flags = sprintf(
-                '[Ver:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                '[Ver:%s, Leer:%s, Crear:%s, Editar:%s, Eliminar:%s]',
+                $permiso->permiso_ver ? 'Sí' : 'No',
                 $permiso->permiso_consultar ? 'Sí' : 'No',
                 $permiso->permiso_insercion ? 'Sí' : 'No',
                 $permiso->permiso_actualizar ? 'Sí' : 'No',
