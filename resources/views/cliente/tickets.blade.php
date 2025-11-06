@@ -7,6 +7,11 @@
         
     </div>
 
+     <div
+        class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        Los tickets son las asignaciones del servicio que has solicitado y que nuestro equipo técnico está gestionando. Aquí puedes ver el estado actual de cada ticket, incluyendo detalles como la descripción del problema, el técnico asignado y las fechas relevantes.
+    </div>
+
     <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
         <div class="flex flex-col xl:flex-row gap-4">
