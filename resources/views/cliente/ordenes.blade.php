@@ -4,7 +4,11 @@
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="ordenesCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Órdenes de Servicio</h1>
-        
+    </div>
+
+    <div
+        class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        Las órdenes de servicio es el trabajo que se esta o estará realizando en su empresa. Desde esta sección puede revisar el estado de sus órdenes de servicio, filtrar por diferentes criterios y calificar el servicio recibido una vez finalizado. Haga clic en el botón "Ver" para abrir los detalles de la orden en una nueva pestaña. 
     </div>
 
     <!-- Tarjetas resumen -->

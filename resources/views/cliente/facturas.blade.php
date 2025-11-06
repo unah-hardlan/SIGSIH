@@ -4,7 +4,11 @@
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="facturasCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Facturación</h1>
-        
+    </div>
+
+    <div
+        class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        En esta sección puede revisar todas sus facturas emitidas por nuestros servicios. Puede filtrar las facturas por estado, fecha o número de factura, así como buscar facturas específicas utilizando el campo de búsqueda. Haga clic en el botón "Ver factura" para abrir la factura en una nueva pestaña y revisarla en detalle. <i>(Las facturas mostradas corresponden a pagos ya confirmados y procesados presencialmente, ya sea en efectivo o con tarjeta de crédito/débito).</i>
     </div>
 
     <!-- Tarjetas resumen (mismo estilo que Órdenes) -->
@@ -133,13 +137,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="f.oc"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.subtotal.toLocaleString()"></td>
+                                x-text="'L. ' + f.subtotal.toLocaleString()"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.impuesto.toLocaleString()"></td>
+                                x-text="'L. ' + f.impuesto.toLocaleString()"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.descuento.toLocaleString()"></td>
+                                x-text="'L. ' + f.descuento.toLocaleString()"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.total.toLocaleString()"></td>
+                                x-text="'L. ' + f.total.toLocaleString()"></td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
                                 <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide"
@@ -215,13 +219,13 @@
                                 <label
                                     class="block text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</label>
                                 <p class="text-gray-900 dark:text-gray-100"
-                                    x-text="'$' + facturaActual.subtotal.toLocaleString()"></p>
+                                    x-text="'L. ' + facturaActual.subtotal.toLocaleString()"></p>
                             </div>
                             <div>
                                 <label
                                     class="block text-sm font-medium text-gray-500 dark:text-gray-400">Impuesto</label>
                                 <p class="text-gray-900 dark:text-gray-100"
-                                    x-text="'$' + facturaActual.impuesto.toLocaleString()"></p>
+                                    x-text="'L. ' + facturaActual.impuesto.toLocaleString()"></p>
                             </div>
                         </div>
 
@@ -244,12 +248,12 @@
                                             <tr>
                                                 <td class="px-3 py-2" x-text="d.descripcion"></td>
                                                 <td class="px-3 py-2 text-right"
-                                                    x-text="'$' + d.precio_unitario.toLocaleString()"></td>
+                                                    x-text="'L. ' + d.precio_unitario.toLocaleString()"></td>
                                                 <td class="px-3 py-2 text-right" x-text="d.cantidad"></td>
                                                 <td class="px-3 py-2 text-right"
-                                                    x-text="'$' + d.impuesto.toLocaleString()"></td>
+                                                    x-text="'L. ' + d.impuesto.toLocaleString()"></td>
                                                 <td class="px-3 py-2 text-right"
-                                                    x-text="'$' + d.total_linea.toLocaleString()"></td>
+                                                    x-text="'L. ' + d.total_linea.toLocaleString()"></td>
                                             </tr>
                                         </template>
                                     </tbody>

@@ -3,6 +3,12 @@
 @section('content')
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="cotizacionesCliente()">
     <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 serif">Cotizaciones</h1>
+
+    <div
+        class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        Las cotizaciones es la propuesta comercial que le hemos preparado. Desde esta sección puede revisarlas, aprobarlas o rechazarlas según su conveniencia. Puede hacer clic en el botón "Ver" para abrir la cotización en una nueva pestaña y revisarla en detalle. Si está de acuerdo con los términos, puede aprobarla haciendo clic en "Aprobar". Si no está de acuerdo, puede rechazarla haciendo clic en "Rechazar". Recuerde que una vez aprobada o rechazada, la cotización no podrá ser modificada. 
+    </div>
+
     <!-- Tarjetas resumen -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
         <!-- Total Cotizaciones -->
