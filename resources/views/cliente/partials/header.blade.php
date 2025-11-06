@@ -116,7 +116,7 @@
                 return `${Math.floor(diff / 86400)}d`;
             }
         }" x-init="init()" class="relative">
-                <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600">
+                <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600 mt-1">
                     <i class="fas fa-bell text-base sm:text-lg"></i>
                     <template x-if="unread > 0">
                         <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-4 px-1 bg-red-600 text-white text-[10px] rounded-full" x-text="unread"></span>
@@ -127,7 +127,7 @@
                         <span>Notificaciones</span>
                         <button class="text-xs text-blue-600 hover:underline" @click="markAll()" x-show="unread>0">Marcar todas</button>
                     </div>
-                    <ul>
+                    <ul class="max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                         <template x-if="items.length === 0">
                             <li class="px-4 py-3 text-sm text-gray-500">Sin notificaciones</li>
                         </template>

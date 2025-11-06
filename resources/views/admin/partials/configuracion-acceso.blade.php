@@ -32,8 +32,6 @@
             :class="tab === 'objetos' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-700 dark:text-gray-200'"
             class="px-4 py-2 font-semibold focus:outline-none nunito-bold">Objetos</button>
     </div>
-    <!-- TAB: Gestión de Roles y Permisos -->
-<!-- TAB: Gestión de Roles y Permisos (FIX MOBILE SPACING) -->
 <div x-show="tab === 'gestion'" x-data="{ ready: false }" x-init="$store.access.init(); ready = true;">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Permisos'">
         <x-slot name="filtros">
@@ -50,10 +48,8 @@
                 </button>
             </div>
         </x-slot>
-        <!-- Grid con columnas independientes y alturas diferenciadas -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-5 text-gray-900 dark:text-gray-200 items-start lg:rounded-lg b">
-            <!-- Roles -->
-            <div class="sm:col-span-1 bg-slate-100 dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-500 dark:ring-gray-700 p-3 sm:p-4 h-auto sm:h-[500px] flex flex-col" x-data="{ roleQ: '' }">
+            <div class="sm:col-span-1 lg:sticky lg:top-20 bg-slate-100 dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-500 dark:ring-gray-700 p-3 sm:p-4 h-auto sm:h-[500px] lg:h-auto lg:max-h-[calc(100vh-9rem)] flex flex-col lg:overflow-hidden" x-data="{ roleQ: '' }">
                 <div class="flex items-center justify-between mb-2 sm:mb-3">
                     <h3 class="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100">Roles</h3>
                     <span class="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-white" x-text="$store.access.roles.length + ' totales'"></span>
@@ -62,8 +58,7 @@
                     <input type="text" x-model="roleQ" class="w-full bg-white dark:bg-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 pr-8 sm:pr-9 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 dark:placeholder-gray-400" placeholder="Buscar rol..." />
                     <i class="fas fa-search absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm"></i>
                 </div>
-                <!-- Scroll interno sólo para la lista de roles -->
-                <ul class="space-y-1 pr-1 custom-scrollbar flex-1 overflow-auto max-h-[300px] sm:max-h-none">
+                <ul class="space-y-1 pr-1 custom-scrollbar flex-1 overflow-auto max-h-[300px] sm:max-h-none lg:max-h-full">
                     <template x-for="r in $store.access.roles.filter(rr => !roleQ || (rr.rol||'').toLowerCase().includes(roleQ.toLowerCase()))" :key="r.id">
                         <li>
                             <button class="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
@@ -76,7 +71,6 @@
                     </template>
                 </ul>
             </div>
-            <!-- Matriz -->
             <div class="sm:col-span-3 bg-white dark:bg-gray-800 lg:rounded-lg sm:rounded-2xl shadow-lg ring-1 ring-gray-500 dark:ring-gray-700 p-3 sm:p-4 overflow-x-auto" x-data="{ objQ: '' }">
                 <template x-if="!$store.access.selectedRoleId">
                     <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 p-4">Selecciona un rol para configurar sus permisos.</div>
@@ -99,7 +93,6 @@
                         <div class="space-y-3 sm:space-y-5">
                             <template x-for="g in $store.access.grupos()" :key="'grp-'+g.id">
                                 <div class="mb-3 sm:mb-5 border border-gray-400 dark:border-gray-700 rounded-lg sm:rounded-xl overflow-hidden bg-white dark:bg-gray-900">
-                                    <!-- Encabezado de módulo -->
                                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-4 py-2 sm:py-3 bg-slate-200 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 gap-2 sm:gap-0">
                                         <div class="flex items-center gap-1.5 sm:gap-2">
                                             <i class="fas fa-folder text-gray-500 dark:text-gray-400 text-xs sm:text-sm"></i>
@@ -118,7 +111,6 @@
                                                     :title="$store.access.isProtectedModule(g.id) ? 'Protegido: el rol Administrador debe mantener Seguridad habilitado.' : ($store.access.moduloTieneAcceso(g.id) ? 'Desactivar acceso al módulo' : 'Activar acceso al módulo')"
                                                     :class="$store.access.moduloTieneAcceso(g.id) ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-600'"
                                                     role="switch" :aria-checked="$store.access.moduloTieneAcceso(g.id)">
-                                                    <!-- Círculo blanco que se desliza (Thumb) -->
                                                     <span aria-hidden="true"
                                                         class="pointer-events-none inline-block h-4 w-4 sm:h-5 sm:w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                                                         :class="$store.access.moduloTieneAcceso(g.id) ? 'translate-x-4 sm:translate-x-5' : 'translate-x-0'">
@@ -127,11 +119,8 @@
                                             </label>
                                         </div>
                                     </div>
-                                    <!-- Submódulos: se muestran sólo si el módulo tiene acceso (Ver) -->
                                     <div class="p-2 sm:p-3" x-show="$store.access.moduloTieneAcceso(g.id)">
-                                        <!-- Vista Mobile: Cards -->
                                         <div class="sm:hidden space-y-2">
-                                            <!-- Botones "Marcar todos" para mobile -->
                                             <div class="flex flex-wrap gap-1.5 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
                                                 <template x-for="col in $store.access.permColumns" :key="col.field">
                                                     <button type="button" 
@@ -173,7 +162,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Vista Desktop: Tabla -->
                                         <div class="hidden sm:block overflow-x-auto">
                                             <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
                                                 <thead class="bg-gray-100 dark:bg-gray-700">
@@ -228,7 +216,6 @@
             </div>
         </div>
     </x-admin.tabla-crud>
-    <!-- Modales gestión (mantener existentes si se usan en otras pestañas) -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditRoleModalOpen" title="Editar Permisos del Rol" itemToEdit="roleToEdit"
         maxWidth="max-w-xl">
         <div class="mb-3 sm:mb-4">
@@ -315,7 +302,6 @@
             </div>
         </x-slot>
 
-        <!-- Vista Tabla Desktop -->
         <div class="hidden md:block overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
                 <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
@@ -347,7 +333,6 @@
             </table>
         </div>
 
-        <!-- Vista Cards Mobile -->
         <div class="md:hidden space-y-4">
             <template x-for="role in $store.roles.items" :key="role.id">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
@@ -411,7 +396,6 @@
         </div>
     </div>
 
-    <!-- Modal Agregar Rol -->
     <x-admin.form-modal class="nunito-bold" modalName="$store.roles.isCreateOpen" title="Agregar Rol" submitLabel="Guardar Rol" maxWidth="max-w-xl" formId="form-create-role">
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
@@ -432,7 +416,6 @@
         <div @modal-submit.window="if($event.detail.formId==='form-create-role'){ $store.roles.create() }"></div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar y Eliminar -->
     <x-admin.edit-modal class="nunito-bold" modalName="$store.roles.isEditOpen" title="Editar Rol" itemToEdit="$store.roles.current" maxWidth="max-w-xl" formId="form-edit-role">
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1 nunito-bold">Rol</label>
@@ -457,7 +440,6 @@
     <div @confirm-delete.window="$store.roles.remove()"></div>
 </div>                                                                                                                      
 
-    <!-- TAB: Objetos -->
     <div x-show="tab === 'objetos'" x-data="{ ready:false, searchObjetos:'' }" x-init="$store.objetos.init(); ready=true; $watch('searchObjetos', v => $store.objetos.setSearch(v));">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Gestión de Objetos'">
         <x-slot name="filtros">
@@ -467,7 +449,6 @@
                 'filtrosSelect' => [],
                 'ordenarOptions' => []
                 ])
-                <!-- Select dinámico de tipos -->
                 <select class="border rounded border-gray-600 text-left px-3 py-2 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" @change="$store.objetos.setTipo($event.target.value)">
                     <option value="">Todos los tipos</option>
                     <template x-for="t in $store.objetos.tipoOptions()" :key="'tipo-'+t.id">
@@ -488,7 +469,6 @@
         </x-slot>
         <x-slot name="boton"></x-slot>
 
-        <!-- Vista Tabla Desktop -->
         <div class="hidden md:block overflow-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
                 <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
@@ -522,7 +502,6 @@
             </table>
         </div>
 
-        <!-- Vista Cards Mobile -->
         <div class="md:hidden space-y-4">
             <template x-for="item in $store.objetos.items" :key="item.id">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
@@ -587,7 +566,6 @@
         </div>
     </div>
 
-    <!-- Modal Agregar Objeto -->
     <x-admin.form-modal class="nunito-bold" modalName="$store.objetos.isCreateOpen" title="Agregar Objeto" submitLabel="Guardar Objeto"
         maxWidth="max-w-xl" formId="form-create-obj">
         <div class="mb-4">
@@ -623,7 +601,6 @@
         <div @modal-submit.window="if($event.detail.formId==='form-create-obj'){ $store.objetos.create() }"></div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Objeto -->
     <x-admin.edit-modal class="nunito-bold" modalName="$store.objetos.isEditOpen" title="Editar Objeto" itemToEdit="$store.objetos.current"
         maxWidth="max-w-xl" formId="form-edit-obj">
         <div class="mb-4">
@@ -659,13 +636,11 @@
         <div @modal-submit.window="if($event.detail.formId==='form-edit-obj'){ $store.objetos.update() }"></div>
     </x-admin.edit-modal>
 
-    <!-- Modal Eliminar Objeto -->
     <x-admin.confirmation-modal class="nunito-bold" modalName="$store.objetos.isDeleteOpen" itemToDelete="$store.objetos.current" itemNameProperty="nombre_objeto"
         message="¿Estás seguro de que quieres eliminar el objeto?" />
     <div @confirm-delete.window="$store.objetos.remove()"></div>
 </div>
 
-    <!-- TAB: Asignar Rol a Usuario (dinámico) -->
     <div x-show="tab === 'asignar'" x-data="{ ready:false, searchAssign:'' }" x-init="$store.assignRoles.init(); ready=true; $watch('searchAssign', v => $store.assignRoles.setSearch(v));">
     <x-admin.tabla-crud class="nunito-bold" :titulo="'Asignación de Roles a Usuarios'">
         <x-slot name="filtros">
@@ -692,7 +667,6 @@
             </div>
         </x-slot>
 
-        <!-- Vista Tabla Desktop -->
         <div class="hidden md:block overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full text-sm text-gray-900 dark:text-gray-200">
                 <thead class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
@@ -721,7 +695,6 @@
             </table>
         </div>
 
-        <!-- Vista Cards Mobile -->
         <div class="md:hidden space-y-4">
             <template x-for="u in $store.assignRoles.items" :key="u.id">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
@@ -781,7 +754,6 @@
         </div>
     </div>
 
-    <!-- Modal Asignar Rol -->
     <x-admin.form-modal class="nunito-bold" modalName="$store.assignRoles.isAssignOpen" title="Asignar Roles a Usuario" submitLabel="Guardar" maxWidth="max-w-md" formId="form-assign-role">
         <div class="mb-4" x-show="$store.assignRoles.current">
             <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
