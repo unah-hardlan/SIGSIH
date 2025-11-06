@@ -63,10 +63,18 @@
             </x-slot>
             <x-slot name="actions">
                 <div class="flex flex-col sm:flex-row items-center gap-2">
+                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'insercion')
                     <button @click="openCreateSolicitud()"
                         class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-plus"></i> Nueva Solicitud
                     </button>
+                    @else
+                    <button disabled
+                        class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                        title="Sin permiso para crear">
+                        <i class="fas fa-plus"></i> Nueva Solicitud
+                    </button>
+                    @endperm
                     <a :href="reportUrl()" target="_blank"
                         class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-file-alt"></i> Generar Reporte
@@ -117,10 +125,20 @@
                                         class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                                         x-text="sol.estado_nombre || '—'"></span></td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                                     <button @click.prevent="openEditSolicitud(sol)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                        class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                                     <button @click.prevent="openDeleteSolicitud(sol)"
-                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                        class="text-red-500 hover:text-red-700" title="Eliminar Solicitud"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -161,14 +179,30 @@
                         <p class="text-sm text-gray-600 dark:text-gray-300" x-text="sol.descripcion_problema || '—'">
                         </p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                             <button @click.prevent="openEditSolicitud(sol)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                             <button @click.prevent="openDeleteSolicitud(sol)"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -195,10 +229,18 @@
             </x-slot>
             <x-slot name="actions">
                 <div class="flex flex-col sm:flex-row items-center gap-2">
+                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'insercion')
                     <button @click="openCreateContacto()"
                         class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-plus"></i> Nuevo Contacto
                     </button>
+                    @else
+                    <button disabled
+                        class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                        title="Sin permiso para crear">
+                        <i class="fas fa-plus"></i> Nuevo Contacto
+                    </button>
+                    @endperm
                 </div>
             </x-slot>
             <x-slot name="table">
@@ -232,10 +274,20 @@
                                 <td class="py-2 px-4" x-text="c.valor_contacto"></td>
                                 <td class="py-2 px-4" x-text="clienteLabelById(c.id_cliente_fk) || '—'"></td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                                     <button @click.prevent="openEditContacto(c)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                        class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                                     <button @click.prevent="openDeleteContacto(c)"
-                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                        class="text-red-500 hover:text-red-700" title="Eliminar Contacto"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -264,14 +316,30 @@
                             <span x-text="c.valor_contacto"></span>
                         </p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                             <button @click.prevent="openEditContacto(c)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                             <button @click.prevent="openDeleteContacto(c)"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>

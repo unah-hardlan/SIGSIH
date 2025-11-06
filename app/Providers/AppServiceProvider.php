@@ -94,6 +94,18 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo \\App\\Helpers\\DateHelper::format(...([$expression])); ?>";
         });
 
+        // Directiva Blade de permisos: @perm(['Objeto','Alias'], 'accion') ... @endperm
+        // Acciones válidas: consultar | insercion | actualizacion | eliminacion | ver
+        Blade::if('perm', function ($objects, string $action) {
+            try {
+                $user = auth()->user();
+                $candidates = is_array($objects) ? $objects : [$objects];
+                return app(\App\Services\PermissionService::class)->can($user, $candidates, $action);
+            } catch (\Throwable $e) {
+                return false;
+            }
+        });
+
         // Registrar View Composers para los partials del cliente
         View::composer('cliente.partials.header', \App\Http\View\Composers\ClienteHeaderComposer::class);
         View::composer('cliente.partials.sidebar', \App\Http\View\Composers\ClienteSidebarComposer::class);

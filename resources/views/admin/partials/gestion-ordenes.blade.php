@@ -39,6 +39,7 @@
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'], 'insercion')
             <button @click="openCreateOrden()"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm w-full sm:w-auto"
                 :disabled="saving">
@@ -47,6 +48,13 @@
                         class="fas fa-spinner fa-spin"></i>
                     Guardando...</span>
             </button>
+            @else
+            <button disabled
+                class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm w-full sm:w-auto cursor-not-allowed"
+                title="Sin permiso para crear">
+                Nueva Orden
+            </button>
+            @endperm
         </x-slot>
 
         <x-slot name="table">
@@ -98,7 +106,7 @@
                                     x-text="orden.fecha_inicio || '—'"></td>
                                 <td class="py-1 px-2 text-gray-900 dark:text-gray-200"
                                     x-text="orden.fecha_finalizacion || '—'"></td>
-                                
+
 
                                 <td class="py-1 px-2">
                                     <div class="flex gap-2 items-center">
@@ -106,11 +114,23 @@
                                             class="inline-flex items-center justify-center text-xs px-2 py-1 rounded bg-emerald-500 text-white hover:bg-emerald-600" title="Ver Detalle Completo">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @perm(['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'], 'actualizacion')
                                         <a href="#" @click.prevent="openEditOrden(orden)"
                                             class="text-blue-500 hover:text-blue-700" title="Editar Orden"><i class="fas fa-edit"></i></a>
+                                        @else
+                                        <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar">
+                                            <i class="fas fa-edit"></i>
+                                        </span>
+                                        @endperm
+                                        @perm(['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'], 'eliminacion')
                                         <a href="#" @click.prevent="openDeleteOrden(orden)"
                                             class="text-red-500 hover:text-red-700" title="Eliminar Orden"><i class="fas fa-trash"></i></a>
-                                        
+                                        @else
+                                        <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </span>
+                                        @endperm
+
                                         <button @click.prevent="openVerMasModal(orden)"
                                             class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 flex items-center gap-1">
                                             <i class="fas fa-info-circle"></i> Ver más
@@ -159,14 +179,30 @@
                                 class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
                                 <i class="fas fa-eye"></i> Ver
                             </a>
+                            @perm(['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'], 'actualizacion')
                             <button @click.prevent="openEditOrden(orden)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Órdenes de Servicios','Ordenes de Servicios','Ordenes de Servicio'], 'eliminacion')
                             <button @click.prevent="openDeleteOrden(orden)"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                             <button @click.prevent="openVerMasModal(orden)"
                                 class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 flex items-center gap-1">
                                 <i class="fas fa-info-circle"></i> Ver más
@@ -690,91 +726,90 @@
             </div>
         </div>
     </x-admin.edit-modal>
-    
+
     <!-- Modal Confirmar Eliminación Orden -->
     <x-admin.confirmation-modal modal-name="isDeleteModalOpen" title="Eliminar Orden de Servicio"
         item-to-delete="ordenToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar la orden ID" />
-    
-    
+
+
     <!-- INICIO: Nuevo Modal para "Ver Más" -->
     <!-- INICIO: Modal "Ver Más" con Transición y Estado Final Correctos -->
-<div x-show="isVerMasModalOpen"
-    class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
-    style="display: none;"
-    x-cloak>
-    
-    <!-- Fondo oscuro y desenfocado -->
     <div x-show="isVerMasModalOpen"
-        x-transition:enter="ease-out duration-300"
-        x-transition:enter-start="opacity-0 backdrop-blur-none"
-        x-transition:enter-end="opacity-100 backdrop-blur-md"
-        x-transition:leave="ease-in duration-200"
-        x-transition:leave-start="opacity-100 backdrop-blur-md"
-        x-transition:leave-end="opacity-0 backdrop-blur-none"
-        
-        class="fixed inset-0 bg-gray-900/75 backdrop-blur transition-all" 
-        
-        @click="isVerMasModalOpen = false; ordenSeleccionada = null">
-    </div>
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
+        style="display: none;"
+        x-cloak>
 
-    <!-- Contenido del Modal -->
-    <div x-show="isVerMasModalOpen"
-        x-transition:enter="ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-        x-transition:leave="ease-in duration-200"
-        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-        class="relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full m-4"
-        role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-        
-        <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div class="sm:flex sm:items-start">
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 nunito-bold" id="modal-headline">
-                        Detalles Adicionales (Orden #<span x-text="ordenSeleccionada?.numero || ''"></span>)
-                    </h3>
-                    <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                        <template x-if="ordenSeleccionada">
-                            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                                <div class="sm:col-span-2">
-                                    <dt class="font-medium text-gray-900 dark:text-white">Código de Cotización</dt>
-                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.id_cotizacion) ? formatCotLabel(ordenSeleccionada.raw?.cotizacion || { id: ordenSeleccionada.id_cotizacion, fecha_cotizacion: ordenSeleccionada.raw?.fecha_cotizacion || '' }) : '—'"></dd>
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <dt class="font-medium text-gray-900 dark:text-white">Repuestos</dt>
-                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.repuestos_summary) || '—'"></dd>
-                                </div>
-                                 <div class="sm:col-span-2">
-                                    <dt class="font-medium text-gray-900 dark:text-white">Observaciones</dt>
-                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.observaciones) || '—'"></dd>
-                                </div>
-                                 <div class="sm:col-span-2">
-                                    <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Cliente</dt>
-                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_cliente) || '—'"></dd>
-                                </div>
-                                 <div class="sm:col-span-2">
-                                    <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Técnico</dt>
-                                    <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_tecnico) || '—'"></dd>
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <dt class="font-medium text-gray-900 dark:text-white">Calificación</dt>
-                                    <dd class="mt-1 capitalize" x-text="(ordenSeleccionada && ordenSeleccionada.calificacion_servicio) || 'Sin calificar'"></dd>
-                                </div>
-                            </dl>
-                        </template>
+        <!-- Fondo oscuro y desenfocado -->
+        <div x-show="isVerMasModalOpen"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 backdrop-blur-none"
+            x-transition:enter-end="opacity-100 backdrop-blur-md"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 backdrop-blur-md"
+            x-transition:leave-end="opacity-0 backdrop-blur-none"
+
+            class="fixed inset-0 bg-gray-900/75 backdrop-blur transition-all"
+
+            @click="isVerMasModalOpen = false; ordenSeleccionada = null">
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div x-show="isVerMasModalOpen"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full m-4"
+            role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 nunito-bold" id="modal-headline">
+                            Detalles Adicionales (Orden #<span x-text="ordenSeleccionada?.numero || ''"></span>)
+                        </h3>
+                        <div class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+                            <template x-if="ordenSeleccionada">
+                                <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                                    <div class="sm:col-span-2">
+                                        <dt class="font-medium text-gray-900 dark:text-white">Código de Cotización</dt>
+                                        <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.id_cotizacion) ? formatCotLabel(ordenSeleccionada.raw?.cotizacion || { id: ordenSeleccionada.id_cotizacion, fecha_cotizacion: ordenSeleccionada.raw?.fecha_cotizacion || '' }) : '—'"></dd>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <dt class="font-medium text-gray-900 dark:text-white">Repuestos</dt>
+                                        <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.repuestos_summary) || '—'"></dd>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <dt class="font-medium text-gray-900 dark:text-white">Observaciones</dt>
+                                        <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.observaciones) || '—'"></dd>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Cliente</dt>
+                                        <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_cliente) || '—'"></dd>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <dt class="font-medium text-gray-900 dark:text-white">Diagnóstico Técnico</dt>
+                                        <dd class="mt-1" x-text="(ordenSeleccionada && ordenSeleccionada.diagnostico_tecnico) || '—'"></dd>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <dt class="font-medium text-gray-900 dark:text-white">Calificación</dt>
+                                        <dd class="mt-1 capitalize" x-text="(ordenSeleccionada && ordenSeleccionada.calificacion_servicio) || 'Sin calificar'"></dd>
+                                    </div>
+                                </dl>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button @click="isVerMasModalOpen = false; ordenSeleccionada = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
-                Cerrar
-            </button>
+            <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button @click="isVerMasModalOpen = false; ordenSeleccionada = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
+    <!-- FIN: Modal "Ver Más" -->
 </div>
-<!-- FIN: Modal "Ver Más" -->
-</div>
-

@@ -32,10 +32,18 @@
         </x-slot>
         <x-slot name="actions">
             <div class="flex flex-col gap-2 w-full sm:w-auto">
+                @perm(['Empresas','Gestión de Empresas','Gestion de Empresas'], 'insercion')
                 <button @click="isEmpresaModalOpen = true"
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                     Nueva Empresa
                 </button>
+                @else
+                <button disabled
+                    class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed"
+                    title="Sin permiso para crear">
+                    Nueva Empresa
+                </button>
+                @endperm
                 <a :href="reportUrl()" target="_blank"
                     class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                     <i class="fas fa-file-alt"></i> Generar Reporte
@@ -49,7 +57,7 @@
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Nombre Comercial</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Razón Social</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Descripción</th>
-                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Número de identificación fiscal</</th>
+                        <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Número de identificación fiscal</< /th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Fecha Registro</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Horario</th>
                         <th class="py-2 px-4 text-left nunito-bold dark:text-gray-300">Estado</th>
@@ -86,10 +94,18 @@
                                         x-text="e.estado_label"></span>
                                 </td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Empresas','Gestión de Empresas','Gestion de Empresas'], 'actualizacion')
                                     <a href="#" @click.prevent="openEmpresaModal(true, e)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                        class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Empresas','Gestión de Empresas','Gestion de Empresas'], 'eliminacion')
                                     <a href="#" @click.prevent="openDeleteEmpresaModal(e)"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -112,8 +128,8 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400" x-text="e.razon_social"></p>
                         </div>
                         <span class="px-2 py-1 rounded text-xs font-semibold"
-                              :class="e.estado_label==='Activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'"
-                              x-text="e.estado_label"></span>
+                            :class="e.estado_label==='Activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'"
+                            x-text="e.estado_label"></span>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-300" x-text="e.descripcion_empresa || '—'"></p>
                     <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300">
@@ -122,12 +138,24 @@
                         <div class="col-span-2"><span class="nunito-bold">Horario:</span> <span x-text="e.horario_atencion || '—'"></span></div>
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        @perm(['Empresas','Gestión de Empresas','Gestion de Empresas'], 'actualizacion')
                         <button @click="openEmpresaModal(true, e)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                             <i class="fas fa-edit"></i> Editar
                         </button>
+                        @else
+                        <button class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1" disabled title="Sin permiso para editar">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        @endperm
+                        @perm(['Empresas','Gestión de Empresas','Gestion de Empresas'], 'eliminacion')
                         <button @click="openDeleteEmpresaModal(e)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                             <i class="fas fa-trash"></i> Eliminar
                         </button>
+                        @else
+                        <button class="px-3 py-1 text-xs bg-red-600/50 text-white rounded cursor-not-allowed flex items-center gap-1" disabled title="Sin permiso para eliminar">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                        @endperm
                     </div>
                 </div>
             </template>
@@ -262,7 +290,7 @@
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
                 </select>
-                
+
             </div>
         </div>
     </x-admin.form-modal>
