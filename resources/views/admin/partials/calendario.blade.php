@@ -1,5 +1,9 @@
 <div x-data="{
     tab: 'calendario',
+    // Permisos inyectados desde servidor
+    canInsertCal: @perm(['Gestión de Calendario','Gestion de Calendario'], 'insercion') true @else false @endperm,
+    canEditCal: @perm(['Gestión de Calendario','Gestion de Calendario'], 'actualizacion') true @else false @endperm,
+    canDeleteCal: @perm(['Gestión de Calendario','Gestion de Calendario'], 'eliminacion') true @else false @endperm,
     isAddModalOpen: false,
     isEditModalOpen: false,
     isDetailModalOpen: false,
@@ -133,6 +137,7 @@
         // Clone to break references and force Alpine reactivity
         const cloned = JSON.parse(JSON.stringify(ev));
         this.selectedEvent = cloned; 
+        if(!this.canEditCal){ this.isDetailModalOpen = true; return; }
         const raw = cloned.raw || {}; 
         const fecha = (raw.fecha||'').replace(' ','T').slice(0,16);
         this.formEvento = {
@@ -180,7 +185,7 @@
         this.openDelete(ev);
     },
     openDelete(ev){
-        if(!ev) return; this.eventToDelete = ev; this.isDeleteModalOpen = true;
+        if(!ev) return; if(!this.canDeleteCal){ window.showToast && window.showToast('Sin permiso para eliminar', 'warning'); return; } this.eventToDelete = ev; this.isDeleteModalOpen = true;
     },
     openDeleteList(ev){ if(!ev) return; this.eventToDeleteLista = ev; this.isDeleteListModalOpen = true; },
     async confirmDelete(){
@@ -359,7 +364,7 @@
                                      isToday(dayData.day) ? 'bg-blue-50 dark:bg-blue-900/40 ring-2 ring-blue-500 dark:ring-blue-400/70' : 'hover:bg-blue-50 dark:hover:bg-blue-800/40',
                                      'rounded-lg cursor-pointer transition-all px-1 pt-1 pb-2 flex flex-col gap-1 dark:border dark:border-gray-700/40'
                                  ].join(' ')"
-                                @click="if(!dayData.isEmpty){ calendarioToEdit.fecha = dayData.dateStr; openAdd(dayData.dateStr); }">
+                                @click="if(!dayData.isEmpty){ if(canInsertCal){ calendarioToEdit.fecha = dayData.dateStr; openAdd(dayData.dateStr); } else { window.showToast && window.showToast('Sin permiso para crear', 'warning'); } }">
                                 <template x-if="!dayData.isEmpty">
                                     <div class="flex flex-col h-full">
                                         <div class="flex items-center justify-between mb-1">
@@ -396,11 +401,17 @@
                                                                  'bg-emerald-100/70 dark:bg-emerald-800/40 text-emerald-700 dark:text-emerald-200 ring-emerald-300/60 dark:ring-emerald-500/40': event.estado==='Realizado',
                                                                  'bg-rose-100/70 dark:bg-rose-800/40 text-rose-700 dark:text-rose-200 ring-rose-300/60 dark:ring-rose-500/40': event.estado==='Cancelado'
                                                               }" x-text="event.hora"></span>
+                                                        @perm(['Gestión de Calendario','Gestion de Calendario'], 'eliminacion')
                                                         <button @click.stop="openDelete(event)"
                                                             class="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 flex-shrink-0"
                                                             title="Eliminar">
                                                             <i class="fas fa-trash-alt"></i>
                                                         </button>
+                                                        @else
+                                                        <span class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 cursor-not-allowed flex-shrink-0" title="Sin permiso para eliminar">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </span>
+                                                        @endperm
                                                     </div>
                                                 </div>
                                             </template>
@@ -436,12 +447,17 @@
                     <div><span class="font-bold nunito-bold">Diagnóstico:</span> <span class="nunito-regular"
                             x-text="selectedEvent?.diagnostico"></span></div>
                     <div class="flex gap-2 mt-4">
+                        @perm(['Gestión de Calendario','Gestion de Calendario'], 'actualizacion')
                         <button
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center nunito-regular"
                             @click="isEditModalOpen = true"><i class="fas fa-edit mr-2"></i>Editar</button>
                         <button
                             class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center nunito-regular"
                             @click="isCancelModalOpen = true"><i class="fas fa-ban mr-2"></i>Cancelar</button>
+                        @else
+                        <button class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded flex items-center nunito-regular cursor-not-allowed" disabled title="Sin permiso para editar"><i class="fas fa-edit mr-2"></i>Editar</button>
+                        <button class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded flex items-center nunito-regular cursor-not-allowed" disabled title="Sin permiso para actualizar"><i class="fas fa-ban mr-2"></i>Cancelar</button>
+                        @endperm
                     </div>
                 </div>
             </x-admin.edit-modal>
@@ -750,11 +766,18 @@
                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">Lista de
                     Eventos</h2>
                 <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    @perm(['Gestión de Calendario','Gestion de Calendario'], 'insercion')
                     <button
                         class="transition duration-100 ease-in-out w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm"
                         @click="openAddList()">
                         <i class="fas fa-plus mr-2"></i> Agregar Evento
                     </button>
+                    @else
+                    <button disabled title="Sin permiso para crear"
+                        class="transition duration-100 ease-in-out w-full sm:w-auto bg-gray-300 text-gray-600 font-bold py-2 px-4 flex items-center justify-center rounded-lg nunito-regular text-sm cursor-not-allowed">
+                        <i class="fas fa-plus mr-2"></i> Agregar Evento
+                    </button>
+                    @endperm
                     <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}"
                         target="_blank"
                         class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
@@ -832,16 +855,28 @@
                                 @click="selectedEventLista = ev; isDetailListModalOpen = true">
                                 <i class="fas fa-eye"></i> Ver
                             </button>
+                            @perm(['Gestión de Calendario','Gestion de Calendario'], 'actualizacion')
                             <button
                                 class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
                                 @click="openEditList(ev)">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1" disabled title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Gestión de Calendario','Gestion de Calendario'], 'eliminacion')
                             <button
                                 class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
                                 @click="openDeleteList(ev)">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button class="bg-red-600/50 text-white px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1" disabled title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -1175,15 +1210,15 @@
             <div
                 @modal-submit.window="if($event.detail.formId==='form-add-event-list' && !submitting){ const f=document.getElementById('form-add-event-list'); if(f && !f.reportValidity()){ return; } submitting=true; window.calendarioApiHandlers.createEvent($data, normalizeForm(formEventoLista)).finally(()=>{ submitting=false; isAddListModalOpen=false; resetFormLista(); }); }">
             </div>
-                <div class="hidden"
-                    x-init="resetFormLista = () => { const now=new Date(); const pad=n=>String(n).padStart(2,'0'); const fecha=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T08:00`; formEventoLista = { fecha, descripcion_calendario:'', observaciones_calendario:'', id_estado_calendario_fk:'', id_agencias_fk:'', id_orden_servicio_fk:'', id_tipo_mantenimiento_fk:'', id_cliente_fk:'', _touched: {} }; }; normalizeForm = (f) => ({ ...f, fecha: f.fecha?.includes('T') ? f.fecha.replace('T',' ') + ':00' : f.fecha });">
+            <div class="hidden"
+                x-init="resetFormLista = () => { const now=new Date(); const pad=n=>String(n).padStart(2,'0'); const fecha=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T08:00`; formEventoLista = { fecha, descripcion_calendario:'', observaciones_calendario:'', id_estado_calendario_fk:'', id_agencias_fk:'', id_orden_servicio_fk:'', id_tipo_mantenimiento_fk:'', id_cliente_fk:'', _touched: {} }; }; normalizeForm = (f) => ({ ...f, fecha: f.fecha?.includes('T') ? f.fecha.replace('T',' ') + ':00' : f.fecha });">
             </div>
         </x-admin.form-modal>
 
         <!-- Editar -->
         <x-admin.edit-modal class="nunito-bold" modalName="isEditListModalOpen" title="Editar Evento"
             itemToEdit="selectedEventLista" :formId="'form-edit-event-list'">
-                <div class="space-y-4"
+            <div class="space-y-4"
                 x-init="$watch('selectedEventLista', (ev) => { if(!ev) return; formEventoLista = { fecha: (ev.raw?.fecha||'').replace(' ','T').slice(0,16), descripcion_calendario: ev.raw?.descripcion_calendario||'', observaciones_calendario: ev.raw?.observaciones_calendario||'', id_estado_calendario_fk: ev.raw?.id_estado_calendario_fk||'', id_agencias_fk: ev.raw?.id_agencias_fk||'', id_orden_servicio_fk: ev.raw?.id_orden_servicio_fk||'', id_tipo_mantenimiento_fk: ev.raw?.id_tipo_mantenimiento_fk||'', id_cliente_fk: ev.raw?.id_cliente_fk||'', _touched: {} }; })">
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
@@ -1208,15 +1243,15 @@
                         <template
                             x-for="c in (formEventoLista.id_agencias_fk ? (filteredClientes || []) : catalogClientes)"
                             :key="c.id">
-                    <select x-model.number="formEventoLista.id_cliente_fk" required @change="formEventoLista._touched.cliente = true"
-                        class="border rounded px-3 py-2 w-full nunito-regular"
-                        :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'border-red-500' : ''">
-                        <option value="" disabled>Seleccione...</option>
-                        <template x-for="c in catalogClientes" :key="c.id">
-                            <option :value="c.id" x-text="c.nombre"></option>
-                        </template>
-                    </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+                            <select x-model.number="formEventoLista.id_cliente_fk" required @change="formEventoLista._touched.cliente = true"
+                                class="border rounded px-3 py-2 w-full nunito-regular"
+                                :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'border-red-500' : ''">
+                                <option value="" disabled>Seleccione...</option>
+                                <template x-for="c in catalogClientes" :key="c.id">
+                                    <option :value="c.id" x-text="c.nombre"></option>
+                                </template>
+                            </select>
+                            <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>

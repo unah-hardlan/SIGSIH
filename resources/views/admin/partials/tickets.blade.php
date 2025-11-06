@@ -198,9 +198,15 @@
     </x-slot>
 
     <x-slot name="actions">
+      @perm(['Gestión de tickets','Gestion de tickets','Tickets'], 'insercion')
       <button @click="openAdd()"
         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
         ticket</button>
+      @else
+      <button disabled title="Sin permiso para crear"
+        class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed">Nuevo
+        ticket</button>
+      @endperm
       <a href="/admin/reportes-header?modulo=Tickets&fecha={{ now()->format('d-M-Y') }}" target="_blank"
         class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
         <i class="fas fa-file-alt"></i> Generar Reporte
@@ -259,10 +265,16 @@
                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200 max-w-xs truncate"
                   x-text="t.descripcion_ticket"></td>
                 <td class="py-2 px-4 flex items-center gap-2">
-                  <a href="#" @click.prevent="openEdit(t)"
-                    class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                  <a href="#" @click.prevent="openDelete(t)"
-                    class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                  @perm(['Gestión de tickets','Gestion de tickets','Tickets'], 'actualizacion')
+                  <a href="#" @click.prevent="openEdit(t)" class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></a>
+                  @else
+                  <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                  @endperm
+                  @perm(['Gestión de tickets','Gestion de tickets','Tickets'], 'eliminacion')
+                  <a href="#" @click.prevent="openDelete(t)" class="text-red-500 hover:text-red-700" title="Eliminar"><i class="fas fa-trash"></i></a>
+                  @else
+                  <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                  @endperm
                 </td>
               </tr>
             </template>
@@ -315,12 +327,22 @@
                   x-text="t.descripcion_ticket"></span></div>
             </div>
             <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              @perm(['Gestión de tickets','Gestion de tickets','Tickets'], 'actualizacion')
               <button @click="openEdit(t)"
                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular"><i
                   class="fas fa-edit"></i> Editar</button>
+              @else
+              <button class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1 nunito-regular" disabled title="Sin permiso para editar"><i
+                  class="fas fa-edit"></i> Editar</button>
+              @endperm
+              @perm(['Gestión de tickets','Gestion de tickets','Tickets'], 'eliminacion')
               <button @click="openDelete(t)"
                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular"><i
                   class="fas fa-trash"></i> Eliminar</button>
+              @else
+              <button class="px-3 py-1 text-xs bg-red-600/50 text-white rounded cursor-not-allowed flex items-center gap-1 nunito-regular" disabled title="Sin permiso para eliminar"><i
+                  class="fas fa-trash"></i> Eliminar</button>
+              @endperm
             </div>
           </div>
         </template>

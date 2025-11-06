@@ -32,7 +32,7 @@
                                     <option
                                         :value="estado.nombre_estado || estado.nombre || (estado.id || estado.id_estado_factura_pk)"
                                         x-text="estado.nombre_estado || estado.nombre"></option>
-                                </template>                                                                                                                                                                                     
+                                </template>
                             </select>
                         </div>
                     </div>
@@ -40,10 +40,17 @@
             </x-slot>
             <x-slot name="actions">
                 <div class="flex flex-col gap-2 w-full">
+                    @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'insercion')
                     <button @click="isFacturaModalOpen = true; formFactura._touched = {}"
                         class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm">
                         Nueva Factura
                     </button>
+                    @else
+                    <button type="button" disabled title="Sin permiso para crear facturas"
+                        class="w-full bg-green-600 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm opacity-60 cursor-not-allowed">
+                        Nueva Factura
+                    </button>
+                    @endperm
                     <a href="/admin/reportes-header?modulo=Facturas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
                         class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-file-alt"></i> Generar Reporte
@@ -112,10 +119,18 @@
                                             class="fas fa-eye"></i> Ver</a>
                                     <button @click.prevent="openDetalleForFactura(factura)"
                                         class="text-gray-300 hover:text-white px-2 py-1 bg-gray-700 rounded nunito-regular text-xs">Detalles</button>
+                                    @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'actualizacion')
                                     <button @click.prevent="formEditFactura._touched = {}; openEditFactura(factura)"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span class="text-blue-300 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'eliminacion')
                                     <button @click.prevent="isDeleteFacturaModalOpen = true; itemToDelete = factura"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -162,12 +177,24 @@
                             <a :href="'/admin/formato-factura/' + (factura.id || factura.id_factura_pk)" target="_blank"
                                 class="px-3 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 flex items-center gap-1"><i
                                     class="fas fa-eye"></i> Ver</a>
+                            @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'actualizacion')
                             <button @click.prevent="formEditFactura._touched = {}; openEditFactura(factura)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i
                                     class="fas fa-edit"></i> Editar</button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para editar"
+                                class="px-3 py-1 text-xs bg-blue-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1"><i
+                                    class="fas fa-edit"></i> Editar</button>
+                            @endperm
+                            @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'eliminacion')
                             <button @click.prevent="isDeleteFacturaModalOpen = true; itemToDelete = factura"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i
                                     class="fas fa-trash"></i> Eliminar</button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para eliminar"
+                                class="px-3 py-1 text-xs bg-red-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1"><i
+                                    class="fas fa-trash"></i> Eliminar</button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -180,13 +207,13 @@
     <!-- Modales Factura -->
     <x-admin.form-modal class="nunito-bold" modalName="isFacturaModalOpen" title="Nueva Factura"
         submitLabel="Guardar Factura" maxWidth="max-w-2xl" formId="formFactura">
-            <template x-if="formError">
-                <div class="mb-3 p-3 rounded border border-red-300 bg-red-50 text-red-700 text-sm nunito-regular">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    <span x-text="formError"></span>
-                </div>
-            </template>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <template x-if="formError">
+            <div class="mb-3 p-3 rounded border border-red-300 bg-red-50 text-red-700 text-sm nunito-regular">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span x-text="formError"></span>
+            </div>
+        </template>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {{-- N° de Factura se genera automáticamente --}}
             <div>
                 <label for="fecha_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
@@ -394,9 +421,15 @@
             </x-slot>
             <x-slot name="actions">
                 <div class="w-full sm:w-auto flex justify-center">
+                    @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'insercion')
                     <button @click.prevent="openCreateDetalleModal()"
                         class="w-full sm:w-48 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap">Nuevo
                         Detalle</button>
+                    @else
+                    <button type="button" disabled title="Sin permiso para agregar detalles"
+                        class="w-full sm:w-48 bg-green-400 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap opacity-60 cursor-not-allowed">Nuevo
+                        Detalle</button>
+                    @endperm
                 </div>
             </x-slot>
             <x-slot name="table">
@@ -443,10 +476,18 @@
                                 <td class="py-2 px-4" x-text="detalle.total_linea"></td>
                                 <td class="py-2 px-4" x-text="detalle.descuento"></td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'actualizacion')
                                     <button @click.prevent="openEditDetalleModal(detalle)"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span class="text-blue-300 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Facturas','Gestión de Facturas','Gestion de Facturas','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'eliminacion')
                                     <button @click.prevent="openDeleteDetalleModal(detalle)"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>

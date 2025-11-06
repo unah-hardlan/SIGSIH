@@ -128,12 +128,12 @@
         }
     }
 }" x-init="fetchCai()"
-x-effect="
+    x-effect="
 $watch('searchCai', () => { currentPage = 1; });
 $watch('estadoCaiFiltro', () => { currentPage = 1; });
 $watch('ordenarPor', () => { currentPage = 1; });
 "
-@modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
+    @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleDelete()">
 
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">CAI</h1>
@@ -142,14 +142,14 @@ $watch('ordenarPor', () => { currentPage = 1; });
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             @include('partials.filtros-generales', [
-                'searchModel' => 'searchCai',
-                'ordenarModel' => 'ordenarPor',
-                'ordenarOptions' => [
-                    'codigo' => 'Código',
-                    'rango_inicio' => 'Rango Inicio',
-                    'rango_fin' => 'Rango Fin',
-                    'fecha_limite' => 'Fecha Límite',
-                ]
+            'searchModel' => 'searchCai',
+            'ordenarModel' => 'ordenarPor',
+            'ordenarOptions' => [
+            'codigo' => 'Código',
+            'rango_inicio' => 'Rango Inicio',
+            'rango_fin' => 'Rango Fin',
+            'fecha_limite' => 'Fecha Límite',
+            ]
             ])
             <select x-model="estadoCaiFiltro"
                 class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
@@ -162,10 +162,17 @@ $watch('ordenarPor', () => { currentPage = 1; });
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['CAI','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'insercion')
             <button @click="isCaiModalOpen = true; formCai._touched = {}"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo CAI
             </button>
+            @else
+            <button type="button" disabled title="Sin permiso para crear CAI"
+                class="bg-green-600 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm opacity-60 cursor-not-allowed">
+                Nuevo CAI
+            </button>
+            @endperm
             <a href="/admin/reportes-header?modulo=CAI&fecha={{ now()->format('d-M-Y') }}" target="_blank"
                 class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
                 <i class="fas fa-file-alt"></i> Generar Reporte
@@ -215,6 +222,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                         x-text="cai.estado_cai?.nombre || 'Sin estado'"></span>
                                 </td>
                                 <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === cais.length - 1 }">
+                                    @perm(['CAI','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'actualizacion')
                                     <a href="#" @click.prevent="formEditCai._touched = {}; itemToEdit = { 
                                             ...cai,
                                             codigo: window.caiApiHandlers.normalizeCodigo(cai.codigo),
@@ -224,8 +232,16 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                             fecha_limite: window.caiApiHandlers.normalizeFecha(cai.fecha_limite)
                                         }; isEditCaiModalOpen = true;"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-blue-300 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+
+                                    @perm(['CAI','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'eliminacion')
                                     <a href="#" @click.prevent="itemToDelete = {...cai}; isDeleteCaiModalOpen = true;"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -236,7 +252,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
 
         <x-slot name="cards">
 
-                <template x-if="loadingCai">
+            <template x-if="loadingCai">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center text-gray-500 nunito-regular">
                     <i class="fas fa-spinner fa-spin mr-2"></i> Cargando registros CAI...
                 </div>
@@ -270,6 +286,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                     x-text="cai.consecutivo_actual || '0'"></span></div>
                         </div>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['CAI','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'actualizacion')
                             <button @click.prevent="formEditCai._touched = {}; itemToEdit = { 
                                     ...cai,
                                     codigo: window.caiApiHandlers.normalizeCodigo(cai.codigo),
@@ -281,10 +298,24 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para editar"
+                                class="px-3 py-1 text-xs bg-blue-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+
+                            @perm(['CAI','Facturación','Facturacion','Gestión de Facturacion','Gestion de Facturacion'], 'eliminacion')
                             <button @click.prevent="itemToDelete = {...cai}; isDeleteCaiModalOpen = true;"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para eliminar"
+                                class="px-3 py-1 text-xs bg-red-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -348,7 +379,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
             <div>
                 <label for="fecha_limite" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha
                     Límite</label>
-                <input type="date" id="fecha_limite" name="fecha_limite" x-model="fecha_limite" x-ref="fecha_limite" 
+                <input type="date" id="fecha_limite" name="fecha_limite" x-model="fecha_limite" x-ref="fecha_limite"
                     placeholder="dd/mm/aaaa o yyyy-mm-dd"
                     title="Puede ingresar dd/mm/aaaa o yyyy-mm-dd. Se normaliza a yyyy-mm-dd."
                     @blur="fecha_limite = window.caiApiHandlers.normalizeFecha(fecha_limite); formCai._touched.fecha_limite = true" @input="formCai._touched.fecha_limite = true"

@@ -546,10 +546,18 @@
 
         <x-slot name="actions">
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'], 'insercion')
                 <button @click="openCreate()"
                     class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                     <i class="fas fa-plus"></i> Generar Cotización
                 </button>
+                @else
+                <button disabled
+                    class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed"
+                    title="Sin permiso para crear">
+                    <i class="fas fa-plus"></i> Generar Cotización
+                </button>
+                @endperm
             </div>
         </x-slot>
 
@@ -611,10 +619,24 @@
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
                                         class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1"><i
                                             class='fas fa-eye'></i> Ver</a>
-                                    <a href="#" @click.prevent="openEdit(c)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                                    'actualizacion')
+                                    <a href="#" @click.prevent="openEdit(c)" class="text-blue-500 hover:text-blue-700"
+                                        title="Editar"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i
+                                            class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                                    'eliminacion')
                                     <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
-                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                        class="text-red-500 hover:text-red-700" title="Eliminar"><i
+                                            class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -673,14 +695,30 @@
                                 class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
                                 <i class="fas fa-database"></i> Items
                             </button>
+                            @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'], 'actualizacion')
                             <button @click.prevent="openEdit(c)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'], 'eliminacion')
                             <button @click.prevent="deleteModal=true; selectedItem=c.id"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -702,10 +740,18 @@
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                     <input type="text" placeholder="Buscar descripción..." x-model="itemsSearch"
                         class="w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-gray-200 nunito-regular focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'], 'insercion')
                     <button type="button" @click="openNewItem()"
                         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
                         <i class="fas fa-plus mr-1"></i> Nuevo
                     </button>
+                    @else
+                    <button type="button" disabled
+                        class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto cursor-not-allowed"
+                        title="Sin permiso para agregar items">
+                        <i class="fas fa-plus mr-1"></i> Nuevo
+                    </button>
+                    @endperm
                     <template x-if="itemMode!=='list'">
                         <button type="button" @click="cancelItemEdit()"
                             class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg nunito-regular w-full sm:w-auto">
@@ -830,12 +876,30 @@
                                         x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(it.total)"></span>
                                 </div>
                                 <div class="flex justify-end gap-2 pt-2">
-                                    <button @click.prevent="openEditItem(it)" class="text-blue-500 hover:text-blue-600">
+                                    @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                                    'actualizacion')
+                                    <button @click.prevent="openEditItem(it)" class="text-blue-500 hover:text-blue-600"
+                                        title="Editar item">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button @click.prevent="deleteItem(it)" class="text-red-500 hover:text-red-600">
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed"
+                                        title="Sin permiso para editar items">
+                                        <i class="fas fa-edit"></i>
+                                    </span>
+                                    @endperm
+                                    @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                                    'eliminacion')
+                                    <button @click.prevent="deleteItem(it)" class="text-red-500 hover:text-red-600"
+                                        title="Eliminar item">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed"
+                                        title="Sin permiso para eliminar items">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    @endperm
                                 </div>
                             </div>
                         </div>
@@ -889,14 +953,30 @@
                                     </td>
                                     <td class="py-2 px-4 text-center">
                                         <div class="flex justify-center gap-2">
+                                            @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                                            'actualizacion')
                                             <button @click.prevent="openEditItem(it)"
-                                                class="text-blue-500 hover:text-blue-600">
+                                                class="text-blue-500 hover:text-blue-600" title="Editar item">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            @else
+                                            <span class="text-gray-400 cursor-not-allowed"
+                                                title="Sin permiso para editar items">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                            @endperm
+                                            @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
+                                            'eliminacion')
                                             <button @click.prevent="deleteItem(it)"
-                                                class="text-red-500 hover:text-red-600">
+                                                class="text-red-500 hover:text-red-600" title="Eliminar item">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                            @else
+                                            <span class="text-gray-400 cursor-not-allowed"
+                                                title="Sin permiso para eliminar items">
+                                                <i class="fas fa-trash"></i>
+                                            </span>
+                                            @endperm
                                         </div>
                                     </td>
                                 </tr>
