@@ -42,6 +42,7 @@ class PermissionService
             'insercion' => 'permiso_insercion',
             'actualizacion' => 'permiso_actualizar',
             'eliminacion' => 'permiso_eliminacion',
+            'ver' => 'permiso_ver',
         ];
         $col = $map[$accion] ?? null;
         if (!$col) return false;
@@ -54,6 +55,8 @@ class PermissionService
                 ->whereIn('id_rol_fk', $roleIds)
                 ->where($col, true)
                 ->exists();
+            // A partir de la introducción de permiso_ver explícito,
+            // no realizar fallback a permiso_consultar para la acción 'ver'.
             if ($ok) return true;
         }
 

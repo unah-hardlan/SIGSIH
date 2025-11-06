@@ -120,8 +120,14 @@ Route::get('/api-web/dashboard/proyectos-estado', [DashboardController::class, '
     ->middleware(['auth.jwt.web', 'admin.only'])
     ->name('dashboard.proyectos.estado.web');
 
-// Catálogo de Estados de Solicitud (cookie-auth para SPA admin)
+// Catálogo de Estados de Solicitud (cookie-auth para SPA). Permitir a quien tenga "Leer" en Solicitudes
 Route::get('/api-web/estados-solicitud', function (\Illuminate\Http\Request $request) {
+    $user = auth()->user();
+    $perm = app(\App\Services\PermissionService::class);
+    if (!$perm->can($user, ['Solicitudes', 'Gestión de Solicitudes', 'Gestion de Solicitudes'], 'consultar')) {
+        return response()->json(['error' => 'Permiso denegado'], 403);
+    }
+
     $items = DB::table('tbl_estado_solicitud')
         ->select([
             'id_estado_solicitud_pk as id',
@@ -138,7 +144,7 @@ Route::get('/api-web/estados-solicitud', function (\Illuminate\Http\Request $req
         'data' => $items,
         'meta' => ['count' => $items->count()],
     ]);
-})->middleware(['auth.jwt.web', 'admin.only'])->name('api.web.estados.solicitud');
+})->middleware(['auth.jwt.web'])->name('api.web.estados.solicitud');
 
 // API-like fallback para cambiar contraseña del perfil (cookie-based auth)
 Route::post('/api-web/me/password', [ProfileController::class, 'changePassword'])
@@ -146,11 +152,25 @@ Route::post('/api-web/me/password', [ProfileController::class, 'changePassword']
     ->name('perfil.password.web');
 
 // API-like para configuración del sistema (parámetros generales)
-Route::get('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'show'])
-    ->middleware(['auth.jwt.web', 'admin.only'])
+// Permitir mediante permisos de "Mantenimiento del sistema"
+Route::get('/api-web/system-settings', function (Request $request) {
+    $user = auth()->user();
+    $perm = app(\App\Services\PermissionService::class);
+    if (!$perm->can($user, ['Mantenimiento del Sistema', 'Mantenimiento del sistema', 'Mantenimiento'], 'consultar')) {
+        return response()->json(['error' => 'Permiso denegado'], 403);
+    }
+    return app(\App\Http\Controllers\SystemSettingsController::class)->show($request);
+})->middleware(['auth.jwt.web'])
     ->name('system.settings.show.web');
-Route::post('/api-web/system-settings', [\App\Http\Controllers\SystemSettingsController::class, 'update'])
-    ->middleware(['auth.jwt.web', 'admin.only'])
+
+Route::post('/api-web/system-settings', function (Request $request) {
+    $user = auth()->user();
+    $perm = app(\App\Services\PermissionService::class);
+    if (!$perm->can($user, ['Mantenimiento del Sistema', 'Mantenimiento del sistema', 'Mantenimiento'], 'actualizacion')) {
+        return response()->json(['error' => 'Permiso denegado'], 403);
+    }
+    return app(\App\Http\Controllers\SystemSettingsController::class)->update($request);
+})->middleware(['auth.jwt.web'])
     ->name('system.settings.update.web');
 
 // Notificaciones (cookie-auth para admin y cliente)
