@@ -340,6 +340,10 @@ import {
     faTags,
     faHeadset,
     faHome,
+    faExternalLinkAlt,
+    faExclamationCircle,
+    faStar,
+    faExchangeAlt,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -443,6 +447,10 @@ library.add(
     faFlag,
     faTags,
     faHeadset,
+    faExternalLinkAlt,
+    faExclamationCircle,
+    faStar,
+    faExchangeAlt,
     faHome
 );
 dom.watch();

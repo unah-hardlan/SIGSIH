@@ -37,7 +37,7 @@
             </label>
             <!-- Notificaciones -->
             <div x-data="notificationsDropdown()" x-init="init()" class="relative">
-                <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600">
+                <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600 mt-1">
                     <i class="fas fa-bell text-base sm:text-lg"></i>
                     <template x-if="unread > 0">
                         <span

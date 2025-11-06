@@ -4,12 +4,7 @@
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="ordenesCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Órdenes de Servicio</h1>
-        <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span class="px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">Portal
-                Cliente</span>
-            <span>/</span>
-            <span class="text-gray-600 dark:text-gray-300">Órdenes</span>
-        </div>
+        
     </div>
 
     <!-- Tarjetas resumen -->

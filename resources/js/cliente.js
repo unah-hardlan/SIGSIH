@@ -39,6 +39,7 @@ import {
     faExternalLinkAlt,
     faExclamationCircle,
     faStar,
+    faTools,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -75,7 +76,8 @@ library.add(
     faTicketAlt,
     faExternalLinkAlt,
     faExclamationCircle,
-    faStar
+    faStar,
+    faTools
 );
 
 dom.watch();
@@ -111,7 +113,7 @@ document.addEventListener("alpine:init", () => {
             Alpine.plugin(collapse);
             window.__ALPINE_COLLAPSE_REGISTERED__ = true;
         }
-    } catch (_) { }
+    } catch (_) {}
 });
 
 window.__CLIENTE_BUNDLE_OK__ = true;
@@ -178,7 +180,7 @@ Alpine.store("navigation", {
         mainEl.innerHTML = DOMPurify.sanitize(html);
         try {
             document.dispatchEvent(new CustomEvent("app:view-loaded"));
-        } catch (_) { }
+        } catch (_) {}
     },
 
     updateState(url, viewName) {
