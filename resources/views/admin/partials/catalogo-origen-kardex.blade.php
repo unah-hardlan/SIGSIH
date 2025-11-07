@@ -94,10 +94,17 @@
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'insercion')
             <button @click="formOrigen = { _touched: {} }; nombre_origen = ''; descripcion_origen = ''; activo = true; isModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm">
                 Nuevo Origen
             </button>
+            @else
+            <button type="button" disabled title="Sin permiso para crear"
+                class="bg-gray-400 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm opacity-70 cursor-not-allowed">
+                Nuevo Origen
+            </button>
+            @endperm
         </x-slot>
 
         <x-slot name="table">
@@ -135,12 +142,20 @@
                                 </span>
                             </td>
                             <td class="py-2 px-4 flex gap-2">
+                                @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'actualizacion')
                                 <a href="#"
                                     @click.prevent="formEditOrigen = { _touched: {} }; itemToEdit = {...item}; edit_nombre_origen = item.nombre_origen || ''; edit_descripcion_origen = item.descripcion_origen || ''; edit_activo = !!item.activo; isEditModalOpen=true"
                                     class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                @else
+                                <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                @endperm
+                                @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'eliminacion')
                                 <a href="#"
                                     @click.prevent="isDeleteModalOpen=true; itemToDelete = {id_origen_pk: item.id_origen_pk, nombre_origen: item.nombre_origen}"
                                     class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                @else
+                                <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                @endperm
                             </td>
                         </tr>
                     </template>
@@ -168,16 +183,30 @@
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-300" x-text="item.descripcion_origen"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t dark:border-gray-700">
+                            @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'actualizacion')
                             <button
                                 @click.prevent="formEditOrigen = { _touched: {} }; itemToEdit = {...item}; edit_nombre_origen = item.nombre_origen || ''; edit_descripcion_origen = item.descripcion_origen || ''; edit_activo = !!item.activo; isEditModalOpen = true"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para editar"
+                                class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'eliminacion')
                             <button
                                 @click.prevent="isDeleteModalOpen = true; itemToDelete = {id_origen_pk: item.id_origen_pk, nombre_origen: item.nombre_origen}"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para eliminar"
+                                class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -203,31 +232,36 @@
         <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageOrigenes()" :disabled="currentPageOrigenes === 1"
-                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
                 <span>Anterior</span>
             </button>
 
             <div class="flex items-center gap-1">
                 <template x-for="page in Array.from({length: totalPagesOrigenes()}, (_, i) => i + 1).slice(Math.max(0, currentPageOrigenes - 3), currentPageOrigenes + 2)" :key="page">
                     <button @click="currentPageOrigenes = page"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                            :class="page === currentPageOrigenes ? 'bg-blue-600 text-white' : ''">
+                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        :class="page === currentPageOrigenes ? 'bg-blue-600 text-white' : ''">
                         <span x-text="page"></span>
                     </button>
                 </template>
             </div>
 
             <button @click="nextPageOrigenes()" :disabled="currentPageOrigenes === totalPagesOrigenes()"
-                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
                 <span>Siguiente</span>
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
             </button>
         </div>
     </div>
 
     <!-- Modales -->
     <div>
+        @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nuevo Origen" submitLabel="Guardar"
             formId="formOrigen" maxWidth="max-w-md">
             <div class="space-y-4">
@@ -255,7 +289,9 @@
                 </div>
             </div>
         </x-admin.form-modal>
+        @endperm
 
+        @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Origen"
             itemToEdit="itemToEdit" formId="formEditOrigen" maxWidth="max-w-md">
             <div class="space-y-4">
@@ -283,8 +319,11 @@
                 </div>
             </div>
         </x-admin.edit-modal>
+        @endperm
 
+        @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteModalOpen" itemToDelete="itemToDelete"
             itemNameProperty="nombre_origen" message="¿Estás seguro de que quieres eliminar este origen?" />
+        @endperm
     </div>
 </div>

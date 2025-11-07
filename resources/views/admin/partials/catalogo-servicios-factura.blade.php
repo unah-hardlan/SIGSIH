@@ -19,10 +19,17 @@
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'insercion')
             <button @click="formServicio = { _touched: {} }; nombre_servicio = ''; tarifa = ''; isServicioModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Servicio
             </button>
+            @else
+            <button type="button" disabled title="Sin permiso para crear"
+                class="bg-gray-400 text-white px-4 py-2 rounded-lg nunito-regular opacity-60 cursor-not-allowed whitespace-nowrap text-sm">
+                Nuevo Servicio
+            </button>
+            @endperm
         </x-slot>
 
         <x-slot name="table">
@@ -65,12 +72,20 @@
                                     x-text="'L ' + Number(servicio.tarifa ?? 0).toFixed(2)"></td>
                                 <td class="py-2 px-4 flex gap-2"
                                     :class="{ 'last:rounded-br-lg': index === paginatedServicios().length - 1 }">
+                                    @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'actualizacion')
                                     <a href="#"
                                         @click.prevent="formEditServicio = { _touched: {} }; isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'eliminacion')
                                     <a href="#"
                                         @click.prevent="isDeleteServicioModalOpen = true; itemToDelete = {id_servicio_pk: servicio.id_servicio_pk, nombre: servicio.nombre_servicio}"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -105,16 +120,30 @@
                             <span x-text="'L ' + Number(servicio.tarifa ?? 0).toFixed(2)"></span>
                         </p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'actualizacion')
                             <button
                                 @click.prevent="formEditServicio = { _touched: {} }; isEditServicioModalOpen = true; itemToEdit = {id_servicio_pk: servicio.id_servicio_pk, nombre_servicio: servicio.nombre_servicio, tarifa: servicio.tarifa}"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para editar"
+                                class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'eliminacion')
                             <button
                                 @click.prevent="isDeleteServicioModalOpen = true; itemToDelete = {id_servicio_pk: servicio.id_servicio_pk, nombre: servicio.nombre_servicio}"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para eliminar"
+                                class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -128,6 +157,7 @@
     <!-- Modales -->
     <div>
         <!-- Modal Nuevo Servicio -->
+        @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isServicioModalOpen" title="Nuevo Servicio"
             submitLabel="Guardar Servicio" formId="formServicio" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -152,8 +182,10 @@
                 </div>
             </div>
         </x-admin.form-modal>
+        @endperm
 
         <!-- Modal Editar Servicio -->
+        @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEditServicioModalOpen" title="Editar Servicio"
             itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditServicio">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,9 +210,12 @@
                 </div>
             </div>
         </x-admin.edit-modal>
+        @endperm
 
         <!-- Modal Confirmar Eliminación -->
+        @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteServicioModalOpen"
             itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este servicio?" />
+        @endperm
     </div>
 </div>

@@ -1,97 +1,97 @@
 <script>
-window.__backupDb = function() {
-    return {
-        tab: localStorage.getItem('dbTab') || 'respaldo',
-        showModal: false,
-        modalMsg: '',
-        openModal(msg) {
-            this.modalMsg = msg;
-            this.showModal = true;
-            document.documentElement.classList.add('overflow-hidden');
-        },
-        closeModal() {
-            this.showModal = false;
-            document.documentElement.classList.remove('overflow-hidden');
-        },
-        estadoConexion: 'inicial',
-        // Ruta sugerida por defecto (puedes cambiarla antes de respaldar)
-        path: '',
-        isBackingUp: false,
-        backupMsg: '',
-        downloadUrl: '',
-        driver: 'mysql',
-        respaldoExitoso: false,
-        mensajeRespaldo: '',
-        confirmPassword: '',
-        lastBackupAt: null,
-        init() {
-            const pad = n => String(n).padStart(2, '0');
-            const d = new Date();
-            const ts =
-                `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-            if (!this.path) {
-                this.path = 'C\\backups\\backup-' + ts + '.sql';
-            }
-        },
-        async doBackup() {
-            this.isBackingUp = true;
-            this.backupMsg = '';
-            try {
-                const body = {
-                    path: this.path,
-                    confirm_password: this.confirmPassword
-                };
-                const r = await fetch('/api/db/backup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(body)
-                });
-                const data = await r.json().catch(() => ({}));
-                // Soportar "soft error" (HTTP 200 con ok=false)
-                if (data && data.ok === false && (data.code === 'INVALID_CONFIRM_PASSWORD' || data.code ===
-                        'MISSING_CONFIRM_PASSWORD')) {
-                    const msg = (data && data.errors && data.errors.confirm_password && data.errors
-                        .confirm_password[0]) || data.error || 'Contraseña incorrecta';
-                    this.backupMsg = msg;
-                    this.respaldoExitoso = false;
-                    this.mensajeRespaldo = (data.code === 'MISSING_CONFIRM_PASSWORD') ? 'Falta contraseña' :
-                        'Contraseña incorrecta';
-                    return;
+    window.__backupDb = function() {
+        return {
+            tab: localStorage.getItem('dbTab') || 'respaldo',
+            showModal: false,
+            modalMsg: '',
+            openModal(msg) {
+                this.modalMsg = msg;
+                this.showModal = true;
+                document.documentElement.classList.add('overflow-hidden');
+            },
+            closeModal() {
+                this.showModal = false;
+                document.documentElement.classList.remove('overflow-hidden');
+            },
+            estadoConexion: 'inicial',
+            // Ruta sugerida por defecto (puedes cambiarla antes de respaldar)
+            path: '',
+            isBackingUp: false,
+            backupMsg: '',
+            downloadUrl: '',
+            driver: 'mysql',
+            respaldoExitoso: false,
+            mensajeRespaldo: '',
+            confirmPassword: '',
+            lastBackupAt: null,
+            init() {
+                const pad = n => String(n).padStart(2, '0');
+                const d = new Date();
+                const ts =
+                    `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+                if (!this.path) {
+                    this.path = 'C\\backups\\backup-' + ts + '.sql';
                 }
-                if (!r.ok) {
-                    // Manejo explícito de validaciones (422) o forbidden (403)
-                    if (r.status === 422 || r.status === 403) {
+            },
+            async doBackup() {
+                this.isBackingUp = true;
+                this.backupMsg = '';
+                try {
+                    const body = {
+                        path: this.path,
+                        confirm_password: this.confirmPassword
+                    };
+                    const r = await fetch('/api/db/backup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify(body)
+                    });
+                    const data = await r.json().catch(() => ({}));
+                    // Soportar "soft error" (HTTP 200 con ok=false)
+                    if (data && data.ok === false && (data.code === 'INVALID_CONFIRM_PASSWORD' || data.code ===
+                            'MISSING_CONFIRM_PASSWORD')) {
                         const msg = (data && data.errors && data.errors.confirm_password && data.errors
                             .confirm_password[0]) || data.error || 'Contraseña incorrecta';
                         this.backupMsg = msg;
                         this.respaldoExitoso = false;
-                        this.mensajeRespaldo = 'Contraseña incorrecta';
-                        return; // Evitar lanzar excepción para no llenar consola
+                        this.mensajeRespaldo = (data.code === 'MISSING_CONFIRM_PASSWORD') ? 'Falta contraseña' :
+                            'Contraseña incorrecta';
+                        return;
                     }
-                    // Otros errores
-                    const msg = data.message || data.error || 'Fallo realizando respaldo';
-                    this.backupMsg = msg;
-                    this.respaldoExitoso = false;
-                    this.mensajeRespaldo = 'Error al respaldar';
-                    return;
+                    if (!r.ok) {
+                        // Manejo explícito de validaciones (422) o forbidden (403)
+                        if (r.status === 422 || r.status === 403) {
+                            const msg = (data && data.errors && data.errors.confirm_password && data.errors
+                                .confirm_password[0]) || data.error || 'Contraseña incorrecta';
+                            this.backupMsg = msg;
+                            this.respaldoExitoso = false;
+                            this.mensajeRespaldo = 'Contraseña incorrecta';
+                            return; // Evitar lanzar excepción para no llenar consola
+                        }
+                        // Otros errores
+                        const msg = data.message || data.error || 'Fallo realizando respaldo';
+                        this.backupMsg = msg;
+                        this.respaldoExitoso = false;
+                        this.mensajeRespaldo = 'Error al respaldar';
+                        return;
+                    }
+                    this.backupMsg = `Respaldo listo: ${data.path || ''}`;
+                    this.respaldoExitoso = true;
+                    this.mensajeRespaldo = 'Respaldo exitoso';
+                    this.lastBackupAt = new Date();
+                    if (data.download_url) {
+                        this.downloadUrl = data.download_url;
+                    }
+                } finally {
+                    this.isBackingUp = false;
                 }
-                this.backupMsg = `Respaldo listo: ${data.path || ''}`;
-                this.respaldoExitoso = true;
-                this.mensajeRespaldo = 'Respaldo exitoso';
-                this.lastBackupAt = new Date();
-                if (data.download_url) {
-                    this.downloadUrl = data.download_url;
-                }
-            } finally {
-                this.isBackingUp = false;
             }
-        }
+        };
     };
-};
 </script>
 
 <div class="max-w-4xl mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="__backupDb()">
@@ -131,6 +131,7 @@ window.__backupDb = function() {
 
                     <div class="flex flex-wrap items-center gap-3">
                         <!-- Botón principal -->
+                        @perm(['Gestión de base de datos','Gestion de base de datos','Base de Datos'], 'insercion')
                         <button @click="openModal('¿Deseas confirmar el respaldo de la base de datos?')"
                             class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold transition nunito-regular text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                             :disabled="isBackingUp">
@@ -151,6 +152,15 @@ window.__backupDb = function() {
                                 Procesando...
                             </span>
                         </button>
+                        @else
+                        <button disabled title="Sin permiso para crear"
+                            class="inline-flex items-center gap-2 bg-gray-300 text-gray-600 px-5 py-2.5 rounded-lg font-semibold transition nunito-regular text-sm cursor-not-allowed">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-.293.707l-6 6a1 1 0 01-1.414 0l-6-6A1 1 0 013 9V3zm4 2a1 1 0 100 2h6a1 1 0 100-2H7z" />
+                            </svg>
+                            Respaldar ahora
+                        </button>
+                        @endperm
 
                         <!-- Estado pequeño -->
                         <template x-if="mensajeRespaldo">

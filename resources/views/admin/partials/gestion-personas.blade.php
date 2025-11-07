@@ -287,7 +287,11 @@
 
         <x-slot name="actions">
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'insercion')
                 <button @click="openAdd()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Persona</button>
+                @else
+                <button disabled title="Sin permiso para crear" class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed">Agregar Persona</button>
+                @endperm
                 <a :href="reportUrl()" target="_blank" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </a>
@@ -310,10 +314,14 @@
                 </thead>
                 <tbody>
                     <template x-if="loading">
-                        <tr><td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td></tr>
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
+                        </tr>
                     </template>
                     <template x-if="!loading && filteredPersonas.length===0">
-                        <tr><td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td></tr>
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td>
+                        </tr>
                     </template>
                     <template x-for="persona in paginatedPersonas()" :key="persona.id">
                         <tr class="border-b dark:border-gray-700 nunito-regular">
@@ -325,8 +333,16 @@
                             <td class="py-2 px-4" x-text="persona.genero_nombre || '-' "></td>
                             <td class="py-2 px-4" x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '-' "></td>
                             <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'actualizacion')
+                                <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></a>
+                                @else
+                                <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                @endperm
+                                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'eliminacion')
+                                <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700" title="Eliminar"><i class="fas fa-trash"></i></a>
+                                @else
+                                <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                @endperm
                             </td>
                         </tr>
                     </template>
@@ -358,8 +374,16 @@
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '-'"></span></div>
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'actualizacion')
                         <button @click="openEdit(p)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                        @else
+                        <button disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded cursor-not-allowed flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                        @endperm
+                        @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'eliminacion')
                         <button @click="openDelete(p)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                        @else
+                        <button disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-red-300 text-white rounded cursor-not-allowed flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                        @endperm
                     </div>
                 </div>
             </template>
@@ -381,23 +405,27 @@
         </div>
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPagePersonas()" :disabled="currentPagePersonas === 1"
-                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
                 <span>Anterior</span>
             </button>
             <div class="flex items-center gap-1">
                 <template x-for="page in Array.from({length: totalPagesPersonas()}, (_, i) => i + 1).slice(Math.max(0, currentPagePersonas - 3), currentPagePersonas + 2)" :key="page">
                     <button @click="currentPagePersonas = page"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                            :class="page === currentPagePersonas ? 'bg-blue-600 text-white' : ''">
+                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        :class="page === currentPagePersonas ? 'bg-blue-600 text-white' : ''">
                         <span x-text="page"></span>
                     </button>
                 </template>
             </div>
             <button @click="nextPagePersonas()" :disabled="currentPagePersonas === totalPagesPersonas()"
-                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
                 <span>Siguiente</span>
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
             </button>
         </div>
     </div>
@@ -438,7 +466,9 @@
                 <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk" @change="formPersonas._touched.genero = true"
                     :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione</option>
-                    <template x-for="op in catalogoGeneros" :key="op.id"><option :value="op.id" x-text="op.genero"></option></template>
+                    <template x-for="op in catalogoGeneros" :key="op.id">
+                        <option :value="op.id" x-text="op.genero"></option>
+                    </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
@@ -447,7 +477,9 @@
                 <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk" @change="formPersonas._touched.usuario = true"
                     :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione</option>
-                    <template x-for="u in usuariosSinPersona()" :key="'u-add-'+u.id"><option :value="u.id" x-text="u.usuario"></option></template>
+                    <template x-for="u in usuariosSinPersona()" :key="'u-add-'+u.id">
+                        <option :value="u.id" x-text="u.usuario"></option>
+                    </template>
                 </select>
                 <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
@@ -458,13 +490,15 @@
                 <label class="block text-sm font-medium mb-1 nunito-bold">Empresa a asociar</label>
                 <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_cliente_fk" @change="formPersonas._touched.empresa = true">
                     <option value="">Seleccione una empresa</option>
-                    <template x-for="e in empresas" :key="'empresa-'+e.id"><option :value="e.id" x-text="e.nombre"></option></template>
+                    <template x-for="e in empresas" :key="'empresa-'+e.id">
+                        <option :value="e.id" x-text="e.nombre"></option>
+                    </template>
                 </select>
                 <p class="text-xs text-gray-500 mt-1">Si no seleccionas empresa, la asociación no se llevará a cabo.</p>
             </div>
         </div>
     </x-admin.form-modal>
-    
+
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -501,13 +535,15 @@
                     <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk" @change="formEditPersonas._touched.genero = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione</option>
-                        <template x-for="op in catalogoGeneros" :key="'edit-genero-'+op.id"><option :value="op.id" x-text="op.genero"></option></template>
+                        <template x-for="op in catalogoGeneros" :key="'edit-genero-'+op.id">
+                            <option :value="op.id" x-text="op.genero"></option>
+                        </template>
                     </select>
                     <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
             </div>
         </template>
     </x-admin.edit-modal>
-    
+
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpenPersonas" itemToDelete="itemToDelete" message="¿Estás seguro de que deseas eliminar esta persona?" />
 </div>

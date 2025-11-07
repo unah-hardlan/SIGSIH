@@ -67,18 +67,18 @@
         this.currentPage = page;
     }
 }"
-x-init="fetchCategorias()"
-x-effect="
+    x-init="fetchCategorias()"
+    x-effect="
 $watch('filtroCategoria', () => { fetchCategorias(); currentPage = 1; });
 $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
 "
-@keydown.escape.window="
+    @keydown.escape.window="
     isCategoriaModalOpen = false;
     isCategoriaEditModalOpen = false;
     isCategoriaDeleteModalOpen = false;
 "
-@modal-submit.window="handleModalSubmit($event)"
-@confirm-delete.window="handleDelete()">
+    @modal-submit.window="handleModalSubmit($event)"
+    @confirm-delete.window="handleDelete()">
 
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Catálogo de Categorías de ingresos y gastos</h1>
@@ -87,21 +87,28 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             @include('partials.filtros-generales', [
-                'searchModel' => 'filtroCategoria',
-                'ordenarModel' => 'ordenarPor',
-                'ordenarOptions' => [
-                    'nombre_categoria' => 'Nombre',
-                    'id_categoria_pk' => 'ID'
-                ]
+            'searchModel' => 'filtroCategoria',
+            'ordenarModel' => 'ordenarPor',
+            'ordenarOptions' => [
+            'nombre_categoria' => 'Nombre',
+            'id_categoria_pk' => 'ID'
+            ]
             ])
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'insercion')
             <button
                 @click="formCategoria = { _touched: {} }; nombre_categoria = ''; descripcion_categoria = ''; tipo_categoria = ''; isCategoriaModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nueva Categoría
             </button>
+            @else
+            <button type="button" disabled title="Sin permiso para crear"
+                class="bg-green-600 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm opacity-60 cursor-not-allowed">
+                Nueva Categoría
+            </button>
+            @endperm
         </x-slot>
 
         <x-slot name="table">
@@ -135,10 +142,18 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === categorias.length - 1 }">
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="categoria.nombre_categoria"></td>
                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="categoria.descripcion_categoria"></td>
-                                 <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="categoria.tipo_categoria"></td>
+                                <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="categoria.tipo_categoria"></td>
                                 <td class="py-2 px-4 flex gap-2" :class="{ 'last:rounded-br-lg': index === categorias.length - 1 }">
-                                        <a href="#" @click.prevent="itemToEdit = { ...categoria }; formEditCategoria = { _touched: {} }; isCategoriaEditModalOpen = true" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'actualizacion')
+                                    <a href="#" @click.prevent="itemToEdit = { ...categoria }; formEditCategoria = { _touched: {} }; isCategoriaEditModalOpen = true" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-blue-300 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'eliminacion')
                                     <a href="#" @click.prevent="isCategoriaDeleteModalOpen = true; itemToDelete = { id_categoria_pk: categoria.id_categoria_pk, nombre: categoria.nombre_categoria }" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -165,12 +180,24 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="categoria.descripcion_categoria"></p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular" x-text="categoria.tipo_categoria"></p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'actualizacion')
                             <button @click.prevent="itemToEdit = { ...categoria }; formEditCategoria = { _touched: {} }; isCategoriaEditModalOpen = true" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-blue-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'eliminacion')
                             <button @click.prevent="isCategoriaDeleteModalOpen = true; itemToDelete = { id_categoria_pk: categoria.id_categoria_pk, nombre: categoria.nombre_categoria }" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-red-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -183,6 +210,7 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
     <!-- Modales -->
     <div>
         <!-- Modal Nueva Categoría -->
+        @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isCategoriaModalOpen" title="Nueva Categoría"
             submitLabel="Guardar Categoría" formId="formCategoria" maxWidth="max-w-md">
             <div class="space-y-4">
@@ -218,48 +246,53 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
                 </div>
             </div>
         </x-admin.form-modal>
+        @endperm
 
         <!-- Modal Editar Categoría -->
+        @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isCategoriaEditModalOpen" title="Editar Categoría"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditCategoria">
             <template x-if="itemToEdit">
-            <div class="space-y-4">
-                <div>
-                    <label for="edit_nombre_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
-                    <input type="text" id="edit_nombre_categoria" x-model="itemToEdit.nombre_categoria" required maxlength="150"
-                        @input="formEditCategoria = formEditCategoria || { _touched: {} }; formEditCategoria._touched.nombre_categoria = true"
-                        @blur="formEditCategoria._touched.nombre_categoria = true"
-                        :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.nombre_categoria && (itemToEdit.nombre_categoria === '' || itemToEdit.nombre_categoria.length > 150) ? 'border-red-500' : ''"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
-                    <small :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.nombre_categoria && (itemToEdit.nombre_categoria === '' || itemToEdit.nombre_categoria.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit_nombre_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre</label>
+                        <input type="text" id="edit_nombre_categoria" x-model="itemToEdit.nombre_categoria" required maxlength="150"
+                            @input="formEditCategoria = formEditCategoria || { _touched: {} }; formEditCategoria._touched.nombre_categoria = true"
+                            @blur="formEditCategoria._touched.nombre_categoria = true"
+                            :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.nombre_categoria && (itemToEdit.nombre_categoria === '' || itemToEdit.nombre_categoria.length > 150) ? 'border-red-500' : ''"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                        <small :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.nombre_categoria && (itemToEdit.nombre_categoria === '' || itemToEdit.nombre_categoria.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
+                    </div>
+                    <div>
+                        <label for="edit_descripcion_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
+                        <textarea id="edit_descripcion_categoria" x-model="itemToEdit.descripcion_categoria" rows="3" maxlength="255"
+                            @input="formEditCategoria = formEditCategoria || { _touched: {} }; formEditCategoria._touched.descripcion_categoria = true"
+                            @blur="formEditCategoria._touched.descripcion_categoria = true"
+                            :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.descripcion_categoria && itemToEdit.descripcion_categoria.length > 255 ? 'border-red-500' : ''"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
+                        <small :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.descripcion_categoria && itemToEdit.descripcion_categoria.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
+                    </div>
+                    <div>
+                        <label for="edit_tipo_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Categoría</label>
+                        <select id="edit_tipo_categoria" x-model="itemToEdit.tipo_categoria" required
+                            @change="formEditCategoria = formEditCategoria || { _touched: {} }; formEditCategoria._touched.tipo_categoria = true"
+                            :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.tipo_categoria && itemToEdit.tipo_categoria === '' ? 'border-red-500' : ''"
+                            class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                            <option value="">Seleccionar tipo</option>
+                            <option value="ingreso">Ingreso</option>
+                            <option value="gasto">Gasto</option>
+                        </select>
+                        <small :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.tipo_categoria && itemToEdit.tipo_categoria === '' ? 'text-red-500' : ''">Selecciona tipo (Ingreso/Gasto).</small>
+                    </div>
                 </div>
-                <div>
-                    <label for="edit_descripcion_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Descripción</label>
-                    <textarea id="edit_descripcion_categoria" x-model="itemToEdit.descripcion_categoria" rows="3" maxlength="255"
-                        @input="formEditCategoria = formEditCategoria || { _touched: {} }; formEditCategoria._touched.descripcion_categoria = true"
-                        @blur="formEditCategoria._touched.descripcion_categoria = true"
-                        :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.descripcion_categoria && itemToEdit.descripcion_categoria.length > 255 ? 'border-red-500' : ''"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
-                    <small :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.descripcion_categoria && itemToEdit.descripcion_categoria.length > 255 ? 'text-red-500' : ''">Máximo 255 caracteres.</small>
-                </div>
-                <div>
-                    <label for="edit_tipo_categoria" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de Categoría</label>
-                    <select id="edit_tipo_categoria" x-model="itemToEdit.tipo_categoria" required
-                        @change="formEditCategoria = formEditCategoria || { _touched: {} }; formEditCategoria._touched.tipo_categoria = true"
-                        :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.tipo_categoria && itemToEdit.tipo_categoria === '' ? 'border-red-500' : ''"
-                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
-                        <option value="">Seleccionar tipo</option>
-                        <option value="ingreso">Ingreso</option>
-                        <option value="gasto">Gasto</option>
-                    </select>
-                    <small :class="formEditCategoria && formEditCategoria._touched && formEditCategoria._touched.tipo_categoria && itemToEdit.tipo_categoria === '' ? 'text-red-500' : ''">Selecciona tipo (Ingreso/Gasto).</small>
-                </div>
-            </div>
             </template>
         </x-admin.edit-modal>
+        @endperm
 
         <!-- Modal Confirmar Eliminación -->
+        @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isCategoriaDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar esta categoría?" />
+        @endperm
     </div>
 </div>
