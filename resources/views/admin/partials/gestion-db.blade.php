@@ -219,7 +219,7 @@ window.__backupDb = function() {
             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Confirma la contraseña de
                 la base de datos (.env)</label>
             <input type="password" x-model="confirmPassword"
-                class="w-full border rounded px-3 py-2 mb-4 dark:bg-gray-900 dark:text-white dark:border-gray-700"
+                class="w-full border rounded px-3 py-2 mb-4 border-gray-400 dark:bg-gray-900 dark:text-white dark:border-gray-700"
                 placeholder="Contraseña" />
             <div class="flex justify-end gap-2 mt-4">
                 <button @click="closeModal()"

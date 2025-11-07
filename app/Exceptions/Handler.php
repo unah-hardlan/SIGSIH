@@ -7,6 +7,8 @@ use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Illuminate\Database\QueryException;
+use PDOException;
 
 class Handler extends ExceptionHandler
 {
@@ -39,12 +41,41 @@ class Handler extends ExceptionHandler
                     ], 422);
                 }
 
+                // Sanitizar errores de base de datos para evitar exponer nombres de tablas/columnas
+                if ($e instanceof QueryException || $e instanceof PDOException) {
+                    $sqlState = null;
+                    // QueryException tiene errorInfo; PDOException también puede tenerlo
+                    if (property_exists($e, 'errorInfo') && is_array($e->errorInfo ?? null)) {
+                        $sqlState = (string)($e->errorInfo[0] ?? '');
+                    }
+                    if (!$sqlState) {
+                        $sqlState = (string)$e->getCode();
+                    }
+
+                    $isIntegrity = str_starts_with((string)$sqlState, '23'); // e.g., 23000
+                    $status = $isIntegrity ? 409 : 500;
+                    $message = $isIntegrity
+                        ? 'No se pudo completar la operación por una restricción de integridad.'
+                        : 'Error al procesar la solicitud.';
+
+                    if (config('app.debug') && $sqlState) {
+                        $message .= " (SQLSTATE: {$sqlState})";
+                    }
+
+                    return response()->json([
+                        'message' => $message,
+                    ], $status);
+                }
+                // Respuesta genérica para otras excepciones en API
                 $statusCode = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+                $genericMessage = $statusCode === 404
+                    ? 'Recurso no encontrado.'
+                    : 'Ocurrió un error inesperado.';
                 $response = [
-                    'error' => 'Ocurrió un error en el servidor.',
-                    'message' => $e->getMessage(),
+                    'message' => $genericMessage,
                 ];
                 if (config('app.debug')) {
+                    $response['exception'] = get_class($e);
                     $response['trace'] = $e->getTraceAsString();
                 }
                 return response()->json($response, $statusCode);
