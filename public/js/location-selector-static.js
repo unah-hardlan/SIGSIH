@@ -1,12 +1,3 @@
-/**
- * Location Selector - Database AJAX
- * Maneja la selección en cascada de País -> Departamento -> Ciudad
- * usando llamadas AJAX a la base de datos
- */
-
-/**
- * Inicializa los selectores de ubicación en cascada
- */
 function initLocationSelectors() {
     const paisSelect = document.getElementById("pais_id");
     const departamentoSelect = document.getElementById("departamento_id");
@@ -19,17 +10,12 @@ function initLocationSelectors() {
         return;
     }
 
-    // Eventos
     paisSelect.addEventListener("change", handlePaisChange);
     departamentoSelect.addEventListener("change", handleDepartamentoChange);
 
-    // Cargar datos iniciales
     initializeInitialData();
 }
 
-/**
- * Maneja el cambio de país
- */
 async function handlePaisChange() {
     const paisSelect = document.getElementById("pais_id");
     const departamentoSelect = document.getElementById("departamento_id");
@@ -43,14 +29,10 @@ async function handlePaisChange() {
         return;
     }
 
-    // Cargar departamentos desde API
     await loadDepartamentos(selectedPais);
     resetCiudadSelect();
 }
 
-/**
- * Maneja el cambio de departamento
- */
 async function handleDepartamentoChange() {
     const departamentoSelect = document.getElementById("departamento_id");
 
@@ -61,23 +43,17 @@ async function handleDepartamentoChange() {
         return;
     }
 
-    // Cargar ciudades desde API
     await loadCiudades(selectedDepartamento);
 }
 
-/**
- * Carga los departamentos para el país seleccionado desde la API
- */
 async function loadDepartamentos(paisId) {
     const departamentoSelect = document.getElementById("departamento_id");
 
     try {
-        // Mostrar loading
         departamentoSelect.innerHTML =
             '<option value="">Cargando departamentos...</option>';
         departamentoSelect.disabled = true;
 
-        // Llamada AJAX a la API
         const response = await fetch(`/cliente/api/departamentos/${paisId}`);
 
         if (!response.ok) {
@@ -86,11 +62,9 @@ async function loadDepartamentos(paisId) {
 
         const data = await response.json();
 
-        // Limpiar select
         departamentoSelect.innerHTML =
             '<option value="">Seleccione un departamento</option>';
 
-        // Agregar opciones (acepta formato envuelto u array plano)
         const departamentos = Array.isArray(data)
             ? data
             : data.departamentos || [];
@@ -104,7 +78,6 @@ async function loadDepartamentos(paisId) {
             departamentoSelect.appendChild(option);
         });
 
-        // Habilitar select
         departamentoSelect.disabled = false;
     } catch (error) {
         console.error("Error al cargar departamentos:", error);
@@ -114,19 +87,14 @@ async function loadDepartamentos(paisId) {
     }
 }
 
-/**
- * Carga las ciudades para el departamento seleccionado desde la API
- */
 async function loadCiudades(departamentoId) {
     const ciudadSelect = document.getElementById("ciudad_id");
 
     try {
-        // Mostrar loading
         ciudadSelect.innerHTML =
             '<option value="">Cargando ciudades...</option>';
         ciudadSelect.disabled = true;
 
-        // Llamada AJAX a la API
         const response = await fetch(`/cliente/api/ciudades/${departamentoId}`);
 
         if (!response.ok) {
@@ -135,11 +103,9 @@ async function loadCiudades(departamentoId) {
 
         const data = await response.json();
 
-        // Limpiar select
         ciudadSelect.innerHTML =
             '<option value="">Seleccione una ciudad</option>';
 
-        // Agregar opciones (acepta formato envuelto u array plano)
         const ciudades = Array.isArray(data) ? data : data.ciudades || [];
         ciudades.forEach((ciudad) => {
             const option = document.createElement("option");
@@ -150,7 +116,6 @@ async function loadCiudades(departamentoId) {
             ciudadSelect.appendChild(option);
         });
 
-        // Habilitar select
         ciudadSelect.disabled = false;
     } catch (error) {
         console.error("Error al cargar ciudades:", error);
@@ -160,9 +125,6 @@ async function loadCiudades(departamentoId) {
     }
 }
 
-/**
- * Resetea el select de departamentos
- */
 function resetDepartamentoSelect() {
     const departamentoSelect = document.getElementById("departamento_id");
     departamentoSelect.innerHTML =
@@ -170,39 +132,29 @@ function resetDepartamentoSelect() {
     departamentoSelect.disabled = true;
 }
 
-/**
- * Resetea el select de ciudades
- */
 function resetCiudadSelect() {
     const ciudadSelect = document.getElementById("ciudad_id");
     ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
     ciudadSelect.disabled = true;
 }
 
-/**
- * Inicializa los datos basados en valores previos (para edición)
- */
 async function initializeInitialData() {
     const paisSelect = document.getElementById("pais_id");
     const departamentoSelect = document.getElementById("departamento_id");
     const ciudadSelect = document.getElementById("ciudad_id");
 
-    // Obtener valores previos de los data attributes
     const oldPais = paisSelect.getAttribute("data-old-value");
     const oldDepartamento = departamentoSelect.getAttribute("data-old-value");
     const oldCiudad = ciudadSelect.getAttribute("data-old-value");
 
-    // Si hay un país seleccionado previamente
     if (oldPais) {
         paisSelect.value = oldPais;
         await handlePaisChange();
 
-        // Si hay un departamento seleccionado previamente
         if (oldDepartamento) {
             departamentoSelect.value = oldDepartamento;
             await handleDepartamentoChange();
 
-            // Si hay una ciudad seleccionada previamente
             if (oldCiudad) {
                 ciudadSelect.value = oldCiudad;
             }
@@ -210,5 +162,4 @@ async function initializeInitialData() {
     }
 }
 
-// Inicializar cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", initLocationSelectors);
