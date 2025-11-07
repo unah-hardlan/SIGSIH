@@ -139,9 +139,15 @@
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['Gestión de reportes','Gestion de reportes','Reportes'], 'insercion')
             <button @click="openAdd()"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
                 reporte</button>
+            @else
+            <button type="button" disabled title="Sin permiso para crear reportes"
+                class="bg-green-400 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm opacity-60 cursor-not-allowed">Nuevo
+                reporte</button>
+            @endperm
         </x-slot>
 
         <x-slot name="table">
@@ -186,10 +192,20 @@
                                         class="inline-flex items-center justify-center text-xs h-9 px-3 rounded bg-emerald-500 text-white hover:bg-emerald-600 duration-300 nunito-regular">
                                         <i class="fas fa-eye mr-1"></i> Ver detalles
                                     </a>
+                                    @perm(['Gestión de reportes','Gestion de reportes','Reportes'], 'actualizacion')
                                     <a href="#" @click.prevent="openEdit(rep)"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-blue-300 cursor-not-allowed" title="Sin permiso para editar"><i
+                                            class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Gestión de reportes','Gestion de reportes','Reportes'], 'eliminacion')
                                     <a href="#" @click.prevent="openDelete(rep)"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i
+                                            class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -202,7 +218,8 @@
             <template x-if="loadingReportes">
                 <div
                     class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center text-gray-500 nunito-regular">
-                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando reportes...</div>
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando reportes...
+                </div>
             </template>
             <template x-if="!loadingReportes && reportes.length===0">
                 <div
@@ -224,7 +241,8 @@
                             <div><span
                                     class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Observaciones:</span>
                                 <span class="text-gray-900 dark:text-gray-200 nunito-regular"
-                                    x-text="rep.observaciones"></span></div>
+                                    x-text="rep.observaciones"></span>
+                            </div>
                             <div><span class="font-medium text-gray-600 dark:text-gray-300 nunito-bold">Tipo de
                                     Visita:</span> <span class="text-gray-900 dark:text-gray-200 nunito-regular"
                                     x-text="rep.tipo_visita"></span></div>
@@ -244,14 +262,28 @@
                                 class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-eye"></i> Ver detalles
                             </a>
+                            @perm(['Gestión de reportes','Gestion de reportes','Reportes'], 'actualizacion')
                             <button @click="openEdit(rep)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para editar"
+                                class="px-3 py-1 text-xs bg-blue-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Gestión de reportes','Gestion de reportes','Reportes'], 'eliminacion')
                             <button @click="openDelete(rep)"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para eliminar"
+                                class="px-3 py-1 text-xs bg-red-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>

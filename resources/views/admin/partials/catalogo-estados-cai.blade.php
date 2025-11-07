@@ -108,11 +108,11 @@
         }
     }
 }" x-init="fetchEstadosCai()"
-x-effect="
+    x-effect="
 $watch('filtroEstadoCai', () => { currentPage = 1; });
 $watch('ordenarPor', () => { currentPage = 1; });
 "
-@keydown.escape.window="
+    @keydown.escape.window="
     isEstadoCaiModalOpen = false;
     isEditEstadoCaiModalOpen = false;
     isDeleteEstadoCaiModalOpen = false;
@@ -134,10 +134,17 @@ $watch('ordenarPor', () => { currentPage = 1; });
         </x-slot>
 
         <x-slot name="actions">
+            @perm(['Catálogo','Estados CAI','Estado CAI'], 'insercion')
             <button @click="formEstadoCai = { _touched: {} }; codigo_estado_cai=''; nombre_estado_cai=''; descripcion_estado_cai=''; es_final=false; orden=0; isEstadoCaiModalOpen = true"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">
                 Nuevo Estado CAI
             </button>
+            @else
+            <button disabled title="No tiene permiso para crear Estados CAI"
+                class="bg-green-600 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm opacity-50 cursor-not-allowed">
+                Nuevo Estado CAI
+            </button>
+            @endperm
         </x-slot>
 
         <x-slot name="table">
@@ -200,12 +207,21 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                 </td>
                                 <td class="py-2 px-4 flex gap-2"
                                     :class="{ 'last:rounded-br-lg': index === paginatedEstadosCai().length - 1 }">
+                                    @perm(['Catálogo','Estados CAI','Estado CAI'], 'actualizacion')
                                     <a href="#"
                                         @click.prevent="formEditEstadoCai = { _touched: {} }; isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
                                         class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                    @else
+                                    <span class="text-blue-300 cursor-not-allowed" title="No tiene permiso para editar Estados CAI"><i class="fas fa-edit"></i></span>
+                                    @endperm
+
+                                    @perm(['Catálogo','Estados CAI','Estado CAI'], 'eliminacion')
                                     <a href="#"
                                         @click.prevent="isDeleteEstadoCaiModalOpen = true; itemToDelete = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, nombre_estado_cai: estadoCai.nombre_estado_cai}"
                                         class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <span class="text-red-300 cursor-not-allowed" title="No tiene permiso para eliminar Estados CAI"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -249,16 +265,31 @@ $watch('ordenarPor', () => { currentPage = 1; });
                                     x-text="estadoCai.descripcion_estado_cai || '-' "></span></div>
                         </div>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Catálogo','Estados CAI','Estado CAI'], 'actualizacion')
                             <button
                                 @click.prevent="formEditEstadoCai = { _touched: {} }; isEditEstadoCaiModalOpen = true; itemToEdit = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, codigo_estado_cai: estadoCai.codigo_estado_cai, nombre_estado_cai: estadoCai.nombre_estado_cai, descripcion_estado_cai: estadoCai.descripcion_estado_cai, es_final: estadoCai.es_final, orden: estadoCai.orden}"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled title="No tiene permiso para editar Estados CAI"
+                                class="px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-50 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+
+                            @perm(['Catálogo','Estados CAI','Estado CAI'], 'eliminacion')
                             <button
                                 @click.prevent="isDeleteEstadoCaiModalOpen = true; itemToDelete = {id_estado_cai_pk: estadoCai.id_estado_cai_pk, nombre_estado_cai: estadoCai.nombre_estado_cai}"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled title="No tiene permiso para eliminar Estados CAI"
+                                class="px-3 py-1 text-xs bg-red-600 text-white rounded opacity-50 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
@@ -272,6 +303,7 @@ $watch('ordenarPor', () => { currentPage = 1; });
     <!-- Modales -->
     <div>
         <!-- Modal Nuevo Estado CAI -->
+        @perm(['Catálogo','Estados CAI','Estado CAI'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isEstadoCaiModalOpen" title="Nuevo Estado CAI"
             submitLabel="Guardar Estado" formId="formEstadoCai" maxWidth="max-w-4xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,8 +346,10 @@ $watch('ordenarPor', () => { currentPage = 1; });
                 </div>
             </div>
         </x-admin.form-modal>
+        @endperm
 
         <!-- Modal Editar Estado CAI -->
+        @perm(['Catálogo','Estados CAI','Estado CAI'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoCaiModalOpen" title="Editar Estado CAI"
             itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="formEditEstadoCai">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -358,9 +392,12 @@ $watch('ordenarPor', () => { currentPage = 1; });
                 </div>
             </div>
         </x-admin.edit-modal>
+        @endperm
 
         <!-- Modal Confirmar Eliminación -->
+        @perm(['Catálogo','Estados CAI','Estado CAI'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteEstadoCaiModalOpen"
             itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este estado CAI?" />
+        @endperm
     </div>
 </div>
