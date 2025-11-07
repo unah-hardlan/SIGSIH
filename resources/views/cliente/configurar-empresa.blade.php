@@ -481,7 +481,7 @@
                         class="flex-1 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         id="submit-btn"
                     >
-                        <span class="flex items-center justify-center">
+                        <span class="flex items-center justify-center serif">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -515,7 +515,7 @@
 
     <div class="text-center mt-8">
         <p class="text-sm text-gray-500 dark:text-white serif">
-            ¿Necesitas ayuda? <a href="#" class="text-green-600 dark:text-green-400 hover:underline">Contacta soporte</a>
+            ¿Necesitas ayuda? <a href="mailto:edw.lagos@gmail.com" class="text-green-600 dark:text-green-400 hover:underline">Contacta soporte</a>
         </p>
     </div>
 </div>

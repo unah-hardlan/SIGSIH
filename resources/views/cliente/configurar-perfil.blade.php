@@ -276,7 +276,7 @@
                         class="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         id="submit-btn"
                     >
-                        <span class="flex items-center justify-center">
+                        <span class="flex items-center justify-center serif">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -297,7 +297,7 @@
                             Si representas a una empresa, puedes completar los datos corporativos como nombre comercial, RTN y logo empresarial.
                         </p>
                         <a href="{{ route('cliente.configurar-empresa') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded-md text-blue-700 dark:text-blue-300 font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200 text-sm serif">
+                           class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-600 rounded-md text-blue-700 dark:text-blue-300 font-medium hover:bg-blue-300 dark:hover:bg-blue-900/30 transition-colors duration-200 text-sm serif">
                             <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
@@ -331,7 +331,7 @@
 
     <div class="text-center mt-8">
         <p class="text-sm text-gray-500 dark:text-white serif">
-            ¿Necesitas ayuda? <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Contacta soporte</a>
+            ¿Necesitas ayuda? <a href="mailto:edw.lagos@gmail.com" class="text-blue-600 dark:text-blue-400 hover:underline">Contacta soporte</a>
         </p>
     </div>
 </div>
