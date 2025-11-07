@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
     };
 
-    // Estado de validación DNI
     let dniValidation = {
         isValidating: false,
         isAvailable: null,
@@ -39,10 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const touched = {};
     let triedSubmit = false;
 
-    // Función para validar DNI en el backend SOLO al enviar el formulario
-    // Devuelve true si está disponible, false si ya existe
     async function validateDniAvailability(dni, { decorateUI = true } = {}) {
-        if (!dni || dni.length < 6) return true; // si no hay DNI válido, no bloquea
+        if (!dni || dni.length < 6) return true;
 
         const dniInput = document.getElementById("dni");
         const loadingEl = document.querySelector("[data-dni-loading]");
@@ -103,10 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${message}
             `;
             successEl.classList.remove("hidden");
-            // NO ocultar automáticamente - mantener visible hasta que cambie el DNI
         }
 
-        // Agregar borde verde
         dniInput.classList.remove(
             "border-red-500",
             "border-gray-300",
@@ -136,7 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
             el.textContent = message;
             el.classList.remove("hidden");
         }
-        // Si es DNI, ocultar el mensaje de éxito
         if (input.id === "dni") {
             const successEl = document.querySelector("[data-dni-success]");
             successEl?.classList.add("hidden");
@@ -159,8 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
             el.classList.add("hidden");
         }
 
-        // Tratamiento especial para DNI: si ya está confirmado disponible,
-        // mantener el estado visual de éxito y no degradarlo a gris.
         if (input.id === "dni" && dniValidation.isAvailable === true) {
             const successEl = document.querySelector("[data-dni-success]");
             successEl?.classList.remove("hidden");
@@ -189,7 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (result === true) {
             clearError(input);
-            // Ya no validamos DNI en vivo; solo al enviar
             return true;
         }
 
@@ -232,7 +223,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         input.addEventListener(eventName, () => {
             touched[input.id] = true;
-            // Si es DNI, solo limpiar el error local; ya no validamos en vivo
             if (input.id === "dni") clearError(input);
 
             validateInput(input);
@@ -405,7 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			</span>
 		`;
 
-        // Enviar formulario ahora que todo es válido
         form.submit();
     });
 

@@ -93,7 +93,7 @@ class GestionDbController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error realizando respaldo',
-                'message' => $this->ensureUtf8($e->getMessage()),
+                'message' => config('app.debug') ? $this->safeMessage($e) : 'No se pudo completar el respaldo.',
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
@@ -276,5 +276,26 @@ class GestionDbController extends Controller
         return response()->download($full, $file, [
             'Content-Type' => $mime,
         ]);
+    }
+
+    /**
+     * Limpia el mensaje de excepción para evitar exponer nombres de tablas/columnas.
+     * En modo debug, mantiene pistas útiles pero redacta identificadores sensibles.
+     */
+    private function safeMessage(\Throwable $e): string
+    {
+        $msg = $this->ensureUtf8($e->getMessage());
+        // Redactar identificadores entre comillas invertidas: `tabla`, `columna`
+        $msg = preg_replace('/`[^`]+`/', '`?`', $msg) ?? $msg;
+        // Redactar patrones comunes de mensajes de SQL
+        $patterns = [
+            '/\b(table|column|constraint|index)\s+[`\"\[]?[a-z0-9_\.]+[`\"\]]?/i',
+            '/\bfor\s+key\s+[`\"\[]?[a-z0-9_\.]+[`\"\]]?/i',
+            '/\bforeign\s+key\s*\([^)]+\)/i',
+        ];
+        foreach ($patterns as $p) {
+            $msg = preg_replace($p, '$1 ?', $msg) ?? $msg;
+        }
+        return $msg;
     }
 }
