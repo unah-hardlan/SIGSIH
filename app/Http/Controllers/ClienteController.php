@@ -245,7 +245,7 @@ class ClienteController extends Controller
         $request->validate([
             'nombre_comercial' => 'required|string|max:150',
             'razon_social' => 'nullable|string|max:150',
-            'rtn' => 'nullable|string|max:30',
+            'rtn' => 'required|string|max:30|unique:tbl_cliente_empresa,rtn',
             'descripcion_empresa' => 'nullable|string|max:500',
             // Ubicación
             'id_pais_fk' => 'required|exists:tbl_pais,id_pais_pk',
@@ -269,6 +269,9 @@ class ClienteController extends Controller
             ],
             'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'email_contacto' => 'required|email|max:255',
+        ], [
+            'rtn.required' => 'El RTN es obligatorio.',
+            'rtn.unique' => 'Ya existe una empresa registrada con este RTN.',
         ]);
 
         try {
@@ -277,15 +280,18 @@ class ClienteController extends Controller
             $user = auth()->user();
 
 
-            $persona = \App\Models\Persona::firstOrCreate(
-                ['id_usuario_fk' => $user->id_usuario_pk],
-                [
+            // Asegurar que exista la persona asociada al usuario sin usar el RTN como DNI
+            $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+            if (!$persona) {
+                $persona = \App\Models\Persona::create([
+                    'id_usuario_fk' => $user->id_usuario_pk,
                     'primer_nombre' => $request->nombre_comercial,
                     'primer_apellido' => 'Empresa',
-                    'dni' => $request->rtn ?: 'EMPRESA-' . $user->id_usuario_pk,
+                    // DNI placeholder único para evitar colisión con DNIs reales
+                    'dni' => 'EMPRESA-' . $user->id_usuario_pk,
                     'id_genero_fk' => 1,
-                ]
-            );
+                ]);
+            }
 
             $clientePersona = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
@@ -373,11 +379,23 @@ class ClienteController extends Controller
 
             return redirect()->route('cliente.perfil')
                 ->with('success', 'Datos de empresa guardados correctamente.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            // Tratar duplicados de RTN con un mensaje claro
+            if ((int)($e->errorInfo[1] ?? 0) === 1062) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['rtn' => 'Ya existe una empresa registrada con este RTN.']);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Error al guardar los datos de empresa.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
                 ->withInput()
-                ->with('error', 'Error al guardar los datos de empresa: ' . $e->getMessage());
+                ->with('error', 'Error al guardar los datos de empresa.');
         }
     }
 
@@ -520,6 +538,12 @@ class ClienteController extends Controller
                 ],
                 'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
                 'email_contacto' => 'sometimes|email|max:255',
+                // Validación de campos de dirección
+                'calle' => 'required|string|max:100',
+                'numero' => 'required|string|max:20',
+                'colonia' => 'required|string|max:100',
+                'codigo_postal' => 'required|string|max:10',
+                'referencia' => 'required|string|max:255',
             ]);
 
             DB::beginTransaction();
@@ -573,6 +597,26 @@ class ClienteController extends Controller
                         'valor_contacto' => $email,
                     ]
                 );
+            }
+
+            // Actualizar dirección de la agencia
+            if ($request->filled(['calle', 'numero', 'colonia', 'codigo_postal', 'referencia'])) {
+                // Obtener la primera agencia del cliente
+                $agencia = $cliente->agencias()->first();
+                
+                if ($agencia && $agencia->id_direccion_fk) {
+                    // Actualizar la dirección existente
+                    $direccion = \App\Models\Direccion::find($agencia->id_direccion_fk);
+                    if ($direccion) {
+                        $direccion->update([
+                            'calle' => $request->input('calle'),
+                            'numero' => $request->input('numero'),
+                            'colonia' => $request->input('colonia'),
+                            'codigo_postal' => $request->input('codigo_postal'),
+                            'referencia' => $request->input('referencia'),
+                        ]);
+                    }
+                }
             }
 
             DB::commit();
@@ -632,5 +676,25 @@ class ClienteController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al cargar ciudades'], 500);
         }
+    }
+
+    /**
+     * Validar si un DNI está disponible
+     */
+    public function validarDni(Request $request)
+    {
+        $request->validate([
+            'dni' => 'required|string|min:6|max:20'
+        ]);
+
+        $dni = $request->input('dni');
+        
+        // Verificar si el DNI ya existe
+        $exists = Persona::where('dni', $dni)->exists();
+        
+        return response()->json([
+            'disponible' => !$exists,
+            'mensaje' => $exists ? 'Este DNI ya está registrado' : 'DNI disponible'
+        ]);
     }
 }

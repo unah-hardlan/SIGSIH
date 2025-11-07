@@ -54,6 +54,8 @@
             open: false,
             items: [],
             unread: 0,
+            deleteModalOpen: false,
+            notificationToDelete: null,
             toggle() {
                 this.open = !this.open;
             },
@@ -105,6 +107,36 @@
                 }
                 this.open = false;
             },
+            openDeleteModal(notification) {
+                this.notificationToDelete = notification;
+                this.deleteModalOpen = true;
+            },
+            cancelDeleteModal() {
+                this.deleteModalOpen = false;
+                this.notificationToDelete = null;
+            },
+            async confirmDeleteModal() {
+                if (!this.notificationToDelete) return;
+                try {
+                    const response = await fetch(`/api/notificaciones/${this.notificationToDelete.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content
+                        }
+                    });
+                    if (response.ok) {
+                        this.items = this.items.filter(n => n.id !== this.notificationToDelete.id);
+                        if (!this.notificationToDelete.read_at) {
+                            this.unread = Math.max(0, this.unread - 1);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error deleting notification:', error);
+                } finally {
+                    this.cancelDeleteModal();
+                }
+            },
             formatTime(timestamp) {
                 const date = new Date(timestamp);
                 const now = new Date();
@@ -122,30 +154,63 @@
                         <span class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-4 px-1 bg-red-600 text-white text-[10px] rounded-full" x-text="unread"></span>
                     </template>
                 </button>
-                <div x-show="open" x-cloak @click.away="open = false" class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md">
+                <div x-show="open" x-cloak @click.away="open = false" class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 border border-blue-300 backdrop-blur-md max-h-[32rem] overflow-hidden">
                     <div class="flex items-center justify-between px-4 py-2 border-b text-gray-700 dark:text-gray-300 serif-bold text-sm">
                         <span>Notificaciones</span>
                         <button class="text-xs text-blue-600 hover:underline" @click="markAll()" x-show="unread>0">Marcar todas</button>
                     </div>
-                    <ul class="max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                        <template x-if="items.length === 0">
-                            <li class="px-4 py-3 text-sm text-gray-500">Sin notificaciones</li>
-                        </template>
-                        <template x-for="n in items" :key="n.id">
-                            <li @click="go(n)" class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 cursor-pointer transition-colors duration-200">
-                                <div class="flex gap-2">
-                                    <i :class="['fas', n.icon || 'fa-bell', 'mt-0.5', n.severity==='critical'?'text-red-600':(n.severity==='warn'?'text-yellow-500':'text-blue-500')]"></i>
-                                    <div class="flex-1">
-                                        <div class="serif-bold" x-text="n.title"></div>
-                                        <div class="text-xs text-gray-600 dark:text-gray-400" x-text="n.body"></div>
-                                        <div class="text-[10px] text-gray-400" x-text="formatTime(n.created_at)"></div>
+                    <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                        <ul>
+                            <template x-if="items.length === 0">
+                                <li class="px-4 py-3 text-sm text-gray-500">Sin notificaciones</li>
+                            </template>
+                            <template x-for="n in items" :key="n.id">
+                                <li class="px-4 py-2 hover:bg-blue-200/80 dark:hover:bg-blue-700/80 text-sm nunito-regular text-gray-800 dark:text-gray-200 transition-colors duration-200">
+                                    <div class="flex gap-2 items-start">
+                                        <button @click.stop="go(n)" class="flex-1 text-left">
+                                            <div class="flex gap-2">
+                                                <i :class="['fas', n.icon || 'fa-bell', 'mt-0.5', n.severity==='critical'?'text-red-600':(n.severity==='warn'?'text-yellow-500':'text-blue-500')]"></i>
+                                                <div class="flex-1">
+                                                    <div class="serif-bold" x-text="n.title"></div>
+                                                    <div class="text-xs text-gray-600 dark:text-gray-400" x-text="n.body"></div>
+                                                    <div class="text-[10px] text-gray-400" x-text="formatTime(n.created_at)"></div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <button title="Eliminar" @click.stop="openDeleteModal(n)"
+                                                class="text-gray-400 hover:text-red-600 p-1 rounded focus:outline-none">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <span class="w-2 h-2 rounded-full bg-blue-500 mt-1" x-show="!n.read_at"></span>
+                                        </div>
                                     </div>
-                                    <span class="w-2 h-2 rounded-full bg-blue-500 mt-1" x-show="!n.read_at"></span>
-                                </div>
-                            </li>
-                        </template>
-                    </ul>
-                    <div class="px-4 py-2 text-xs nunito-regular text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Ver todas</div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    
+                    <!-- Modal de confirmación de eliminación -->
+                    <div x-show="deleteModalOpen" x-cloak x-transition.opacity.duration.200ms
+                        class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-200 ease-in-out bg-black/40"
+                        style="-webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);"
+                        @click.self="cancelDeleteModal()" @keydown.window.escape="cancelDeleteModal()">
+                        <div x-show="deleteModalOpen" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-5 w-11/12 max-w-sm mx-auto"
+                            @click.stop>
+                            <p class="mt-1 text-lg nunito-bold text-gray-800 dark:text-gray-200">¿Eliminar notificación?</p>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Esta acción no se puede deshacer.</p>
+                            <div class="mt-5 flex justify-end gap-2">
+                                <button type="button" @click="cancelDeleteModal()"
+                                    class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition-all serif-regular">Cancelar</button>
+                                <button type="button" @click="confirmDeleteModal()"
+                                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-all serif-regular">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

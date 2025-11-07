@@ -4,7 +4,11 @@
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="facturasCliente()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Facturación</h1>
-        
+    </div>
+
+    <div
+        class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        En esta sección puede revisar todas sus facturas emitidas por nuestros servicios. Puede filtrar las facturas por estado, fecha o número de factura, así como buscar facturas específicas utilizando el campo de búsqueda. Haga clic en el botón "Ver factura" para abrir la factura en una nueva pestaña y revisarla en detalle. <i>(Las facturas mostradas corresponden a pagos ya confirmados y procesados presencialmente, ya sea en efectivo o con tarjeta de crédito/débito).</i>
     </div>
 
     <!-- Tarjetas resumen (mismo estilo que Órdenes) -->
@@ -112,7 +116,7 @@
                             class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Estado</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Acción</th>
                     </tr>
                 </thead>
@@ -133,13 +137,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="f.oc"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.subtotal.toLocaleString()"></td>
+                                x-text="'L. ' + f.subtotal.toLocaleString()"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.impuesto.toLocaleString()"></td>
+                                x-text="'L. ' + f.impuesto.toLocaleString()"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.descuento.toLocaleString()"></td>
+                                x-text="'L. ' + f.descuento.toLocaleString()"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
-                                x-text="'$' + f.total.toLocaleString()"></td>
+                                x-text="'L. ' + f.total.toLocaleString()"></td>
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
                                 <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide"
@@ -148,9 +152,6 @@
                             <td
                                 class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <!-- <button @click="verDetalle(f)"
-                                        class="px-2.5 py-1.5 rounded-md text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition flex items-center gap-1"><i
-                                            class="fas fa-eye"></i><span>Ver</span></button> -->
                                     <a :href="`/cliente/formato-factura/${f.id}`" target="_blank" rel="noopener" data-no-spa
                                         class="px-2.5 py-1.5 rounded-md text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition flex items-center gap-1">
                                         <i class="fas fa-file-invoice"></i><span>Ver factura</span>
@@ -174,98 +175,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal Detalle Factura -->
-    <template x-teleport="body">
-        <div x-show="modalFactura" x-cloak x-transition.opacity.duration.300ms
-            class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
-            @click.self="modalFactura=false" @keydown.window.escape="modalFactura=false">
-            <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95"
-                x-transition:enter-end="opacity-100 scale-100"
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-6 w-11/12 max-w-4xl mx-auto max-h-[90vh] overflow-y-auto"
-                @click.stop>
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Detalle de Factura</h3>
-                    <button @click="modalFactura=false"
-                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><i
-                            class="fas fa-times"></i></button>
-                </div>
-
-                <template x-if="facturaActual">
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-500 dark:text-gray-400">Factura</label>
-                                <p class="text-gray-900 dark:text-gray-100 font-semibold" x-text="facturaActual.numero">
-                                </p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Fecha</label>
-                                <p class="text-gray-900 dark:text-gray-100" x-text="facturaActual.fecha"></p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">OC</label>
-                                <p class="text-gray-900 dark:text-gray-100" x-text="facturaActual.oc"></p>
-                            </div>
-                            <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</label>
-                                <p class="text-gray-900 dark:text-gray-100"
-                                    x-text="'$' + facturaActual.subtotal.toLocaleString()"></p>
-                            </div>
-                            <div>
-                                <label
-                                    class="block text-sm font-medium text-gray-500 dark:text-gray-400">Impuesto</label>
-                                <p class="text-gray-900 dark:text-gray-100"
-                                    x-text="'$' + facturaActual.impuesto.toLocaleString()"></p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Detalle de
-                                líneas</label>
-                            <div class="overflow-x-auto mt-2">
-                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-3 py-2 text-left">Servicio</th>
-                                            <th class="px-3 py-2 text-right">Precio Unit.</th>
-                                            <th class="px-3 py-2 text-right">Cantidad</th>
-                                            <th class="px-3 py-2 text-right">Impuesto</th>
-                                            <th class="px-3 py-2 text-right">Total Línea</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <template x-for="d in facturaActual.detalles" :key="d.id">
-                                            <tr>
-                                                <td class="px-3 py-2" x-text="d.descripcion"></td>
-                                                <td class="px-3 py-2 text-right"
-                                                    x-text="'$' + d.precio_unitario.toLocaleString()"></td>
-                                                <td class="px-3 py-2 text-right" x-text="d.cantidad"></td>
-                                                <td class="px-3 py-2 text-right"
-                                                    x-text="'$' + d.impuesto.toLocaleString()"></td>
-                                                <td class="px-3 py-2 text-right"
-                                                    x-text="'$' + d.total_linea.toLocaleString()"></td>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                    <button @click="modalFactura=false"
-                        class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </template>
 </div>
 
 <script>
@@ -281,10 +190,8 @@
                     desde: '',
                     hasta: ''
                 },
-                estados: ['Pagada', 'Pendiente', 'Vencida', 'Anulada'],
+                estados: ['Pagada', 'Pendiente'],
                 datos: [],
-                modalFactura: false,
-                facturaActual: null,
                 async init() {
                     try {
                         const res = await fetch('/cliente/facturas-data', {
@@ -309,30 +216,6 @@
                         const hOk = !this.filtros.hasta || d.fecha <= this.filtros.hasta;
                         return eOk && sOk && dOk && hOk;
                     });
-                },
-                async verDetalle(f) {
-                    this.facturaActual = {
-                        ...f,
-                        detalles: Array.isArray(f.detalles) ? f.detalles : []
-                    };
-                    this.modalFactura = true;
-                    if (!f.id) return;
-                    try {
-                        const res = await fetch(`/cliente/facturas/${f.id}/data`, {
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-                        if (res.ok) {
-                            const det = await res.json();
-                            // Mantener cabecera existente y solo cargar detalles si vienen
-                            if (det && det.detalles) {
-                                this.facturaActual.detalles = det.detalles;
-                            }
-                        }
-                    } catch (e) {
-                        /* noop */
-                    }
                 },
                 get totalPages() {
                     return Math.max(1, Math.ceil(this.filtradas.length / this.pageSize));

@@ -40,6 +40,7 @@ import {
     faExclamationCircle,
     faStar,
     faTools,
+    faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -77,7 +78,8 @@ library.add(
     faExternalLinkAlt,
     faExclamationCircle,
     faStar,
-    faTools
+    faTools,
+    faTrash
 );
 
 dom.watch();

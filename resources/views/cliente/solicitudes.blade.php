@@ -99,10 +99,11 @@
             <select x-model="filtros.estado"
                 class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200">
                 <option value="">Todos los estados</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Resuelta">Resuelta</option>
-                <option value="Cerrada">Cerrada</option>
+                <option value="Pendiente">En espera</option>
+                <option value="En Proceso">Asignada</option>
+                <option value="Resuelta">En proceso</option>
+                <option value="Rechazada">Rechazadas</option>
+                <option value="Cerrada">Finalizadas</option>
             </select>
         </div>
     </div>
@@ -127,22 +128,22 @@
                             Estado de la Solicitud</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-300 dark:divide-gray-700">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-300 dark:divide-gray-700">
                     <template x-for="solicitud in solicitudesFiltradas" :key="solicitud.id">
                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
+                                class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito">
                                 <span x-text="
                                     solicitud.numero_solicitud_cliente_fmt ||
                                     (() => { const d = new Date(); const ymd = d.toISOString().slice(0,10).replace(/-/g,''); return 'CLI-' + ymd + '-' + String(solicitud.id ?? solicitud.numero_solicitud_cliente ?? '').toString(); })()
                                 "></span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="solicitud.nombre_solicitud"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="solicitud.descripcion_problema"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-nunito">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left font-nunito">
+                                <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
                                     :class="{
                                         'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300': solicitud.estado?.toLowerCase().includes('espera') || solicitud.estado?.toLowerCase().includes('pendiente'),
                                         'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300': solicitud.estado?.toLowerCase().includes('asignada') || solicitud.estado?.toLowerCase().includes('asignado'),
@@ -339,8 +340,32 @@ if (typeof window.solicitudesCliente === 'undefined') {
                             .numero_solicitud_cliente),
                         norm(solicitud.nombre_solicitud)
                     ].some(v => v.includes(sTerm));
-                    const matchEstado = !this.filtros.estado || solicitud.estado === this.filtros
-                        .estado;
+                    
+                    // Filtro por estado adaptado a los nuevos valores
+                    let matchEstado = true;
+                    if (this.filtros.estado) {
+                        const estadoSolicitud = norm(solicitud.estado);
+                        switch(this.filtros.estado) {
+                            case 'Pendiente': // En espera
+                                matchEstado = ['pendiente', 'en espera', 'espera'].some(e => estadoSolicitud.includes(e));
+                                break;
+                            case 'En Proceso': // Asignada
+                                matchEstado = ['asignada', 'asignado', 'asignadas', 'asignados'].some(e => estadoSolicitud.includes(e));
+                                break;
+                            case 'Resuelta': // En proceso
+                                matchEstado = ['en proceso', 'proceso'].some(e => estadoSolicitud.includes(e));
+                                break;
+                            case 'Rechazada': // Rechazadas
+                                matchEstado = ['rechazada', 'rechazado', 'rechazadas', 'rechazados'].some(e => estadoSolicitud.includes(e));
+                                break;
+                            case 'Cerrada': // Finalizadas
+                                matchEstado = ['finalizada', 'finalizado', 'finalizadas', 'finalizados', 'resuelta', 'resuelto', 'resueltas', 'resueltos', 'cerrada', 'cerrado', 'cerradas', 'cerrados'].some(e => estadoSolicitud.includes(e));
+                                break;
+                            default:
+                                matchEstado = true;
+                        }
+                    }
+                    
                     return (!sTerm || hay) && matchEstado;
                 });
             },

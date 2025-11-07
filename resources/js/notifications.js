@@ -44,7 +44,7 @@ export function notificationsDropdown() {
                     read_at: new Date().toISOString(),
                 }));
                 this.unread = 0;
-            } catch (_) { }
+            } catch (_) {}
         },
         // Modal state for delete confirmation
         deleteModalOpen: false,
@@ -72,19 +72,23 @@ export function notificationsDropdown() {
             try {
                 const doFetch = window.apiFetch || fetch;
                 const res = await doFetch(`/api/notifications/${n.id}`, {
-                    method: 'DELETE',
-                    headers: { Accept: 'application/json' },
-                    credentials: 'same-origin',
+                    method: "DELETE",
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
                 });
                 if (!res.ok) {
-                    console.warn('Failed to delete notification', await res.text());
+                    console.warn(
+                        "Failed to delete notification",
+                        await res.text()
+                    );
                     return;
                 }
                 // Remove from local list
                 this.items = this.items.filter((it) => it.id !== n.id);
-                if (!n.read_at && this.unread > 0) this.unread = Math.max(0, this.unread - 1);
+                if (!n.read_at && this.unread > 0)
+                    this.unread = Math.max(0, this.unread - 1);
             } catch (e) {
-                console.warn('Error deleting notification', e);
+                console.warn("Error deleting notification", e);
             }
         },
         go(n) {
@@ -108,7 +112,7 @@ export function notificationsDropdown() {
                         this.open = false;
                         return;
                     }
-                } catch (_) { }
+                } catch (_) {}
                 window.location.href = n.url;
             }
         },
