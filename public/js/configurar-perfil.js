@@ -28,8 +28,105 @@ document.addEventListener("DOMContentLoaded", () => {
         },
     };
 
+    // Estado de validación DNI
+    let dniValidation = {
+        isValidating: false,
+        isAvailable: null,
+        lastChecked: null,
+        debounceTimer: null,
+    };
+
     const touched = {};
     let triedSubmit = false;
+
+    // Función para validar DNI en el backend SOLO al enviar el formulario
+    // Devuelve true si está disponible, false si ya existe
+    async function validateDniAvailability(dni, { decorateUI = true } = {}) {
+        if (!dni || dni.length < 6) return true; // si no hay DNI válido, no bloquea
+
+        const dniInput = document.getElementById("dni");
+        const loadingEl = document.querySelector("[data-dni-loading]");
+
+        dniValidation.isValidating = true;
+
+        if (decorateUI && loadingEl) loadingEl.classList.remove("hidden");
+
+        try {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            const response = await fetch("/cliente/api/validar-dni", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({ dni }),
+            });
+
+            const result = await response.json();
+            dniValidation.isAvailable = !!result.disponible;
+
+            if (!dniValidation.isAvailable && decorateUI) {
+                showError(
+                    dniInput,
+                    result.mensaje || "Este DNI ya está registrado"
+                );
+            }
+
+            return dniValidation.isAvailable;
+        } catch (error) {
+            console.error("Error validando DNI:", error);
+            if (decorateUI) {
+                showError(
+                    dniInput,
+                    "Error al validar DNI. Inténtalo de nuevo."
+                );
+            }
+            return false;
+        } finally {
+            dniValidation.isValidating = false;
+            if (decorateUI && loadingEl) loadingEl.classList.add("hidden");
+        }
+    }
+
+    function showDniSuccess(message) {
+        const dniInput = document.getElementById("dni");
+        const successEl = document.querySelector("[data-dni-success]");
+
+        if (successEl) {
+            successEl.innerHTML = `
+                <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                ${message}
+            `;
+            successEl.classList.remove("hidden");
+            // NO ocultar automáticamente - mantener visible hasta que cambie el DNI
+        }
+
+        // Agregar borde verde
+        dniInput.classList.remove(
+            "border-red-500",
+            "border-gray-300",
+            "dark:border-gray-600"
+        );
+        dniInput.classList.add("border-green-500");
+    }
+
+    function hideDniSuccess() {
+        const successEl = document.querySelector("[data-dni-success]");
+        if (successEl) {
+            successEl.classList.add("hidden");
+        }
+
+        const dniInput = document.getElementById("dni");
+        if (dniInput) {
+            dniInput.classList.remove("border-green-500");
+            dniInput.classList.add("border-gray-300", "dark:border-gray-600");
+        }
+    }
 
     function showError(input, message) {
         const el = document.querySelector(
@@ -39,8 +136,18 @@ document.addEventListener("DOMContentLoaded", () => {
             el.textContent = message;
             el.classList.remove("hidden");
         }
+        // Si es DNI, ocultar el mensaje de éxito
+        if (input.id === "dni") {
+            const successEl = document.querySelector("[data-dni-success]");
+            successEl?.classList.add("hidden");
+            dniValidation.isAvailable = false;
+        }
         input.classList.add("border-red-500");
-        input.classList.remove("border-gray-300");
+        input.classList.remove(
+            "border-gray-300",
+            "dark:border-gray-600",
+            "border-green-500"
+        );
     }
 
     function clearError(input) {
@@ -51,8 +158,23 @@ document.addEventListener("DOMContentLoaded", () => {
             el.textContent = "";
             el.classList.add("hidden");
         }
-        input.classList.remove("border-red-500");
-        input.classList.add("border-gray-300");
+
+        // Tratamiento especial para DNI: si ya está confirmado disponible,
+        // mantener el estado visual de éxito y no degradarlo a gris.
+        if (input.id === "dni" && dniValidation.isAvailable === true) {
+            const successEl = document.querySelector("[data-dni-success]");
+            successEl?.classList.remove("hidden");
+            input.classList.remove(
+                "border-red-500",
+                "border-gray-300",
+                "dark:border-gray-600"
+            );
+            input.classList.add("border-green-500");
+            return;
+        }
+
+        input.classList.remove("border-red-500", "border-green-500");
+        input.classList.add("border-gray-300", "dark:border-gray-600");
     }
 
     function validateInput(input) {
@@ -67,6 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (result === true) {
             clearError(input);
+            // Ya no validamos DNI en vivo; solo al enviar
             return true;
         }
 
@@ -109,6 +232,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         input.addEventListener(eventName, () => {
             touched[input.id] = true;
+            // Si es DNI, solo limpiar el error local; ya no validamos en vivo
+            if (input.id === "dni") clearError(input);
+
             validateInput(input);
             validateAll();
         });
@@ -232,7 +358,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAvatarDragAndDrop();
     validateAll();
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
         triedSubmit = true;
 
         const emailInput = document.getElementById("email_contacto");
@@ -240,23 +367,31 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("email_verificado")?.value === "1";
 
         if (!emailInput?.value.trim()) {
-            event.preventDefault();
             emailInput?.focus();
             return;
         }
 
         if (!emailVerified) {
-            event.preventDefault();
             emailInput?.focus();
             return;
         }
 
         if (!validateAll()) {
-            event.preventDefault();
             const firstInvalid =
                 form.querySelector("[data-validate].border-red-500") ||
                 form.querySelector("[data-validate]");
             firstInvalid?.focus();
+            return;
+        }
+
+        // Validación de DNI en el submit
+        const dniInput = document.getElementById("dni");
+        const dniValue = dniInput?.value.trim();
+        const dniOk = await validateDniAvailability(dniValue, {
+            decorateUI: true,
+        });
+        if (!dniOk) {
+            dniInput?.focus();
             return;
         }
 
@@ -269,6 +404,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				Guardando perfil...
 			</span>
 		`;
+
+        // Enviar formulario ahora que todo es válido
+        form.submit();
     });
 
     setupEmailVerification({

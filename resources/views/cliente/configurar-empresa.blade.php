@@ -18,7 +18,7 @@
 </div>
 
 <div class="w-full max-w-4xl mx-auto">
-    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
+    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-400/60 dark:border-gray-700/20 overflow-hidden">
         <div class="bg-gradient-to-r from-green-700 to-green-800 p-6 text-center">
             <div class="w-20 h-20 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-lg">
                 <div class="w-15 h-15 rounded-full overflow-hidden bg-white flex items-center justify-center p-1">
@@ -109,7 +109,7 @@
 
                     <div class="space-y-1">
                         <label for="rtn" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            RTN <span class="text-red-500">*</span>
+                            Identificación Fiscal (RTN / NIT / RUC / Cédula Jurídica) <span class="text-red-500">*</span>
                         </label>
                         <input 
                             id="rtn" 
@@ -184,7 +184,7 @@
                                             type="time" 
                                             id="horario_fin" 
                                             class="px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                                            value="17:00"
+                                            value="16:00"
                                         >
                                     </div>
                                 </div>
@@ -354,7 +354,7 @@
                                 required
                                 maxlength="100"
                                 class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                                placeholder="Ej. Col. Las Uvas"
+                                placeholder="Ej. Bosques del Alba"
                                 value="{{ old('colonia') }}"
                             >
                             @error('colonia')

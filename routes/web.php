@@ -659,6 +659,9 @@ Route::prefix('cliente')
         // API routes for location data
         Route::get('api/departamentos/{paisId}', [\App\Http\Controllers\ClienteController::class, 'getDepartamentosByPais'])->name('api.departamentos');
         Route::get('api/ciudades/{departamentoId}', [\App\Http\Controllers\ClienteController::class, 'getCiudadesByDepartamento'])->name('api.ciudades');
+        
+        // API route para validar DNI
+        Route::post('api/validar-dni', [\App\Http\Controllers\ClienteController::class, 'validarDni'])->name('api.validar-dni');
 
         // Rutas que requieren perfil completo
         Route::middleware(['check.cliente.perfil'])->group(function () {

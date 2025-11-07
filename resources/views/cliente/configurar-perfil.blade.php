@@ -18,7 +18,7 @@
 </div>
 
 <div class="w-full max-w-4xl mx-auto">
-    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
+    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-400/60 dark:border-gray-700/20 overflow-hidden">
         <div class="bg-gradient-to-r from-blue-800 to-blue-900 p-6 text-center">
             <div class="w-20 h-20 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-lg">
                 <div class="w-15 h-15 rounded-full overflow-hidden bg-white flex items-center justify-center p-1">
@@ -156,6 +156,19 @@
                             value="{{ old('dni') }}"
                         >
                         <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="dni"></p>
+                        <p class="text-sm text-green-600 dark:text-green-400 mt-1 hidden" data-dni-success>
+                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            DNI disponible
+                        </p>
+                        <p class="text-sm text-blue-600 dark:text-blue-400 mt-1 hidden" data-dni-loading>
+                            <svg class="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Validando DNI...
+                        </p>
                         @error('dni')
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
