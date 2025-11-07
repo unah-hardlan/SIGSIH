@@ -5,7 +5,7 @@
 <div class="fixed top-4 right-4 z-50">
     <button 
         onclick="toggleTheme()" 
-        class="theme-toggle inline-flex items-class="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none serif"enter justify-center w-12 h-12 rounded-full backdrop-blur-lg shadow-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        class="theme-toggle inline-flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-lg shadow-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         title="Cambiar tema"
     >
         <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,8 +25,8 @@
                     <img src="{{ asset('images/logo.png') }}" alt="Logo SIGSIH" class="w-full h-full object-contain">
                 </div>
             </div>
-            <h1 class="text-2xl font-bold text-white mb-2 serif">¡Bienvenido!</h1>
-            <p class="text-blue-100 text-base serif">Completa tu perfil para comenzar a usar nuestro sistema de Soporte técnico.</p>
+            <h1 class="text-2xl font-bold text-white mb-2 font-nunito">¡Bienvenido!</h1>
+            <p class="text-blue-100 text-base font-nunito">Completa tu perfil para comenzar a usar nuestro sistema de Soporte técnico.</p>
         </div>
 
         <div class="p-6">
@@ -34,7 +34,7 @@
                 @csrf
                 
                 <div class="text-center mb-6">
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3 serif">Foto de Perfil</h3>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3 font-nunito">Foto de Perfil</h3>
                     <div class="flex flex-col items-center">
                         <div class="relative mb-3">
                             <div class="w-24 h-24 rounded-full border-3 border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700">
@@ -53,10 +53,10 @@
                                 <svg class="w-6 h-6 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
-                                <p class="text-xs text-gray-600 dark:text-gray-400 serif">
+                                <p class="text-xs text-gray-600 dark:text-gray-400 font-nunito">
                                     <span class="font-medium text-blue-600 dark:text-blue-400">Clic para subir</span> o arrastra
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-white serif">PNG, JPG, WEBP (5MB máx)</p>
+                                <p class="text-xs text-gray-500 dark:text-white font-nunito">PNG, JPG, WEBP (5MB máx)</p>
                             </label>
                         </div>
                         
@@ -68,7 +68,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div class="space-y-1">
-                        <label for="primer_nombre" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                        <label for="primer_nombre" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                             Primer Nombre <span class="text-red-500">*</span>
                         </label>
                         <input 
@@ -77,7 +77,7 @@
                             type="text" 
                             required 
                             data-validate="name"
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-sm serif"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-sm font-nunito"
                             placeholder="Ej. John"
                             value="{{ old('primer_nombre') }}"
                         >
@@ -88,14 +88,14 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label for="segundo_nombre" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                        <label for="segundo_nombre" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                             Segundo Nombre
                         </label>
                         <input 
                             id="segundo_nombre" 
                             name="segundo_nombre" 
                             type="text" 
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-sm serif"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-sm font-nunito"
                             placeholder="Ej. Dae"
                             value="{{ old('segundo_nombre') }}"
                         >
@@ -105,7 +105,7 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label for="primer_apellido" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                        <label for="primer_apellido" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                             Primer Apellido <span class="text-red-500">*</span>
                         </label>
                         <input 
@@ -114,7 +114,7 @@
                             type="text" 
                             required 
                             data-validate="name"
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 serif text-sm"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 font-nunito text-sm"
                             placeholder="Ej. Anderson"
                             value="{{ old('primer_apellido') }}"
                         >
@@ -125,14 +125,14 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label for="segundo_apellido" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                        <label for="segundo_apellido" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                             Segundo Apellido
                         </label>
                         <input 
                             id="segundo_apellido" 
                             name="segundo_apellido" 
                             type="text" 
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 serif text-sm"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 font-nunito text-sm"
                             placeholder="Ej. Smith"
                             value="{{ old('segundo_apellido') }}"
                         >
@@ -142,7 +142,7 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label for="dni" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                        <label for="dni" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                             DNI <span class="text-red-500">*</span>
                         </label>
                         <input 
@@ -151,7 +151,7 @@
                             type="text" 
                             required 
                             data-validate="dni"
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 serif text-sm"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 font-nunito text-sm"
                             placeholder="Ej. 1234-2000-56789"
                             value="{{ old('dni') }}"
                         >
@@ -175,7 +175,7 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label for="id_genero_fk" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                        <label for="id_genero_fk" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                             Género <span class="text-red-500">*</span>
                         </label>
                         <select 
@@ -183,7 +183,7 @@
                             name="id_genero_fk" 
                             required 
                             data-validate="select"
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 serif text-sm"
+                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 font-nunito text-sm"
                         >
                             <option value="">Selecciona tu género</option>
                             @foreach($generos as $genero)
@@ -200,13 +200,13 @@
                 </div>
 
                 <div class="space-y-4">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white serif">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white font-nunito">
                         Email de Contacto
                     </h3>
                     
                     <div class="space-y-3">
                         <div class="space-y-1">
-                            <label for="email_contacto" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                            <label for="email_contacto" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                                 Email <span class="text-red-500">*</span>
                             </label>
                             <div class="space-y-2">
@@ -217,14 +217,14 @@
                                         type="email" 
                                         required 
                                         maxlength="255"
-                                        class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 serif text-sm"
+                                        class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 font-nunito text-sm"
                                         placeholder="ejemplo123@correo.com"
                                         value="{{ old('email_contacto') }}"
                                     >
                                     <button 
                                         type="button" 
                                         id="btn-enviar-codigo"
-                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full serif"
+                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full font-nunito"
                                     >
                                         Enviar Código
                                     </button>
@@ -236,7 +236,7 @@
                         </div>
                         
                         <div id="verification-section" class="hidden space-y-1">
-                            <label for="codigo_verificacion" class="block text-base font-bold text-gray-700 dark:text-gray-300 serif">
+                            <label for="codigo_verificacion" class="block text-base font-bold text-gray-700 dark:text-gray-300 font-nunito">
                                 Código de Verificación <span class="text-red-500">*</span>
                             </label>
                             <div class="flex gap-2">
@@ -245,13 +245,13 @@
                                     name="codigo_verificacion" 
                                     type="text" 
                                     maxlength="6"
-                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-center text-sm tracking-widest serif"
+                                    class="flex-1 px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200 text-center text-sm tracking-widest font-nunito"
                                     placeholder="000000"
                                 >
                                 <button 
                                     type="button" 
                                     id="btn-verificar-codigo"
-                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed serif"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed font-nunito"
                                 >
                                     Verificar
                                 </button>
@@ -263,7 +263,7 @@
                             <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="text-sm font-medium text-green-800 dark:text-green-200 serif">Email verificado correctamente</span>
+                            <span class="text-sm font-medium text-green-800 dark:text-green-200 font-nunito">Email verificado correctamente</span>
                         </div>
                         
                         <input type="hidden" id="email_verificado" name="email_verificado" value="0">
@@ -276,7 +276,7 @@
                         class="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                         id="submit-btn"
                     >
-                        <span class="flex items-center justify-center serif">
+                        <span class="flex items-center justify-center font-nunito">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -292,12 +292,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 serif">¿Tu cuenta pertenece a una empresa?</h3>
-                        <p class="text-base text-gray-600 dark:text-gray-400 mb-3 serif">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 font-nunito">¿Tu cuenta pertenece a una empresa?</h3>
+                        <p class="text-base text-gray-600 dark:text-gray-400 mb-3 font-nunito">
                             Si representas a una empresa, puedes completar los datos corporativos como nombre comercial, RTN y logo empresarial.
                         </p>
                         <a href="{{ route('cliente.configurar-empresa') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-600 rounded-md text-blue-700 dark:text-blue-300 font-medium hover:bg-blue-300 dark:hover:bg-blue-900/30 transition-colors duration-200 text-sm serif">
+                           class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-600 rounded-md text-blue-700 dark:text-blue-300 font-medium hover:bg-blue-300 dark:hover:bg-blue-900/30 transition-colors duration-200 text-sm font-nunito">
                             <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
@@ -315,10 +315,10 @@
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <h3 class="text-sm font-bold text-red-800 dark:text-red-200 serif">
+                                <h3 class="text-sm font-bold text-red-800 dark:text-red-200 font-nunito">
                                     Error al completar el perfil
                                 </h3>
-                                <div class="mt-2 text-sm text-red-700 dark:text-red-300 serif">
+                                <div class="mt-2 text-sm text-red-700 dark:text-red-300 font-nunito">
                                     <p>{{ session('error') }}</p>
                                 </div>
                             </div>
@@ -330,7 +330,7 @@
     </div>
 
     <div class="text-center mt-8">
-        <p class="text-sm text-gray-500 dark:text-white serif">
+        <p class="text-sm text-gray-500 dark:text-white font-nunito">
             ¿Necesitas ayuda? <a href="mailto:edw.lagos@gmail.com" class="text-blue-600 dark:text-blue-400 hover:underline">Contacta soporte</a>
         </p>
     </div>
