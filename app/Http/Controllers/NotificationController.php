@@ -13,7 +13,7 @@ class NotificationController extends Controller
         $limit = (int) $request->query('limit', 15);
         $items = $user->notifications()->limit($limit)->get()->map(function ($n) {
             return [
-                'id' => $n->id, // accessor maps to id_notificacion
+                'id' => $n->id, 
                 'title' => $n->data['title'] ?? 'Notificación',
                 'body' => $n->data['body'] ?? '',
                 'url' => $n->data['url'] ?? null,
@@ -48,9 +48,7 @@ class NotificationController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    /**
-     * Delete a notification (soft-delete or hard delete depending on DB mapping).
-     */
+    
     public function destroy(Request $request, string $id): JsonResponse
     {
         $n = $request->user()->notifications()->where('id_notificacion', $id)->first();

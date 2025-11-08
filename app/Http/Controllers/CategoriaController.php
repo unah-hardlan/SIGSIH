@@ -14,7 +14,7 @@ class CategoriaController extends Controller
     {
         $query = Categoria::query();
 
-        // Búsqueda general (q)
+        
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             $query->where(function($q) use ($searchTerm) {
@@ -24,7 +24,7 @@ class CategoriaController extends Controller
             });
         }
 
-        // Ordenamiento
+        
         if ($request->has('sort') && !empty($request->sort)) {
             $sortField = $request->sort;
             switch ($sortField) {

@@ -45,13 +45,13 @@ class Producto extends Model
         return $this->belongsTo(TipoProducto::class,'id_tipo_producto_fk','id_tipo_producto_pk');
     }
 
-    // Relación con kardex para histórico de movimientos
+    
     public function movimientosKardex()
     {
         return $this->hasMany(Kardex::class, 'id_producto_fk', 'id_producto_pk');
     }
 
-    // Método para obtener stock actual calculado
+    
     public function getStockActualAttribute()
     {
         return $this->movimientosKardex()
@@ -66,7 +66,7 @@ class Producto extends Model
             ->value('stock_actual') ?? 0;
     }
 
-    // Método para verificar si está en stock crítico
+    
     public function isStockCritico()
     {
         return $this->stock_actual <= $this->stock_minimo;

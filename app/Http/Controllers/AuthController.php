@@ -35,21 +35,21 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
-        // Normalizar: mayúsculas y trim, rechazar espacios
+        
         $usuario = strtoupper(trim($data['usuario']));
         $password = $data['contrasena'];
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $password)) {
             return response()->json(['error' => 'Usuario/contraseña inválidos'], 401);
         }
-        // Primero solo verifica credenciales; decide 2FA sin emitir token aún
+        
         $cred = $this->authService->verifyCredentialsOnly($usuario, $password);
         if (isset($cred['error'])) {
             return response()->json(['error' => $cred['error']], $cred['code']);
         }
-        /** @var \App\Models\Usuario $user */
+        
         $user = $cred['user'];
 
-        // Si el sistema requiere verificación de correo, bloquear login hasta verificar
+        
         $requireVerify = (bool) (\App\Models\Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? \App\Models\Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
@@ -61,7 +61,7 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Si 2FA está habilitado, emite challenge y no setea auth_token todavía
+        
         if ($user->two_factor_enabled) {
             $challengeId = (string) \Illuminate\Support\Str::uuid();
             Cache::put('2fa:challenge:' . $challengeId, $user->getKey(), now()->addMinutes(5));
@@ -75,25 +75,25 @@ class AuthController extends Controller
                 ->cookie('2fa_challenge', $challengeId, 5, '/', null, $secure, true, false, $sameSite);
         }
 
-        // Si no hay 2FA, emitir token final como antes
+        
         $result = $this->authService->attempt($usuario, $password);
         if (isset($result['error'])) {
             return response()->json(['error' => $result['error']], $result['code']);
         }
-        // Registrar en bitácora
+        
         try {
             $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null);
         } catch (\Throwable $e) {
         }
-        // Mantener token sólo para cookie, no exponerlo al frontend
+        
         $token = $result['token'] ?? null;
         $payload = $result;
         unset($payload['token']);
-        // Añadir redirect según rol
+        
         try {
             $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
             if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
-                // Verificar si el cliente necesita configurar su perfil
+                
                 $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
 
                 if (
@@ -111,7 +111,7 @@ class AuthController extends Controller
                 $payload['redirect_url'] = route('admin.dashboard');
             }
         } catch (\Throwable $e) {
-            // fallback admin
+            
             $payload['redirect_url'] = route('admin.dashboard');
         }
         $response = response()->json($payload, 200);
@@ -125,7 +125,7 @@ class AuthController extends Controller
 
     public function logout(): \Illuminate\Http\Response|JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        // Intentar identificar usuario desde Authorization Bearer para loguear correctamente y liberar slot de sesión.
+        
         $userId = null;
         $tokenId = null;
         try {
@@ -138,7 +138,7 @@ class AuthController extends Controller
             }
         } catch (\Throwable $e) {
         }
-        // Remover token actual del registro de sesiones concurrentes
+        
         try {
             if ($userId && $tokenId) {
                 $sessionsKey = 'user_sessions:' . $userId;
@@ -197,7 +197,7 @@ class AuthController extends Controller
         $usuario->primer_ingreso = 1;
         $usuario->save();
 
-        // Crear mapeo de cliente PERSONA (activo) para este usuario
+        
         try {
             Cliente::firstOrCreate(
                 ['id_cliente_pk' => $usuario->id_usuario_pk],
@@ -208,10 +208,10 @@ class AuthController extends Controller
                 ]
             );
         } catch (\Throwable $e) {
-            // no bloquear registro si falla
+            
         }
 
-        // Notificar a administradores: nuevo usuario registrado
+        
         try {
             $adminRoleId = Rol::where('rol', 'Administrador')->value('id_rol_pk');
             if ($adminRoleId) {
@@ -233,10 +233,10 @@ class AuthController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // no bloquear registro si notificación falla
+            
         }
 
-        // Si se requiere verificación de correo, generar token y enviar mail; no iniciar sesión aún
+        
         $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
@@ -251,7 +251,7 @@ class AuthController extends Controller
             return response()->json(['status' => 'verification_sent'], 201);
         }
 
-        // Si no se requiere verificación, iniciar sesión como antes
+        
         $tokenResult = $this->authService->tokenForUser($usuario);
         if (isset($tokenResult['error'])) {
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
@@ -269,12 +269,12 @@ class AuthController extends Controller
         return $response;
     }
 
-    // Reenvía correo de verificación (público después del registro)
+    
     public function resendVerification(Request $request): JsonResponse
     {
         $request->validate(['email' => 'required|email']);
         $email = strtolower($request->input('email'));
-        /** @var \App\Models\Usuario|null $user */
+        
         $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
@@ -283,7 +283,7 @@ class AuthController extends Controller
             return response()->json(['status' => 'already_verified']);
         }
 
-        // Throttle: cooldown + máximo por día controlado por parámetros
+        
         $cooldownMinutes = $this->getParametroInt([
             'AUTH.VERIFY_EMAIL.COOLDOWN_MINUTES',
             'auth.verify_email.cooldown_minutes',
@@ -293,7 +293,7 @@ class AuthController extends Controller
             'auth.verify_email.max_per_day',
         ], 5);
 
-        // Enforce cooldown based on last sent timestamp
+        
         if ($cooldownMinutes > 0 && $user->email_verification_sent_at) {
             $nextAllowed = \Illuminate\Support\Carbon::parse($user->email_verification_sent_at)->addMinutes($cooldownMinutes);
             if (now()->lt($nextAllowed)) {
@@ -306,7 +306,7 @@ class AuthController extends Controller
             }
         }
 
-        // Enforce max per day using RateLimiter
+        
         $rateLimiterKey = null;
         $rateLimiterTtl = 60 * 60 * 24;
         if ($maxPerDay > 0) {
@@ -321,7 +321,7 @@ class AuthController extends Controller
             }
         }
 
-        // Generate and send new token
+        
         $user->email_verification_token = bin2hex(random_bytes(20));
         $user->email_verification_sent_at = now();
         $user->save();
@@ -340,10 +340,10 @@ class AuthController extends Controller
         ]);
     }
 
-    // Verifica el correo a partir de token + email
+    
     public function verifyEmail(Request $request)
     {
-        // Si el cliente es un navegador (HTML), redirigir a la página estilizada
+        
         if (!($request->expectsJson() || $request->wantsJson())) {
             return redirect()->route('verify.email.page', [
                 'token' => $request->query('token'),
@@ -352,7 +352,7 @@ class AuthController extends Controller
         }
         $request->validate(['token' => 'required|string', 'email' => 'required|email']);
         $email = strtolower($request->input('email'));
-        /** @var \App\Models\Usuario|null $user */
+        
         $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
         if (!$user) return response()->json(['message' => 'Usuario no encontrado'], 404);
         if ($user->hasVerifiedEmail()) return response()->json(['status' => 'already_verified']);
@@ -363,7 +363,7 @@ class AuthController extends Controller
         return response()->json(['status' => 'verified']);
     }
 
-    // Versión con vista estilizada (web) para mostrar resultado de verificación acorde al login
+    
     public function verifyEmailPage(Request $request)
     {
         $status = 'error';
@@ -373,11 +373,11 @@ class AuthController extends Controller
         $token = (string) $request->query('token', '');
         $email = strtolower((string) $request->query('email', ''));
         if ($token === '' || $email === '') {
-            // Sin datos suficientes, redirigir al login
+            
             return redirect()->route('login');
         }
 
-        /** @var \App\Models\Usuario|null $user */
+        
         $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
         if (!$user) {
             return view('auth.verify-email', [
@@ -403,7 +403,7 @@ class AuthController extends Controller
             ]);
         }
 
-        // Éxito
+        
         $user->markEmailAsVerified();
         return view('auth.verify-email', [
             'status'  => 'verified',
@@ -465,7 +465,7 @@ class AuthController extends Controller
             'AUTH.PASSWORD_RESET.COOLDOWN_MINUTES',
             'auth.password_reset.cooldown_minutes'
         ], 5);
-        $maxPerDay = 0; // Elimina el límite diario
+        $maxPerDay = 0; 
         $expireMinutes = $this->getParametroInt([
             'AUTH.PASSWORD_RESET.EXPIRE_MINUTES',
             'auth.password_reset.expire_minutes'
@@ -476,7 +476,7 @@ class AuthController extends Controller
         }
 
         if ($cooldownMinutes > 0) {
-            // Limita el cooldown a 25 minutos máximo
+            
             $cooldownMinutes = min(25, max(1, $cooldownMinutes));
             config(['auth.passwords.users.throttle' => $cooldownMinutes * 60]);
         }
@@ -509,9 +509,9 @@ class AuthController extends Controller
         $rateLimiterTtl = 60 * 60 * 24;
 
         if ($maxPerDay > 0) {
-            // Sin límite diario
+            
         }
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        
         $broker = Password::broker();
 
         try {
@@ -569,7 +569,7 @@ class AuthController extends Controller
                 'message' => 'El token de recuperación no es válido o ha expirado.'
             ], 400);
         }
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        
         $broker = Password::broker();
 
         if (!$broker->tokenExists($usuario, $data['token'])) {
@@ -608,11 +608,11 @@ class AuthController extends Controller
             }
         }
 
-        // Asignación segura: el mutator del modelo se encargará de hashear si es necesario
-        // Además, al restablecer la contraseña desbloqueamos la cuenta y limpiamos el contador de intentos
+        
+        
         $usuario->contrasena = $data['password'];
         $usuario->primer_ingreso = 0;
-        // Asegurar que el estado vuelva a activo tras restablecer contraseña
+        
         $usuario->estado_usuario = 'ACTIVO';
         $usuario->save();
 
@@ -638,11 +638,11 @@ class AuthController extends Controller
         }
         $broker->deleteToken($usuario);
 
-        // Eliminar contador temporal de intentos fallidos en cache
+        
         try {
             cache()->forget('login_attempts:' . $usuario->getKey());
         } catch (\Throwable $e) {
-            // noop: no bloquear el proceso por un fallo en cache
+            
         }
 
         try {

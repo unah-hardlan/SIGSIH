@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProyectoResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -24,7 +20,7 @@ class ProyectoResource extends JsonResource
             'id_orden_servicio_fk' => $this->id_orden_servicio_fk,
             'id_estado_proyecto_fk' => $this->id_estado_proyecto_fk,
             
-            // Relaciones
+            
             'orden_servicio' => $this->whenLoaded('ordenServicio', function () {
                 return [
                     'id_orden_servicio_pk' => $this->ordenServicio->id_orden_servicio_pk,
@@ -46,7 +42,7 @@ class ProyectoResource extends JsonResource
                 return [
                     'id_estado_proyecto_pk' => $this->estadoProyecto->id_estado_proyecto_pk,
                     'codigo' => $this->estadoProyecto->codigo,
-                    // Keep both keys: 'nombre' for templates that expect it, and 'nombre_estado' for backward compatibility
+                    
                     'nombre' => $this->estadoProyecto->nombre,
                     'nombre_estado' => $this->estadoProyecto->nombre,
                     'descripcion_estado_proyecto' => $this->estadoProyecto->descripcion,

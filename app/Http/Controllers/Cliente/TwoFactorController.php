@@ -12,12 +12,10 @@ use PragmaRX\Google2FA\Google2FA;
 
 class TwoFactorController extends Controller
 {
-    /**
-     * Obtener el estado actual de 2FA del cliente
-     */
+    
     public function status(Request $request): JsonResponse
     {
-        /** @var Usuario $user */
+        
         $user = $request->user();
         
         return response()->json([
@@ -30,13 +28,11 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    /**
-     * Iniciar configuración de 2FA (igual que admin)
-     */
+    
     public function startSetup(Request $request): JsonResponse
     {
         $request->validate(['current_password' => 'required|string']);
-        /** @var Usuario $user */
+        
         $user = $request->user();
         $hash = $user?->contrasena;
         if (!$hash || !Hash::check($request->string('current_password'), $hash)) {
@@ -56,16 +52,14 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    /**
-     * Confirmar configuración de 2FA (igual que admin)
-     */
+    
     public function confirmSetup(Request $request): JsonResponse
     {
         $request->validate([
             'code' => 'required|string',
             'current_password' => 'required|string',
         ]);
-        /** @var Usuario $user */
+        
         $user = $request->user();
         $hash = $user?->contrasena;
         if (!$hash || !Hash::check($request->string('current_password'), $hash)) {
@@ -94,13 +88,11 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    /**
-     * Deshabilitar 2FA (igual que admin)
-     */
+    
     public function disable(Request $request): JsonResponse
     {
         $request->validate(['current_password' => 'required|string']);
-        /** @var Usuario $user */
+        
         $user = $request->user();
         $hash = $user?->contrasena;
         if (!$hash || !Hash::check($request->string('current_password'), $hash)) {
@@ -114,12 +106,10 @@ class TwoFactorController extends Controller
         return response()->json(['message' => '2FA desactivado']);
     }
 
-    /**
-     * Generar nuevos códigos de recuperación
-     */
+    
     public function recoveryCodes(Request $request): JsonResponse
     {
-        /** @var Usuario $user */
+        
         $user = $request->user();
         
         if (!$user->two_factor_enabled) {
@@ -130,10 +120,10 @@ class TwoFactorController extends Controller
         }
 
         try {
-            // Generar nuevos códigos de recuperación
+            
             $recoveryCodes = collect(range(1, 8))->map(fn() => Str::random(10))->toArray();
             
-            // Guardar los nuevos códigos
+            
             $user->two_factor_recovery_codes = encrypt(implode(',', $recoveryCodes));
             $user->save();
 

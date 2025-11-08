@@ -20,7 +20,7 @@ class Bitacora extends Model
         'descripcion',
         'creado_por',
         'fecha_creacion',
-        // nuevos campos de auditoría
+        
         'tabla',
         'id_registro',
         'antes',

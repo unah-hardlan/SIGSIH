@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class CalendarioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Calendario::with([
@@ -28,37 +26,37 @@ class CalendarioController extends Controller
             'cliente'
         ]);
 
-        // Filtro por estado del calendario
+        
         if ($request->has('id_estado_calendario_fk')) {
             $query->where('id_estado_calendario_fk', $request->id_estado_calendario_fk);
         }
 
-        // Filtro por agencia
+        
         if ($request->has('id_agencias_fk')) {
             $query->where('id_agencias_fk', $request->id_agencias_fk);
         }
 
-        // Filtro por orden de servicio
+        
         if ($request->has('id_orden_servicio_fk')) {
             $query->where('id_orden_servicio_fk', $request->id_orden_servicio_fk);
         }
 
-        // Filtro por tipo de mantenimiento
+        
         if ($request->has('id_tipo_mantenimiento_fk')) {
             $query->where('id_tipo_mantenimiento_fk', $request->id_tipo_mantenimiento_fk);
         }
 
-        // Filtro por cliente
+        
         if ($request->has('id_cliente_fk')) {
             $query->where('id_cliente_fk', $request->id_cliente_fk);
         }
 
-        // Filtro por descripción
+        
         if ($request->has('descripcion_calendario')) {
             $query->where('descripcion_calendario', 'like', '%' . $request->descripcion_calendario . '%');
         }
 
-        // Filtro por rango de fechas
+        
         if ($request->has('fecha_desde')) {
             $query->where('fecha', '>=', $request->fecha_desde);
         }
@@ -84,9 +82,7 @@ class CalendarioController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreCalendarioRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -100,9 +96,7 @@ class CalendarioController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $calendario = Calendario::with(['estado', 'agencia', 'ordenServicio', 'tipoMantenimiento', 'cliente'])->find($id);
@@ -120,9 +114,7 @@ class CalendarioController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(UpdateCalendarioRequest $request, string $id): JsonResponse
     {
         $calendario = Calendario::find($id);
@@ -136,16 +128,16 @@ class CalendarioController extends Controller
 
         $validated = $request->validated();
 
-        // Detectar cambio de estado para notificar
+        
         $oldEstadoId = $calendario->id_estado_calendario_fk;
         $calendario->update($validated);
         $calendario->load(['estado', 'agencia', 'ordenServicio', 'tipoMantenimiento', 'cliente']);
 
-        // Si el estado cambió, notificar a técnicos
+        
         try {
             $newEstadoId = $calendario->id_estado_calendario_fk;
             if (isset($validated['id_estado_calendario_fk']) && $newEstadoId != $oldEstadoId) {
-                // obtener nombres de estado
+                
                 $oldName = null;
                 try {
                     $oldName = \App\Models\EstadoCalendario::find($oldEstadoId)?->nombre;
@@ -154,7 +146,7 @@ class CalendarioController extends Controller
                 }
                 $newName = $calendario->estado?->nombre ?? null;
 
-                // Obtener técnicos
+                
                 $rols = Rol::where('rol', 'like', '%tecn%')->get();
                 $roleIds = $rols->pluck('id_rol_pk')->all();
                 $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
@@ -197,9 +189,7 @@ class CalendarioController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $calendario = Calendario::find($id);
@@ -219,9 +209,7 @@ class CalendarioController extends Controller
         ]);
     }
 
-    /**
-     * Generate calendario report
-     */
+    
     public function reporte(Request $request)
     {
         $query = Calendario::with([
@@ -233,34 +221,34 @@ class CalendarioController extends Controller
             'cliente.personas'
         ]);
 
-        // Filtro por estado del calendario
+        
         if ($estado = $request->input('estado')) {
             $query->whereHas('estado', function ($q) use ($estado) {
                 $q->where('codigo', $estado);
             });
         }
 
-        // Filtro por agencia
+        
         if ($agencia = $request->input('agencia')) {
             $query->where('id_agencias_fk', $agencia);
         }
 
-        // Filtro por cliente
+        
         if ($cliente = $request->input('cliente')) {
             $query->where('id_cliente_fk', $cliente);
         }
 
-        // Filtro por tipo de mantenimiento
+        
         if ($tipo = $request->input('tipo_mantenimiento')) {
             $query->where('id_tipo_mantenimiento_fk', $tipo);
         }
 
-        // Filtro de búsqueda por descripción
+        
         if ($q = $request->input('q')) {
             $query->where('descripcion_calendario', 'like', "%$q%");
         }
 
-        // Filtro por rango de fechas
+        
         if ($desde = $request->input('desde')) {
             $query->where('fecha', '>=', $desde);
         }
@@ -269,7 +257,7 @@ class CalendarioController extends Controller
             $query->where('fecha', '<=', $hasta);
         }
 
-        // Orden
+        
         $sortable = [
             'fecha' => 'fecha',
             'estado' => 'id_estado_calendario_fk',

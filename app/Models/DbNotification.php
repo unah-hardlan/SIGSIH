@@ -23,7 +23,7 @@ class DbNotification extends BaseDatabaseNotification
         'fecha_modificacion' => 'datetime',
     ];
 
-    // Keep Laravel's expected attribute names working in-app while persisting Spanish columns
+    
     public function getIdAttribute()
     {
         return $this->attributes['id_notificacion'] ?? null;
@@ -54,7 +54,7 @@ class DbNotification extends BaseDatabaseNotification
         $this->attributes['fecha_lectura'] = $value;
     }
 
-    // Map default timestamp attributes to Spanish columns when payload includes them
+    
     public function getCreatedAtAttribute()
     {
         return $this->attributes['fecha_creacion'] ?? null;
@@ -75,7 +75,7 @@ class DbNotification extends BaseDatabaseNotification
         $this->attributes['fecha_modificacion'] = $value;
     }
 
-    // Map default morph keys to Spanish columns for inserts from DatabaseChannel
+    
     public function setNotifiableTypeAttribute($value)
     {
         $this->attributes['tipo_notificable'] = $value;
@@ -86,7 +86,7 @@ class DbNotification extends BaseDatabaseNotification
         $this->attributes['id_notificable'] = $value;
     }
 
-    // Polymorphic relation with custom keys
+    
     public function notifiable()
     {
         return $this->morphTo(__FUNCTION__, 'tipo_notificable', 'id_notificable');

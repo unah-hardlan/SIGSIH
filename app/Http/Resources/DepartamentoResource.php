@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DepartamentoResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -19,7 +15,7 @@ class DepartamentoResource extends JsonResource
             'nombre_departamento' => $this->nombre_departamento,
             'id_pais_pk' => $this->id_pais_pk,
             
-            // Relaciones
+            
             'pais' => $this->whenLoaded('pais')
         ];
     }

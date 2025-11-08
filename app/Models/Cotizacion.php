@@ -49,7 +49,7 @@ class Cotizacion extends Model
             if (!$model->fecha_cotizacion) {
                 $model->fecha_cotizacion = now();
             }
-            // Default estado to 'borrador' if available
+            
             try {
                 if (!$model->id_estado_cotizacion_fk) {
                     $estadoId = EstadoCotizacion::where('codigo', 'borrador')->value('id_estado_cotizacion_pk');
@@ -58,7 +58,7 @@ class Cotizacion extends Model
                     }
                 }
             } catch (\Throwable $e) {
-                // ignore if table not yet migrated
+                
             }
         });
     }

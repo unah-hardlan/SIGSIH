@@ -14,10 +14,10 @@ class StorePersonaRequest extends FormRequest
 
     public function rules(): array
     {
-        // Leer un solo parámetro de formato: "FORMATO DNI".
-        // Soporta:
-        //  - máscara tipo 0000-0000-00000 (0=digito, otros simbolos literales)
-        //  - un número mínimo de dígitos, ej. "8" => ^\d{8,}$
+        
+        
+        
+        
         $format = Parametro::where('parametro', 'FORMATO DNI')->value('valor');
         $dniRegex = $this->buildDniRegex($format);
         $dniRule = 'regex:/' . $dniRegex . '/';
@@ -29,7 +29,7 @@ class StorePersonaRequest extends FormRequest
             'dni' => 'required|string|max:20|' . $dniRule . '|unique:tbl_persona,dni',
             'id_genero_fk' => 'required|integer|exists:tbl_genero,id_genero_pk',
             'id_usuario_fk' => 'nullable|integer|exists:tbl_ms_usuario,id_usuario_pk',
-            // Si se envía, asociar la persona al cliente (empresa)
+            
             'id_cliente_fk' => 'sometimes|integer|exists:tbl_cliente,id_cliente_pk',
         ];
     }
@@ -68,9 +68,7 @@ class StorePersonaRequest extends FormRequest
         ];
     }
 
-    /**
-     * Convierte la máscara o número mínimo en una expresión regular usable.
-     */
+    
     private function buildDniRegex($format): string
     {
         $fallback = '^(?:\\d{13}|\\d{4}-\\d{4}-\\d{5})$';
@@ -78,12 +76,12 @@ class StorePersonaRequest extends FormRequest
             return str_replace('/', '\/', $fallback);
         }
         $format = trim($format);
-        // Solo dígitos: interpretar como mínimo de dígitos
+        
         if (preg_match('/^\\d+$/', $format)) {
             $min = max(1, (int)$format);
             return '^\\d{' . $min . ',}$';
         }
-        // Interpretar máscara donde '0' significa un dígito y otros caracteres son literales
+        
         $regex = '^';
         $len = strlen($format);
         for ($i = 0; $i < $len; $i++) {
@@ -91,7 +89,7 @@ class StorePersonaRequest extends FormRequest
             if ($ch === '0') {
                 $regex .= '\\d';
             } else {
-                // escapar caracteres regex especiales
+                
                 if (preg_match('/[.\\+*?\[^\]$(){}=!<>|:-]/', $ch)) {
                     $regex .= '\\' . $ch;
                 } else {
@@ -100,7 +98,7 @@ class StorePersonaRequest extends FormRequest
             }
         }
         $regex .= '$';
-        // Asegurar escape de '/'
+        
         return str_replace('/', '\/', $regex);
     }
 }

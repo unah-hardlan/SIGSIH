@@ -11,19 +11,17 @@ use Illuminate\Http\JsonResponse;
 
 class TipoMantenimientoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = TipoMantenimiento::query();
 
-        // Filtro por tipo de mantenimiento
+        
         if ($request->has('tipo_mantenimiento')) {
             $query->where('tipo_mantenimiento', 'like', '%' . $request->tipo_mantenimiento . '%');
         }
 
-        // Filtro por descripción
+        
         if ($request->has('descripcion_mantenimiento')) {
             $query->where('descripcion_mantenimiento', 'like', '%' . $request->descripcion_mantenimiento . '%');
         }
@@ -45,9 +43,7 @@ class TipoMantenimientoController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreTipoMantenimientoRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -60,9 +56,7 @@ class TipoMantenimientoController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $tipoMantenimiento = TipoMantenimiento::find($id);
@@ -80,9 +74,7 @@ class TipoMantenimientoController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(UpdateTipoMantenimientoRequest $request, string $id): JsonResponse
     {
         $tipoMantenimiento = TipoMantenimiento::find($id);
@@ -104,9 +96,7 @@ class TipoMantenimientoController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $tipoMantenimiento = TipoMantenimiento::find($id);

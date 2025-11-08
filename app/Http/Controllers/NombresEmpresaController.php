@@ -9,19 +9,17 @@ use Illuminate\Http\JsonResponse;
 
 class NombresEmpresaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = NombreEmpresa::query();
 
-        // Filtro por estado
+        
         if ($request->has('estado_empresa')) {
             $query->where('estado_empresa', $request->estado_empresa);
         }
 
-        // Filtro de búsqueda
+        
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -47,9 +45,7 @@ class NombresEmpresaController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -67,9 +63,7 @@ class NombresEmpresaController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $empresa = NombreEmpresa::find($id);
@@ -87,9 +81,7 @@ class NombresEmpresaController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id): JsonResponse
     {
         $empresa = NombreEmpresa::find($id);
@@ -116,9 +108,7 @@ class NombresEmpresaController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $empresa = NombreEmpresa::find($id);

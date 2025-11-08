@@ -18,7 +18,7 @@ class StoreUsuarioRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('usuario')) {
-            // Sólo recortamos espacios, la transformación a mayúsculas la hará el modelo/controlador si aplica
+            
             $this->merge(['usuario' => trim($this->input('usuario'))]);
         }
         if ($this->has('nombre_usuario')) {
@@ -31,7 +31,7 @@ class StoreUsuarioRequest extends FormRequest
 
     public function rules(): array
     {
-        // Obtener parámetros configurables (con fallback a legacy si aplica)
+        
         $correoMuestra = Parametro::whereIn('parametro', ['ADMIN.CORREO', 'ADMIN_CORREO'])
             ->orderByRaw("FIELD(parametro,'ADMIN.CORREO','ADMIN_CORREO')")
             ->value('valor');
@@ -42,7 +42,7 @@ class StoreUsuarioRequest extends FormRequest
             ->orderByRaw("FIELD(parametro,'ADMIN.PASSWORD','ADMIN_CPASS')")
             ->value('valor');
 
-        // Regla para correo limitado por dominio si la muestra contiene '@'
+        
         $emailRule = 'required|email|max:100|unique:tbl_ms_usuario,correo_electronico';
         $correoDominio = null;
         if ($correoMuestra) {
@@ -53,31 +53,31 @@ class StoreUsuarioRequest extends FormRequest
         }
         if ($correoDominio) {
             $correoDominio = strtolower($correoDominio);
-            // Si el parámetro es un placeholder genérico como 'dominio.extension' no imponemos la restricción
+            
             $isPlaceholder = str_contains($correoDominio, 'dominio') || str_contains($correoDominio, 'extension');
             if (!$isPlaceholder) {
                 $this->correoDominioUsed = $correoDominio;
                 $emailRule .= '|regex:/^[^@\s]+@' . preg_quote($correoDominio, '/') . '$/i';
             } else {
-                // No establecer correoDominioUsed para mensajes si es placeholder
+                
                 $this->correoDominioUsed = null;
             }
         }
 
-        // Regla dinámica para usuario usando muestra (solo letras y dígitos). Longitud mínima = len muestra (>=3)
+        
         $usuarioMin = 3;
         if ($usuarioMuestra) {
             $usuarioMin = max(3, strlen($usuarioMuestra));
         }
         $this->usuarioMinUsed = $usuarioMin;
-        // Permitimos letras en minúscula también; luego se guarda en mayúscula.
+        
         $usuarioRegex = '/^[A-Za-z0-9]{' . $usuarioMin . ',50}$/';
-        // Si la muestra parece ya una regex (tiene ^ y $) úsala directamente
+        
         if ($usuarioMuestra && preg_match('/^\^.*\$$/', $usuarioMuestra)) {
             $usuarioRegex = $usuarioMuestra;
         }
 
-        // Reglas de contraseña según muestra: categorías detectadas
+        
         $minPass = 8;
         $needUpper = $needLower = $needDigit = $needSymbol = false;
         $symbolExamples = [];
@@ -98,14 +98,14 @@ class StoreUsuarioRequest extends FormRequest
 
         $this->passwordMinUsed = $minPass;
         $passwordRules = ['required', 'string', 'min:' . $minPass, 'max:100', 'regex:/^\S+$/'];
-        // Contraseña no igual al usuario
+        
         $passwordRules[] = function ($attribute, $value, $fail) {
             $usuarioInput = strtoupper($this->input('usuario', ''));
             if ($usuarioInput && strtoupper($value) === $usuarioInput) {
                 $fail('La contraseña no puede ser igual al usuario.');
             }
         };
-        // Palabras comunes prohibidas
+        
         $passwordRules[] = function ($attribute, $value, $fail) {
             $prohibidas = ['CONTRASENA', 'CONTRASEÑA', 'PASSWORD'];
             if (in_array(strtoupper($value), $prohibidas, true)) {
@@ -153,7 +153,7 @@ class StoreUsuarioRequest extends FormRequest
             'correo_electronico' => $emailRule,
             'contrasena' => $passwordRules,
             'estado_usuario' => 'nullable|string|max:20',
-            // El rol se asignará automáticamente (Cliente) en el registro público si no se envía
+            
             'id_rol_fk' => 'sometimes|integer|exists:tbl_ms_rol,id_rol_pk',
             'primer_ingreso' => 'nullable|boolean',
             'fecha_ultima_conexion' => 'nullable|date',

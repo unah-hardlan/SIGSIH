@@ -24,25 +24,19 @@ class Solicitud extends Model
         'id_contacto_fk'
     ];
 
-    /**
-     * Relación con el modelo Usuario (cliente)
-     */
+    
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
-    /**
-     * Relación con el modelo EstadoSolicitud
-     */
+    
     public function estadoSolicitud()
     {
         return $this->belongsTo(EstadoSolicitud::class, 'id_estado_solicitud_fk', 'id_estado_solicitud_pk');
     }
 
-    /**
-     * Relación con el modelo Contacto
-     */
+    
     public function contacto()
     {
         return $this->belongsTo(Contacto::class, 'id_contacto_fk', 'id_contacto_pk');

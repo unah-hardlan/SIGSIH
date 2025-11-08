@@ -66,19 +66,17 @@ class ProductoController extends Controller
         return response()->json(null, 204);
     }
 
-    /**
-     * Generate productos report
-     */
+    
     public function reporte(Request $request)
     {
         $query = Producto::with(['tipoProducto']);
 
-        // Filtro por tipo de producto
+        
         if ($tipo = $request->input('id_tipo_producto_fk')) {
             $query->where('id_tipo_producto_fk', $tipo);
         }
 
-        // Filtro de búsqueda por SKU, nombre o descripción
+        
         if ($q = $request->input('q')) {
             $query->where(function($sub) use ($q) {
                 $sub->where('sku', 'like', "%$q%")
@@ -87,7 +85,7 @@ class ProductoController extends Controller
             });
         }
 
-        // Filtro por rango de precios
+        
         if ($precio_min = $request->input('precio_min')) {
             $query->where('precio_venta', '>=', $precio_min);
         }
@@ -96,12 +94,12 @@ class ProductoController extends Controller
             $query->where('precio_venta', '<=', $precio_max);
         }
 
-        // Filtro por stock mínimo
+        
         if ($stock_min = $request->input('stock_min')) {
             $query->where('stock_minimo', '>=', $stock_min);
         }
 
-        // Orden
+        
         $sortable = [
             'nombre_producto' => 'nombre_producto',
             'precio_venta' => 'precio_venta',
@@ -119,7 +117,7 @@ class ProductoController extends Controller
         $productos = $query->get();
         $total = $productos->count();
 
-        // Estadísticas
+        
         $totalValor = $productos->sum('precio_venta');
         $promedioPrecio = $productos->avg('precio_venta');
 

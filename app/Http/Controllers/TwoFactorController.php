@@ -17,11 +17,11 @@ class TwoFactorController extends Controller
 {
     public function __construct(private AuthService $auth) {}
 
-    // POST /api/2fa/setup/start (JWT cookie auth)
+    
     public function startSetup(Request $request): JsonResponse
     {
         $request->validate(['current_password' => 'required|string']);
-        /** @var Usuario $user */
+        
         $user = $request->user();
         $hash = $user?->contrasena;
         if (!$hash || !Hash::check($request->string('current_password'), $hash)) {
@@ -40,14 +40,14 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    // POST /api/2fa/setup/confirm (JWT cookie auth)
+    
     public function confirmSetup(Request $request): JsonResponse
     {
         $request->validate([
             'code' => 'required|string',
             'current_password' => 'required|string',
         ]);
-        /** @var Usuario $user */
+        
         $user = $request->user();
         $hash = $user?->contrasena;
         if (!$hash || !Hash::check($request->string('current_password'), $hash)) {
@@ -76,11 +76,11 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    // POST /api/2fa/disable (JWT cookie auth)
+    
     public function disable(Request $request): JsonResponse
     {
         $request->validate(['current_password' => 'required|string']);
-        /** @var Usuario $user */
+        
         $user = $request->user();
         $hash = $user?->contrasena;
         if (!$hash || !Hash::check($request->string('current_password'), $hash)) {
@@ -94,7 +94,7 @@ class TwoFactorController extends Controller
         return response()->json(['message' => '2FA desactivado']);
     }
 
-    // POST /api/2fa/verify (public, relies on 2fa_challenge cookie)
+    
     public function verifyChallenge(Request $request): JsonResponse
     {
         $request->validate(['code' => 'required|string']);
@@ -108,7 +108,7 @@ class TwoFactorController extends Controller
         if (!$userId) {
             return response()->json(['message' => 'Challenge expirado o inválido'], 401);
         }
-        /** @var Usuario|null $user */
+        
         $user = Usuario::find($userId);
         if (!$user || !$user->two_factor_secret) {
             return response()->json(['message' => 'Usuario/2FA inválidos'], 401);
@@ -151,7 +151,7 @@ class TwoFactorController extends Controller
             $user->save();
         }
 
-        // Issue final JWT and cookie, clear challenge
+        
         $tokenResult = $this->auth->tokenForUser($user);
         if (isset($tokenResult['error'])) {
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
@@ -159,11 +159,11 @@ class TwoFactorController extends Controller
         Cache::forget($challengeKey);
         Cache::forget($attemptKey);
         $res = response()->json(['ok' => true]);
-        // Clear challenge cookie
+        
     $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
     $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
         $res->headers->setCookie(Cookie::forget('2fa_challenge'));
-        // Set auth cookie
+        
         $token = $tokenResult['token'];
         $res->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         return $res;

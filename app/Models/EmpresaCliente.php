@@ -23,9 +23,7 @@ class EmpresaCliente extends Model
         'horario_atencion'
     ];
 
-    /**
-     * Relación con Cliente
-     */
+    
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');

@@ -9,19 +9,17 @@ use Illuminate\Http\JsonResponse;
 
 class DepartamentosController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Departamento::with(['pais']);
 
-        // Filtro por país
+        
         if ($request->has('id_pais_pk')) {
             $query->where('id_pais_pk', $request->id_pais_pk);
         }
 
-        // Filtro de búsqueda
+        
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('nombre_departamento', 'LIKE', "%{$search}%");
@@ -44,9 +42,7 @@ class DepartamentosController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -64,9 +60,7 @@ class DepartamentosController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $departamento = Departamento::with(['pais'])->find($id);
@@ -84,9 +78,7 @@ class DepartamentosController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id): JsonResponse
     {
         $departamento = Departamento::find($id);
@@ -113,9 +105,7 @@ class DepartamentosController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $departamento = Departamento::find($id);
@@ -127,7 +117,7 @@ class DepartamentosController extends Controller
             ], 404);
         }
 
-        // Verificar si el departamento tiene ciudades asociadas
+        
         if ($departamento->ciudades()->exists()) {
             return response()->json([
                 'success' => false,

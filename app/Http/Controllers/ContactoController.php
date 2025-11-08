@@ -12,7 +12,7 @@ class ContactoController extends Controller
     {
         $query = Contacto::with(['cliente.empresa']);
 
-        // Filtros
+        
         if ($q = request('q')) {
             $query->where(function ($sub) use ($q) {
                 $sub->where('tipo_contacto', 'like', "%$q%")
@@ -32,7 +32,7 @@ class ContactoController extends Controller
             $query->where('id_cliente_fk', $cliente);
         }
 
-        // Ordenamiento dinámico
+        
         $sortable = [
             'tipo' => 'tipo_contacto',
             'valor' => 'valor_contacto',
@@ -44,7 +44,7 @@ class ContactoController extends Controller
         if ($sort && isset($sortable[$sort])) {
             $query->orderBy($sortable[$sort], $direction);
         } else {
-            // orden por defecto
+            
             $query->orderBy('id_contacto_pk', 'desc');
         }
 

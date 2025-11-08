@@ -15,7 +15,7 @@ class AdminOnly
             return response()->json(['error' => 'No autenticado'], 401);
         }
         $rol = strtolower($user->rol->rol ?? '');
-        // Lista de roles considerados administrador (ajustable)
+        
         $adminRoles = ['admin','administrador','superadmin','soporte','manager'];
         if (!in_array($rol, $adminRoles, true)) {
             return response()->json(['error' => 'No autorizado'], 403);

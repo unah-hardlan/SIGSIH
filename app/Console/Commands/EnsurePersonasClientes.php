@@ -8,28 +8,18 @@ use App\Models\Cliente;
 
 class EnsurePersonasClientes extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    
     protected $signature = 'clientes:ensure-personas {--dry-run : Solo mostrar cuántos se crearían}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    
     protected $description = 'Crea registros en tbl_cliente (tipo persona) y en la pivote tbl_cliente_persona para todas las personas sin mapeo';
 
-    /**
-     * Execute the console command.
-     */
+    
     public function handle(): int
     {
         $dry = (bool) $this->option('dry-run');
 
-        // Personas sin mapeo en tbl_cliente_persona
+        
         $personas = DB::table('tbl_persona as p')
             ->leftJoin('tbl_cliente_persona as cp', 'cp.id_persona_fk', '=', 'p.id_persona_pk')
             ->whereNull('cp.id_persona_fk')
@@ -52,7 +42,7 @@ class EnsurePersonasClientes extends Command
         DB::beginTransaction();
         try {
             foreach ($personas as $p) {
-                // Crear cliente tipo persona y mapear en pivote
+                
                 $clienteId = DB::table('tbl_cliente')->insertGetId([
                     'tipo_cliente' => 'persona',
                     'fecha_registro' => now(),

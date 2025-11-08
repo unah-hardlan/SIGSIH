@@ -31,10 +31,10 @@ class ProfileController extends Controller
         }
         return $id;
     }
-    // Devuelve si falta completar perfil y la persona (si existe)
+    
     public function me()
     {
-        /** @var Usuario $user */
+        
         $user = Auth::user();
         $uid = $this->getUserId($user);
         $persona = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
@@ -50,15 +50,15 @@ class ProfileController extends Controller
         ]);
     }
 
-    // Crea o actualiza persona del usuario autenticado y marca primer_ingreso = 0
+    
     public function savePersona(Request $request)
     {
         $user = Auth::user();
         $uid = $this->getUserId($user);
         $existing = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
 
-        // Validar usando reglas de StorePersonaRequest pero sin exigir dni único si ya existe y permitir id_usuario_fk auto
-    // Obtener regex de DNI desde un solo parámetro: FORMATO DNI
+        
+    
     $format = Parametro::where('parametro', 'FORMATO DNI')->value('valor');
     $dniRegex = $this->buildDniRegex($format);
     $dniRule = 'regex:/' . $dniRegex . '/';
@@ -73,13 +73,13 @@ class ProfileController extends Controller
         ];
 
         if ($existing) {
-            // Ignorar la persona actual en la regla unique
+            
             $rules['dni'] .= '|unique:tbl_persona,dni,' . $existing->getKey() . ',id_persona_pk';
         } else {
             $rules['dni'] .= '|unique:tbl_persona,dni';
         }
 
-        // Mensajes y atributos personalizados (español)
+        
         $messages = [
             'dni.regex' => 'El DNI no cumple con el formato.' . (is_string($format) && trim($format) !== '' && !preg_match('/^\\d+$/', trim($format)) ? ' El formato es: ' . trim($format) . '.' : ''),
             'dni.unique' => 'El DNI ya está registrado.',
@@ -103,12 +103,12 @@ class ProfileController extends Controller
             array_merge($validated, ['id_usuario_fk' => $uid])
         );
 
-        // Marcar primer ingreso como completado (actualización directa por ID)
+        
         if ($uid) {
             Usuario::where('id_usuario_pk', $uid)->update(['primer_ingreso' => 0]);
         }
 
-        // Bitácora: creación/actualización de perfil
+        
         try {
             $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
             $accion = $existing ? 'Actualizar' : 'Insertar';
@@ -161,12 +161,12 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $persona->avatar_path = $path;
         $persona->save();
-        // Borrar el archivo anterior si existe
+        
         if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
         }
 
-        // Bitácora: subida de avatar
+        
         try {
             $this->bitacora->logFor('Perfil', 'Actualizar', 'Actualizó foto de perfil', $uid);
         } catch (\Throwable $e) {
@@ -193,7 +193,7 @@ class ProfileController extends Controller
         }
         $persona->avatar_path = null;
         $persona->save();
-        // Bitácora: eliminación de avatar
+        
         try {
             $this->bitacora->logFor('Perfil', 'Actualizar', 'Eliminó foto de perfil', $uid);
         } catch (\Throwable $e) {
@@ -218,7 +218,7 @@ class ProfileController extends Controller
 
         $user = Auth::user();
         $uid = $this->getUserId($user);
-        // Verificar que la contraseña actual sea correcta (leer de $user o de BD)
+        
         $currentHash = is_object($user) && isset($user->contrasena)
             ? $user->contrasena
             : ($uid ? Usuario::where('id_usuario_pk', $uid)->value('contrasena') : null);
@@ -234,7 +234,7 @@ class ProfileController extends Controller
                     $currentOk = false;
                 }
             } else {
-                // Fallback para legado: si en la BD quedó en texto plano u otro formato, comparar directo
+                
                 $currentOk = hash_equals($hashStr, (string) $request->current_password);
             }
         }
@@ -246,7 +246,7 @@ class ProfileController extends Controller
             ], 400);
         }
 
-        // Evitar reutilizar una de las últimas N contraseñas
+        
         $N = 5;
         $hashes = $uid
             ? HistorialContrasena::where('id_usuario_fk', $uid)
@@ -265,10 +265,10 @@ class ProfileController extends Controller
                 try {
                     $reused = Hash::check($request->password, $hashStr);
                 } catch (\Throwable $e) {
-                    $reused = false; // si falla por algoritmo, lo ignoramos
+                    $reused = false; 
                 }
             } else {
-                // Si por legado hay texto plano en historial, evitar reutilización exacta
+                
                 $reused = hash_equals($hashStr, (string) $request->password);
             }
             if ($reused) {
@@ -279,12 +279,12 @@ class ProfileController extends Controller
             }
         }
 
-        // Cambiar la contraseña (actualización directa por ID)
+        
         $hashed = Hash::make($request->password);
         if ($uid) {
             Usuario::where('id_usuario_pk', $uid)->update(['contrasena' => $hashed]);
 
-            // Registrar en historial de contraseñas
+            
             try {
                 HistorialContrasena::create([
                     'contrasena' => $hashed,
@@ -293,7 +293,7 @@ class ProfileController extends Controller
                     'fecha_creacion' => now(),
                 ]);
 
-                // Mantener solo las últimas N
+                
                 $idsToKeep = HistorialContrasena::where('id_usuario_fk', $uid)
                     ->orderByDesc('fecha_creacion')
                     ->orderByDesc('id_hist_pk')
@@ -306,7 +306,7 @@ class ProfileController extends Controller
             }
         }
 
-        // Bitácora: cambio de contraseña (sin datos sensibles)
+        
         try {
             $this->bitacora->logFor('Perfil', 'Actualizar', 'Cambio de contraseña', $uid);
         } catch (\Throwable $e) {

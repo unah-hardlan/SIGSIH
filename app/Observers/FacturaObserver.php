@@ -58,10 +58,7 @@ class FacturaObserver
         }
     }
 
-    /**
-     * Envía notificación a los usuarios vinculados al cliente de la factura.
-     * Se buscan usuarios a través de las personas asociadas al cliente.
-     */
+    
     protected function notifyCliente(Factura $factura, array $payload): void
     {
         try {
@@ -77,13 +74,13 @@ class FacturaObserver
                 ->values();
 
             if ($usuarios->isEmpty()) {
-                // Sin usuarios asociados; no enviamos nada por ahora.
+                
                 return;
             }
 
             Notification::send($usuarios, new SystemNotification($payload));
         } catch (\Throwable $e) {
-            // Evitar que una excepción en notificaciones rompa el flujo de guardado
+            
             Log::warning('FacturaObserver notifyCliente failed', [
                 'error' => $e->getMessage(),
                 'factura_id' => $factura->getKey(),

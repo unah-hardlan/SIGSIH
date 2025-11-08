@@ -11,18 +11,16 @@ class SessionTokenController extends Controller
 {
     public function __construct(private AuthService $auth) {}
 
-    /**
-     * Issue a short-lived JWT for the currently authenticated user (web cookie auth).
-     */
+    
     public function issue(): JsonResponse
     {
-        // Reutilizar el token ya emitido (cookie httpOnly), para no crear nuevas sesiones en cada llamado
+        
         $cookieToken = request()->cookie('auth_token');
         if (!$cookieToken) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        // Validar token y usuario asociado
+        
         try {
             $secret = config('jwt.secret');
             if (!$secret) return response()->json(['message' => 'JWT Secret no configurado'], 500);
@@ -32,7 +30,7 @@ class SessionTokenController extends Controller
             $usuarioModel = \App\Models\Usuario::find($userId);
             if (!$usuarioModel) return response()->json(['message' => 'Unauthenticated'], 401);
 
-            // Responder con el mismo token y datos básicos del usuario
+            
             return response()->json([
                 'token' => $cookieToken,
                 'user'  => [

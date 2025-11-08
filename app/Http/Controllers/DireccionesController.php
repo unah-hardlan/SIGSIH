@@ -10,13 +10,11 @@ use Illuminate\Http\JsonResponse;
 
 class DireccionesController extends Controller
 {
-    /**
-     * Normaliza un nombre (quita tildes y pasa a minúsculas)
-     */
+    
     protected function normalize(string $value): string
     {
         $v = trim($value);
-        // Quitar diacríticos comunes sin depender de ext-intl
+        
         $replacements = [
             'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N',
             'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
@@ -25,9 +23,7 @@ class DireccionesController extends Controller
         return mb_strtolower($v, 'UTF-8');
     }
 
-    /**
-     * Obtiene el nombre del país a partir del id de ciudad
-     */
+    
     protected function getPaisNombreByCiudadId(?int $ciudadId): ?string
     {
         if (!$ciudadId) return null;
@@ -35,20 +31,17 @@ class DireccionesController extends Controller
         return $ciudad?->departamento?->pais?->nombre_pais;
     }
 
-    /**
-     * Valida el código postal según el país (reglas para Centroamérica)
-     * Devuelve [esValido(bool), hint(string)]
-     */
+    
     protected function validarCodigoPostalPorPais(string $codigoPostal, ?string $paisNombre): array
     {
         $cp = trim($codigoPostal);
         if ($cp === '') {
-            return [true, '']; // vacío es permitido por ser nullable
+            return [true, '']; 
         }
 
         $paisNorm = $paisNombre ? $this->normalize($paisNombre) : '';
 
-        // Mapa de regex por país
+        
         $map = [
             'honduras'    => '/^\d{5}$/',
             'guatemala'   => '/^\d{5}$/',
@@ -61,7 +54,7 @@ class DireccionesController extends Controller
             'belize'      => '/^[A-Za-z0-9\-\s]{3,10}$/i',
         ];
 
-        // Hint legible por país
+        
         $hints = [
             'honduras'    => '5 dígitos (ej. 11101)',
             'guatemala'   => '5 dígitos (ej. 01001)',
@@ -74,21 +67,19 @@ class DireccionesController extends Controller
             'belize'      => '3-10 caracteres alfanuméricos',
         ];
 
-        // Si no hay regla específica, usar fallback permisivo (3-10 alfanuméricos)
+        
         $pattern = $map[$paisNorm] ?? '/^(?=.{3,10}$)[A-Za-z0-9\-\s]+$/';
         $hint = $hints[$paisNorm] ?? '3-10 caracteres alfanuméricos';
 
         $valido = (bool) preg_match($pattern, $cp);
         return [$valido, $hint];
     }
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Direccion::with(['ciudad.departamento.pais', 'agencia']);
 
-        // Filtro por ciudad
+        
         if ($request->has('id_ciudad_fk')) {
             $query->where('id_ciudad_fk', $request->id_ciudad_fk);
         }
@@ -110,9 +101,7 @@ class DireccionesController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -125,7 +114,7 @@ class DireccionesController extends Controller
             'agencia_id' => 'nullable|exists:tbl_agencias,id_agencias_pk'
         ]);
 
-        // Validación adicional de código postal según país
+        
         if (array_key_exists('codigo_postal', $validated) && $validated['codigo_postal'] !== null) {
             $paisNombre = $this->getPaisNombreByCiudadId((int) $validated['id_ciudad_fk']);
             [$ok, $hint] = $this->validarCodigoPostalPorPais((string) $validated['codigo_postal'], $paisNombre);
@@ -151,9 +140,7 @@ class DireccionesController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $direccion = Direccion::with(['ciudad.departamento.pais', 'agencia'])->find($id);
@@ -171,9 +158,7 @@ class DireccionesController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id): JsonResponse
     {
         $direccion = Direccion::find($id);
@@ -195,7 +180,7 @@ class DireccionesController extends Controller
             'agencia_id' => 'nullable|exists:tbl_agencias,id_agencias_pk'
         ]);
 
-        // Determinar ciudad efectiva para validar CP
+        
         $ciudadId = array_key_exists('id_ciudad_fk', $validated)
             ? (int) $validated['id_ciudad_fk']
             : (int) $direccion->id_ciudad_fk;
@@ -228,9 +213,7 @@ class DireccionesController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $direccion = Direccion::find($id);
@@ -242,7 +225,7 @@ class DireccionesController extends Controller
             ], 404);
         }
 
-        // Verificar si la dirección está asociada a agencias
+        
         if ($direccion->agencias()->exists()) {
             return response()->json([
                 'success' => false,

@@ -136,7 +136,7 @@ class AdminModuleRegistry
             }
         }
 
-        // Append any modules not referenced in order
+        
         foreach ($grouped as $key => $moduleData) {
             if (!in_array($key, $order, true)) {
                 $moduleData['submodules'] = self::sortSubmodules($moduleData['submodules']);

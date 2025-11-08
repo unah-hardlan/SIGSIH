@@ -70,7 +70,7 @@ class VerifyEmailNotification extends Notification
             ]);
             return rtrim($frontendUrl, '/').'/verify-email?'.$query;
         }
-        // Fallback a página web estilizada local (ruta en español)
+        
         return url('/verificar-correo?token='.$this->token.'&email='.urlencode($notifiable->correo_electronico));
     }
 

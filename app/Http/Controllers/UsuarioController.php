@@ -17,7 +17,7 @@ class UsuarioController extends Controller
 {
     public function __construct(private BitacoraService $bitacora)
     {
-        // DB-backed permisos por objeto/acción
+        
         $this->middleware('permiso:usuarios,consultar')->only(['index', 'show']);
         $this->middleware('permiso:usuarios,insercion')->only(['store']);
         $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles']);
@@ -25,9 +25,7 @@ class UsuarioController extends Controller
         $this->middleware('permiso:usuarios,consultar')->only(['rol', 'getRoles']);
     }
 
-    /**
-     * Determina si un usuario autenticado es administrador (rol principal o en roles N:M).
-     */
+    
     private function isUserAdmin(?Usuario $user): bool
     {
         if (!$user) return false;
@@ -43,9 +41,7 @@ class UsuarioController extends Controller
         return $user->roles()->where('id_rol_pk', $adminRoleId)->exists();
     }
 
-    /**
-     * Cuenta administradores restantes excluyendo uno dado.
-     */
+    
     private function remainingAdminsCountExcluding(int $excludeUserId): int
     {
         $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
@@ -65,7 +61,7 @@ class UsuarioController extends Controller
     {
         $query = Usuario::with('rol');
 
-        // Si no se especifica estado ni ?all=1, sólo activos
+        
         if (!request()->has('estado') && request('all') != 1) {
             $query->where('estado_usuario', 'ACTIVO');
         }
@@ -81,7 +77,7 @@ class UsuarioController extends Controller
             });
         }
 
-        // Ordenamiento dinámico
+        
         $sortable = [
             'nombre_usuario' => 'nombre_usuario',
             'usuario' => 'usuario',
@@ -94,7 +90,7 @@ class UsuarioController extends Controller
         if ($sort && isset($sortable[$sort])) {
             $query->orderBy($sortable[$sort], $direction);
         } else {
-            // orden por defecto
+            
             $query->orderBy('id_usuario_pk', 'desc');
         }
 
@@ -116,7 +112,7 @@ class UsuarioController extends Controller
     public function store(StoreUsuarioRequest $request)
     {
         $data = $request->validated();
-        $usuario = Usuario::create($data); // mutator hash contrasena
+        $usuario = Usuario::create($data); 
         try {
             $this->bitacora->logFor('Usuarios', 'Insertar', 'Creación de usuario ' . $usuario->usuario, null, [
                 'tabla' => 'tbl_ms_usuario',
@@ -147,7 +143,7 @@ class UsuarioController extends Controller
         }
         $data = $request->validated();
         $antes = $usuario->getOriginal();
-        $usuario->update($data); // mutator hash contrasena si viene
+        $usuario->update($data); 
         $usuario->refresh();
         try {
             $this->bitacora->logFor('Usuarios', 'Actualizar', 'Actualización de usuario ' . $usuario->usuario, null, [
@@ -179,7 +175,7 @@ class UsuarioController extends Controller
         return response()->json(['message' => 'Usuario inactivado'], 200);
     }
 
-    // Rol del usuario (FK directa)
+    
     public function rol($id)
     {
         $usuario = Usuario::with('rol')->find($id);
@@ -200,7 +196,7 @@ class UsuarioController extends Controller
             $this->logBlockedAttempt('Bloquear', 'Intento no autorizado de asignar rol por usuario '.$authUser?->id_usuario_pk, $usuario->id_usuario_pk);
             return response()->json(['error' => 'No autorizado para asignar roles'], 403);
         }
-        // Estado previo
+        
         $beforePrimary = (int) $usuario->id_rol_fk;
         $beforePivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
         $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
@@ -219,9 +215,9 @@ class UsuarioController extends Controller
             $rolNombre = \App\Models\Rol::where('id_rol_pk', $validated['id_rol_fk'])->value('rol');
             $this->bitacora->logFor('Usuarios', 'Actualizar', 'Asignación de rol a usuario ' . $usuario->usuario . ' -> ' . $rolNombre, $usuario->id_usuario_pk);
         } catch (\Throwable $e) {}
-        // Comparar cambios y invalidar sesiones si hubo modificación real
+        
         $afterPrimary = (int) $usuario->id_rol_fk;
-        // pivot puede no cambiar aquí, pero lo capturamos por consistencia
+        
         $afterPivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
         $changed = ($beforePrimary !== $afterPrimary) || (implode(',', $beforePivot) !== implode(',', $afterPivot));
         $reauth = false;
@@ -241,7 +237,7 @@ class UsuarioController extends Controller
         ]);
     }
 
-    // Sincronizar múltiples roles (N:M). Mantiene id_rol_fk como rol principal por compatibilidad
+    
     public function syncRoles(Request $request, $id)
     {
         $usuario = Usuario::find($id);
@@ -258,7 +254,7 @@ class UsuarioController extends Controller
             $this->logBlockedAttempt('Bloquear', 'Intento no autorizado de sincronizar roles por usuario '.$authUser?->id_usuario_pk, $usuario->id_usuario_pk);
             return response()->json(['error' => 'No autorizado para sincronizar roles'], 403);
         }
-        // Estado previo
+        
         $beforePrimary = (int) $usuario->id_rol_fk;
         $beforePivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
         $adminRoleId = Rol::whereRaw('LOWER(rol)=?',[ 'administrador' ])->value('id_rol_pk');
@@ -287,7 +283,7 @@ class UsuarioController extends Controller
                 'despues' => ['roles' => $roles, 'rol_principal' => $principal],
             ]);
         } catch (\Throwable $e) {}
-        // Estado después
+        
         $afterPrimary = (int) $usuario->id_rol_fk;
         $afterPivot = $usuario->roles()->pluck('id_rol_pk')->map(fn($v)=>(int)$v)->values()->all();
         $changed = ($beforePrimary !== $afterPrimary) || (implode(',', $beforePivot) !== implode(',', $afterPivot));
@@ -310,7 +306,7 @@ class UsuarioController extends Controller
         ]);
     }
 
-    // Obtener roles asignados y rol principal para precargar el modal
+    
     public function getRoles($id)
     {
         $usuario = Usuario::with('roles')->find($id);
@@ -320,7 +316,7 @@ class UsuarioController extends Controller
         return response()->json(['roles' => $roles, 'rol_principal' => $principal]);
     }
 
-    // Reporte web (HTML) dinámico
+    
     public function reporte(Request $request)
     {
         $query = Usuario::query();
@@ -338,7 +334,7 @@ class UsuarioController extends Controller
                     ->orWhere('correo_electronico', 'like', "%$q%");
             });
         }
-        // Orden
+        
         $sortable = [
             'nombre_usuario' => 'nombre_usuario',
             'usuario' => 'usuario',

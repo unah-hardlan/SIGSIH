@@ -16,12 +16,12 @@ class StoreFacturaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Se genera automáticamente en el backend a partir del CAI seleccionado
+            
             'numero' => 'nullable|string|max:20|unique:tbl_factura,numero',
             'fecha' => 'required|date',
-            // El front permite hasta 100
+            
             'oc' => 'nullable|string|max:100',
-            // Se calculan luego (o por backend); no requerir al crear
+            
             'subtotal' => 'nullable|numeric|min:0',
             'impuesto' => 'nullable|numeric|min:0',
             'total' => 'nullable|numeric|min:0',

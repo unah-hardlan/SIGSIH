@@ -12,13 +12,10 @@ use App\Services\PermissionService;
 
 class PermissionMiddleware
 {
-    /**
-     * Handle an incoming request.
-     * Usage: permiso:usuarios,consultar | permiso:usuarios,insercion | permiso:usuarios,actualizacion | permiso:usuarios,eliminacion
-     */
+    
     public function handle(Request $request, Closure $next, string $objetoKey, string $accion): Response
     {
-        // Allow CORS preflight
+        
         if (strtoupper($request->method()) === 'OPTIONS') {
             return $next($request);
         }
@@ -27,22 +24,22 @@ class PermissionMiddleware
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        // Bypass para Administrador (rol único por FK)
+        
         try {
             if (($user instanceof Usuario) && $user->rol && mb_strtolower($user->rol->rol) === 'administrador') {
                 return $next($request);
             }
         } catch (\Throwable $e) {
-            // si falla relación, continuar a verificación estándar
+            
         }
 
-        // Resolver objeto por nombre_objeto (case-insensitive)
+        
         $objeto = Objeto::whereRaw('LOWER(nombre_objeto) = ?', [mb_strtolower($objetoKey)])->first();
         if (!$objeto) {
             return response()->json(['error' => 'Objeto no configurado', 'objeto' => $objetoKey], 403);
         }
 
-        // Si accion=auto, derivar por método HTTP
+        
         if ($accion === 'auto') {
             $accion = match (strtoupper($request->method())) {
                 'POST' => 'insercion',
@@ -52,7 +49,7 @@ class PermissionMiddleware
             };
         }
 
-        // Mapear acción => columna
+        
         $map = [
             'consultar' => 'permiso_consultar',
             'insercion' => 'permiso_insercion',
@@ -64,7 +61,7 @@ class PermissionMiddleware
             return response()->json(['error' => 'Acción inválida', 'accion' => $accion], 400);
         }
 
-        // Rol del usuario (FK)
+        
         $rolId = ($user instanceof Usuario) ? $user->id_rol_fk : null;
         if (!$rolId) {
             return response()->json(['error' => 'Sin rol asignado'], 403);
@@ -76,7 +73,7 @@ class PermissionMiddleware
             ->exists();
 
         if (!$allowed) {
-            // Permitir acceso a Usuarios si el rol posee Configuración de accesos con la misma acción
+            
             if (mb_strtolower($objetoKey) === 'usuarios') {
                 $permService = app(PermissionService::class);
                 $altKeys = ['Configuración de accesos', 'Configuracion de accesos', 'Permisos'];

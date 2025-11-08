@@ -11,7 +11,7 @@ class Parametro extends Model
     use HasFactory;
     public $timestamps = false;
 
-    // Tabla real en la base de datos (corregido de tbl_ms_parametros a tbl_parametros)
+    
     protected $table = 'tbl_parametros';
     protected $primaryKey = 'id_parametro_pk';
     protected $fillable = [

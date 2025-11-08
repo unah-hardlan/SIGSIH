@@ -12,9 +12,7 @@ use App\Services\BitacoraService;
 class ParametroController extends Controller
 {
     public function __construct(private BitacoraService $bitacora) {}
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
          $query = Parametro::query();
@@ -37,16 +35,16 @@ class ParametroController extends Controller
     if ($sort && isset($sortable[$sort])) { 
         $query->orderBy($sortable[$sort], $direction); 
     } else { 
-        $query->orderBy('id_parametro_pk', 'asc'); // Más antiguos primero
+        $query->orderBy('id_parametro_pk', 'asc'); 
     }
     
-    // Si pide all=1, devolver TODOS sin paginar
+    
     if ($request->input('all') == 1) {
         $parametros = $query->get();
         return ParametroResource::collection($parametros);
     }
     
-    // Si no, paginar normalmente
+    
     $perPage = (int)$request->input('per_page', 10);
     $parametros = $query->paginate($perPage);
     
@@ -60,13 +58,11 @@ class ParametroController extends Controller
     ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreParametroRequest $request)
     {
         $data = $request->validated();
-        // Forzar asociación al usuario autenticado si la columna es NOT NULL en BD
+        
         if (empty($data['id_usuario_fk'])) {
             $data['id_usuario_fk'] = auth()->user()->id_usuario_pk ?? auth()->id();
         }
@@ -77,9 +73,7 @@ class ParametroController extends Controller
         return (new ParametroResource($parametro))->response()->setStatusCode(201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id)
     {
         $parametro = Parametro::find($id);
@@ -87,9 +81,7 @@ class ParametroController extends Controller
         return (new ParametroResource($parametro))->response();
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(UpdateParametroRequest $request, $id)
     {
         $parametro = Parametro::find($id);
@@ -105,9 +97,7 @@ class ParametroController extends Controller
         return (new ParametroResource($parametro))->response();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $parametro = Parametro::find($id);

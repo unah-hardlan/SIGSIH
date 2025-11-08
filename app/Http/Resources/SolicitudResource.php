@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SolicitudResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -24,7 +20,7 @@ class SolicitudResource extends JsonResource
             'id_estado_solicitud_fk' => $this->id_estado_solicitud_fk,
             'id_contacto_fk' => $this->id_contacto_fk,
 
-            // Relaciones
+            
             'cliente' => $this->whenLoaded('cliente', function () {
                 return [
                     'id_cliente_pk' => $this->cliente->id_cliente_pk,
@@ -38,8 +34,8 @@ class SolicitudResource extends JsonResource
                             'rtn' => $this->cliente->empresa->rtn,
                         ]
                         : null,
-                    // Persona: puede venir como una colección 'personas' (belongsToMany).
-                    // Exponer el primer registro si existe para que el frontend pueda construir el nombre.
+                    
+                    
                     'persona' => $this->cliente->relationLoaded('personas') && $this->cliente->personas && $this->cliente->personas->count() > 0
                         ? [
                             'id_persona_pk' => $this->cliente->personas->first()->id_persona_pk ?? null,
@@ -54,7 +50,7 @@ class SolicitudResource extends JsonResource
             'estado_solicitud' => $this->whenLoaded('estadoSolicitud', function () {
                 return [
                     'id_estado_solicitud_pk' => $this->estadoSolicitud->id_estado_solicitud_pk,
-                    // Map from actual columns on related model
+                    
                     'nombre_estado' => $this->estadoSolicitud->nombre,
                     'descripcion_estado' => $this->estadoSolicitud->descripcion,
                 ];

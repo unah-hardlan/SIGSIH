@@ -9,10 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class FacturaClienteController extends Controller
 {
-    /**
-     * Lista de facturas del cliente autenticado (portal cliente - cookie/session auth).
-     * Devuelve solo los campos necesarios para la tabla del UI.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         try {
@@ -26,7 +23,7 @@ class FacturaClienteController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            // Clientes asociados a esta persona
+            
             $clienteIds = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->pluck('id_cliente_fk')
@@ -35,7 +32,7 @@ class FacturaClienteController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            // Subselects desde detalles: descuentos, base_subtotal y suma de impuestos
+            
             $subDescuentos = DB::table('tbl_detalle_factura as df')
                 ->select([
                     'df.id_factura_fk',
@@ -46,7 +43,7 @@ class FacturaClienteController extends Controller
             $subTotales = DB::table('tbl_detalle_factura as df')
                 ->select([
                     'df.id_factura_fk',
-                    // base_subtotal = precio_unitario * qty - descuento (sin impuesto)
+                    
                     DB::raw('SUM(COALESCE(df.precio_unitario,0) * (
                         CASE 
                             WHEN COALESCE(df.cantidad,0) <> 0 THEN COALESCE(df.cantidad,0)
@@ -88,7 +85,7 @@ class FacturaClienteController extends Controller
 
             $items = $rows->map(function ($r) use ($fmtMoney) {
                 $fecha = $r->fecha ? substr((string)$r->fecha, 0, 10) : null;
-                // Fallbacks cuando los valores de la factura están vacíos/0
+                
                 $subtotal = (float) ($r->subtotal ?? 0);
                 $impuesto = (float) ($r->impuesto ?? 0);
                 $computedSubtotal = (float) ($r->computed_subtotal ?? 0);
@@ -118,10 +115,7 @@ class FacturaClienteController extends Controller
         }
     }
 
-    /**
-     * Viewer HTML de factura para el cliente (reutiliza la vista admin.formato-factura)
-     * Validando que la factura pertenezca a alguno de los clientes asociados al usuario.
-     */
+    
     public function viewer(Request $request, int $id)
     {
         $user = auth()->user();
@@ -158,10 +152,7 @@ class FacturaClienteController extends Controller
         return view('admin.formato-factura', compact('factura', 'detalles'));
     }
 
-    /**
-     * Detalle de una factura (solo líneas) para el cliente autenticado.
-     * Útil para el modal "Ver" sin cargar todo en la lista.
-     */
+    
     public function show(Request $request, int $id): JsonResponse
     {
         try {
@@ -177,7 +168,7 @@ class FacturaClienteController extends Controller
                 ->all();
             if (empty($clienteIds)) return response()->json(['error' => 'Not found'], 404);
 
-            // Validar pertenencia
+            
             $factura = DB::table('tbl_factura')
                 ->where('id_factura_pk', (int)$id)
                 ->whereIn('id_cliente_fk', $clienteIds)

@@ -25,13 +25,13 @@ class CotizacionResource extends JsonResource
             'id_cliente_fk' => $this->id_cliente_fk,
             'cliente_nombre' => $this->whenLoaded('cliente', function () {
                 if (!$this->cliente) return null;
-                // Empresa
+                
                 if ($this->cliente->relationLoaded('empresa') && $this->cliente->empresa) {
                     return $this->cliente->empresa->nombre_comercial
                         ?? $this->cliente->empresa->razon_social
                         ?? null;
                 }
-                // Persona (puede venir por belongsToMany personas)
+                
                 if ($this->cliente->relationLoaded('personas') && $this->cliente->personas && $this->cliente->personas->count()) {
                     $p = $this->cliente->personas->first();
                     return trim(($p->primer_nombre . ' ' . $p->segundo_nombre . ' ' . $p->primer_apellido . ' ' . $p->segundo_apellido));

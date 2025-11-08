@@ -12,24 +12,22 @@ use Illuminate\Support\Facades\Hash;
 
 class HistorialContrasenasController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = HistorialContrasena::with(['usuario']);
 
-        // Filtro por usuario
+        
         if ($request->has('id_usuario_fk')) {
             $query->where('id_usuario_fk', $request->id_usuario_fk);
         }
 
-        // Filtro por creador
+        
         if ($request->has('creado_por')) {
             $query->where('creado_por', $request->creado_por);
         }
 
-        // Filtro por rango de fechas de creación
+        
         if ($request->has('fecha_creacion_desde')) {
             $query->where('fecha_creacion', '>=', $request->fecha_creacion_desde);
         }
@@ -38,7 +36,7 @@ class HistorialContrasenasController extends Controller
             $query->where('fecha_creacion', '<=', $request->fecha_creacion_hasta);
         }
 
-        // Filtro por rango de fechas de modificación
+        
         if ($request->has('fecha_modificacion_desde')) {
             $query->where('fecha_modificacion', '>=', $request->fecha_modificacion_desde);
         }
@@ -64,14 +62,12 @@ class HistorialContrasenasController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreHistorialContrasenaRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        // Hash de la contraseña antes de guardar
+        
         $validated['contrasena'] = Hash::make($validated['contrasena']);
 
         $historial = HistorialContrasena::create($validated);
@@ -84,9 +80,7 @@ class HistorialContrasenasController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $historial = HistorialContrasena::with(['usuario'])->find($id);
@@ -104,9 +98,7 @@ class HistorialContrasenasController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(UpdateHistorialContrasenaRequest $request, string $id): JsonResponse
     {
         $historial = HistorialContrasena::find($id);
@@ -120,7 +112,7 @@ class HistorialContrasenasController extends Controller
 
         $validated = $request->validated();
 
-        // Hash de la contraseña si se está actualizando
+        
         if (isset($validated['contrasena'])) {
             $validated['contrasena'] = Hash::make($validated['contrasena']);
         }
@@ -135,9 +127,7 @@ class HistorialContrasenasController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $historial = HistorialContrasena::find($id);
