@@ -625,7 +625,7 @@ Route::prefix('admin')
 
         // Vistas PDF o externas
         Route::get('detalle-cotizacion', fn() => view('admin.detalle-cotizacion'))->name('detalle-cotizacion');
-        Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
+        Route::get('detalle-orden/{id?}', [\App\Http\Controllers\OrdenServicioController::class, 'detalleOrden'])->name('detalle-orden');
         // Vista de factura dinámica: recibe el id de factura y delega al controlador para cargar datos
         Route::get('formato-factura/{id}', [\App\Http\Controllers\FacturaController::class, 'formatoFactura'])->name('formato-factura');
         Route::get('reporte-proyecto', function (Request $request) {
@@ -700,7 +700,7 @@ Route::prefix('cliente')
             // Calificar Orden de Servicio (cliente)
             Route::post('ordenes/{id}/calificar', [\App\Http\Controllers\Cliente\OrdenServicioClienteController::class, 'calificar'])->name('ordenes.calificar');
             // Viewer de Orden para cliente con el mismo diseño que admin
-            Route::get('detalle-orden', fn() => view('admin.detalle-orden'))->name('detalle-orden');
+            Route::get('detalle-orden/{id?}', [\App\Http\Controllers\OrdenServicioController::class, 'detalleOrden'])->name('detalle-orden');
             Route::get('facturas', [\App\Http\Controllers\ClienteController::class, 'facturas'])->name('facturas');
             // API-like para Facturas del cliente (SPA cookie-auth)
             Route::get('facturas-data', [\App\Http\Controllers\Cliente\FacturaClienteController::class, 'index'])->name('facturas.data');
