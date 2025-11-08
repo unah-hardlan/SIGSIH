@@ -291,7 +291,6 @@
         cursor: pointer;
     }
 
-    /* Estado badge (estilo ligero, sin Tailwind) */
     .status-badge {
         display: inline-block;
         padding: 2px 8px;
@@ -357,7 +356,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
-    // Permite inyectar endpoints alternativos desde el servidor (p. ej., modo cliente)
     window.COTI_ENDPOINTS = window.COTI_ENDPOINTS || <?php echo json_encode($COTI_ENDPOINTS ?? null); ?>;
     </script>
 
@@ -367,7 +365,6 @@
     <div class="container">
         <header>
             <div class="logo-section">
-                <!-- Using the provided image URL for the logo -->
                 <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="IT SUPPORT HARDLAN Logo" class="app-logo"
                     style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;" />
                 <div class="company-info">
@@ -382,7 +379,6 @@
             <div class="quotation-header">
                 <h1>COTIZACIÓN</h1>
                 <div class="header-details">
-                    <!-- Changed to display details in a column (one below another) -->
                     <div class="detail-row">
                         <span>FECHA</span>
                         <span class="value date" x-text="formatFecha(cotizacion?.fecha_cotizacion)">--</span>
@@ -446,7 +442,6 @@
             </table>
         </section>
 
-        <!-- New container to place terms and summary side-by-side -->
         <div class="bottom-sections-container">
             <section class="terms-section">
                 <h2>TÉRMINOS Y CONDICIONES</h2>
@@ -551,7 +546,6 @@
             money(n) {
                 if (n == null) return 'L 0.00';
                 try {
-                    // Use locale-based formatting for HNL where available; fallback to simple prefix
                     return new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(Number(n));
                 } catch (e) {
                     return 'L ' + Number(n).toFixed(2);
@@ -632,7 +626,6 @@
             formatCotId(c) {
                 try {
                     const id = c?.id_cotizacion_pk ?? c?.id ?? '';
-                    // Prefer the provided fecha_cotizacion (or fecha) and format as YYYYMMDD
                     let dateStr = c?.fecha_cotizacion || c?.fecha || null;
                     let YYYY, MM, DD;
                     if (dateStr) {
