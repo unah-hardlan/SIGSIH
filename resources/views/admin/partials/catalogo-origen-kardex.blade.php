@@ -7,7 +7,6 @@
     origenes: [],
     loading: false,
 
-    // 1️⃣ Variables de Paginación
     numbersOrigenes: [],
     currentPageOrigenes: 1,
     perPageOrigenes: 10,
@@ -23,7 +22,6 @@
     filtroOrigen: '',
     ordenarPor: 'nombre',
 
-    // 2️⃣ Métodos de Paginación
     paginatedOrigenes() {
         return this.origenes.slice(
             (this.currentPageOrigenes - 1) * this.perPageOrigenes, 
@@ -44,22 +42,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchItems(){ 
         await window.origenKardexApiHandlers.fetchOrigenes(this); 
-        this.numbersOrigenes = this.origenes; // ← LÍNEA AGREGADA
+        this.numbersOrigenes = this.origenes; 
     },
     async submit(){ 
         await window.origenKardexApiHandlers.submitOrigen(this);
-        this.fetchItems(); // Refrescar datos
+        this.fetchItems(); 
     },
     async update(){ 
         await window.origenKardexApiHandlers.updateOrigen(this);
-        this.fetchItems(); // Refrescar datos
+        this.fetchItems(); 
     },
     async remove(){ 
         await window.origenKardexApiHandlers.deleteOrigen(this);
-        this.fetchItems(); // Refrescar datos
+        this.fetchItems(); 
     },
     handleModalSubmit(e){
         if(e.detail.formId === 'formOrigen') this.submit();
@@ -75,7 +72,6 @@
     handleDelete(){ this.remove(); }
 }" x-init="
     fetchItems();
-    // 4️⃣ Reset de página en filtros
     $watch('filtroOrigen', () => { fetchItems(); currentPageOrigenes = 1; });
     $watch('ordenarPor', () => { fetchItems(); currentPageOrigenes = 1; });
 " @keydown.escape.window="isModalOpen=false; isEditModalOpen=false; isDeleteModalOpen=false;"
@@ -129,7 +125,6 @@
                             <td colspan="4" class="py-8 text-center text-gray-500">Sin resultados</td>
                         </tr>
                     </template>
-                    <!-- 5️⃣ Usar paginatedOrigenes() en el template -->
                     <template x-for="item in paginatedOrigenes()" :key="item.id_origen_pk">
                         <tr class="border-b dark:border-gray-700">
                             <td class="py-2 px-4" x-text="item.nombre_origen"></td>
@@ -214,9 +209,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="origenes.length > perPageOrigenes" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -229,7 +222,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageOrigenes()" :disabled="currentPageOrigenes === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -259,7 +251,6 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
         @perm(['Catálogo','Origen Kardex','Orígenes Kardex','Origenes Kardex','Origen de Kardex'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nuevo Origen" submitLabel="Guardar"

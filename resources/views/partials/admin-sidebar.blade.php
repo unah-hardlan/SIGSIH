@@ -16,7 +16,6 @@
             });
         }
         
-        // Escuchar eventos del modal de logout
         document.addEventListener('logout-modal-show', () => {
             logoutModalOpen = true;
         });
@@ -77,7 +76,6 @@
     }
     }
     $canCatalogo = $canModule('Catalogo', array_values(array_unique($catalogoCandidates)));
-    // Subgrupos de Catálogo: calcular si al menos uno de los hijos tiene "ver"
     $catEstadosKeys = ['Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del
     Calendario'];
     $canCatalogoEstados = $perm->can($u, $catEstadosKeys, 'ver');
@@ -87,10 +85,8 @@
     $canCatalogoTipos = $perm->can($u, $catTiposKeys, 'ver');
     @endphp
 
-    <!-- Menú -->
     <nav class="flex-1 flex flex-col py-4">
         <ul class="space-y-3 flex-1">
-            {{-- Dashboard --}}
             <li :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <x-admin.sidebar-link href="#" :active="false" view-name="dashboard"
                     class="py-2 px-2 rounded-l-full no-flash">
@@ -99,7 +95,6 @@
                 </x-admin.sidebar-link>
             </li>
 
-            {{-- Seguridad --}}
             @if($canSeguridad)
             <li class="mt-2" x-data="sidebarDropdown('seguridad', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -149,7 +144,6 @@
             </li>
             @endif
 
-            {{-- Clientes --}}
             @if($canClientes)
             <li class="mt-2" x-data="sidebarDropdown('clientes', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -207,7 +201,6 @@
             @endif
 
 
-            {{-- Proyectos --}}
             @if($canProyectos)
             <li class="mt-2" x-data="sidebarDropdown('proyectos', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -245,7 +238,6 @@
             </li>
             @endif
 
-            {{-- Tickets --}}
             @if($canTickets)
             <li class="mt-2" x-data="sidebarDropdown('tickets', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -275,7 +267,6 @@
             </li>
             @endif
 
-            {{-- Calendario --}}
             @if($canCalendario)
             <li class="mt-2" x-data="sidebarDropdown('calendario', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -313,7 +304,6 @@
             </li>
             @endif
 
-            {{-- Facturación --}}
             @if($canFacturacion)
             <li class="mt-2" x-data="sidebarDropdown('facturacion', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -351,7 +341,6 @@
             </li>
             @endif
 
-            {{-- Reportes --}}
             @if($canReportes)
             <li class="mt-2" x-data="sidebarDropdown('reportes', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -381,7 +370,6 @@
             </li>
             @endif
 
-            {{-- Inventario --}}
             @if($canInventario)
             <li class="mt-2" x-data="sidebarDropdown('inventario', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -419,7 +407,6 @@
             </li>
             @endif
 
-            {{-- Administración --}}
             @if($canAdministracion)
             <li class="mt-2" x-data="sidebarDropdown('administracion', false)" x-init="init()"
                 @close-all-dropdowns.window="close()">
@@ -473,7 +460,6 @@
             </li>
             @endif
 
-            {{-- Mantenimiento --}}
             @if($canMantenimiento)
             <li class="mt-2" x-data="sidebarDropdown('mantenimiento', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -508,8 +494,6 @@
             </li>
             @endif
 
-
-            {{-- Catalogo --}}
             @if($canCatalogo)
             <li class="mt-2" x-data="sidebarDropdown('catalogo', false)" x-init="init()"
                 @close-all-dropdowns.window="close()"
@@ -527,7 +511,6 @@
                     </svg>
                 </button>
                 <ul x-show="open && sidebarOpen" x-transition class="space-y-0.5 ml-4 mt-1">
-                    {{-- Nuevo dropdown anidado para todos los "Estados" dentro de Catálogo --}}
                     @if($canCatalogoEstados)
                     <li x-data="sidebarDropdown('catalogo-estados', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -599,7 +582,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Nuevo dropdown anidado para "Servicios" dentro de Catálogo --}}
                     @if($canCatalogoServicios)
                     <li x-data="sidebarDropdown('catalogo-servicios', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -641,7 +623,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Nuevo dropdown anidado para "Tipos" dentro de Catálogo --}}
                     @if($canCatalogoTipos)
                     <li x-data="sidebarDropdown('catalogo-tipos', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -713,7 +694,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Dropdown individual para "Acciones Realizadas" --}}
                     @if($perm->can($u, ['Acciones Realizadas'], 'ver'))
                     <li x-data="sidebarDropdown('catalogo-acciones-realizadas', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -742,7 +722,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Dropdown individual para "Administración de Facturas" --}}
                     @if($perm->can($u, ['Administración de Facturas','Administracion de Facturas'], 'ver'))
                     <li x-data="sidebarDropdown('catalogo-admin-facturas', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -771,7 +750,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Dropdown individual para "Categorías de Ingresos y Gastos" --}}
                     @if($perm->can($u, ['Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos'], 'ver'))
                     <li x-data="sidebarDropdown('catalogo-categorias-ingresos-gastos', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -800,7 +778,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Dropdown individual para "Género" --}}
                     @if($perm->can($u, ['Género','Genero'], 'ver'))
                     <li x-data="sidebarDropdown('catalogo-genero', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -830,7 +807,6 @@
                     </li>
                     @endif
 
-                    {{-- Dropdown individual para "Origen Kardex" --}}
                     @if($perm->can($u, ['Origen Kardex','Origenes','Origen'], 'ver'))
                     <li x-data="sidebarDropdown('catalogo-origen-kardex', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -859,7 +835,6 @@
                         </ul>
                     </li>
                     @endif
-                    {{-- Dropdown individual para "Ubicaciones" --}}
                     @if($perm->can($u, ['Ubicaciones'], 'ver'))
                     <li x-data="sidebarDropdown('catalogo-ubicaciones', false)" x-init="init()"
                         @close-all-dropdowns.window="close()">
@@ -894,7 +869,6 @@
         </ul>
     </nav>
 
-    {{-- Cerrar desplegables --}}
     <div class="sticky bottom-0 p-4 border-t border-gray-700 dark:border-gray-600 bg-gray-900 dark:bg-gray-800">
         <button @click="$dispatch('close-all-dropdowns')"
             class="w-full flex items-center gap-3 px-4 py-2 text-gray-400 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors rounded-lg">

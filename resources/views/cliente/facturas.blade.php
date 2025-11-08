@@ -11,7 +11,6 @@
         En esta sección puede revisar todas sus facturas emitidas por nuestros servicios. Puede filtrar las facturas por estado, fecha o número de factura, así como buscar facturas específicas utilizando el campo de búsqueda. Haga clic en el botón "Ver factura" para abrir la factura en una nueva pestaña y revisarla en detalle. <i>(Las facturas mostradas corresponden a pagos ya confirmados y procesados presencialmente, ya sea en efectivo o con tarjeta de crédito/débito).</i>
     </div>
 
-    <!-- Tarjetas resumen (mismo estilo que Órdenes) -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Total -->
         <div
@@ -27,7 +26,6 @@
             </div>
         </div>
 
-        <!-- Pagadas -->
         <div
             class="w-full min-h-[96px] bg-gradient-to-r from-emerald-800 to-green-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
             <div class="flex items-center justify-between h-full">
@@ -41,7 +39,6 @@
             </div>
         </div>
 
-        <!-- Pendientes -->
         <div
             class="w-full min-h-[96px] bg-gradient-to-r from-slate-800 to-slate-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
             <div class="flex items-center justify-between h-full">
@@ -56,7 +53,6 @@
         </div>
     </div>
 
-    <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
         <div class="flex flex-col xl:flex-row gap-4">
             <div class="flex-1 flex items-center gap-2">
@@ -85,7 +81,6 @@
         </div>
     </div>
 
-    <!-- Tabla (facturas + detalles) -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
@@ -178,7 +173,6 @@
 </div>
 
 <script>
-    // Definir la función globalmente para que pueda ser usada por Alpine.js en navegación SPA
     if (typeof window.facturasCliente === 'undefined') {
         window.facturasCliente = function() {
             return {
@@ -204,7 +198,6 @@
                             this.datos = Array.isArray(payload) ? payload : (payload.data || []);
                         }
                     } catch (e) {
-                        /* noop */
                     }
                 },
                 get filtradas() {
@@ -253,7 +246,6 @@
                         'Anulada': 'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
                     } [e] || 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
                 },
-                // Contadores para tarjetas resumen
                 get totalFacturas() {
                     return this.datos.length;
                 },

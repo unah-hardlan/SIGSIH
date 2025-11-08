@@ -1,15 +1,13 @@
 <div x-data="{
-    // --- Control de Pestañas ---
     tab: 'proyectos',
 
-    // --- Estado para PROYECTOS ---
     isProyectoModalOpen: false,
     isProyectoEditModalOpen: false,
     isProyectoDeleteModalOpen: false,
     itemToEdit: null,
     itemToDelete: null,
     proyectos: [],
-    numbersProyectos: [], // Alias para paginación
+    numbersProyectos: [], 
     loadingProyectos: false,
     nombre_proyecto: '',
     fecha_inicio_proyecto: '',
@@ -24,14 +22,13 @@
     perPageProyectos: 10,
     formProyecto: { _touched: {} },
 
-    // --- Estado para INGRESOS ---
     isIngresoModalOpen: false,
     isIngresoEditModalOpen: false,
     isIngresoDeleteModalOpen: false,
     ingresoToEdit: null,
     ingresoToDelete: null,
     ingresos: [],
-    numbersIngresos: [], // Alias para paginación
+    numbersIngresos: [],
     loadingIngresos: false,
     nombre_ingreso: '',
     fecha_ingreso: '',
@@ -45,14 +42,13 @@
     perPageIngresos: 10,
     formIngreso: { _touched: {} },
 
-    // --- Estado para GASTOS ---
     isGastoModalOpen: false,
     isGastoEditModalOpen: false,
     isGastoDeleteModalOpen: false,
     gastoToEdit: null,
     gastoToDelete: null,
     gastos: [],
-    numbersGastos: [], // Alias para paginación
+    numbersGastos: [],
     loadingGastos: false,
     nombre_gasto: '',
     fecha_gasto: '',
@@ -66,16 +62,13 @@
     perPageGastos: 10,
     formGasto: { _touched: {} },
 
-    // --- Errores ---
     errors: {},
     
-    // --- Catálogos (para los <select>) ---
     catalogoEstadosProyecto: [],
     catalogoOrdenesServicio: [],
     catalogoProyectos: [],
     catalogoCategorias: [],
 
-    // --- Métodos de Paginación para PROYECTOS ---
     paginatedProyectos() {
         return this.proyectos.slice((this.currentPageProyectos - 1) * this.perPageProyectos, this.currentPageProyectos * this.perPageProyectos);
     },
@@ -93,7 +86,6 @@
         }
     },
 
-    // --- Métodos de Paginación para INGRESOS ---
     paginatedIngresos() {
         return this.ingresos.slice((this.currentPageIngresos - 1) * this.perPageIngresos, this.currentPageIngresos * this.perPageIngresos);
     },
@@ -111,7 +103,6 @@
         }
     },
 
-    // --- Métodos de Paginación para GASTOS ---
     paginatedGastos() {
         return this.gastos.slice((this.currentPageGastos - 1) * this.perPageGastos, this.currentPageGastos * this.perPageGastos);
     },
@@ -129,7 +120,6 @@
         }
     },
 
-    // --- Lógica de la API ---
     async fetchProyectos() { 
         await window.proyectosApiHandlers.fetchProyectos(this); 
         this.numbersProyectos = this.proyectos;
@@ -280,7 +270,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             class="mr-6 pb-2 nunito-bold">Movimientos</li>
     </ul>
 
-    {{-- ==================== PESTAÑA DE PROYECTOS ==================== --}}
     <div x-show="tab==='proyectos'">
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
@@ -466,7 +455,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </x-slot>
         </x-responsive-table>
 
-        <!-- Paginación para Proyectos -->
         <div x-show="numbersProyectos.length > perPageProyectos"
             class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
             <div class="mb-2">
@@ -516,9 +504,7 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
         </div>
     </div>
 
-    {{-- ==================== PESTAÑA DE MOVIMIENTOS ==================== --}}
     <div x-show="tab==='movimientos'" x-cloak class="space-y-8">
-        <!-- Botón de reporte para movimientos -->
         <div class="flex justify-end mb-4">
             <button @click="openReporteMovimientos()"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center gap-2">
@@ -526,7 +512,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </button>
         </div>
 
-        <!-- CRUD de Ingresos -->
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
                 @include('partials.filtros-generales', [
@@ -693,7 +678,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </x-slot>
         </x-responsive-table>
 
-        <!-- Paginación para Ingresos -->
         <div x-show="numbersIngresos.length > perPageIngresos"
             class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
             <div class="mb-2">
@@ -742,7 +726,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </div>
         </div>
 
-        <!-- CRUD de Gastos -->
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
                 @include('partials.filtros-generales', [
@@ -907,7 +890,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </x-slot>
         </x-responsive-table>
 
-        <!-- Paginación para Gastos -->
         <div x-show="numbersGastos.length > perPageGastos"
             class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
             <div class="mb-2">
@@ -957,7 +939,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
         </div>
     </div>
 
-    {{-- ==================== MODALES ==================== --}}
     <div>
         <!-- Modal Nuevo Proyecto -->
         <x-admin.form-modal modalName="isProyectoModalOpen" title="Nuevo Proyecto" submitLabel="Guardar Proyecto"
@@ -1057,15 +1038,12 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </div>
         </x-admin.form-modal>
 
-        <!-- Modal Editar Proyecto -->
         <x-admin.edit-modal modalName="isProyectoEditModalOpen" title="Editar Proyecto" formId="formEditProyecto"
             itemToEdit="itemToEdit" maxWidth="max-w-4xl">
             <template x-if="itemToEdit">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-effect="if (itemToEdit && isProyectoEditModalOpen) { $nextTick(() => {
-                    // populate fk ids from loaded relations if missing
                     itemToEdit.id_orden_servicio_fk = itemToEdit.id_orden_servicio_fk || itemToEdit.orden_servicio?.id_orden_servicio_pk || '';
                     itemToEdit.id_estado_proyecto_fk = itemToEdit.id_estado_proyecto_fk || itemToEdit.estado_proyecto?.id_estado_proyecto_pk || '';
-                    // normalize date fields to YYYY-MM-DD for <input type=date>
                     (function normalize(field){
                         try {
                             var raw = itemToEdit[field];
@@ -1182,7 +1160,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
         <x-admin.confirmation-modal modalName="isProyectoDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Seguro que quieres eliminar este proyecto?" />
 
-        <!-- Modal Nuevo Ingreso -->
         <x-admin.form-modal modalName="isIngresoModalOpen" title="Nuevo Ingreso" submitLabel="Guardar Ingreso"
             formId="formIngreso" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1279,7 +1256,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </div>
         </x-admin.form-modal>
 
-        <!-- Modal Editar Ingreso -->
         <x-admin.edit-modal modalName="isIngresoEditModalOpen" title="Editar Ingreso" formId="formEditIngreso"
             itemToEdit="ingresoToEdit" maxWidth="max-w-2xl">
             <template x-if="ingresoToEdit">
@@ -1387,7 +1363,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
         <x-admin.confirmation-modal modalName="isIngresoDeleteModalOpen" itemToDelete="ingresoToDelete"
             message="¿Seguro que quieres eliminar este ingreso?" />
 
-        <!-- Modal Nuevo Gasto -->
         <x-admin.form-modal modalName="isGastoModalOpen" title="Nuevo Gasto" submitLabel="Guardar Gasto"
             formId="formGasto" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1482,7 +1457,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
             </div>
         </x-admin.form-modal>
 
-        <!-- Modal Editar Gasto -->
         <x-admin.edit-modal modalName="isGastoEditModalOpen" title="Editar Gasto" formId="formEditGasto"
             itemToEdit="gastoToEdit" maxWidth="max-w-2xl">
             <template x-if="gastoToEdit">
@@ -1492,7 +1466,6 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                             var raw = gastoToEdit.fecha || gastoToEdit.fecha_gasto || '';
                             if(!raw) return;
                             if (typeof raw === 'string' && raw.indexOf('/') !== -1) {
-                                // esperar dd/mm/yyyy
                                 var parts = raw.split('/').map(s => s.trim());
                                 if (parts.length === 3) {
                                     var day = parts[0].padStart(2, '0');

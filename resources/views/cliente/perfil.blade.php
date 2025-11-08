@@ -431,7 +431,6 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta de Solicitudes -->
                     <div
                         class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center justify-between mb-3">
@@ -468,7 +467,6 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta de Tickets -->
                     <div
                         class="bg-white dark:bg-gray-700 rounded-xl p-6 border border-gray-400/70 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center justify-between mb-3">
@@ -551,10 +549,8 @@
                     <div class="flex items-center space-x-6">
                         <div class="flex-shrink-0">
                             <div class="relative">
-                                <!-- Preview dinámica -->
                                 <img x-show="avatarPreviewUrl" x-cloak :src="avatarPreviewUrl" alt="Vista previa"
                                     class="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600" />
-                                <!-- Imagen actual si no hay preview -->
                                 <template x-if="!avatarPreviewUrl">
                                     @if($persona->avatar_path)
                                     <img src="{{ asset('storage/' . $persona->avatar_path) }}" alt="Avatar actual"
@@ -713,7 +709,6 @@
                     <div class="flex items-center space-x-6">
                         <div class="flex-shrink-0">
                             <div class="relative">
-                                <!-- Preview dinámica empresa -->
                                 <img x-show="empresaAvatarPreviewUrl" x-cloak :src="empresaAvatarPreviewUrl"
                                     alt="Vista previa"
                                     class="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600" />

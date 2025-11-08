@@ -6,11 +6,9 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-5xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="CONFIGURACION DE ACCESOS AL SISTEMA"
                 :logoSize="96" />
 
-            <!-- Botones de acción (sticky on-screen, hidden in print) -->
             <div class="report-print-controls no-print">
                 <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
                     <i class="fas fa-print mr-2"></i>Imprimir
@@ -20,12 +18,10 @@
                 </button>
             </div>
 
-            <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">
                 @if(($seccion ?? '')==='roles') Lista de Roles @elseif(($seccion ?? '')==='objetos') Objetos del Sistema @elseif(($seccion ?? '')==='asignar') Asignación de Roles a Usuarios @elseif(($seccion ?? '')==='gestion') Gestión de Permisos @else Configuración de Accesos @endif
             </h2>
 
-            <!-- Resumen contextual (solo del módulo/sección seleccionada) -->
         @php
                 $section = $seccion ?? '';
                 $theme = [
@@ -39,7 +35,6 @@
                 <div class="rounded-lg p-5 text-center flex flex-col items-center justify-center space-y-1 {{ $theme['bg'] }} border {{ $theme['border'] }}">
                     @php
                         if(($seccion ?? '')==='gestion' && isset($matriz)){
-                            // Contar solo filas de objeto (ignorar cabeceras) con al menos un permiso
                             $theme['value'] = collect($matriz)->filter(function($r){
                                 return !empty($r['objeto']) && (
                                     !empty($r['permiso_insercion']) || !empty($r['permiso_consultar']) || !empty($r['permiso_actualizar']) || !empty($r['permiso_eliminacion'])
@@ -52,11 +47,6 @@
                 </div>
             </div>
 
-          <!-- Sección 1: Gestión de Roles y Permisos -->
-          {{-- MARCADOR-DISENO-COMPACTO-PERMISOS
-              Referencia: Diseño compacto de matriz de permisos (checkboxes condensados por objeto y encabezados de módulo).
-              Si se necesita recrear el commit perdido, volver a aplicar estilos/estructura a esta sección.
-              Mantener este comentario para futuras reconstrucciones. --}}
             @if(($seccion ?? '')==='gestion')
                 <div class="mb-6">
                     <h3 class="text-lg nunito-bold text-gray-800 mb-3">Gestión de Roles y Permisos</h3>
@@ -103,7 +93,6 @@
                 </div>
             @endif
 
-            <!-- Sección 2: Lista de Roles -->
             @if(($seccion ?? '')==='roles')
                 <div class="mb-6">
                     <h3 class="text-lg nunito-bold text-gray-800 mb-3">Lista de Roles</h3>
@@ -136,7 +125,6 @@
                 </div>
             @endif
 
-            <!-- Sección 3: Asignación de Roles a Usuarios -->
             @if(($seccion ?? '')==='asignar')
                 <div class="mb-6">
                     <h3 class="text-lg nunito-bold text-gray-800 mb-3">Asignación de Roles a Usuarios</h3>
@@ -167,7 +155,6 @@
                 </div>
             @endif
 
-            <!-- Sección 4: Objetos del Sistema -->
             @if(($seccion ?? '')==='objetos')
                 <div class="mb-6">
                     <h3 class="text-lg nunito-bold text-gray-800 mb-3">Objetos del Sistema</h3>
@@ -202,7 +189,6 @@
                 </div>
             @endif
 
-            <!-- Resumen Final dinámico -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
                 <h3 class="text-lg nunito-bold text-gray-800 mb-3">RESUMEN EJECUTIVO</h3>
                 <div class="text-sm nunito-regular text-gray-700 space-y-3">

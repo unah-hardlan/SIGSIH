@@ -79,7 +79,6 @@
     },
     async fetchEstadosCai() {
         await window.estadosCaiApiHandlers.fetchEstadosCai(this);
-        // synchronize aliases for reusable pagination components
         this.categorias = this.estadosCai;
         this.numbers = this.estadosCai;
     },
@@ -297,12 +296,9 @@ $watch('ordenarPor', () => { currentPage = 1; });
         </x-slot>
     </x-responsive-table>
 
-    <!-- Paginación del lado del cliente -->
     <x-pagination />
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Estado CAI -->
         @perm(['Catálogo','Estados CAI','Estado CAI'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isEstadoCaiModalOpen" title="Nuevo Estado CAI"
             submitLabel="Guardar Estado" formId="formEstadoCai" maxWidth="max-w-4xl">
@@ -348,7 +344,6 @@ $watch('ordenarPor', () => { currentPage = 1; });
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Estado CAI -->
         @perm(['Catálogo','Estados CAI','Estado CAI'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoCaiModalOpen" title="Editar Estado CAI"
             itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="formEditEstadoCai">
@@ -394,7 +389,6 @@ $watch('ordenarPor', () => { currentPage = 1; });
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Estados CAI','Estado CAI'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteEstadoCaiModalOpen"
             itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este estado CAI?" />

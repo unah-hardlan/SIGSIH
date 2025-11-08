@@ -7,7 +7,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $appName ?? (config('app.name','SIGSIH').' - Cliente') }}</title>
 
-    {{-- Meta para navegación SPA opcional (reutilizable) --}}
     @if(request()->header('X-SPA-Page'))
     <meta name="spa-page" content="true">
     <meta name="spa-view" content="{{ request()->header('X-SPA-View') }}">
@@ -70,7 +69,6 @@
     <style>
     .client-sidebar { z-index: 9999; }
     .modal-underlay { z-index: 10000; }
-    /* Default behavior: modal overlays above sidebar */
     body.sidebar-on-top .modal-underlay { z-index: 9998 !important; }
     body.sidebar-on-top .client-sidebar { z-index: 10005 !important; }
 

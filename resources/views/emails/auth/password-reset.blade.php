@@ -106,7 +106,6 @@
 			}
 		}
 	</style>
-	<!-- Safe preview text -->
 	<meta name="color-scheme" content="light">
 	<meta name="supported-color-schemes" content="light">
 </head>

@@ -14,7 +14,6 @@
                 document.documentElement.classList.remove('overflow-hidden');
             },
             estadoConexion: 'inicial',
-            // Ruta sugerida por defecto (puedes cambiarla antes de respaldar)
             path: '',
             isBackingUp: false,
             backupMsg: '',
@@ -51,7 +50,6 @@
                         body: JSON.stringify(body)
                     });
                     const data = await r.json().catch(() => ({}));
-                    // Soportar "soft error" (HTTP 200 con ok=false)
                     if (data && data.ok === false && (data.code === 'INVALID_CONFIRM_PASSWORD' || data.code ===
                             'MISSING_CONFIRM_PASSWORD')) {
                         const msg = (data && data.errors && data.errors.confirm_password && data.errors
@@ -63,16 +61,14 @@
                         return;
                     }
                     if (!r.ok) {
-                        // Manejo explícito de validaciones (422) o forbidden (403)
                         if (r.status === 422 || r.status === 403) {
                             const msg = (data && data.errors && data.errors.confirm_password && data.errors
                                 .confirm_password[0]) || data.error || 'Contraseña incorrecta';
                             this.backupMsg = msg;
                             this.respaldoExitoso = false;
                             this.mensajeRespaldo = 'Contraseña incorrecta';
-                            return; // Evitar lanzar excepción para no llenar consola
+                            return; 
                         }
-                        // Otros errores
                         const msg = data.message || data.error || 'Fallo realizando respaldo';
                         this.backupMsg = msg;
                         this.respaldoExitoso = false;
@@ -97,11 +93,9 @@
 <div class="max-w-4xl mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="__backupDb()">
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-0 overflow-hidden mb-6">
-        <!-- Header con icono y etiqueta -->
         <div class="px-6 pt-6 pb-4 flex items-center gap-3">
             <div
                 class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow">
-                <!-- Icono de base de datos -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -119,7 +113,6 @@
             </span>
         </div>
 
-        <!-- Cuerpo con CTA principal -->
         <div class="px-6 pb-6">
             <div
                 class="rounded-lg p-5 bg-gradient-to-r from-blue-50/60 to-indigo-50/60 dark:from-blue-900/10 dark:to-indigo-900/10 border border-gray-200/60 dark:border-gray-700/50">
@@ -130,7 +123,6 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <!-- Botón principal -->
                         @perm(['Gestión de base de datos','Gestion de base de datos','Base de Datos'], 'insercion')
                         <button @click="openModal('¿Deseas confirmar el respaldo de la base de datos?')"
                             class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold transition nunito-regular text-sm disabled:opacity-60 disabled:cursor-not-allowed"
@@ -162,14 +154,12 @@
                         </button>
                         @endperm
 
-                        <!-- Estado pequeño -->
                         <template x-if="mensajeRespaldo">
                             <span class="text-sm px-2.5 py-1 rounded-full"
                                 :class="respaldoExitoso ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-200'"
                                 x-text="mensajeRespaldo"></span>
                         </template>
 
-                        <!-- Descargar -->
                         <template x-if="downloadUrl">
                             <button @click="window.open(downloadUrl,'_blank')"
                                 class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded nunito-regular text-sm">
@@ -184,7 +174,6 @@
                         </template>
                     </div>
 
-                    <!-- Checklist sutil para ocupar espacio -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-600 dark:text-gray-400">
                         <div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg"
                                 class="h-4 w-4 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
@@ -218,12 +207,9 @@
         </div>
     </div>
 
-    <!-- MODAL -->
     <div x-show="showModal" x-cloak x-transition.opacity @keydown.window.escape="closeModal()"
         class="fixed inset-0 z-50 flex items-center justify-center">
-        <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/60 backdrop-blur-[4px]" @click="closeModal()"></div>
-        <!-- Panel -->
         <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full">
             <div class="text-gray-800 dark:text-white text-lg font-semibold mb-4 nunito-bold" x-text="modalMsg"></div>
             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2 nunito-regular">Confirma la contraseña de

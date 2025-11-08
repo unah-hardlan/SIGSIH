@@ -1,22 +1,18 @@
 <div x-data="{
-    // --- UI state ---
     isModalOpenPersonas: false,
     isEditModalOpenPersonas: false,
     isDeleteModalOpenPersonas: false,
     itemToEdit: {},
     itemToDelete: null,
     
-    // --- Data ---
     personas: [],
     loading: false,
     error: '',
 
-    // 1️⃣ Variables de Paginación
     numbersPersonas: [],
     currentPagePersonas: 1,
     perPagePersonas: 10,
 
-    // --- Catálogos y Filtros ---
     catalogoGeneros: [],
     catalogoUsuarios: [],
     empresas: [],
@@ -27,7 +23,6 @@
     ordenarDir: 'asc',
     showMoreFilters: false,
     
-    // --- Formularios ---
     addForm: {
         primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
         dni: '', id_genero_fk: '', id_usuario_fk: '', as_contacto_empresa: false, id_cliente_fk: ''
@@ -35,21 +30,17 @@
     formPersonas: { _touched: {} },
     formEditPersonas: { _touched: {} },
 
-    // --- Lógica Interna ---
     _catalogosPromise: null,
     _abortCtrl: null,
     _usuariosById: {},
 
-    // Getter para datos filtrados y ordenados (base para la paginación)
     get filteredPersonas() {
         let items = [...this.personas];
 
-        // Filtro por Género (cliente)
         if (this.filtroGenero) {
             items = items.filter(p => this.equalsNormalized(p.genero_nombre, this.filtroGenero));
         }
         
-        // Ordenamiento (cliente)
         const map = { nombre: 'primer_nombre', dni: 'dni' };
         const key = map[this.ordenarPor] || 'primer_nombre';
         const dir = this.ordenarDir === 'desc' ? -1 : 1;
@@ -64,7 +55,6 @@
         return items;
     },
 
-    // 2️⃣ Métodos de Paginación
     paginatedPersonas() {
         return this.filteredPersonas.slice(
             (this.currentPagePersonas - 1) * this.perPagePersonas,
@@ -85,11 +75,9 @@
         }
     },
     
-    // --- Lógica Principal y API ---
     init() {
         this.loadCatalogos().then(() => this.loadPersonas());
         
-        // 4️⃣ Watchers con reseteo de página
         this.$watch('searchPersonas', Alpine.debounce(() => { this.currentPagePersonas = 1; this.loadPersonas(); }, 350));
         this.$watch('filtroGenero', () => { this.currentPagePersonas = 1; });
         
@@ -111,7 +99,6 @@
         });
     },
 
-    // 3️⃣ Sincronización de Alias en Métodos API
     async loadCatalogos() {
         if (this.catalogoGeneros.length && this.catalogoUsuarios.length) return;
         if (this._catalogosPromise) return this._catalogosPromise;
@@ -164,7 +151,6 @@
             
             const params = new URLSearchParams();
             if (this.searchPersonas) params.set('q', this.searchPersonas);
-            // Traer todos los datos para paginar en cliente
             params.set('per_page', '5000'); 
             
             const res = await fetch(`/api/personas?${params.toString()}`, { credentials: 'same-origin', signal: this._abortCtrl.signal });
@@ -390,7 +376,6 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="filteredPersonas.length > perPagePersonas" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
@@ -430,7 +415,6 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona" submitLabel="Guardar" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

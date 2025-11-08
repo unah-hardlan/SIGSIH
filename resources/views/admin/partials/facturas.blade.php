@@ -16,13 +16,9 @@
                         @include('partials.filtros-generales', [
                         'searchModel' => 'searchFacturas',
                         'filtrosSelect' => [
-                        // Estado cargado dinámicamente desde Alpine (this.estadosFactura)
-                        // Añadimos 'options' vacío para que el partial que espera 'options' no falle.
-
                         ],
                         'ordenarOptions' => [ 'fecha' => 'Fecha', 'total' => 'Total', 'estado_factura' => 'Estado']
                         ])
-                        <!-- Inline Estado select populated by Alpine (estadosFactura) to ensure options appear here -->
                         <div class="w-full sm:w-auto">
                             <select x-model="estadoFacturaFiltro"
                                 class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
@@ -97,7 +93,6 @@
                                 <td class="py-2 px-4 text-[10px] break-words" x-text="factura.oc || '-' "></td>
                                 <td class="py-2 px-4 text-[10px] break-words" x-text="factura.subtotal"></td>
                                 <td class="py-2 px-4 text-[10px] break-words" x-text="factura.impuesto || '0.00'"></td>
-                                <!-- factura.descuento removed -->
                                 <td class="py-2 px-4 text-[10px] break-words" x-text="factura.total"></td>
                                 <td class="py-2 px-4 text-[10px] break-words" x-text="factura.total_letras || '-' ">
                                 </td>
@@ -204,7 +199,6 @@
         <x-pagination />
     </div>
 
-    <!-- Modales Factura -->
     <x-admin.form-modal class="nunito-bold" modalName="isFacturaModalOpen" title="Nueva Factura"
         submitLabel="Guardar Factura" maxWidth="max-w-2xl" formId="formFactura">
         <template x-if="formError">
@@ -214,7 +208,6 @@
             </div>
         </template>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {{-- N° de Factura se genera automáticamente --}}
             <div>
                 <label for="fecha_factura" class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
                 <input type="date" id="fecha_factura" name="fecha_factura" x-ref="fecha_factura" @input="formFactura._touched.fecha = true" @blur="formFactura._touched.fecha = true"
@@ -225,7 +218,6 @@
                     <small class="block mt-1 text-xs text-red-600" x-text="errors.fecha[0]"></small>
                 </template>
             </div>
-            {{-- OC provista por el cliente (campo editable) --}}
             <div>
                 <label for="oc_factura" class="block text-sm font-medium text-gray-700 nunito-bold">OC</label>
                 <input type="text" id="oc_factura" name="oc_factura" x-model="oc" maxlength="100" @input="formFactura._touched.oc = true" @blur="formFactura._touched.oc = true"
@@ -237,7 +229,6 @@
                     <small class="block mt-1 text-xs text-red-600" x-text="errors.oc[0]"></small>
                 </template>
             </div>
-            <!-- Impuesto ahora se calcula automáticamente (15%) y no es editable en el modal de creación -->
             <div>
                 <label for="estado_factura_id" class="block text-sm font-medium text-gray-700 nunito-bold">Estado
                     Factura</label>
@@ -270,7 +261,6 @@
                 <template x-if="errors && errors.id_cai_fk">
                     <small class="block mt-1 text-xs text-red-600" x-text="errors.id_cai_fk[0]"></small>
                 </template>
-                <!-- Ayuda de CAI: vista previa del próximo número o advertencia -->
                 <template x-if="$refs.cai_factura && $refs.cai_factura.value">
                     <div class="mt-1">
                         <template x-if="(cais.find(c => (c.id || c.id_cai_pk) == $refs.cai_factura.value)?._usable) === false">
@@ -312,7 +302,6 @@
             </div>
         </template>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {{-- N° de Factura se genera automáticamente; no editable en modal --}}
             <div>
                 <label for="edit_fecha_factura"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
@@ -324,7 +313,6 @@
                     <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.fecha[0]"></small>
                 </template>
             </div>
-            {{-- OC provista por el cliente (editable) --}}
             <div>
                 <label for="edit_oc_factura" class="block text-sm font-medium text-gray-700 nunito-bold">OC</label>
                 <input type="text" id="edit_oc_factura" name="edit_oc_factura" x-model="itemToEdit.oc" maxlength="100" @input="formEditFactura._touched.oc = true" @blur="formEditFactura._touched.oc = true"
@@ -336,9 +324,6 @@
                     <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.oc[0]"></small>
                 </template>
             </div>
-            <!-- Impuesto se calcula automáticamente (15%) y no es editable desde el modal de edición -->
-            <!-- Descuento field removed from Editar Factura modal -->
-            <!-- Subtotal, Total y Total Letras se calculan desde los detalles; no son editables desde este modal -->
             <div>
                 <label for="edit_estado_factura_id" class="block text-sm font-medium text-gray-700 nunito-bold">Estado
                     Factura</label>
@@ -376,7 +361,6 @@
                 <template x-if="errorsEdit && errorsEdit.id_cai_fk">
                     <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.id_cai_fk[0]"></small>
                 </template>
-                <!-- Ayuda de CAI (editar): vista previa del próximo número o advertencia -->
                 <template x-if="$refs.edit_cai_factura && $refs.edit_cai_factura.value">
                     <div class="mt-1">
                         <template x-if="(cais.find(c => (c.id || c.id_cai_pk) == $refs.edit_cai_factura.value)?._usable) === false">
@@ -413,11 +397,9 @@
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteFacturaModalOpen" itemToDelete="itemToDelete"
         message="¿Estás seguro de que quieres eliminar la factura?" />
 
-    <!-- TAB: DETALLE FACTURA -->
     <div x-show="tab==='detalle'" class="overflow-x-auto">
         <x-responsive-table title="Detalle Factura" class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
-                <!-- Sin filtro de selección, los detalles se muestran automáticamente para la primera factura -->
             </x-slot>
             <x-slot name="actions">
                 <div class="w-full sm:w-auto flex justify-center">
@@ -543,7 +525,6 @@
         </div>
     </div>
 
-    <!-- Modal Nuevo Detalle Factura -->
     <x-admin.form-modal class="nunito-bold" modalName="isDetalleModalOpen" title="Nuevo Detalle Factura"
         submitLabel="Guardar Detalle" maxWidth="max-w-xl" formId="formDetalle">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -618,7 +599,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Detalle Factura -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditDetalleModalOpen" title="Editar Detalle Factura"
         itemToEdit="detalleToEdit" maxWidth="max-w-xl" formId="formEditDetalle">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

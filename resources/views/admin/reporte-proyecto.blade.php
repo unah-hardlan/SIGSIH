@@ -3,7 +3,6 @@
 @section('title', 'Reporte de Proyecto BAC')
 
 @push('styles')
-{{-- Estilos para el efecto glassmorphism con ruido (se mantiene por si lo usas en otros elementos) --}}
 <style>
     .glass-noise {
         position: relative;
@@ -52,7 +51,6 @@
 
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="Proyecto BAC" :logoSize="96" />
 
-            <!-- Summary Cards (nuevo diseño: glass + accent) -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
             @php
                 $totalIngresos = $total_ingresos ?? 'L. 4,787.00';
@@ -108,12 +106,8 @@
                 </article>
             @endforeach
         </section>
-
-            <!-- ========================================================== -->
-            <!-- INICIO DE SECCIÓN DE TABLAS REDISEÑADAS -->
-            <!-- ========================================================== -->
+           
             <div class="space-y-10">
-                <!-- Tabla de Ingresos Rediseñada -->
                 <section class="avoid-break">
                     <div class="border-b border-gray-200 pb-4 mb-5">
                         <h2 class="text-xl font-semibold text-gray-800">Detalle de Ingresos</h2>
@@ -146,7 +140,6 @@
                     </div>
                 </section>
 
-                <!-- Tabla de Gastos Rediseñada -->
                 <section class="avoid-break">
                     <div class="border-b border-gray-200 pb-4 mb-5">
                         <h2 class="text-xl font-semibold text-gray-800">Detalle de Gastos</h2>
@@ -179,11 +172,7 @@
                     </div>
                 </section>
             </div>
-            <!-- ========================================================== -->
-            <!-- FIN DE SECCIÓN DE TABLAS REDISEÑADAS -->
-            <!-- ========================================================== -->
-
-            <!-- Gráficas (sin cambios) -->
+            
             <section class="grid grid-cols-1 md:grid-cols-2 gap-6 avoid-break mt-12 pt-8 border-t border-black/5">
                 <div class="relative glass-noise bg-white/60 backdrop-blur-xl border border-black/5 rounded-lg p-4">
                     <h3 class="text-center text-sm font-medium text-gray-600 mb-4">Desglose de Ingresos</h3>
@@ -195,7 +184,6 @@
                 </div>
             </section>
 
-            <!-- Botones de acción (sticky) -->
             <div class="report-print-controls no-print">
                 <button onclick="window.print()" class="inline-flex items-center gap-2 bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-md font-semibold text-sm transition">
                     <i class="fas fa-print"></i>Imprimir
@@ -212,7 +200,6 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // ... (El script de Chart.js no necesita cambios) ...
     document.addEventListener("DOMContentLoaded", function () {
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.color = '#374151';

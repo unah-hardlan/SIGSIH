@@ -8,9 +8,8 @@
     tipoToDelete: {nombre: '', descripcion: ''},
     ordenarPor: 'nombre',
     loadingTipos: false,
-    searchTipos: '', // Para el filtro de búsqueda
-    // Si agregas más filtros select, defínelos aquí. Ejemplo:
-    // filtroEstado: '', filtroCategoria: '',
+    searchTipos: '', 
+    
     async fetchTipoObjetos() {
         await window.tipoObjetosApiHandlers.fetchTipoObjetos(this);
     },
@@ -216,7 +215,6 @@
         </x-responsive-table>
 
 
-        <!-- Modal Agregar Tipo de Objeto -->
         @perm(['Catálogo','Tipos de Objeto','Tipo de Objeto'], 'insercion')
         <x-admin.edit-modal
             modalName="isTipoModalOpen"
@@ -246,7 +244,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Editar Tipo de Objeto -->
         @perm(['Catálogo','Tipos de Objeto','Tipo de Objeto'], 'actualizacion')
         <x-admin.edit-modal
             modalName="isTipoEditModalOpen"
@@ -276,7 +273,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Eliminar Tipo de Objeto -->
         @perm(['Catálogo','Tipos de Objeto','Tipo de Objeto'], 'eliminacion')
         <x-admin.confirmation-modal
             modalName="isTipoDeleteModalOpen"

@@ -6,14 +6,10 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-7xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="GESTION DE PERSONAS" :logoSize="96" />
-            <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Personas Registradas</h2>
-            <!-- Tabla de Gestión de Personas (dinámica) -->
             <?php
-                // $rows viene del controlador PersonaController@reporte
-                // Fallback mínimo por si la ruta llama directamente la vista
+                
                 if(!isset($rows)) { $rows = []; }
             ?>
             <div class="overflow-x-auto mb-8">
@@ -51,7 +47,6 @@
                     </tbody>
                 </table>
             </div>
-            <!-- Botones de acción -->
             <div class="mt-6 flex justify-center gap-4 no-print">
                 <button onclick="window.print()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">

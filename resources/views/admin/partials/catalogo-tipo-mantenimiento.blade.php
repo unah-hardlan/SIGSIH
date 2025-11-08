@@ -7,7 +7,6 @@
     items: [],
     loading: false,
 
-    // 1️⃣ Variables de Paginación
     numbersItems: [],
     currentPageItems: 1,
     perPageItems: 10,
@@ -21,7 +20,6 @@
     filtroTipoMantenimiento: '',
     ordenarPor: 'nombre',
 
-    // 2️⃣ Métodos de Paginación
     paginatedItems() {
         return this.items.slice(
             (this.currentPageItems - 1) * this.perPageItems, 
@@ -45,19 +43,19 @@
     // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchItems(){ 
         await window.tipoMantenimientoApiHandlers.fetchTipos(this); 
-        this.numbersItems = this.items; // ← LÍNEA AGREGADA
+        this.numbersItems = this.items; 
     },
     async submit(){ 
         await window.tipoMantenimientoApiHandlers.submitTipo(this);
-        this.fetchItems(); // Refrescar datos
+        this.fetchItems(); 
     },
     async update(){ 
         await window.tipoMantenimientoApiHandlers.updateTipo(this);
-        this.fetchItems(); // Refrescar datos
+        this.fetchItems(); 
     },
     async remove(){ 
         await window.tipoMantenimientoApiHandlers.deleteTipo(this);
-        this.fetchItems(); // Refrescar datos
+        this.fetchItems(); 
     },
     handleModalSubmit(e){
         if(e.detail.formId === 'formTipoMantenimiento') this.submit();
@@ -66,7 +64,6 @@
     handleDelete(){ this.remove(); }
 }" x-init="
     fetchItems();
-    // 4️⃣ Reset de página en filtros
     $watch('filtroTipoMantenimiento', () => { fetchItems(); currentPageItems = 1; });
     $watch('ordenarPor', () => { fetchItems(); currentPageItems = 1; });
 " @keydown.escape.window="isModalOpen=false; isEditModalOpen=false; isDeleteModalOpen=false;"
@@ -130,7 +127,6 @@
                             <td colspan="3" class="py-8 text-center text-gray-500">Sin resultados</td>
                         </tr>
                     </template>
-                    <!-- 5️⃣ Usar paginatedItems() en el template -->
                     <template x-for="(item, index) in paginatedItems()" :key="item.id_tipo_mantenimiento_pk">
                         <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                             :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedItems().length - 1 }">
@@ -215,10 +211,8 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="items.length > perPageItems"
         class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span
                 class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
@@ -234,7 +228,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div
             class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageItems()" :disabled="currentPageItems === 1"
@@ -269,7 +262,6 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
         @perm(['Tipo de Mantenimiento','Tipos de Mantenimiento','Tipo de mantenimiento','Tipos de mantenimiento'],
         'insercion')

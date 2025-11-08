@@ -3,7 +3,6 @@
 <div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="perfilPage()" x-init="init()">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        <!-- Panel lateral con avatar -->
         <div class="md:col-span-1">
             <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-400 dark:border-gray-700 border-opacity-50 p-6 text-center">
                 <div class="relative inline-block">
@@ -33,7 +32,6 @@
 
                 <p class="text-sm text-gray-500 dark:text-gray-300 mt-1 nunito-regular" x-text="email"></p>
 
-                <!-- Botón de guardar para cambios de avatar -->
                 <div class="mt-6" x-show="hasChanges">
                     @perm(['Perfil'], 'actualizacion')
                     <button type="button" @click="guardar()" :disabled="saving"
@@ -57,18 +55,15 @@
             </div>
         </div>
 
-        <!-- Sección editable -->
         <div class="md:col-span-2 space-y-8">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 nunito-bold">Completa tu Información Personal</h3>
-                <!-- Alerta de error general -->
                 <div x-show="typeof $data !== 'undefined' && $data.errorBanner" x-transition class="mb-4">
                     <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert" x-cloak>
                         <strong class="font-bold nunito-bold">Verifica los datos:</strong>
                         <span class="block sm:inline nunito-regular" x-text="typeof $data !== 'undefined' && $data.errorBanner ? $data.errorBanner : ''"></span>
                     </div>
                 </div>
-                <!-- Alerta de éxito -->
                 <div x-show="typeof $data !== 'undefined' && $data.success" x-transition class="mb-4">
                     <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative" x-cloak
                         role="alert">
@@ -77,7 +72,6 @@
                     </div>
                 </div>
 
-                <!-- Alerta de cambios no guardados -->
                 <div x-show="typeof $data !== 'undefined' && $data.hasChanges" x-transition class="mb-4">
                     <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded relative" x-cloak
                         role="alert">
@@ -128,11 +122,9 @@
                 </div>
             </div>
 
-            <!-- Sección de cambio de contraseña -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 nunito-regular">Cambiar Contraseña</h3>
 
-                <!-- Alerta de éxito para contraseña -->
                 <div x-show="passwordSuccess" x-transition class="mb-4">
                     <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded relative"
                         role="alert">
@@ -140,7 +132,6 @@
                         <span class="block sm:inline nunito-regular">Tu contraseña se cambió correctamente.</span>
                     </div>
                 </div>
-                <!-- Alerta de error para contraseña -->
                 <div x-show="passwordError" x-transition class="mb-4">
                     <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded relative"
                         role="alert">
@@ -192,7 +183,6 @@
                 </div>
             </div>
 
-            <!-- Sección 2FA: ahora dentro del componente Alpine -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-400 dark:border-gray-700 border-opacity-50">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 nunito-bold">Autenticación en Dos Pasos (2FA)</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 nunito-regular">
@@ -287,7 +277,6 @@
         </div>
 
     </div>
-    {{-- Modal de contraseña actual (2FA) dentro del mismo componente Alpine --}}
     <div x-cloak
         x-show="showPasswordModal"
         class="fixed inset-0 z-50 flex items-center justify-center"
@@ -295,9 +284,7 @@
         x-transition
         aria-modal="true"
         role="dialog">
-        <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/50" @click="cancelPasswordModal()"></div>
-        <!-- Dialog -->
         <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 nunito-bold" x-text="modalTitle || 'Confirmación requerida'"></h3>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="modalDescription || 'Ingresa tu contraseña actual para continuar.'"></p>
@@ -318,5 +305,3 @@
         </div>
     </div>
 </div>
-
-{{-- El JavaScript ahora está en resources/js/perfil.js --}}

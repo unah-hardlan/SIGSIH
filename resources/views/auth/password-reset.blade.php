@@ -14,7 +14,6 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="{{ Vite::asset('resources/js/toast.js') }}" defer></script>
 
-    <!-- Dark mode logic removed -->
 
     <style>
     [x-cloak] {
@@ -25,7 +24,6 @@
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-800">
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
-        <!-- Dark mode toggle removed -->
 
         <div class="w-full max-w-sm mx-auto">
             <div class="bg-white rounded-lg border border-gray-600 p-4 transition-colors">
@@ -54,11 +52,9 @@
                             class="auth-input w-full px-3 py-2 rounded border transition-colors bg-gray-100 text-gray-800 nunito-regular text-xs cursor-not-allowed"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.email || (email && !validateEmail(email)) }"
                             placeholder="tu@correo.com">
-                        <!-- Error del servidor -->
                         <template x-if="fieldErrors.email">
                             <p class="mt-1 text-xs text-red-600 nunito-regular" x-text="fieldErrors.email[0]"></p>
                         </template>
-                        <!-- Validación en tiempo real -->
                         <template x-if="email && !fieldErrors.email && emailIssues(email).length > 0">
                             <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                 <template x-for="issue in emailIssues(email)" :key="issue">
@@ -97,7 +93,6 @@
                                 </template>
                             </ul>
                         </template>
-                        <!-- Error del servidor -->
                         <template x-if="fieldErrors.password">
                             <p class="mt-1 text-xs text-red-600 nunito-regular" x-text="fieldErrors.password[0]"></p>
                         </template>
@@ -118,7 +113,6 @@
                                 <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        <!-- Validación en tiempo real -->
                         <template x-if="passwordConfirmation && confirmPasswordIssues().length > 0">
                             <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                 <template x-for="issue in confirmPasswordIssues()" :key="issue">

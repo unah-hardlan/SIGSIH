@@ -12,7 +12,6 @@
         Los tickets son las asignaciones del servicio que has solicitado y que nuestro equipo técnico está gestionando. Aquí puedes ver el estado actual de cada ticket, incluyendo detalles como la descripción del problema, el técnico asignado y las fechas relevantes.
     </div>
 
-    <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
         <div class="flex flex-col xl:flex-row gap-4">
             <div class="flex-1 flex items-center gap-2">
@@ -41,7 +40,6 @@
         </div>
     </div>
 
-    <!-- Tabla -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">

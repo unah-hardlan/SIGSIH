@@ -14,12 +14,10 @@
         </div>
         <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
     </div>
-    <!-- Perfil resumen -->
     <div class="mb-10" x-data="{ p: Alpine.store('perfil') }">
         <div
             class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-300 dark:border-gray-700 p-5 sm:p-6">
             <div class="flex items-center gap-4 sm:gap-6">
-                <!-- Avatar -->
                 <div
                     class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                     <template x-if="p?.persona?.avatar_path">
@@ -31,7 +29,6 @@
                     </template>
                 </div>
 
-                <!-- Datos -->
                 <div class="flex-1 min-w-0">
                     <p class="text-lg sm:text-xl nunito-bold text-gray-800 dark:text-gray-100 truncate"
                         x-text="p?.persona ? [p.persona.primer_nombre, p.persona.primer_apellido].filter(Boolean).join(' ') : (p?.user?.nombre_usuario || p?.user?.usuario || 'Mi perfil')">
@@ -46,11 +43,6 @@
             </div>
         </div>
     </div>
-
-
-
-
-
 
     <div class="flex items-center my-1 mb-10 mt-10">
         <div class="flex-grow border-t border-gray-400 dark:border-gray-700"></div>
@@ -69,8 +61,6 @@
 
     <div class="mb-8" x-data="dashboardKPIs()" x-init="init()">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6">
-            <!-- Fila 1: Usuarios, Empresas, Órdenes -->
-            <!-- Card 1: Total Usuarios -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-blue-500 dark:border-blue-700 border-l-4 border-l-blue-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -93,7 +83,6 @@
                 </div>
             </div>
 
-            <!-- Card 2: Empresas Activas -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-green-500 dark:border-green-700 border-l-4 border-l-green-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -116,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Card 3: Órdenes de Servicio -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-purple-500 dark:border-purple-700 border-l-4 border-l-purple-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -141,8 +129,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6">
-            <!-- Fila 2: Cotizaciones, Inventario, Reportes -->
-            <!-- Card 4: Cotizaciones -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-indigo-500 dark:border-indigo-700 border-l-4 border-l-indigo-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -165,7 +151,6 @@
                 </div>
             </div>
 
-            <!-- Card 7: Inventario -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-emerald-300 dark:border-emerald-700 border-l-4 border-l-emerald-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -188,7 +173,6 @@
                 </div>
             </div>
 
-            <!-- Card 8: Reportes -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-pink-500 dark:border-pink-700 border-l-4 border-l-pink-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -213,8 +197,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
-            <!-- Fila 3: Proyectos, Tickets -->
-            <!-- Card 5: Proyectos -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-teal-500 dark:border-teal-700 border-l-4 border-l-teal-500 overflow-hidden">
                 <div class="p-5 lg:p-6">
@@ -247,7 +229,6 @@
                 </div>
             </div>
 
-            <!-- Card 6: Tickets -->
             <div
                 class="group dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border-2 border-orange-500 dark:border-orange-700 border-l-4 border-l-orange-500 overflow-hidden">
                 <div class="p-5 lg:p-6">

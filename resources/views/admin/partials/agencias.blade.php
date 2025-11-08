@@ -1,25 +1,17 @@
 <div x-data="{
-  // listado
   agencias: [], loading: false,
-  // clientes disponibles para asignar
   clientes: [], loadingClientes: false,
   
-  // Variables de Paginación
   numbersAgencias: [],
   currentPageAgencias: 1,
   perPageAgencias: 10,
 
-  // filtros
   searchAgencia: '', ciudadFiltro: '', ordenarPor: 'nombre',
-  // direcciones para el formulario
   direcciones: [], loadingDirecciones: false,
-  // estados de modales
   isAgenciaModalOpen: false, isDeleteAgenciaModalOpen: false,
-  // modelos de formulario
   formAgencia: { id: null, nombre: '', horario: '', direccion_id: '', clients: [], _touched: {} },
   agenciaToDelete: null,
 
-  // Métodos de Paginación
   paginatedAgencias() {
     return this.agencias.slice(
         (this.currentPageAgencias - 1) * this.perPageAgencias, 
@@ -40,7 +32,6 @@
       }
   },
 
-  // builder de horario
   dias: [ { key: 'Lun', sel: false }, { key: 'Mar', sel: false }, { key: 'Mié', sel: false }, { key: 'Jue', sel: false }, { key: 'Vie', sel: false }, { key: 'Sáb', sel: false }, { key: 'Dom', sel: false } ],
   horaInicio: '08:00', horaFin: '17:00',
   composeHorario() { /* ... sin cambios ... */ },
@@ -48,7 +39,6 @@
   parseHorario(texto) { /* ... sin cambios ... */ },
   cargarRangosDesdeTexto(){ /* ... sin cambios ... */ },
   
-  // Métodos CRUD refactorizados
   async fetch() { 
       await window.agenciasApiHandlers.fetchAgencias(this);
       this.numbersAgencias = this.agencias;
@@ -68,7 +58,6 @@
       this.fetch();
   },
   
-  // Handlers para eventos
   handleModalSubmit(e) {
       if (e.detail.formId === 'form-agencia') {
           this.formAgencia.id ? this.update() : this.store();
@@ -80,7 +69,6 @@
       }
   },
 
-  // selection helpers for dual-list
   selectedAvailable: [],
   selectedAssociated: [],
   availableClients() { return this.clientes.filter(c => !this.formAgencia.clients.includes(c.id)); },
@@ -336,7 +324,6 @@
         </div>
     </div>
 
-    <!-- Modal Nueva/Editar Agencia -->
     <x-admin.form-modal class="nunito-bold" modalName="isAgenciaModalOpen" title="Agencia" submitLabel="Guardar Agencia"
         maxWidth="max-w-7xl" formId="form-agencia">
         <div x-effect="composeHorario()"></div>
@@ -462,7 +449,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Confirmar Eliminación Agencia -->
     <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteAgenciaModalOpen" itemToDelete="agenciaToDelete"
         message="¿Estás seguro de que quieres eliminar la agencia?" />
 

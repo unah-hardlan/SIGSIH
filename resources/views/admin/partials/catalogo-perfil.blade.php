@@ -1,1 +1,0 @@
-<div class="p-4 text-sm text-gray-600">Esta vista fue eliminada. El catálogo de Perfiles ya no está disponible.</div>

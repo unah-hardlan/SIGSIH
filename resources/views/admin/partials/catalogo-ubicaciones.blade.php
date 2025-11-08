@@ -15,7 +15,6 @@
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
-    // Filtro global para las cuatro tablas
     filtroUbicaciones: '',
     normalize(str) { return (str || '').toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''); },
     caCatalog: ['Belice','Costa Rica','El Salvador','Guatemala','Honduras','Nicaragua','Panamá'],
@@ -109,7 +108,6 @@
         return dep || null;
     },
     getDepartamentoNombreByDireccion(dir) {
-        // Usa el objeto anidado si viene del API, si no, resuelve por listas cargadas
         const depObj = (dir?.ciudad && dir.ciudad.departamento) || this.getDepartamentoByCiudadId(dir?.id_ciudad_fk);
         return depObj?.nombre_departamento || '';
     },
@@ -120,10 +118,8 @@
             const p = (this.paises || []).find(pp => String(pp.id_pais_pk) === String(paisId));
             return p ? p.nombre_pais : '';
         }
-        // Fallback si el backend incluye pais anidado
         return dir?.ciudad?.departamento?.pais?.nombre_pais || '';
     },
-    // Colecciones filtradas por el término global
     get filteredPaises() {
         const term = String(this.filtroUbicaciones || '').toLowerCase().trim();
         if (!term) return this.paises || [];
@@ -144,7 +140,6 @@
         return (this.ciudades || []).filter(c => {
             const nombre = String(c?.nombre_ciudad || '').toLowerCase();
             const depNombre = String(c?.departamento?.nombre_departamento || this.getDepartamentoNombreById(c?.id_departamento_fk) || '').toLowerCase();
-            // Obtener nombre de país vía departamento
             let paisNombre = '';
             const dep = c?.departamento || this.getDepartamentoByCiudadId(c?.id_ciudad_pk);
             if (dep?.id_pais_pk) {
@@ -177,12 +172,10 @@
             const depNombre = this.getDepartamentoNombreById(this.departamento_ciudad);
             const list = (window.subdivisionHelper && window.subdivisionHelper.getCitiesByPaisDep(paisNombre, depNombre)) || [];
             this.suggestedCiudades = list.map(n => ({ nombre: n }));
-            // Reset city name if not among suggestions
             if (this.suggestedCiudades.length > 0) {
                 const exists = this.suggestedCiudades.some(o => o.nombre === this.nombre_ciudad);
                 if (!exists) this.nombre_ciudad = '';
             }
-            // Ensure departamento belongs to selected country
             if (this.pais_ciudad) {
                 const ok = this.departamentosFiltradosCiudad.some(d => String(d.id_departamento_pk) === String(this.departamento_ciudad));
                 if (!ok) this.departamento_ciudad = '';
@@ -201,7 +194,6 @@
                 const exists = this.editSuggestedCiudades.some(o => o.nombre === this.itemToEdit.nombre);
                 if (!exists) this.itemToEdit.nombre = '';
             }
-            // Ensure departamento belongs to selected country
             if (this.edit_pais_ciudad && this.itemToEdit) {
                 const ok = this.departamentosFiltradosCiudadEdit.some(d => String(d.id_departamento_pk) === String(this.itemToEdit.departamento));
                 if (!ok) this.itemToEdit.departamento = '';
@@ -314,7 +306,6 @@
     </div>
 
     <div class="flex flex-col gap-8">
-        <!-- Card Direcciones -->
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
             <div class="bg-gradient-to-r from-orange-700 to-orange-900 px-6 py-4">
                 <div class="flex items-center justify-between">
@@ -472,7 +463,6 @@
         </div>
 
         <div class="flex flex-col gap-8">
-            <!-- Países y Departamentos lado a lado -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
                     <div class="bg-gradient-to-r from-blue-600 to-blue-900 px-6 py-4">
@@ -580,7 +570,6 @@
                     </div>
                 </div>
 
-                <!-- Card Departamentos -->
                 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
                     <div class="bg-gradient-to-r from-green-700 to-green-900 px-6 py-4">
                         <div class="flex items-center justify-between">
@@ -711,7 +700,6 @@
                 </div>
             </div>
 
-            <!-- Card Ciudades -->
             <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
                 <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
                     <div class="flex items-center justify-between">
@@ -843,7 +831,6 @@
         </div>
     </div>
 
-    <!-- Modal Nuevo País -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isPaisModalOpen"
@@ -875,7 +862,6 @@
     </x-admin.form-modal>
     @endperm
 
-    <!-- Modal Nuevo Departamento -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isDepartamentoModalOpen"
@@ -896,7 +882,6 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
-                <!-- If we have suggestions for the selected country, show a select; otherwise show a text input -->
                 <template x-if="suggestedDepartamentos.length > 0">
                     <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" @change="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.nombre = true" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && nombre_departamento === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un departamento</option>
@@ -916,7 +901,6 @@
     </x-admin.form-modal>
     @endperm
 
-    <!-- Modal Nueva Ciudad -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isCiudadModalOpen"
@@ -966,7 +950,6 @@
     </x-admin.form-modal>
     @endperm
 
-    <!-- Modal Nueva Dirección -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isDireccionModalOpen"
@@ -1015,12 +998,10 @@
     </x-admin.form-modal>
     @endperm
 
-    <!-- Modales Países (Specific) - Remove edit modal, keep only delete -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
     @endperm
 
-    <!-- Modales Departamentos (Specific) -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
     <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditDepartamento">
         <template x-if="itemToEdit">
@@ -1049,8 +1030,6 @@
                     </select>
                     <script>
                         document.addEventListener('alpine:init', () => {
-                            // when the modal opens, try to refresh suggestions
-                            // This is a no-op if component isn't ready
                         });
                     </script>
                 </div>
@@ -1063,7 +1042,6 @@
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDepartamentoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este departamento?" />
     @endperm
 
-    <!-- Modales Ciudades (Specific) -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
     <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditCiudad">
         <template x-if="itemToEdit">
@@ -1109,7 +1087,6 @@
     <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
     @endperm
 
-    <!-- Modales Direcciones (Specific) -->
     @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
     <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="formEditDireccion">
         <template x-if="itemToEdit">

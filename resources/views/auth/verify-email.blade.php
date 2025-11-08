@@ -10,7 +10,6 @@
 <body class="min-h-screen bg-gray-50 text-gray-800">
     @if(($status ?? '') === 'verified' || ($status ?? '') === 'already_verified')
     <script>
-        // Señal para otras pestañas: el correo fue verificado
         try { localStorage.setItem('email_verified', String(Date.now())); } catch(_) {}
     </script>
     @endif

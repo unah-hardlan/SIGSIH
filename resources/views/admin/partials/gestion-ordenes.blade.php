@@ -8,14 +8,11 @@
             performDeleteOrden();
         }
     ">
-    <!-- Título de la página, ahora fuera del componente de tabla -->
     <h2 class="text-2xl text-gray-800 dark:text-gray-200 nunito-bold mb-4">Lista de Órdenes de Servicio</h2>
 
-    <!-- Componente responsive que manejará la tabla y las tarjetas -->
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             <div class="flex flex-wrap items-center gap-3">
-                {{-- Reutilizamos el partial de filtros generales para mantener consistencia con gestión de usuarios --}}
                 @include('partials.filtros-generales', [
                 'searchModel' => 'searchOrden',
                 'filtrosSelect' => [],
@@ -27,7 +24,6 @@
                 ]
                 ])
 
-                {{-- Select dinámico para filtrar por técnico (las opciones provienen de Alpine: tecnicosDisponibles) --}}
                 <select x-model="tecnicoOrden"
                     class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-auto dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                     <option value="">Todos los técnicos</option>
@@ -76,14 +72,12 @@
                     <tbody>
                         <template x-if="loadingOrdenes">
                             <tr>
-                                {{-- CAMBIO: Se actualiza el colspan de 14 a 9 --}}
                                 <td colspan="9" class="py-2 text-center text-gray-600 dark:text-gray-300"><i
                                         class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                             </tr>
                         </template>
                         <template x-if="!loadingOrdenes && paginatedOrdenes().length === 0">
                             <tr>
-                                {{-- CAMBIO: Se actualiza el colspan de 14 a 9 --}}
                                 <td colspan="9" class="py-2 text-center text-gray-600 dark:text-gray-300">No se
                                     encontraron órdenes.</td>
                             </tr>
@@ -146,7 +140,6 @@
         </x-slot>
 
         <x-slot name="cards">
-            {{-- La vista de tarjetas no necesita muchos cambios ya que no mostraba toda la información --}}
             <div class="space-y-4 px-2 sm:px-0">
                 <template x-if="loadingOrdenes">
                     <div class="p-8 text-center text-gray-500 dark:text-gray-400"><i
@@ -215,11 +208,8 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- Paginación -->
     <x-pagination />
 
-    <!-- Modal Nueva Orden -->
-    {{-- ... (El contenido de este modal no necesita cambios) ... --}}
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Orden" submitLabel="Guardar Orden"
         formId="orden-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl" minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
@@ -404,7 +394,6 @@
                 <small class="block mt-1 text-sm text-gray-500"
                     :class="formOrdenAdd._touched && formOrdenAdd._touched.id_cotizacion_fk && !formOrden.id_cotizacion_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
-            <!-- removed duplicate edit selector from New modal; keep single calificacion below -->
             <div>
                 <label for="calificacion_servicio"
                     class="block text-sm font-medium text-gray-700 nunito-bold">Calificación del Servicio</label>
@@ -421,7 +410,6 @@
                     <p class="text-xs text-red-600 mt-1" x-text="errors.calificacion_servicio[0]"></p>
                 </template>
             </div>
-            <!-- Repuestos (inline en modal Nueva) -->
             <div class="col-span-2 border-t pt-4">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Repuestos</label>
                 <div class="flex gap-2 items-end mt-2">
@@ -471,8 +459,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Orden -->
-    {{-- ... (El contenido de este modal no necesita cambios) ... --}}
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Orden" itemToEdit="ordenToEdit"
         formId="orden-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -677,7 +663,6 @@
                     <p class="text-xs text-red-600 mt-1" x-text="errors.calificacion_servicio[0]"></p>
                 </template>
             </div>
-            <!-- Repuestos (inline en modal Editar) -->
             <div class="col-span-2 border-t pt-4">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Repuestos</label>
                 <div class="flex gap-2 items-end mt-2">
@@ -727,20 +712,16 @@
         </div>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Orden -->
     <x-admin.confirmation-modal modal-name="isDeleteModalOpen" title="Eliminar Orden de Servicio"
         item-to-delete="ordenToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar la orden ID" />
 
 
-    <!-- INICIO: Nuevo Modal para "Ver Más" -->
-    <!-- INICIO: Modal "Ver Más" con Transición y Estado Final Correctos -->
     <div x-show="isVerMasModalOpen"
         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
         style="display: none;"
         x-cloak>
 
-        <!-- Fondo oscuro y desenfocado -->
         <div x-show="isVerMasModalOpen"
             x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0 backdrop-blur-none"
@@ -754,7 +735,6 @@
             @click="isVerMasModalOpen = false; ordenSeleccionada = null">
         </div>
 
-        <!-- Contenido del Modal -->
         <div x-show="isVerMasModalOpen"
             x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
@@ -811,5 +791,4 @@
             </div>
         </div>
     </div>
-    <!-- FIN: Modal "Ver Más" -->
 </div>

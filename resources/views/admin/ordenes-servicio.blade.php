@@ -212,7 +212,6 @@
         </table>
 
         <div style="display: flex; justify-content: space-between; gap: 25px; margin-top: 15px; margin-bottom: 15px;">
-            <!-- Firma Cliente -->
             <table class="firma-table" style="width: 48%;">
                 <tr>
                     <th>CLIENTE:</th>
@@ -252,7 +251,6 @@
 
     </div>
 
-    <!-- Botón Generar PDF (solo Tailwind, no sale al imprimir) -->
     <div class="no-print my-10 flex justify-center">
         <button onclick="window.print()"
             class="bg-blue-900 text-white px-8 py-3 rounded-xl shadow-lg hover:bg-blue-700 text-lg font-bold transition">

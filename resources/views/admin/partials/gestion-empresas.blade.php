@@ -11,13 +11,10 @@
     }
     ">
 
-
-    <!-- Title -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Gestión de Empresas</h1>
     </div>
 
-    <!-- Responsive Table -->
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
         <x-slot name="filters">
             @include('partials.filtros-generales', [
@@ -164,7 +161,6 @@
 
     <x-pagination />
 
-    <!-- Modal Empresas Cliente -->
     <x-admin.form-modal modalName="isEmpresaModalOpen" title="Empresa" submitLabel="Guardar Empresa"
         formId="empresa-form" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -228,7 +224,6 @@
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium nunito-bold">Horario de atención</label>
                 <div class="mt-2 space-y-2">
-                    <!-- Días -->
                     <div class="flex flex-wrap gap-2 items-center">
                         <template x-for="d in diasLabels()" :key="d.k">
                             <label
@@ -245,7 +240,6 @@
                         <button type="button" class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-md"
                             @click="setDias('ninguno')">Ninguno</button>
                     </div>
-                    <!-- Horas -->
                     <div class="flex items-center gap-2">
                         <label class="text-xs text-gray-600 dark:text-gray-300">Hora:</label>
                         <input type="time" x-model="horarioUI.desde"
@@ -256,7 +250,6 @@
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Horario: <span class="italic"
                             x-text="formEmpresa.horario_atencion || '—'"></span></p>
-                    <!-- Hidden bind to send -->
                     <input type="hidden" x-model="formEmpresa.horario_atencion">
                     <template x-if="errors.horario_atencion">
                         <p class="text-xs text-red-600" x-text="errors.horario_atencion[0]"></p>
@@ -295,7 +288,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal de confirmación para eliminar empresa cliente -->
     <x-admin.confirmation-modal modal-name="isDeleteEmpresaModalOpen" title="Eliminar Empresa Cliente"
         item-to-delete="empresaToDelete" item-name-property="nombre_comercial"
         message="¿Estás seguro de que deseas eliminar la empresa cliente" />

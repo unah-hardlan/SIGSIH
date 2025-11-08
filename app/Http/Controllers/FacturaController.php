@@ -113,14 +113,7 @@ class FacturaController extends Controller
                     throw new \Exception('El CAI seleccionado ya no tiene números disponibles en su rango.');
                 }
 
-                
-                
-                
-                
-                
                 $payload = $validated;
-                
-                
                 
                 $payload['numero'] = 'TMP-'.now()->format('His').'-'.rand(1000, 9999); 
                 $payload['id_cai_fk'] = $cai->id_cai_pk;
@@ -233,14 +226,249 @@ class FacturaController extends Controller
             'cai',
             'cliente.persona',
             'cliente.empresa',
-            'cliente.agencias.direccion',
+            'cliente.agencias.direccion.ciudad.departamento',
             'cliente.contactos',
             'cotizacion'
         ])->findOrFail($id);
 
         $detalles = DetalleFactura::where('id_factura_fk', $id)->get();
 
-        return view('admin.formato-factura', compact('factura', 'detalles'));
+        $datosCliente = $this->procesarDatosCliente($factura->cliente);
+
+        $totales = $this->calcularTotales($factura, $detalles);
+
+        $datosContacto = $this->procesarDatosContacto($factura->cliente);
+
+        $fechaLimite = $this->calcularFechaLimite($factura);
+
+        return view('admin.formato-factura', compact(
+            'factura', 
+            'detalles', 
+            'datosCliente', 
+            'totales', 
+            'datosContacto', 
+            'fechaLimite'
+        ));
+    }
+
+    private function procesarDatosCliente($cliente)
+    {
+        $cliente_nombre = 'Sin cliente';
+        $cliente_direccion = '';
+        $cliente_telefono = '';
+        $cliente_correo = '';
+        $cliente_contacto = '';
+
+        if ($cliente) {
+            if (($cliente->tipo_cliente ?? null) === 'empresa' && $cliente->empresa) {
+                $cliente_nombre = $cliente->empresa->nombre_comercial ?? $cliente->empresa->razon_social ?? $cliente_nombre;
+                $cliente_direccion = $cliente->empresa->direccion ?? '';
+                $cliente_telefono = $cliente->empresa->telefono ?? '';
+                $cliente_correo = $cliente->empresa->correo_electronico ?? '';
+                $cliente_contacto = $cliente->empresa->contacto ?? '';
+            } else {
+                // persona
+                $persona = $cliente->persona;
+                if ($persona) {
+                    if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                        $persona = $persona->first();
+                    }
+                    $cliente_nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')) ?: $cliente_nombre;
+                    $cliente_direccion = $persona->direccion ?? '';
+                    $cliente_telefono = $persona->telefono ?? '';
+                    $cliente_correo = $persona->correo_electronico ?? '';
+                    $cliente_contacto = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')) ?: ($persona->primer_nombre ?? '');
+                }
+            }
+        }
+
+        return compact('cliente_nombre', 'cliente_direccion', 'cliente_telefono', 'cliente_correo', 'cliente_contacto');
+    }
+
+    private function calcularTotales($factura, $detalles)
+    {
+        $computedBaseSubtotal = 0.0;
+        $computedTotalImpuesto = 0.0;
+        
+        if (!empty($detalles) && is_iterable($detalles)) {
+            foreach ($detalles as $d) {
+                $qty = (float) ($d->cantidad ?? $d->horas ?? 1);
+                $precio = (float) ($d->precio_unitario ?? ($d->precio ?? 0));
+                $desc = (float) ($d->descuento ?? 0);
+                $impLinea = (float) ($d->impuesto ?? 0);
+
+                $baseLine = $precio * $qty - $desc;
+                $computedBaseSubtotal += $baseLine;
+
+                $computedTotalImpuesto += $impLinea;
+            }
+        }
+
+        $facturaSubtotal = (isset($factura->subtotal) && $factura->subtotal !== null && (float) $factura->subtotal > 0.0)
+            ? (float) $factura->subtotal
+            : $computedBaseSubtotal;
+
+   
+        if (isset($factura->total) && $factura->total !== null && (float) $factura->total > 0.0) {
+            $facturaTotal = (float) $factura->total;
+        } else {
+            $impuestoFromFactura = (isset($factura->impuesto) && $factura->impuesto !== null && (float) $factura->impuesto > 0.0)
+                ? (float) $factura->impuesto
+                : $computedTotalImpuesto;
+            $facturaTotal = $facturaSubtotal + $impuestoFromFactura;
+        }
+
+        
+        if (isset($factura->impuesto) && $factura->impuesto !== null && (float) $factura->impuesto > 0.0) {
+            $impuesto = (float) $factura->impuesto;
+        } elseif ($computedTotalImpuesto > 0) {
+            $impuesto = $computedTotalImpuesto;
+        } else {
+            $impuesto = round($facturaSubtotal * 0.15, 2);
+        }
+
+        $facturaTotal = round($facturaSubtotal + $impuesto, 2);
+
+        return compact('facturaSubtotal', 'impuesto', 'facturaTotal');
+    }
+
+    private function procesarDatosContacto($cliente)
+    {
+        $ag = optional($cliente->agencias->first());
+        $agDireccion = optional($ag->direccion);
+        
+        $telefono_fallback = '';
+        $correo_fallback = '';
+        
+        if ($cliente) {
+            if (($cliente->tipo_cliente ?? null) === 'empresa' && $cliente->empresa) {
+                $telefono_fallback = $cliente->empresa->telefono ?? '';
+                $correo_fallback = $cliente->empresa->correo_electronico ?? '';
+            } else {
+                $persona = $cliente->persona;
+                if ($persona) {
+                    if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                        $persona = $persona->first();
+                    }
+                    $telefono_fallback = $persona->telefono ?? '';
+                    $correo_fallback = $persona->correo_electronico ?? '';
+                }
+            }
+        }
+
+        if (empty($telefono_fallback) || empty($correo_fallback)) {
+            $contactos = $cliente->contactos ?? collect();
+            foreach ($contactos as $c) {
+                $tipo = strtolower(trim($c->tipo_contacto ?? ''));
+                $valor = $c->valor_contacto ?? '';
+                if (empty($telefono_fallback) && in_array($tipo, ['telefono','tel','phone','movil','mobile'])) {
+                    $telefono_fallback = $valor;
+                }
+                if (empty($correo_fallback) && in_array($tipo, ['email','correo','mail'])) {
+                    $correo_fallback = $valor;
+                }
+            }
+        }
+
+        $addr_cp = '';
+        $cliente_direccion = '';
+        
+        if ($cliente) {
+            if (($cliente->tipo_cliente ?? null) === 'empresa' && $cliente->empresa) {
+                $cliente_direccion = $cliente->empresa->direccion ?? '';
+            } else {
+                $persona = $cliente->persona;
+                if ($persona) {
+                    if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                        $persona = $persona->first();
+                    }
+                    $cliente_direccion = $persona->direccion ?? '';
+                }
+            }
+        }
+
+        if (!empty($cliente_direccion)) {
+            $addr_line1 = $cliente_direccion;
+            $addr_colonia = '';
+            $addr_city = '';
+            $addr_depto = '';
+        } elseif ($agDireccion) {
+            $addr_line1 = trim(($agDireccion->calle ?? '') . ' ' . ($agDireccion->numero ?? '')) ?: ($agDireccion->direccion_completa ?? '');
+            $addr_colonia = $agDireccion->colonia ?? '';
+            $addr_cp = $agDireccion->codigo_postal ?? '';
+            $addr_city = optional($agDireccion->ciudad)->nombre_ciudad ?? '';
+            $addr_depto = optional(optional($agDireccion->ciudad)->departamento)->nombre_departamento ?? '';
+        } else {
+            $addr_line1 = '';
+            $addr_colonia = '';
+            $addr_city = '';
+            $addr_depto = '';
+        }
+
+        $contactoNombre = '';
+        if ($cliente) {
+            if (($cliente->tipo_cliente ?? null) === 'empresa' && $cliente->empresa) {
+                $contactoNombre = $cliente->empresa->contacto ?? '';
+            } else {
+                $persona = $cliente->persona;
+                if ($persona) {
+                    if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
+                        $persona = $persona->first();
+                    }
+                    $contactoNombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')) ?: ($persona->primer_nombre ?? '');
+                }
+            }
+        }
+
+        if (empty($contactoNombre)) {
+            $contactos = $cliente->contactos ?? collect();
+            $preferKeys = ['nombre','contacto','representante','contacto_persona','contacto_nombre'];
+            foreach ($contactos as $c) {
+                $tipo = strtolower(trim($c->tipo_contacto ?? ''));
+                $valor = trim((string) ($c->valor_contacto ?? ''));
+                if (in_array($tipo, $preferKeys) && $valor !== '') {
+                    $contactoNombre = $valor;
+                    break;
+                }
+            }
+            if (empty($contactoNombre)) {
+                foreach ($contactos as $c) {
+                    $valor = trim((string) ($c->valor_contacto ?? ''));
+                    if ($valor !== '' && preg_match('/[A-Za-zÁÉÍÓÚáéíóúÑñ]/', $valor)) {
+                        $contactoNombre = $valor;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return compact(
+            'telefono_fallback', 
+            'correo_fallback', 
+            'addr_line1', 
+            'addr_colonia', 
+            'addr_cp', 
+            'addr_city', 
+            'addr_depto', 
+            'contactoNombre'
+        );
+    }
+
+    private function calcularFechaLimite($factura)
+    {
+        
+        $fecha_limite = null;
+        if (!empty($factura->fecha_limite_emision)) {
+            $fecha_limite = $factura->fecha_limite_emision;
+        } elseif (!empty($factura->fecha_limite)) {
+            $fecha_limite = $factura->fecha_limite;
+        } elseif (!empty(optional($factura->cai)->fecha_limite_emision)) {
+            $fecha_limite = optional($factura->cai)->fecha_limite_emision;
+        } elseif (!empty(optional($factura->cai)->fecha_limite)) {
+            $fecha_limite = optional($factura->cai)->fecha_limite;
+        }
+        
+        return $fecha_limite;
     }
 
     

@@ -30,7 +30,6 @@
     consecutivo_actual: 0,
     fecha_limite: '',
     id_estado_cai_fk: '',
-// Campos para filtros
     searchCai: '',
     estadoCaiFiltro: '',
     ordenarPor: 'fecha_limite',
@@ -56,7 +55,6 @@
     goToPage(page) {
         this.currentPage = page;
     },
-    // Helpers para filtrar/ordenar en cliente
     normalizeStr(v){
         try{ return (v ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim(); }catch(_){ return (v ?? '').toString().toLowerCase().trim(); }
     },
@@ -64,11 +62,9 @@
     filteredCais(){
         try{
             let items = Array.isArray(this.cais) ? [...this.cais] : [];
-            // Filtro por estado (por nombre)
             if(this.estadoCaiFiltro){
                 items = items.filter(c => this.equalsNormalized(c?.estado_cai?.nombre || c?.estado_cai?.nombre_estado_cai || '', this.estadoCaiFiltro));
             }
-            // Búsqueda simple por código/rangos/fecha/estado
             const q = this.normalizeStr(this.searchCai);
             if(q){
                 items = items.filter(c => {
@@ -76,7 +72,6 @@
                     return fields.some(v => this.normalizeStr(v).includes(q));
                 });
             }
-            // Ordenamiento
             const key = this.ordenarPor || 'fecha_limite';
             const map = {
                 codigo: x => x?.codigo || '',
@@ -99,7 +94,6 @@
     },
     async fetchCai() {
         await window.caiApiHandlers.fetchCai(this);
-        // synchronize aliases for reusable pagination components
         this.categorias = this.cais;
         this.numbers = this.cais;
     },
@@ -325,7 +319,6 @@ $watch('ordenarPor', () => { currentPage = 1; });
 
     <x-pagination />
 
-    {{-- Modales --}}
     <x-admin.form-modal class="nunito-bold" modalName="isCaiModalOpen" title="Nuevo CAI" submitLabel="Guardar CAI"
         maxWidth="max-w-md" formId="formCai">
         <div class="grid grid-cols-1 gap-4">

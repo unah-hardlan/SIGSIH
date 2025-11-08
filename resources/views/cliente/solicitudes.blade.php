@@ -14,9 +14,7 @@
         cotización de su solicitud.
     </div>
 
-    <!-- Tarjetas resumen -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
-        <!-- En espera -->
         <div class="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
@@ -29,7 +27,6 @@
             </div>
         </div>
 
-        <!-- Asignadas -->
         <div class="bg-gradient-to-r from-indigo-600 to-indigo-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
@@ -42,7 +39,6 @@
             </div>
         </div>
 
-        <!-- En proceso -->
         <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
@@ -55,7 +51,6 @@
             </div>
         </div>
 
-        <!-- Rechazadas -->
         <div class="bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
@@ -68,7 +63,6 @@
             </div>
         </div>
 
-        <!-- Finalizadas -->
         <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
@@ -88,7 +82,6 @@
         Nueva Solicitud
     </button>
 
-    <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
         <div class="flex flex-col lg:flex-row gap-4">
             <div class="flex-1">
@@ -108,7 +101,6 @@
         </div>
     </div>
 
-    <!-- Lista de solicitudes -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
@@ -168,7 +160,6 @@
     </div>
 
     <template x-teleport="body">
-        <!-- Modal Nueva Solicitud -->
         <div x-show="modalNueva" x-cloak x-transition.opacity.duration.300ms
             class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/50 backdrop-blur-sm"
             @click.self="modalNueva = false" @keydown.window.escape="modalNueva = false" style="margin: 0;">
@@ -225,7 +216,6 @@
             </div>
         </div>
 
-        <!-- Modal Detalle Solicitud -->
         <div x-show="modalDetalle" x-cloak x-transition.opacity.duration.300ms
             class="fixed inset-0 flex items-center justify-center z-[9999] bg-black/70 dark:bg-black/80"
             @click.self="modalDetalle = false" @keydown.window.escape="modalDetalle = false" style="margin: 0;">
@@ -341,24 +331,23 @@ if (typeof window.solicitudesCliente === 'undefined') {
                         norm(solicitud.nombre_solicitud)
                     ].some(v => v.includes(sTerm));
                     
-                    // Filtro por estado adaptado a los nuevos valores
                     let matchEstado = true;
                     if (this.filtros.estado) {
                         const estadoSolicitud = norm(solicitud.estado);
                         switch(this.filtros.estado) {
-                            case 'Pendiente': // En espera
+                            case 'Pendiente': 
                                 matchEstado = ['pendiente', 'en espera', 'espera'].some(e => estadoSolicitud.includes(e));
                                 break;
-                            case 'En Proceso': // Asignada
+                            case 'En Proceso': 
                                 matchEstado = ['asignada', 'asignado', 'asignadas', 'asignados'].some(e => estadoSolicitud.includes(e));
                                 break;
-                            case 'Resuelta': // En proceso
+                            case 'Resuelta': 
                                 matchEstado = ['en proceso', 'proceso'].some(e => estadoSolicitud.includes(e));
                                 break;
-                            case 'Rechazada': // Rechazadas
+                            case 'Rechazada': 
                                 matchEstado = ['rechazada', 'rechazado', 'rechazadas', 'rechazados'].some(e => estadoSolicitud.includes(e));
                                 break;
-                            case 'Cerrada': // Finalizadas
+                            case 'Cerrada':
                                 matchEstado = ['finalizada', 'finalizado', 'finalizadas', 'finalizados', 'resuelta', 'resuelto', 'resueltas', 'resueltos', 'cerrada', 'cerrado', 'cerradas', 'cerrados'].some(e => estadoSolicitud.includes(e));
                                 break;
                             default:

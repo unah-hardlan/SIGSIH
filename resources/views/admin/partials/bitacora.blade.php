@@ -1,5 +1,3 @@
-{{-- resources/views/admin/partials/bitacora.blade.php --}}
-
 <div x-data="bitacoraList" x-init="init()" class="w-full mx-auto py-8 px-4">
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4" title="Bitácora">
         <x-slot name="filters">
@@ -135,7 +133,6 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- Paginación -->
     <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
         x-show="pagination.total>0">
         <div class="text-sm nunito-regular text-gray-700 dark:text-gray-300">
@@ -158,7 +155,6 @@
         </div>
     </div>
 
-    <!-- Error -->
     <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
         x-show="error">
         <div class="flex items-center gap-2 text-red-600 dark:text-red-400">

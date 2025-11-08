@@ -7,17 +7,14 @@
     serviciosRealizados: [],
     loadingServiciosRealizados: false,
     
-    // 1️⃣ Variables de Paginación
     numbersServiciosRealizados: [],
     currentPageServiciosRealizados: 1,
     perPageServiciosRealizados: 10,
 
     nombre_servicio: '',
     descripcion_servicio: '',
-    // Filtros y ordenamiento
     filtroServicioRealizado: '',
     ordenarPor: 'nombre_servicio',
-    // Colección filtrada y ordenada (asc)
     get filteredServiciosRealizados() {
         const term = String(this.filtroServicioRealizado || '').toLowerCase().trim();
         const sortKey = this.ordenarPor || 'nombre_servicio';
@@ -47,7 +44,6 @@
         return items;
     },
 
-    // 2️⃣ Métodos de Paginación (operan sobre la lista filtrada)
     paginatedServiciosRealizados() {
         return this.filteredServiciosRealizados.slice(
             (this.currentPageServiciosRealizados - 1) * this.perPageServiciosRealizados,
@@ -71,19 +67,19 @@
     // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchServiciosRealizados() {
         await window.serviciosRealizadosApiHandlers.fetchServiciosRealizados(this);
-        this.numbersServiciosRealizados = this.serviciosRealizados; // ← LÍNEA AGREGADA
+        this.numbersServiciosRealizados = this.serviciosRealizados; 
     },
     async submitServicioRealizado() {
         await window.serviciosRealizadosApiHandlers.submitServicioRealizado(this);
-        this.fetchServiciosRealizados(); // Refrescar datos
+        this.fetchServiciosRealizados(); 
     },
     async updateServicioRealizado() {
         await window.serviciosRealizadosApiHandlers.updateServicioRealizado(this);
-        this.fetchServiciosRealizados(); // Refrescar datos
+        this.fetchServiciosRealizados(); 
     },
     async deleteServicioRealizado() {
-        await window.serviciosRealizadosApiHandlers.deleteServicioRealizado(this);
-        this.fetchServiciosRealizados(); // Refrescar datos
+        await window.serviciosRealizadosAervicioRealizado(this);
+        this.fetchServiciosRealizados(); 
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formServicioRealizado') this.submitServicioRealizado();
@@ -97,7 +93,6 @@
 }"
     x-init="fetchServiciosRealizados()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroServicioRealizado', () => currentPageServiciosRealizados = 1);
     $watch('ordenarPor', () => currentPageServiciosRealizados = 1);
 "
@@ -167,7 +162,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingServiciosRealizados && filteredServiciosRealizados.length > 0">
-                        <!-- 5️⃣ Usar paginatedServiciosRealizados() en el template -->
                         <template x-for="(servicioRealizado, index) in paginatedServiciosRealizados()"
                             :key="servicioRealizado.id_servicio_realizado_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
@@ -256,9 +250,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="filteredServiciosRealizados.length > perPageServiciosRealizados" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -271,7 +263,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageServiciosRealizados()" :disabled="currentPageServiciosRealizados === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -301,9 +292,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Servicio Realizado -->
         @perm(['Catálogo','Servicios Realizados','Servicio Realizado'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isServicioRealizadoModalOpen"
             title="Nuevo Servicio Realizado" submitLabel="Guardar Servicio Realizado" formId="formServicioRealizado"
@@ -333,7 +322,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Servicio Realizado -->
         @perm(['Catálogo','Servicios Realizados','Servicio Realizado'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isServicioRealizadoEditModalOpen"
             title="Editar Servicio Realizado" itemToEdit="itemToEdit" maxWidth="max-w-2xl"
@@ -365,7 +353,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Servicios Realizados','Servicio Realizado'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isServicioRealizadoDeleteModalOpen"
             itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este servicio realizado?" />

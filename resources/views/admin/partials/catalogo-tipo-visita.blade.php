@@ -7,7 +7,6 @@
     tipoVisitas: [],
     loadingTipoVisitas: false,
 
-    // 1️⃣ Variables de Paginación
     numbersTipoVisitas: [],
     currentPageTipoVisitas: 1,
     perPageTipoVisitas: 10,
@@ -21,7 +20,6 @@
     filtroTipoVisita: '',
     ordenarPor: 'nombre',
 
-    // 2️⃣ Métodos de Paginación
     paginatedTipoVisitas() {
         return this.tipoVisitas.slice(
             (this.currentPageTipoVisitas - 1) * this.perPageTipoVisitas, 
@@ -42,22 +40,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchTipoVisitas() {
         await window.tipoVisitasApiHandlers.fetchTipoVisitas(this);
-        this.numbersTipoVisitas = this.tipoVisitas; // ← LÍNEA AGREGADA
+        this.numbersTipoVisitas = this.tipoVisitas;
     },
     async submitTipoVisita() {
         await window.tipoVisitasApiHandlers.submitTipoVisita(this);
-        this.fetchTipoVisitas(); // Refrescar datos
+        this.fetchTipoVisitas();
     },
     async updateTipoVisita() {
         await window.tipoVisitasApiHandlers.updateTipoVisita(this);
-        this.fetchTipoVisitas(); // Refrescar datos
+        this.fetchTipoVisitas(); 
     },
     async deleteTipoVisita() {
         await window.tipoVisitasApiHandlers.deleteTipoVisita(this);
-        this.fetchTipoVisitas(); // Refrescar datos
+        this.fetchTipoVisitas(); 
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formTipoVisita') this.submitTipoVisita();
@@ -71,7 +68,6 @@
 }"
     x-init="fetchTipoVisitas()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroTipoVisita', () => { fetchTipoVisitas(); currentPageTipoVisitas = 1; });
     $watch('ordenarPor', () => { fetchTipoVisitas(); currentPageTipoVisitas = 1; });
 "
@@ -138,7 +134,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingTipoVisitas && tipoVisitas.length > 0">
-                        <!-- 5️⃣ Usar paginatedTipoVisitas() en el template -->
                         <template x-for="(tipoVisita, index) in paginatedTipoVisitas()" :key="tipoVisita.id_tipo_visita_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedTipoVisitas().length - 1 }">
@@ -208,9 +203,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="tipoVisitas.length > perPageTipoVisitas" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -223,7 +216,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageTipoVisitas()" :disabled="currentPageTipoVisitas === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -254,9 +246,7 @@
     </div>
 
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Tipo de Visita -->
         @perm(['Catálogo','Tipos de Visita','Tipo de Visita'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isTipoVisitaModalOpen" title="Nuevo Tipo de Visita"
             submitLabel="Guardar Tipo de Visita" formId="formTipoVisita" maxWidth="max-w-2xl">
@@ -284,7 +274,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Tipo de Visita -->
         @perm(['Catálogo','Tipos de Visita','Tipo de Visita'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isTipoVisitaEditModalOpen" title="Editar Tipo de Visita" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditTipoVisita">
             <template x-if="itemToEdit">
@@ -313,7 +302,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Tipos de Visita','Tipo de Visita'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isTipoVisitaDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar este tipo de visita?" />
