@@ -1,8 +1,6 @@
 import "./bootstrap";
 import "./notifications";
 
-// Silenciar salida a consola en producción/por defecto
-// Habilitar únicamente si window.__ALLOW_CONSOLE__ === true (útil para depuración local)
 try {
     if (!window.__ALLOW_CONSOLE__) {
         const noop = () => {};
@@ -19,13 +17,12 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
 
     (function installFetchLimiter() {
         const origFetch = window.fetch.bind(window);
-        const maxConcurrent = 6; // allow a handful in flight
+        const maxConcurrent = 6;
         let inFlight = 0;
         const queue = [];
 
         let tokenPromise = null;
 
-        // We no longer store or use a JS-accessible token; rely on HttpOnly cookie only
         function getToken() {
             return null;
         }
@@ -34,7 +31,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 if (window.axios && window.axios.defaults?.headers?.common) {
                     delete window.axios.defaults.headers.common[
                         "Authorization"
-                    ]; // ensure cleared
+                    ];
                 }
             } catch (_) {}
             try {
@@ -45,7 +42,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         }
 
         async function fetchSessionToken(force = false) {
-            // Do not attempt to mint or persist a token in the client; cookie drives auth
             if (!force) return null;
 
             if (!tokenPromise) {
@@ -64,7 +60,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                             return null;
                         }
                         if (!res.ok) return null;
-                        // Ignore body; we don't keep token client-side
+
                         await res.json().catch(() => null);
                         return null;
                     } catch (_) {
@@ -85,7 +81,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 setToken,
                 ensureToken: (force = false) => fetchSessionToken(force),
                 headers() {
-                    // No Authorization header; rely on same-origin cookie
                     return { Accept: "application/json" };
                 },
             };
@@ -100,7 +95,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             merged.headers.set("X-Requested-With", "XMLHttpRequest");
             if (!merged.headers.has("Accept"))
                 merged.headers.set("Accept", "application/json");
-            // No Authorization header; rely on auth cookie
+
             return [input, merged];
         }
 
@@ -135,7 +130,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             }
         }
 
-        // 🔹 Se mantiene dentro del IIFE, con acceso a todas las variables
         window.fetch = function limitedFetch(...args) {
             try {
                 const url = (args && args[0] ? args[0].toString() : "") || "";
@@ -151,15 +145,13 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
 
                 return new Promise((resolve, reject) => {
                     const run = async () => {
-                        // No token handling; cookie will be sent automatically
                         let [input, init] = withAuthToApi(args[0], args[1]);
                         let res = await origFetch(input, init);
                         if (res.status === 401) {
-                            // Retry once in case of transient conditions
                             [input, init] = withAuthToApi(args[0], args[1]);
                             res = await origFetch(input, init);
                         }
-                        // Si sigue 401, intentar detectar límite de sesiones para cerrar con mensaje claro
+
                         if (res.status === 401) {
                             try {
                                 const clone = res.clone();
@@ -593,7 +585,6 @@ document.addEventListener("alpine:init", () => {
                 }
             } catch (_) {}
 
-            // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
                 if (
                     window.Livewire &&
@@ -654,7 +645,6 @@ document.addEventListener("alpine:init", () => {
         },
 
         updateState(url, viewName) {
-            // Actualizar la URL sin recargar la página
             window.history.pushState({ viewName }, "", url);
             this.currentView = viewName;
             try {
@@ -763,7 +753,6 @@ document.addEventListener("alpine:init", () => {
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-        // Verificar si la página es una SPA page
         const isSpaPage = document.querySelector('meta[name="spa-page"]');
         const spaView = document.querySelector('meta[name="spa-view"]');
 
@@ -786,17 +775,17 @@ if (typeof window !== "undefined" && window.Chart) {
 
 function initializeDashboardCharts() {
     const waitForCanvasReady = (el, cb, attempt = 0) => {
-        const max = 20; // ~3s total (20 * 150ms)
+        const max = 20;
         const delay = 150;
         if (!el) return;
         const rect = el.getBoundingClientRect();
         const ready =
             rect.width > 10 && rect.height > 10 && el.offsetParent !== null;
         if (ready) return cb();
-        if (attempt >= max) return cb(); // last resort: try anyway
+        if (attempt >= max) return cb();
         setTimeout(() => waitForCanvasReady(el, cb, attempt + 1), delay);
     };
-    // Helper reutilizable para fetch con parse seguro
+
     const tryFetch = async (url, headers) => {
         const r = await fetch(url, { headers });
         if (!r.ok) return { ok: false };
@@ -808,7 +797,6 @@ function initializeDashboardCharts() {
     };
     const ordenesEl = document.getElementById("ordenesChart");
     if (ordenesEl) {
-        // Destruir instancia existente si existe
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
@@ -1113,8 +1101,6 @@ function authHeaders() {
     };
 })();
 
-// Global Alpine factory for System Settings (Mantenimiento → General)
-// Registered here so it's available even when the view HTML is injected dynamically (inline <script> won't run on innerHTML)
 if (typeof window !== "undefined") {
     window.settingsState = function () {
         const initial = {
@@ -1342,7 +1328,6 @@ if (typeof window !== "undefined") {
     };
 }
 
-// Alpine component factory for Gestión de Órdenes (available globally for Livewire/SPA)
 if (typeof window !== "undefined") {
     window.gestionOrdenes = function (detalleBaseUrl) {
         return {
@@ -1363,8 +1348,7 @@ if (typeof window !== "undefined") {
 
             cotizacionesOptions: [],
 
-            // Pagination properties
-            numbers: [], // alias expected by pagination component
+            numbers: [],
             currentPage: 1,
             perPage: 10,
             estadosOrdenOptions: [],
@@ -1394,18 +1378,16 @@ if (typeof window !== "undefined") {
                 diagnostico_cliente: "",
                 id_cotizacion_fk: "",
                 calificacion_servicio: "",
-                // Repuestos inline in create/edit modal
+
                 repuestos: [],
             },
-            // Frontend touched trackers (match tickets pattern)
+
             formOrdenAdd: { _touched: {} },
             formOrdenEdit: { _touched: {} },
             getToken() {
-                // Cookie-based auth only; no JS-accessible token
                 return null;
             },
             setToken(token) {
-                // No-op in cookie-only mode
                 return null;
             },
             getCsrf() {
@@ -1415,14 +1397,12 @@ if (typeof window !== "undefined") {
                 return m ? m.content : "";
             },
             apiHeaders() {
-                // Do not add Authorization; rely on HttpOnly cookie
                 return {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 };
             },
             async requireAuth() {
-                // With cookie auth, assume authenticated; 401 will be handled per-request
                 this.authError = false;
                 return true;
             },
@@ -1465,11 +1445,10 @@ if (typeof window !== "undefined") {
                 };
                 this.errors = {};
             },
-            // Small client-side helpers used by the blades (validateTexto / validateNumero)
-            // They sanitize input and populate `validationErrors` for inline feedback.
+
             validateTexto(value, fieldName, maxLength) {
                 const v = value == null ? "" : String(value);
-                // Ensure validationErrors object exists
+
                 this.validationErrors = this.validationErrors || {};
                 if (maxLength && v.length > maxLength) {
                     this.validationErrors[fieldName] = [
@@ -1477,14 +1456,13 @@ if (typeof window !== "undefined") {
                     ];
                     return v.slice(0, maxLength);
                 }
-                // clear any previous validation error for this field
+
                 if (this.validationErrors && this.validationErrors[fieldName]) {
                     delete this.validationErrors[fieldName];
                 }
                 return v;
             },
             validateNumero(value, fieldName, maxDigits) {
-                // allow empty
                 if (value === null || value === undefined || value === "") {
                     if (
                         this.validationErrors &&
@@ -1507,10 +1485,10 @@ if (typeof window !== "undefined") {
                 ) {
                     delete this.validationErrors[fieldName];
                 }
-                // return number when possible, keep empty string otherwise
+
                 return limited === "" ? "" : Number(limited);
             },
-            // Repuestos management state
+
             isRepuestosModalOpen: false,
             repuestosModalOrder: null,
             productsOptions: [],
@@ -1555,7 +1533,7 @@ if (typeof window !== "undefined") {
                 this.repuestosList = [];
                 this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
                 await this.fetchProducts();
-                // Try to load detalles existentes for this order
+
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
@@ -1622,14 +1600,14 @@ if (typeof window !== "undefined") {
                         cantidad: item.cantidad,
                     });
                     this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
-                    // Refresh orders to update summary column
+
                     this.fetchOrdenes();
                 } catch (e) {
                     console.error(e);
                     this.showToast("No se pudo agregar el repuesto", "error");
                 }
             },
-            // Add repuesto to the current order form (used inside create/edit modal)
+
             addRepuestoToForm() {
                 try {
                     if (!this.repuestosForm.id_producto_fk) {
@@ -1702,40 +1680,38 @@ if (typeof window !== "undefined") {
                 return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
             },
             normalizeDateTime(value) {
-                // Convert input from datetime-local (YYYY-MM-DDTHH:MM) to 'YYYY-MM-DD HH:MM:SS'
                 if (!value) return null;
                 const v = String(value).trim();
                 if (!v) return null;
-                // If already a space-separated datetime, try to normalize seconds
+
                 if (v.includes(" ") && v.split(" ").length >= 2) {
                     const [d, t] = v.split(" ");
                     if (!t.includes(":")) return d + " 00:00:00";
-                    // ensure seconds
+
                     const parts = t.split(":");
                     if (parts.length === 2)
                         return `${d} ${parts[0]}:${parts[1]}:00`;
                     return `${d} ${t}`;
                 }
-                // Handle ISO-like with T
+
                 if (v.includes("T")) {
                     const [d, time] = v.split("T");
                     if (!time) return `${d} 00:00:00`;
                     const parts = time.split(":");
                     if (parts.length === 2)
                         return `${d} ${parts[0]}:${parts[1]}:00`;
-                    // if time already has seconds
+
                     return `${d} ${time}`;
                 }
-                // If only date
+
                 if (v.match(/^\d{4}-\d{2}-\d{2}$/)) return `${v} 00:00:00`;
                 return v;
             },
             toInputDatetime(value) {
-                // Convert various datetime representations to 'YYYY-MM-DDTHH:MM' for datetime-local inputs
                 if (!value) return "";
                 const v = String(value).trim();
                 if (!v) return "";
-                // If already in T format and has minutes
+
                 if (v.includes("T")) {
                     const [d, t] = v.split("T");
                     if (!t) return `${d}T00:00`;
@@ -1744,7 +1720,7 @@ if (typeof window !== "undefined") {
                         return `${d}T${parts[0]}:${parts[1]}`;
                     return `${d}T00:00`;
                 }
-                // If space separated datetime like 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DD HH:MM'
+
                 if (v.includes(" ")) {
                     const [d, t] = v.split(" ");
                     if (!t) return `${d}T00:00`;
@@ -1753,9 +1729,9 @@ if (typeof window !== "undefined") {
                         return `${d}T${parts[0]}:${parts[1]}`;
                     return `${d}T00:00`;
                 }
-                // If only date
+
                 if (v.match(/^\d{4}-\d{2}-\d{2}$/)) return `${v}T00:00`;
-                // Fallback - try parse
+
                 const date = new Date(v);
                 if (!isNaN(date.getTime())) {
                     const pad = (n) => String(n).padStart(2, "0");
@@ -1768,14 +1744,14 @@ if (typeof window !== "undefined") {
                 }
                 return "";
             },
-            // Formatea la etiqueta que se mostrará para una cotización en selects
+
             formatCotLabel(item) {
                 if (!item) return "";
-                // Preferir un código explícito si viene desde el backend
+
                 if (item.codigo_cotizacion)
                     return String(item.codigo_cotizacion);
                 if (item.codigo) return String(item.codigo);
-                // Extraer fecha si está disponible
+
                 const fechaRaw =
                     item.fecha_cotizacion ||
                     item.fecha ||
@@ -1828,8 +1804,7 @@ if (typeof window !== "undefined") {
                     orden.fecha_finalizacion_formatted ||
                     orden.fecha_finalizacion ||
                     this.formatDate(orden.fecha_finalizacion);
-                // calificacionValor already resolved from orden or raw payload above
-                // Estado: derive name even if relation missing, using FK + options
+
                 const estadoIdFromRel =
                     estado.id_estado_orden_servicio_pk ?? null;
                 const estadoIdFromTop =
@@ -1867,7 +1842,6 @@ if (typeof window !== "undefined") {
                     cliente_nombre:
                         empresa.nombre_comercial ||
                         empresa.razon_social ||
-                        // If no empresa name, try persona fields (first person)
                         [
                             persona.primer_nombre,
                             persona.segundo_nombre,
@@ -1986,7 +1960,6 @@ if (typeof window !== "undefined") {
                     try {
                         return la.localeCompare(lb, "es");
                     } catch (e) {
-                        // Fallback to simple comparison
                         if (la < lb) return -1;
                         if (la > lb) return 1;
                         return 0;
@@ -2034,8 +2007,7 @@ if (typeof window !== "undefined") {
                 if (!(await this.requireAuth())) {
                     return;
                 }
-                // No cargamos cotizaciones globalmente aquí porque las cotizaciones deben
-                // cargarse por cliente cuando se seleccione una solicitud válida.
+
                 await Promise.all([
                     this.fetchSolicitudes(),
                     this.fetchTecnicos(),
@@ -2055,7 +2027,7 @@ if (typeof window !== "undefined") {
                         this.handleUnauthorized();
                         return;
                     }
-                    // Tolerante a 204 / body vacío / distintas formas de payload
+
                     let raw = [];
                     if (response.ok) {
                         try {
@@ -2076,7 +2048,6 @@ if (typeof window !== "undefined") {
                             raw = [];
                         }
                     } else {
-                        // response not ok (4xx/5xx)
                         throw new Error("Error al cargar solicitudes");
                     }
 
@@ -2084,7 +2055,7 @@ if (typeof window !== "undefined") {
                         value: String(
                             item.id_solicitud_pk || item.id || item.id_solicitud
                         ),
-                        // Mostrar primero el nombre de la solicitud; si no existe, caer a los códigos
+
                         label:
                             item.nombre_solicitud ||
                             item.numero_solicitud_acf ||
@@ -2115,7 +2086,6 @@ if (typeof window !== "undefined") {
                 if (this.authError) return;
                 this.loadingCatalogos.tecnicos = true;
                 try {
-                    // Usar el mismo catálogo que Tickets: solo usuarios con rol Técnico (principal o secundario)
                     const response = await fetch("/api/tecnicos", {
                         headers: this.apiHeaders(),
                     });
@@ -2199,19 +2169,18 @@ if (typeof window !== "undefined") {
                     this.loadingCatalogos.cotizaciones = false;
                 }
             },
-            // Fetch cotizaciones filtered by a cliente id
+
             async fetchCotizacionesForCliente(clienteId) {
                 if (this.authError) return;
                 this.loadingCatalogos.cotizaciones = true;
                 try {
                     if (!clienteId) {
-                        // If no cliente provided, fallback to full list
                         await this.fetchCotizaciones();
                         return;
                     }
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
-                    // Try a common param name first
+
                     params.set("id_cliente_fk", String(clienteId));
                     params.set("sort", "fecha");
                     params.set("direction", "desc");
@@ -2223,7 +2192,7 @@ if (typeof window !== "undefined") {
                         this.handleUnauthorized();
                         return;
                     }
-                    // If backend doesn't accept id_cliente_fk, try alternate param
+
                     if (!response.ok) {
                         const params2 = new URLSearchParams();
                         params2.set("per_page", "100");
@@ -2261,7 +2230,7 @@ if (typeof window !== "undefined") {
                     this.sortOptions("cotizacionesOptions");
                 } catch (e) {
                     console.error(e);
-                    // fallback to global list on error
+
                     try {
                         await this.fetchCotizaciones();
                     } catch (_) {}
@@ -2270,15 +2239,12 @@ if (typeof window !== "undefined") {
                 }
             },
 
-            // Called when the solicitud select changes to load cotizaciones for the solicitud's cliente
             async onSolicitudChange(solicitudId) {
                 if (!solicitudId) {
-                    // Clear cotizaciones options or reload full list
                     this.cotizacionesOptions = [];
                     return;
                 }
                 try {
-                    // Load full solicitud resource to obtain cliente id
                     const response = await fetch(
                         "/api/solicitudes/" + String(solicitudId),
                         { headers: this.apiHeaders() }
@@ -2288,13 +2254,12 @@ if (typeof window !== "undefined") {
                         return;
                     }
                     if (!response.ok) {
-                        // If failed, try to reload full cotizaciones as fallback
                         await this.fetchCotizaciones();
                         return;
                     }
                     const json = await response.json().catch(() => null);
                     const full = json?.data || json || {};
-                    // Try common paths for cliente id
+
                     const clienteId =
                         full.id_cliente_fk ||
                         full.cliente?.id ||
@@ -2305,7 +2270,6 @@ if (typeof window !== "undefined") {
                     if (clienteId) {
                         await this.fetchCotizacionesForCliente(clienteId);
                     } else {
-                        // No cliente found; fallback to global list
                         await this.fetchCotizaciones();
                     }
                 } catch (e) {
@@ -2315,18 +2279,11 @@ if (typeof window !== "undefined") {
             },
             isVerMasModalOpen: false,
             ordenSeleccionada: null,
-            // FIN: Nuevas propiedades
 
-            // ... (resto de tus propiedades y funciones como init, fetchOrdenes, etc.)
-
-            // INICIO: Nueva función para abrir el modal de detalles
             openVerMasModal(orden) {
                 this.ordenSeleccionada = orden;
                 this.isVerMasModalOpen = true;
             },
-            // FIN: Nueva función
-
-            // ... (resto de tus funciones como openCreateOrden, openEditOrden, etc.)
 
             detalleUrl(id) {
                 return detalleUrl.replace("ID_ORDEN", id);
@@ -2337,7 +2294,7 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
-                    // Server-side filtering params
+
                     if (
                         this.searchOrden &&
                         String(this.searchOrden).trim() !== ""
@@ -2377,7 +2334,7 @@ if (typeof window !== "undefined") {
                     this.ordenes.forEach((orden) =>
                         this.ensureOrdenOptions(orden)
                     );
-                    this.numbers = this.ordenes; // Sincronizar para paginación
+                    this.numbers = this.ordenes;
                     this.actualizarTecnicos();
                 } catch (error) {
                     console.error(error);
@@ -2391,9 +2348,9 @@ if (typeof window !== "undefined") {
             },
             openCreateOrden() {
                 this.resetForm();
-                // Ensure product options available for repuestos
+
                 this.fetchProducts().catch(() => {});
-                // reset touched flags so helpers don't show immediately
+
                 this.formOrdenAdd = this.formOrdenAdd || { _touched: {} };
                 this.formOrdenAdd._touched = {};
                 this.isModalOpen = true;
@@ -2401,7 +2358,7 @@ if (typeof window !== "undefined") {
             openEditOrden(orden) {
                 this.errors = {};
                 this.ordenToEdit = orden;
-                // Carga perezosa del registro actualizado desde la API
+
                 (async () => {
                     try {
                         if (!(await this.requireAuth())) return;
@@ -2416,10 +2373,10 @@ if (typeof window !== "undefined") {
                         if (!res.ok)
                             throw new Error("Error al cargar la orden");
                         const json = await res.json();
-                        const full = json.data || json; // Resource envuelve en data
+                        const full = json.data || json;
                         const mapped = this.mapOrden(full);
                         this.ensureOrdenOptions(mapped);
-                        // Map main fields and also include repuestos from resource if provided
+
                         this.formOrden = {
                             id: mapped.id,
                             id_solicitud_servicio_fk: mapped.id_solicitud ?? "",
@@ -2466,11 +2423,11 @@ if (typeof window !== "undefined") {
                                       }))
                                     : mapped.raw?.repuestos || [],
                         };
-                        // Ensure product catalog loaded so product labels can be shown
+
                         this.fetchProducts().catch(() => {});
                     } catch (e) {
                         console.error(e);
-                        // Fallback a datos en memoria si falla la carga
+
                         this.formOrden = {
                             id: orden.id,
                             id_solicitud_servicio_fk: orden.id_solicitud ?? "",
@@ -2503,7 +2460,6 @@ if (typeof window !== "undefined") {
                                     : [],
                         };
                     } finally {
-                        // reset touched flags for edit modal
                         this.formOrdenEdit = this.formOrdenEdit || {
                             _touched: {},
                         };
@@ -2553,7 +2509,7 @@ if (typeof window !== "undefined") {
                         : null,
                     calificacion_servicio:
                         this.formOrden.calificacion_servicio || null,
-                    // Include repuestos array if present; send minimal shape expected by backend
+
                     repuestos: Array.isArray(this.formOrden.repuestos)
                         ? this.formOrden.repuestos.map((r) => ({
                               id_producto_fk:
@@ -2603,7 +2559,6 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
-                    // Client-side required validation before sending to API
                     if (!this.validateForm()) {
                         this.saving = false;
                         return;
@@ -2649,7 +2604,6 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
-                    // Client-side required validation before sending to API
                     if (!this.validateForm()) {
                         this.saving = false;
                         return;
@@ -2735,8 +2689,6 @@ if (typeof window !== "undefined") {
                 else this.createOrden();
             },
             validateForm() {
-                // Minimal required set according to UI: Solicitud, Técnico y Cotización
-                // Estado, fechas y textos se mantienen opcionales a menos que se pida explícitamente
                 const errs = {};
                 const requiredMsg = "Este campo es obligatorio.";
                 if (!this.formOrden.id_solicitud_servicio_fk) {
@@ -2749,7 +2701,6 @@ if (typeof window !== "undefined") {
                     errs.id_cotizacion_fk = [requiredMsg];
                 }
 
-                // Validación de fechas: la fecha de inicio no debe ser mayor que la fecha de finalización
                 if (
                     this.formOrden.fecha_inicio &&
                     this.formOrden.fecha_finalizacion
@@ -2842,7 +2793,6 @@ if (typeof window !== "undefined") {
                 this.expandedRows[id] = !this.expandedRows[id];
             },
 
-            // Pagination methods
             paginatedOrdenes() {
                 const start = (this.currentPage - 1) * this.perPage;
                 const end = start + this.perPage;
@@ -2869,7 +2819,7 @@ if (typeof window !== "undefined") {
 
             async init() {
                 if (!(await this.requireAuth())) return;
-                // Debounce helper (local)
+
                 const debounce = (fn, ms = 350) => {
                     let h;
                     return (...a) => {
@@ -2878,7 +2828,6 @@ if (typeof window !== "undefined") {
                     };
                 };
 
-                // Watch filters and refetch from server (debounced)
                 this.$watch(
                     "searchOrden",
                     debounce(() => {
@@ -2897,13 +2846,12 @@ if (typeof window !== "undefined") {
                         this.fetchOrdenes();
                     }, 150)
                 );
-                // Cuando cambie la solicitud en el formulario, cargar cotizaciones del cliente
+
                 this.$watch(
                     "formOrden.id_solicitud_servicio_fk",
                     debounce((val) => {
-                        // val puede ser id de solicitud (string)
                         if (!val) return;
-                        // Llamar al handler que consultará solicitud -> cliente -> cotizaciones
+
                         this.onSolicitudChange(val);
                     }, 250)
                 );
@@ -2918,11 +2866,9 @@ if (typeof window !== "undefined") {
     };
 }
 
-// Alpine component factory for Gestión de Solicitudes (Admin)
 if (typeof window !== "undefined") {
     window.gestionSolicitudes = function () {
         return {
-            // Tabs and filters
             tab: "solicitudes",
             searchSolicitud: "",
             estadoSolicitud: "",
@@ -2930,7 +2876,6 @@ if (typeof window !== "undefined") {
             searchContacto: "",
             ordenarPorContacto: "tipo_contacto",
 
-            // Variables for pagination component (computed based on active tab)
             get numbers() {
                 return this.tab === "solicitudes"
                     ? this.numbersSolicitudes
@@ -2976,14 +2921,12 @@ if (typeof window !== "undefined") {
                 return "/admin/reportes-header?" + params.toString();
             },
 
-            // Modals state
             isModalOpen: false,
             isEditModalOpen: false,
             isDeleteModalOpen: false,
             solicitudToEdit: null,
             solicitudToDelete: null,
 
-            // Estados modals (not wired yet; reserved for future use)
             isEstadoModalOpen: false,
             isEditEstadoModalOpen: false,
             estadoToEdit: {
@@ -2997,31 +2940,26 @@ if (typeof window !== "undefined") {
             isDeleteEstadoModalOpen: false,
             estadoToDelete: null,
 
-            // Contactos modals/state
             isContactoModalOpen: false,
             isEditContactoModalOpen: false,
             isDeleteContactoModalOpen: false,
             contactoToEdit: null,
             contactoToDelete: null,
 
-            // Data collections
             solicitudes: [],
             contactos: [],
             clientesOptions: [],
             estadosOptions: [],
-            contactosOptions: [], // full list for selects; filtered per cliente when rendering
+            contactosOptions: [],
 
-            // Pagination - Solicitudes
-            numbersSolicitudes: [], // alias expected by pagination component
+            numbersSolicitudes: [],
             currentPageSolicitudes: 1,
             perPageSolicitudes: 10,
 
-            // Pagination - Contactos
-            numbersContactos: [], // alias expected by pagination component
+            numbersContactos: [],
             currentPageContactos: 1,
             perPageContactos: 10,
 
-            // Forms and flags
             formSolicitud: {
                 id: null,
                 id_cliente_fk: "",
@@ -3047,7 +2985,6 @@ if (typeof window !== "undefined") {
             },
             loadingContactos: false,
 
-            // Auth helpers (same pattern as órdenes)
             getToken() {
                 return null;
             },
@@ -3105,21 +3042,19 @@ if (typeof window !== "undefined") {
                 this.errors = {};
             },
 
-            // Mapping helpers
             mapSolicitud(item) {
                 const cliente = item.cliente || {};
                 const empresa = cliente.empresa || {};
                 const persona = cliente.persona || {};
                 const estado = item.estado_solicitud || {};
                 const contacto = item.contacto || {};
-                // Build a human-readable client name for both empresa and persona
+
                 let clienteNombre = "";
                 if (
                     cliente.tipo ||
                     empresa.nombre_comercial ||
                     empresa.razon_social
                 ) {
-                    // Try empresa-style fields first
                     clienteNombre =
                         cliente.nombre ||
                         cliente.nombre_comercial ||
@@ -3128,7 +3063,6 @@ if (typeof window !== "undefined") {
                         "";
                 }
                 if (!clienteNombre || !String(clienteNombre).trim()) {
-                    // Try persona fields either at root or nested under cliente.persona
                     const pn =
                         cliente.primer_nombre || persona.primer_nombre || "";
                     const sn =
@@ -3161,11 +3095,9 @@ if (typeof window !== "undefined") {
                 };
             },
 
-            // Catalogs
             async fetchClientes() {
                 this.loadingCatalogos.clientes = true;
                 try {
-                    // Reutilizar el mismo catálogo unificado que usa Calendario
                     const params = new URLSearchParams();
                     params.set("per_page", "500");
                     params.set("all", "1");
@@ -3211,7 +3143,7 @@ if (typeof window !== "undefined") {
                             return { value: String(id), label: nombre };
                         })
                         .filter(Boolean);
-                    // De-duplicar por value
+
                     const uniq = {};
                     for (const it of mapped) {
                         if (!uniq[it.value]) uniq[it.value] = it;
@@ -3234,7 +3166,7 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
-                    // Usar endpoint web-auth para permitir cookie HttpOnly
+
                     const res = await fetch(
                         "/api-web/estados-solicitud?" + params.toString(),
                         { headers: this.apiHeaders() }
@@ -3274,7 +3206,7 @@ if (typeof window !== "undefined") {
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     const items = json.data || [];
-                    // Map contacts with a user-friendly label and keep reference to cliente
+
                     this.contactosOptions = items.map((it) => {
                         const value = String(it.id_contacto_pk || it.id);
                         const base =
@@ -3288,7 +3220,7 @@ if (typeof window !== "undefined") {
                             id_cliente_fk: String(it.id_cliente_fk || ""),
                         };
                     });
-                    // Optional: sort by label for nicer UX
+
                     this.contactosOptions.sort((a, b) =>
                         a.label.localeCompare(b.label, "es")
                     );
@@ -3306,18 +3238,17 @@ if (typeof window !== "undefined") {
                 const idCliente = String(
                     this.formSolicitud.id_cliente_fk || ""
                 );
-                // If no cliente selected, don't show any contacts yet
+
                 if (!idCliente) return [];
                 return this.contactosOptions.filter(
                     (c) => String(c.id_cliente_fk || "") === idCliente
                 );
             },
-            // When cliente changes, clear selected contacto to avoid mismatches
+
             onClienteChange() {
                 this.formSolicitud.id_contacto_fk = "";
             },
 
-            // Lookup helper to get client label from unified catalog by id
             clienteLabelById(id) {
                 if (!id) return "";
                 const sid = String(id);
@@ -3327,7 +3258,6 @@ if (typeof window !== "undefined") {
                 return found ? found.label : "";
             },
 
-            // CRUD Solicitudes
             async fetchSolicitudes() {
                 if (!(await this.requireAuth())) return;
                 this.loadingSolicitudes = true;
@@ -3343,7 +3273,6 @@ if (typeof window !== "undefined") {
                         return;
                     }
 
-                    // Tolerante a respuestas vacías / diferentes shapes
                     let raw = [];
                     if (res.ok) {
                         try {
@@ -3368,7 +3297,7 @@ if (typeof window !== "undefined") {
                     this.solicitudes = (raw || []).map((it) =>
                         this.mapSolicitud(it)
                     );
-                    // keep pagination alias in sync
+
                     this.numbersSolicitudes = this.solicitudes;
                 } catch (e) {
                     console.error(e);
@@ -3446,7 +3375,7 @@ if (typeof window !== "undefined") {
                     const json = await res.json();
                     if (json.data)
                         this.solicitudes.unshift(this.mapSolicitud(json.data));
-                    // keep pagination alias in sync
+
                     this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud creada correctamente");
                     this.isModalOpen = false;
@@ -3496,7 +3425,7 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.solicitudes.splice(idx, 1, mapped);
                     }
-                    // keep pagination alias in sync
+
                     this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud actualizada");
                     this.isEditModalOpen = false;
@@ -3531,7 +3460,7 @@ if (typeof window !== "undefined") {
                     this.solicitudes = this.solicitudes.filter(
                         (s) => s.id !== this.solicitudToDelete.id
                     );
-                    // keep pagination alias in sync
+
                     this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud eliminada");
                 } catch (e) {
@@ -3544,7 +3473,6 @@ if (typeof window !== "undefined") {
                 }
             },
             submitSolicitud() {
-                // quick client-side validation
                 this.errors = {};
                 const errs = {};
                 if (!this.formSolicitud.id_cliente_fk)
@@ -3557,7 +3485,7 @@ if (typeof window !== "undefined") {
                     errs.descripcion_problema = [
                         "La descripción es obligatoria.",
                     ];
-                // nombre_solicitud es opcional, pero si viene muy largo, marcar localmente
+
                 if (
                     this.formSolicitud.nombre_solicitud &&
                     String(this.formSolicitud.nombre_solicitud).length > 150
@@ -3569,7 +3497,6 @@ if (typeof window !== "undefined") {
                 if (!this.formSolicitud.id_contacto_fk)
                     errs.id_contacto_fk = ["Seleccione un contacto."];
                 if (Object.keys(errs).length) {
-                    // mark fields as touched so UI shows validation states after submit attempt
                     this.formSolicitud._touched =
                         this.formSolicitud._touched || {};
                     Object.keys(errs).forEach((k) => {
@@ -3583,7 +3510,6 @@ if (typeof window !== "undefined") {
                 else this.createSolicitud();
             },
 
-            // Contactos list + CRUD (simple)
             async fetchContactos() {
                 if (!(await this.requireAuth())) return;
                 this.loadingContactos = true;
@@ -3602,7 +3528,7 @@ if (typeof window !== "undefined") {
                         valor_contacto: it.valor_contacto,
                         id_cliente_fk: it.id_cliente_fk,
                     }));
-                    // keep pagination alias in sync
+
                     this.numbersContactos = this.contactos;
                 } catch (e) {
                     console.error(e);
@@ -3665,7 +3591,7 @@ if (typeof window !== "undefined") {
                             valor_contacto: json.data.valor_contacto,
                             id_cliente_fk: json.data.id_cliente_fk,
                         });
-                    // keep pagination alias in sync
+
                     this.numbersContactos = this.contactos;
                     this.showToast("Contacto creado");
                     this.isContactoModalOpen = false;
@@ -3724,7 +3650,7 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.contactos.splice(idx, 1, updated);
                     }
-                    // keep pagination alias in sync
+
                     this.numbersContactos = this.contactos;
                     this.showToast("Contacto actualizado");
                     this.isEditContactoModalOpen = false;
@@ -3758,7 +3684,7 @@ if (typeof window !== "undefined") {
                     this.contactos = this.contactos.filter(
                         (c) => c.id !== this.contactoToDelete.id
                     );
-                    // keep pagination alias in sync
+
                     this.numbersContactos = this.contactos;
                     this.showToast("Contacto eliminado");
                 } catch (e) {
@@ -3771,7 +3697,6 @@ if (typeof window !== "undefined") {
                 }
             },
             submitContacto() {
-                // quick client-side validation for contactos
                 this.errors = {};
                 const errs = {};
                 if (
@@ -3805,7 +3730,6 @@ if (typeof window !== "undefined") {
                 else this.createContacto();
             },
 
-            // Derived collections and filters
             filteredContactos() {
                 const term = this.searchContacto.trim().toLowerCase();
                 const list = this.contactos
@@ -3914,7 +3838,6 @@ if (typeof window !== "undefined") {
                                     { numeric: true }
                                 );
                             case "fecha_creacion":
-                                // Campo no disponible: mantener orden estable
                                 return 0;
                             default:
                                 return 0;
@@ -3922,7 +3845,6 @@ if (typeof window !== "undefined") {
                     });
             },
 
-            // Pagination methods - Solicitudes
             paginatedSolicitudes() {
                 const filtered = this.filteredSolicitudes();
                 const start =
@@ -3953,7 +3875,6 @@ if (typeof window !== "undefined") {
                 }
             },
 
-            // Pagination methods - Contactos
             paginatedContactos() {
                 const filtered = this.filteredContactos();
                 const start =
@@ -3982,7 +3903,6 @@ if (typeof window !== "undefined") {
                 }
             },
 
-            // Global pagination methods for component compatibility
             totalPages() {
                 return this.tab === "solicitudes"
                     ? this.totalPagesSolicitudes()
@@ -4003,7 +3923,6 @@ if (typeof window !== "undefined") {
                 }
             },
 
-            // Init
             async init() {
                 if (!(await this.requireAuth())) return;
                 await Promise.all([

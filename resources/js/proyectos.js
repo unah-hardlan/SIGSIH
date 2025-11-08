@@ -193,25 +193,23 @@ window.proyectosApiHandlers = {
     },
 };
 
-// Fábrica para usar como x-data en la vista de proyectos
 window.VistaProyectosData = function (initial = {}) {
     return {
         proyectos: Array.isArray(initial.proyectos) ? initial.proyectos : [],
         currentProyectoIndex: 0,
         loading: false,
-        // Movimientos del proyecto actual
+
         ingresosProyecto: [],
         gastosProyecto: [],
         loadingMovimientos: false,
         lastLoadedProjectId: null,
-        // Modal de lista de proyectos
+
         showProjectListModal: false,
         searchQuery: "",
-        filterEstado: "todos", // todos, activos, completados, deficit
-        filterBalance: "todos", // todos, positivo, negativo, cero
-        sortBy: "nombre", // nombre, fecha, balance, ingresos, gastos
+        filterEstado: "todos",
+        filterBalance: "todos",
+        sortBy: "nombre",
 
-        // Persistencia en session por id (no por índice)
         SESSION_KEY: "vista_proyectos_selected_id",
         selectedProjectId: null,
 
@@ -223,7 +221,6 @@ window.VistaProyectosData = function (initial = {}) {
                 console.warn("No se pudo leer sessionStorage", e);
             }
 
-            // si el servidor proveyó proyectos iniciales, úsalos; si no, busca
             if (!this.proyectos || this.proyectos.length === 0) {
                 await this.fetchProyectos();
             }

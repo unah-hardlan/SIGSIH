@@ -487,7 +487,7 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                         x-for="page in Array.from({length: totalPagesProyectos()}, (_, i) => i + 1).slice(Math.max(0, currentPageProyectos - 3), currentPageProyectos + 2)"
                         :key="page">
                         <button @click="currentPageProyectos = page"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                             :class="page === currentPageProyectos ? 'bg-blue-600 text-white' : ''">
                             <span x-text="page"></span>
                         </button>
@@ -710,7 +710,7 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                         x-for="page in Array.from({length: totalPagesIngresos()}, (_, i) => i + 1).slice(Math.max(0, currentPageIngresos - 3), currentPageIngresos + 2)"
                         :key="page">
                         <button @click="currentPageIngresos = page"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                             :class="page === currentPageIngresos ? 'bg-blue-600 text-white' : ''">
                             <span x-text="page"></span>
                         </button>
@@ -922,7 +922,7 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                         x-for="page in Array.from({length: totalPagesGastos()}, (_, i) => i + 1).slice(Math.max(0, currentPageGastos - 3), currentPageGastos + 2)"
                         :key="page">
                         <button @click="currentPageGastos = page"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                             :class="page === currentPageGastos ? 'bg-blue-600 text-white' : ''">
                             <span x-text="page"></span>
                         </button>

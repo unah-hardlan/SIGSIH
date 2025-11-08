@@ -2,7 +2,6 @@ window.kardexApiHandlers = {
     async fetchKardex(component) {
         component.loadingKardex = true;
         try {
-            // Construir query string con filtros y ordenamiento
             const params = new URLSearchParams();
             if (component.filtroKardex)
                 params.append("filtroKardex", component.filtroKardex);
@@ -288,7 +287,6 @@ window.catalogosKardexHandlers = {
 
     async fetchOrigenes(component) {
         try {
-            // MODIFICADO: Agregar parámetro para traer todos los registros
             const response = await fetch("/api/origenes?per_page=1000", {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
@@ -305,4 +303,3 @@ window.catalogosKardexHandlers = {
         }
     },
 };
-

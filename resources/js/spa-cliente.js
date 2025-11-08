@@ -67,7 +67,7 @@ class ClienteSPA {
         );
     }
 
-    createLoadingOverlay() { }
+    createLoadingOverlay() {}
 
     setupEventListeners() {
         document.addEventListener("spa:navigate", (e) => {
@@ -100,12 +100,12 @@ class ClienteSPA {
                         (href.startsWith("/cliente/") ||
                             link.hasAttribute("data-spa-link"))
                     ) {
-                        // Evitar interceptar rutas de visor/impresión que no devuelven <main>
                         if (
                             href.startsWith("/cliente/formato-factura/") ||
-                            href.startsWith("/cliente/cotizaciones/") && href.endsWith("/pdf")
+                            (href.startsWith("/cliente/cotizaciones/") &&
+                                href.endsWith("/pdf"))
                         ) {
-                            return; // navegación normal
+                            return;
                         }
                         e.preventDefault();
                         e.stopPropagation();
@@ -181,7 +181,6 @@ class ClienteSPA {
         temp.innerHTML = html;
         const main = temp.querySelector("main");
         if (!main) {
-            // La respuesta no es contenido SPA, realizar navegación completa
             if (path) {
                 window.location.href = path;
                 return;
@@ -191,7 +190,7 @@ class ClienteSPA {
         this.reinitializeScripts(this.contentContainer);
         try {
             document.dispatchEvent(new CustomEvent("app:view-loaded"));
-        } catch (_) { }
+        } catch (_) {}
     }
 
     reinitializeScripts(container) {
@@ -219,7 +218,7 @@ class ClienteSPA {
         let targetPath = path || window.location.pathname;
         try {
             targetPath = new URL(targetPath, window.location.origin).pathname;
-        } catch (e) { }
+        } catch (e) {}
 
         const links = document.querySelectorAll("aside nav a[data-spa-link]");
         const activeClasses = [
@@ -234,7 +233,7 @@ class ClienteSPA {
             let href = link.getAttribute("href") || "";
             try {
                 href = new URL(href, window.location.origin).pathname;
-            } catch (e) { }
+            } catch (e) {}
 
             const isActive = targetPath.startsWith(href) && href !== "/";
 

@@ -1,58 +1,48 @@
-// Consolidated authentication module for login/register + theme + 2FA + email verify
-// Load axios defaults if present
 if (window.axios) {
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 }
 
-// Initial theme sync (before Alpine mounts to avoid FOUC)
 (function syncInitialTheme() {
     try {
         const saved = localStorage.getItem("theme");
         const preferDark = saved
             ? saved === "dark"
             : window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches;
+              window.matchMedia("(prefers-color-scheme: dark)").matches;
         document.documentElement.classList.toggle("dark", preferDark);
-    } catch (_) { }
+    } catch (_) {}
 })();
 
-// Factory function to create the authPage data object for Alpine.js
 function createAuthPage() {
     return {
-        // Core Authentication State
         isLogin: true,
         showPassword: false,
         showConfirmPassword: false,
         username: "",
         password: "",
         confirmPassword: "",
-        nombre_usuario: "", // From Daniel's version
+        nombre_usuario: "",
         email: "",
         loading: false,
         formError: "",
         fieldErrors: {},
 
-        // Theme State
         isDark: false,
 
-        // 2FA State (from Development version)
         show2FAModal: false,
         totpCode: "",
         verifying2FA: false,
         totpError: "",
-        needsRecovery: false, // Added in Daniel's version, kept in combined
+        needsRecovery: false,
 
-        // Email Verification State (from Development version)
         showVerifyEmailModal: false,
         verifyEmailMessage: "",
         verifyEmailAddress: "",
         resendCooldown: 0,
         resendTimerId: null,
 
-        // --- Initialization ---
         init() {
-            // Ensure all properties are properly initialized
             this.formError = this.formError || "";
             this.fieldErrors = this.fieldErrors || {};
             try {
@@ -62,7 +52,6 @@ function createAuthPage() {
             }
         },
 
-        // --- Theme Management ---
         initTheme() {
             try {
                 this.isDark =
@@ -75,28 +64,26 @@ function createAuthPage() {
         applyTheme() {
             try {
                 document.documentElement.classList.toggle("dark", this.isDark);
-            } catch (_) { }
+            } catch (_) {}
         },
         toggleTheme() {
             this.isDark = !this.isDark;
             this.applyTheme();
             try {
                 localStorage.setItem("theme", this.isDark ? "dark" : "light");
-            } catch (_) { }
+            } catch (_) {}
         },
 
-        // --- Form Navigation & Reset ---
         switchMode() {
             this.isLogin = !this.isLogin;
             this.resetErrors();
             this.password = "";
             this.confirmPassword = "";
-            this.needsRecovery = false; // Reset recovery state
-            this.show2FAModal = false; // Close 2FA modal
-            this.showVerifyEmailModal = false; // Close verify email modal
+            this.needsRecovery = false;
+            this.show2FAModal = false;
+            this.showVerifyEmailModal = false;
         },
 
-        // --- Error Handling ---
         resetErrors() {
             this.formError = "";
             this.fieldErrors = {};
@@ -106,7 +93,7 @@ function createAuthPage() {
             if (!field || !message) return;
             this.fieldErrors = {
                 ...this.fieldErrors,
-                [field]: [message], // Ensure it's an array of messages
+                [field]: [message],
             };
             if (!this.formError) {
                 this.formError =
@@ -118,9 +105,9 @@ function createAuthPage() {
             try {
                 if (!field) return;
                 if (!this.fieldErrors || !this.fieldErrors[field]) return;
-                const { [field]: _, ...rest } = this.fieldErrors; // Destructure to remove field
+                const { [field]: _, ...rest } = this.fieldErrors;
                 this.fieldErrors = rest;
-                // If no more field errors, clear formError
+
                 if (Object.keys(this.fieldErrors).length === 0) {
                     this.formError = "";
                 }
@@ -129,7 +116,6 @@ function createAuthPage() {
             }
         },
 
-        // --- Input Validations (From Daniel's version, integrated) ---
         isAlphaNumeric(value) {
             if (!value) return false;
             return /^[A-Za-z0-9]+$/.test(value);
@@ -198,7 +184,7 @@ function createAuthPage() {
             if (/\s/.test(value)) {
                 issues.push("No debe contener espacios.");
             }
-            // Only require uppercase for registration (not login)
+
             if (!this.isLogin && !/[A-Z]/.test(value)) {
                 issues.push("Debe incluir al menos una letra mayúscula.");
             }
@@ -226,7 +212,6 @@ function createAuthPage() {
             return this.confirmPasswordIssues().length === 0;
         },
 
-        // Helper to update field errors on input (combining both versions' intent)
         handleUsernameInput() {
             this.clearFieldError("usuario");
             const issues = this.usernameIssues(this.username);
@@ -239,24 +224,23 @@ function createAuthPage() {
                 this.setFieldError("nombre_usuario", issues[0]);
         },
         handleEmailInput() {
-            this.clearFieldError("correo_electronico"); // Use backend field name
+            this.clearFieldError("correo_electronico");
             const issues = this.emailIssues(this.email);
             if (issues.length > 0)
                 this.setFieldError("correo_electronico", issues[0]);
         },
         handlePasswordInput() {
-            this.clearFieldError("contrasena"); // Use backend field name
+            this.clearFieldError("contrasena");
             const issues = this.passwordIssues(this.password);
             if (issues.length > 0) this.setFieldError("contrasena", issues[0]);
         },
         handleConfirmPasswordInput() {
-            this.clearFieldError("password_confirmation"); // Use backend field name
+            this.clearFieldError("password_confirmation");
             const issues = this.confirmPasswordIssues();
             if (issues.length > 0)
                 this.setFieldError("password_confirmation", issues[0]);
         },
 
-        // --- Main Submission Logic ---
         async handleSubmit() {
             if (this.loading) return;
             this.loading = true;
@@ -270,7 +254,6 @@ function createAuthPage() {
                     });
                     const data = res?.data || {};
 
-                    // Handle 2FA (from Development version)
                     if (data.status === "2fa_required") {
                         this.totpCode = "";
                         this.totpError = "";
@@ -280,10 +263,9 @@ function createAuthPage() {
                         return;
                     }
 
-                    // Handle Email Verification (from Development version)
                     if (data.status === "email_verification_required") {
                         this.verifyEmailAddress =
-                            data?.email || this.email || this.username; // Use provided email or existing
+                            data?.email || this.email || this.username;
                         this.verifyEmailMessage =
                             "Debes verificar tu correo antes de iniciar sesión.";
                         this.showVerifyEmailModal = true;
@@ -291,54 +273,43 @@ function createAuthPage() {
                         return;
                     }
 
-                    // Successful login
                     try {
                         window.showToast &&
                             window.showToast("Sesión iniciada", "success", {
                                 duration: 1200,
                             });
-                    } catch (_) { }
+                    } catch (_) {}
                     window.location.assign("/admin/dashboard");
                     return;
                 } else {
-                    // Registration
                     await axios.post("/api/register", {
                         usuario: this.username,
                         nombre_usuario: this.nombre_usuario,
                         correo_electronico: this.email,
                         contrasena: this.password,
-                        // No need for confirmPassword here, backend handles validation
                     });
 
-                    // Handle Email Verification after registration (from Development version)
-                    // Assuming backend sends a 'verification_sent' status or similar for immediate email verification
                     this.verifyEmailAddress = this.email;
                     this.verifyEmailMessage =
                         "Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada o spam.";
                     this.showVerifyEmailModal = true;
-
-                    // If no email verification is needed immediately, redirect to profile
-                    // window.location.assign("/admin/perfil");
                 }
             } catch (err) {
-                // Consolidated error handling
                 try {
                     console.error(
                         "Authentication Error:",
                         err?.response?.status,
                         err?.response?.data || err?.message || err
                     );
-                } catch (_) { }
+                } catch (_) {}
 
                 const resp = err?.response;
                 if (resp?.status === 422) {
-                    // Validation errors
                     this.fieldErrors = resp.data?.errors || {};
                     this.formError =
                         resp.data?.message ||
                         "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
                 } else if (resp?.status === 401) {
-                    // Unauthorized (incorrect credentials)
                     this.formError =
                         resp.data?.message ||
                         resp.data?.error ||
@@ -347,7 +318,6 @@ function createAuthPage() {
                     resp?.status === 403 &&
                     resp?.data?.status === "email_verification_required"
                 ) {
-                    // Specific case for forbidden due to email verification (e.g., trying to login unverified)
                     this.verifyEmailAddress =
                         resp?.data?.email || this.email || this.username;
                     this.verifyEmailMessage =
@@ -355,7 +325,6 @@ function createAuthPage() {
                         "Debes verificar tu correo antes de continuar.";
                     this.showVerifyEmailModal = true;
                 } else {
-                    // General errors
                     this.formError =
                         resp?.data?.error ||
                         resp?.data?.message ||
@@ -366,10 +335,9 @@ function createAuthPage() {
             }
         },
 
-        // --- Email Verification Modal Logic (from Development version) ---
         async resendVerification() {
             if (!this.verifyEmailAddress || this.resendCooldown > 0) return;
-            this.loading = true; // Temporarily use general loading
+            this.loading = true;
             try {
                 const resp = await axios.post("/api/email/resend", {
                     email: this.verifyEmailAddress,
@@ -379,12 +347,12 @@ function createAuthPage() {
                         window.showToast("Correo reenviado", "success", {
                             duration: 1500,
                         });
-                } catch (_) { }
+                } catch (_) {}
                 const cool = resp?.data?.retry_after_seconds;
                 if (cool && Number.isFinite(+cool) && +cool > 0) {
                     this.startResendCooldown(+cool);
                 } else {
-                    this.startResendCooldown(60); // Default cooldown
+                    this.startResendCooldown(60);
                 }
             } catch (err) {
                 const retry = err?.response?.data?.retry_after_seconds;
@@ -395,7 +363,7 @@ function createAuthPage() {
                 try {
                     window.showToast &&
                         window.showToast(msg, "error", { duration: 2000 });
-                } catch (_) { }
+                } catch (_) {}
                 if (retry && Number.isFinite(+retry) && +retry > 0) {
                     this.startResendCooldown(+retry);
                 }
@@ -417,7 +385,7 @@ function createAuthPage() {
                         this.resendTimerId = null;
                     }
                 }, 1000);
-            } catch (_) { }
+            } catch (_) {}
         },
 
         closeVerifyEmailModal() {
@@ -429,12 +397,11 @@ function createAuthPage() {
             this.resendTimerId = null;
         },
 
-        // --- 2FA Modal Logic (from Development version) ---
         async submit2FA() {
             if (this.verifying2FA || !this.totpCode) return;
             this.verifying2FA = true;
             this.totpError = "";
-            this.needsRecovery = false; // Reset on new attempt
+            this.needsRecovery = false;
             try {
                 await axios.post("/api/2fa/verify", { code: this.totpCode });
                 try {
@@ -442,10 +409,10 @@ function createAuthPage() {
                         window.showToast("2FA verificado", "success", {
                             duration: 1200,
                         });
-                } catch (_) { }
+                } catch (_) {}
                 window.location.assign("/admin/dashboard");
             } catch (err) {
-                this.needsRecovery = !!err?.response?.data?.needs_recovery; // Backend indicates if recovery is an option
+                this.needsRecovery = !!err?.response?.data?.needs_recovery;
                 const msg =
                     err?.response?.data?.message ||
                     err?.response?.data?.error ||
@@ -461,11 +428,10 @@ function createAuthPage() {
             this.totpCode = "";
             this.totpError = "";
             this.needsRecovery = false;
-            // Optionally, if closing 2FA means returning to login, reset login state
-            this.loading = false; // Ensure loading is off if modal closed manually
+
+            this.loading = false;
         },
 
-        // --- External Actions ---
         handleGoogle() {
             alert("Redirigiendo a Google Sign-In… (Funcionalidad pendiente)");
         },
@@ -473,16 +439,12 @@ function createAuthPage() {
             alert(
                 "Redirigiendo a recuperar contraseña… (Funcionalidad pendiente)"
             );
-            // Typically navigates to a password reset page
-            // window.location.assign("/forgot-password");
         },
     };
 }
 
-// Expose factory globally
 window.authPage = createAuthPage;
 
-// Alpine registration (idempotent, ensures it runs if Alpine is loaded, or when it initializes)
 function registerAuth() {
     try {
         if (!window.Alpine) {
@@ -492,7 +454,6 @@ function registerAuth() {
             return;
         }
         if (!window.Alpine.data("authPage")) {
-            // Only register if not already registered
             window.Alpine.data("authPage", createAuthPage);
         } else {
             console.log("Alpine.js data 'authPage' already registered.");
@@ -502,19 +463,12 @@ function registerAuth() {
     }
 }
 
-// Attempt immediate registration if Alpine is already present
 if (window.Alpine) {
     registerAuth();
 }
-// Register on Alpine's init event for when it loads later
+
 document.addEventListener("alpine:init", registerAuth);
 
-// Exported utility function for getting authentication token
-// Note: With HttpOnly cookies, token is not accessible from JS
-// Exported utility function for getting authentication token
-// Note: With HttpOnly cookies, token is not accessible from JS
-// Expose a simple getToken helper on window for legacy code that expects it
 window.getToken = function () {
-    return ""; // Token handled server-side via HttpOnly cookie
+    return "";
 };
-

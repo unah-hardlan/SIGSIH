@@ -249,7 +249,7 @@
             <div class="flex items-center gap-1">
                 <template x-for="page in Array.from({length: totalPagesProductos()}, (_, i) => i + 1).slice(Math.max(0, currentPageProductos - 3), currentPageProductos + 2)" :key="page">
                     <button @click="currentPageProductos = page"
-                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                         :class="page === currentPageProductos ? 'bg-blue-600 text-white' : ''">
                         <span x-text="page"></span>
                     </button>

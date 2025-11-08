@@ -374,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Validación de DNI en el submit
         const dniInput = document.getElementById("dni");
         const dniValue = dniInput?.value.trim();
         const dniOk = await validateDniAvailability(dniValue, {

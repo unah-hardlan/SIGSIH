@@ -1,13 +1,12 @@
 document.addEventListener("alpine:init", () => {
     Alpine.data("facturasCrud", () => ({
-        // Tab state
         tab: "facturas",
-        // Backend validation errors per form
+
         errors: {},
         errorsEdit: {},
         formError: "",
         formErrorEdit: "",
-        // Al cambiar a la pestaña 'detalle', cargar todos los detalles (sin filtrar por defecto)
+
         async setTab(tabName) {
             this.tab = tabName;
             if (tabName === "detalle") {
@@ -17,7 +16,6 @@ document.addEventListener("alpine:init", () => {
 
         async fetchServicios() {
             try {
-                // Try to fetch all servicios and avoid paginated/cached responses
                 const ts = Date.now() + Math.random();
                 const url = `/api/servicios?all=true&_t=${ts}`;
                 console.log("Fetching servicios from", url);
@@ -46,7 +44,6 @@ document.addEventListener("alpine:init", () => {
                 console.log("Servicios response payload:", data);
 
                 if (!response.ok) {
-                    // Log and fallback to empty list
                     console.error(
                         "Servicios fetch returned non-ok status",
                         response.status,
@@ -56,7 +53,6 @@ document.addEventListener("alpine:init", () => {
                     return;
                 }
 
-                // Accept multiple shapes: { data: [...] } or plain array
                 this.servicios = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
@@ -73,18 +69,16 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
-        // Modal states para facturas
         isFacturaModalOpen: false,
         isEditFacturaModalOpen: false,
         isDeleteFacturaModalOpen: false,
-        // Alias para compatibilidad con componentes globales
+
         isEditModalOpen: false,
         isEditListModalOpen: false,
-        // initialize as object to avoid reactive "cannot read property" errors in templates
+
         itemToEdit: {},
         itemToDelete: null,
 
-        // Data arrays
         facturas: [],
         detalles: [],
         servicios: [],
@@ -92,20 +86,17 @@ document.addEventListener("alpine:init", () => {
         clientes: [],
         cais: [],
 
-        // Paginación facturas
-        numbers: [], // alias esperado por el componente de paginación
+        numbers: [],
         currentPage: 1,
         perPage: 10,
 
-        // Paginación detalles
-        numbersDetalles: [], // alias esperado por el componente de paginación para detalles
+        numbersDetalles: [],
         currentPageDetalles: 1,
         perPageDetalles: 5,
 
-        // Computed: facturas filtradas
         get filteredFacturas() {
             let result = this.facturas;
-            // Filtro búsqueda
+
             if (this.searchFacturas && this.searchFacturas.trim() !== "") {
                 const q = this.searchFacturas.trim().toLowerCase();
                 result = result.filter((f) => {
@@ -123,7 +114,7 @@ document.addEventListener("alpine:init", () => {
                     );
                 });
             }
-            // Filtro estado (acepta nombre o id; comparación case-insensitive para nombres)
+
             if (this.estadoFacturaFiltro && this.estadoFacturaFiltro !== "") {
                 const filtro = String(this.estadoFacturaFiltro).toLowerCase();
                 result = result.filter((f) => {
@@ -143,13 +134,13 @@ document.addEventListener("alpine:init", () => {
                     }
                 });
             }
-            // Filtro cliente
+
             if (this.clienteFacturaFiltro && this.clienteFacturaFiltro !== "") {
                 result = result.filter(
                     (f) => f.cliente_nombre === this.clienteFacturaFiltro
                 );
             }
-            // Ordenamiento
+
             if (this.ordenarPor && this.ordenarPor !== "") {
                 result = [...result].sort((a, b) => {
                     if (this.ordenarPor === "fecha") {
@@ -172,12 +163,10 @@ document.addEventListener("alpine:init", () => {
             return result;
         },
 
-        // Loading states
         loadingFacturas: false,
         loadingDetalles: false,
         loadingEstadosFactura: false,
 
-        // Form fields para crear factura
         numero: "",
         fecha: "",
         oc: "",
@@ -188,27 +177,24 @@ document.addEventListener("alpine:init", () => {
         id_cai_fk: "",
         id_cliente_fk: "",
 
-        // Detalle modal states y modelo
         isDetalleModalOpen: false,
         isEditDetalleModalOpen: false,
         isDeleteDetalleModalOpen: false,
-        // initialize as empty objects so bindings like detalleToEdit.id_factura don't throw
+
         detalleToEdit: {},
         detalleToDelete: {},
 
-        // Filtros
         filtroFactura: "",
         ordenarPor: "",
-        // Modelos usados por partial filtros-generales
+
         searchFacturas: "",
         estadoFacturaFiltro: "",
         clienteFacturaFiltro: "",
 
-        // Filtros para detalle
         searchDetalleFactura: "",
         servicioDetalleFiltro: "",
         facturaDetalleFiltro: "",
-        // Si se abrió la vista Detalle filtrada por una factura, guardar su id
+
         currentFacturaFilter: null,
 
         async init() {
@@ -216,19 +202,15 @@ document.addEventListener("alpine:init", () => {
             await this.fetchEstadosFactura();
             await this.fetchClientes();
             await this.fetchCais();
-            // Cargar servicios para los selectores de detalle
+
             await this.fetchServicios();
 
-            // Cargar todos los detalles una sola vez y recalcular totales por factura
-            // Esto asegura que al entrar a la vista principal los subtotales y totales
-            // ya estén reflejados sin necesidad de abrir la pestaña de Detalle.
             try {
                 await this.fetchAllDetallesAndRecompute();
             } catch (e) {
                 console.warn("fetchAllDetallesAndRecompute failed on init", e);
             }
 
-            // Exponer helper simple para conversión de número a letras (útil en HTML inline)
             try {
                 window.numberToSpanishWords = (val) => {
                     try {
@@ -241,9 +223,7 @@ document.addEventListener("alpine:init", () => {
                 /* ignore if not possible */
             }
 
-            // Watch modal open/close to clear create forms when they close
             try {
-                // Clear Nueva Factura modal when it closes
                 this.$watch &&
                     this.$watch("isFacturaModalOpen", (val) => {
                         if (!val) {
@@ -251,7 +231,7 @@ document.addEventListener("alpine:init", () => {
                                 this.clearForm();
                                 this.errors = {};
                                 this.formError = "";
-                                // clear DOM inputs too
+
                                 [
                                     "fecha_factura",
                                     "oc_factura",
@@ -269,7 +249,6 @@ document.addEventListener("alpine:init", () => {
                         }
                     });
 
-                // Clear Nuevo Detalle modal when it closes
                 this.$watch &&
                     this.$watch("isDetalleModalOpen", (val) => {
                         if (!val) {
@@ -295,7 +274,6 @@ document.addEventListener("alpine:init", () => {
                         }
                     });
 
-                // Clear Editar Factura errors when closing
                 this.$watch &&
                     this.$watch("isEditFacturaModalOpen", (val) => {
                         if (!val) {
@@ -304,7 +282,6 @@ document.addEventListener("alpine:init", () => {
                         }
                     });
 
-                // Watchers para paginación - resetear página cuando cambien filtros
                 this.$watch &&
                     this.$watch("searchFacturas", () => {
                         this.currentPage = 1;
@@ -328,14 +305,11 @@ document.addEventListener("alpine:init", () => {
                 /* ignore */
             }
 
-            // If the UI was restored with the Detalle tab active (persisted), ensure detalles are loaded
-            // This handles the case where the user lands directly on the Detalle tab after login
             if (this.tab === "detalle") {
                 await this.fetchDetallesFactura();
             }
         },
 
-        // Fetch all detalles once and compute subtotal/total per factura so the list shows correct values on first render
         async fetchAllDetallesAndRecompute() {
             try {
                 const ts = Date.now() + Math.random();
@@ -368,11 +342,9 @@ document.addEventListener("alpine:init", () => {
                     : [];
 
                 if (!Array.isArray(allDetalles) || allDetalles.length === 0) {
-                    // nothing to do
                     return;
                 }
 
-                // Group totals by factura id
                 const totalsMap = {};
                 allDetalles.forEach((d) => {
                     const fid =
@@ -382,7 +354,7 @@ document.addEventListener("alpine:init", () => {
                         d.factura_id ||
                         null;
                     if (!fid) return;
-                    // Calculate line total
+
                     let line = 0;
                     if (d.total_linea !== undefined && d.total_linea !== null) {
                         line = parseFloat(d.total_linea) || 0;
@@ -396,23 +368,21 @@ document.addEventListener("alpine:init", () => {
                     totalsMap[fid] = (totalsMap[fid] || 0) + line;
                 });
 
-                // Apply computed subtotals/totales to facturas list
                 (this.facturas || []).forEach((f) => {
                     const fid = f.id_factura_pk || f.id || f.numero || null;
                     if (!fid) return;
                     const subtotal = Number((totalsMap[fid] || 0).toFixed(2));
-                    // Calcular impuesto como 15% del subtotal (política de negocio fija)
+
                     const impuestoVal = Number((subtotal * 0.15).toFixed(2));
                     const total = Number((subtotal + impuestoVal).toFixed(2));
                     const letras = this.totalToLetras2(total);
-                    // assign back to the factura object so bindings update
+
                     f.subtotal = subtotal;
                     f.impuesto = impuestoVal;
                     f.total = total;
                     f.total_letras = letras;
                 });
 
-                // If an itemToEdit is present (modal open), and its factura is in map, update it too
                 try {
                     const editFid =
                         this.itemToEdit?.id_factura_pk ||
@@ -431,7 +401,7 @@ document.addEventListener("alpine:init", () => {
                         this.itemToEdit.subtotal = subtotal;
                         this.itemToEdit.total = total;
                         this.itemToEdit.total_letras = letras;
-                        // reflect in DOM if open
+
                         try {
                             document.getElementById("edit_subtotal_factura") &&
                                 (document.getElementById(
@@ -476,12 +446,10 @@ document.addEventListener("alpine:init", () => {
 
                 console.log("Response structure:", data);
 
-                // Usar estructura de respuesta igual que CAI
                 if (data.success && data.data) {
                     this.facturas = data.data;
                     console.log("Total facturas loaded:", this.facturas.length);
                 } else if (Array.isArray(data)) {
-                    // Fallback para compatibilidad
                     this.facturas = data;
                     console.log(
                         "Fallback - Total facturas loaded:",
@@ -496,7 +464,6 @@ document.addEventListener("alpine:init", () => {
                     console.log("Sample factura data:", this.facturas[0]);
                 }
 
-                // Sincronizar alias para paginación
                 this.numbers = this.facturas;
             } catch (error) {
                 console.error("Error fetching facturas:", error);
@@ -507,7 +474,6 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
-        // Métodos de paginación
         paginatedFacturas() {
             const filtered = this.filteredFacturas;
             return filtered.slice(
@@ -536,7 +502,6 @@ document.addEventListener("alpine:init", () => {
             this.currentPage = page;
         },
 
-        // Métodos de paginación para detalles
         paginatedDetalles() {
             return this.detalles.slice(
                 (this.currentPageDetalles - 1) * this.perPageDetalles,
@@ -567,7 +532,6 @@ document.addEventListener("alpine:init", () => {
         async fetchEstadosFactura() {
             this.loadingEstadosFactura = true;
             try {
-                // Agregar timestamp único y forzar recarga completa
                 const timestamp = Date.now() + Math.random();
                 const response = await fetch(
                     `/api/estados-factura?all=true&_t=${timestamp}&_bust=${Math.random()}`,
@@ -581,7 +545,7 @@ document.addEventListener("alpine:init", () => {
                             Expires: "0",
                         },
                         credentials: "same-origin",
-                        cache: "no-store", // Forzar no usar caché
+                        cache: "no-store",
                     }
                 );
                 const data = await response.json().catch(() => ({}));
@@ -611,7 +575,6 @@ document.addEventListener("alpine:init", () => {
 
         async fetchClientes() {
             try {
-                // Usar el mismo endpoint que gestión de solicitudes para catálogo unificado
                 const params = new URLSearchParams();
                 params.set("per_page", "500");
                 params.set("all", "1");
@@ -632,7 +595,6 @@ document.addEventListener("alpine:init", () => {
                     ? payload
                     : [];
 
-                // Mapear igual que en gestionSolicitudes: id y nombre legible
                 this.clientes = (raw || []).map((c) => {
                     let nombre = "";
                     if ((c.tipo || c.tipo_cliente) === "empresa") {
@@ -642,7 +604,6 @@ document.addEventListener("alpine:init", () => {
                             c.razon_social ||
                             `Cliente #${c.id_cliente_fk || c.id}`;
                     } else {
-                        // persona
                         const persona = Array.isArray(c.persona)
                             ? c.persona[0]
                             : c.persona || {};
@@ -683,11 +644,9 @@ document.addEventListener("alpine:init", () => {
                     ? data
                     : [];
 
-                // Enriquecer con flags de estado/uso y vista previa del próximo número
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 this.cais = (rawList || []).map((c) => {
-                    // Soportar claves snake_case de Eloquent (estado_cai) además de camelCase
                     const estado =
                         c?.estadoCai || c?.estado_cai || c?.estado || {};
                     const estadoNombre = String(
@@ -737,7 +696,7 @@ document.addEventListener("alpine:init", () => {
                     const next = (consecutivo || 0) + 1;
                     const inRange =
                         rangoFin > 0 && next >= rangoInicio && next <= rangoFin;
-                    // Prefijo: primeros 3 bloques del CAI
+
                     let prefixStr = "";
                     try {
                         const parts = String(c?.codigo || "").split("-");
@@ -747,8 +706,7 @@ document.addEventListener("alpine:init", () => {
                     } catch (_) {
                         /* ignore */
                     }
-                    // Ya no se usa el número del CAI para el número de factura.
-                    // Se mantiene el próximo consecutivo del CAI para información.
+
                     const nextPreview = null;
 
                     const extras = [];
@@ -783,7 +741,6 @@ document.addEventListener("alpine:init", () => {
         async fetchDetallesFactura() {
             this.loadingDetalles = true;
             try {
-                // Allow optional factura id as first arg
                 let url = "/api/detalles-factura?all=true";
                 if (arguments.length > 0 && arguments[0]) {
                     const fid = arguments[0];
@@ -815,10 +772,8 @@ document.addEventListener("alpine:init", () => {
 
                 console.log("Todos los detalles de factura:", this.detalles);
 
-                // Sincronizar alias para paginación de detalles
                 this.numbersDetalles = this.detalles;
 
-                // Recalcular subtotal/total cuando cambian los detalles mostrados
                 try {
                     this.recomputeFacturaTotals();
                 } catch (e) {
@@ -831,19 +786,18 @@ document.addEventListener("alpine:init", () => {
                         "error"
                     );
                 this.detalles = [];
-                this.numbersDetalles = []; // También limpiar el alias
+                this.numbersDetalles = [];
             } finally {
                 this.loadingDetalles = false;
             }
         },
 
         async openDetalleForFactura(factura) {
-            // Set tab then fetch detalles filtered to this factura
             try {
                 const fid = factura.id || factura.id_factura_pk;
                 this.currentFacturaFilter = fid;
                 this.tab = "detalle";
-                // small delay to ensure UI tab change renders if needed
+
                 await this.fetchDetallesFactura(fid);
             } catch (e) {
                 window.showToast &&
@@ -856,12 +810,9 @@ document.addEventListener("alpine:init", () => {
 
         async openEditFactura(factura) {
             try {
-                // Crear una copia de la factura y formatear la fecha para el input date
                 this.itemToEdit = { ...factura };
 
-                // Formatear fecha: convertir "2025-10-07 00:00:00" a "2025-10-07"
                 if (this.itemToEdit.fecha) {
-                    // Extraer solo la parte de la fecha (YYYY-MM-DD) sin la hora
                     this.itemToEdit.fecha = this.itemToEdit.fecha.split(" ")[0];
                 }
 
@@ -869,16 +820,16 @@ document.addEventListener("alpine:init", () => {
                 if (fid) {
                     await this.fetchDetallesFactura(fid);
                 }
-                // ensure totals reflect the detalles
+
                 try {
                     this.recomputeFacturaTotals();
                 } catch (e) {}
                 this.isEditFacturaModalOpen = true;
             } catch (e) {
                 console.error("Error opening edit factura modal", e);
-                // fallback: open modal anyway
+
                 this.itemToEdit = { ...factura };
-                // Formatear fecha en el fallback también
+
                 if (this.itemToEdit.fecha) {
                     this.itemToEdit.fecha = this.itemToEdit.fecha.split(" ")[0];
                 }
@@ -888,17 +839,17 @@ document.addEventListener("alpine:init", () => {
 
         async submitFactura() {
             console.log("submitFactura called");
-            // reset previous errors
+
             this.errors = {};
             this.formError = "";
 
             const fechaTrim = String(
                 document.getElementById("fecha_factura")?.value || ""
             ).trim();
-            // For creation, subtotal/total/total_letras are sent automatically as zeros.
+
             const subtotal = 0;
             const total = 0;
-            // Send total_letras as textual 'cero' form so DB non-null constraint is satisfied
+
             const totalLetrasTrim = this.totalToLetras2(0);
             const ocTrim = String(
                 document.getElementById("oc_factura")?.value || ""
@@ -937,10 +888,7 @@ document.addEventListener("alpine:init", () => {
                 return;
             }
 
-            // Note: subtotal/total/total_letras are not required on creation; backend will compute authoritative values.
-
             try {
-                // Validar que el CAI seleccionado esté utilizable en cliente (el backend también valida)
                 try {
                     const selectedCai = (this.cais || []).find(
                         (c) => (c.id || c.id_cai_pk) == caiId
@@ -963,11 +911,10 @@ document.addEventListener("alpine:init", () => {
                 }
 
                 const payload = {
-                    // Numero se genera en el servidor con base en el CAI
                     fecha: fechaTrim,
                     oc: ocTrim || null,
                     subtotal: subtotal,
-                    // El impuesto se calcula en el backend; enviar 0 para cumplir validación
+
                     impuesto: 0,
                     total: total,
                     total_letras: totalLetrasTrim,
@@ -1002,7 +949,6 @@ document.addEventListener("alpine:init", () => {
 
                 if (!response.ok) {
                     if (data && data.errors) {
-                        // Map field errors to UI and toast
                         this.errors = data.errors || {};
                         try {
                             Object.values(data.errors).forEach((errArr) => {
@@ -1015,7 +961,6 @@ document.addEventListener("alpine:init", () => {
                             });
                         } catch (_) {}
                     } else {
-                        // General error (e.g., CAI vencido o sin rango)
                         this.formError =
                             data?.message || "Error al crear la factura";
                         window.showToast &&
@@ -1054,11 +999,10 @@ document.addEventListener("alpine:init", () => {
                 (!this.itemToEdit.id && !this.itemToEdit.id_factura_pk)
             )
                 return;
-            // reset previous errors
+
             this.errorsEdit = {};
             this.formErrorEdit = "";
-            // Leer valores directamente desde los campos del formulario
-            // numero y oc no son editables por modal: si no existen, mantener los actuales
+
             const fechaTrim = String(
                 document.getElementById("edit_fecha_factura")?.value || ""
             ).trim();
@@ -1098,7 +1042,6 @@ document.addEventListener("alpine:init", () => {
                 const facturaId =
                     this.itemToEdit.id_factura_pk || this.itemToEdit.id;
                 const payload = {
-                    // Numero no editable; se mantiene en servidor
                     fecha: fechaTrim,
                     oc: ocEditTrim || this.itemToEdit?.oc || null,
                     subtotal: subtotal,
@@ -1205,9 +1148,7 @@ document.addEventListener("alpine:init", () => {
             this.id_cliente_fk = "";
         },
 
-        // Helpers: generar número de factura, OC y convertir total a letras (es)
         generateFacturaNumero() {
-            // Formato: FYYYYMMDDHHMMSSxxx
             const d = new Date();
             const pad = (n, z = 2) => String(n).padStart(z, "0");
             const s =
@@ -1218,13 +1159,10 @@ document.addEventListener("alpine:init", () => {
                 pad(d.getMinutes()) +
                 pad(d.getSeconds());
             const r = Math.floor(Math.random() * 900) + 100;
-            // Nuevo formato solicitado: FAC-XXX-XXX-XXXXX
-            // Usamos dos bloques fijos de 3 dígitos (serie/sucursal) por ahora y una secuencia de 5 dígitos.
-            // Para minimizar colisiones en cliente usamos un contador en localStorage que incrementa por cada factura creada desde este navegador.
-            // Evitar uso de localStorage: generar parte final a partir de timestamp + aleatorio
-            const seriesA = "001"; // serie/establecimiento (ajustable)
-            const seriesB = "001"; // punto de emisión (ajustable)
-            // Combinar segundos Unix y un número aleatorio para obtener 5 dígitos
+
+            const seriesA = "001";
+            const seriesB = "001";
+
             const seconds = Math.floor(Date.now() / 1000);
             const pseudo =
                 (seconds + Math.floor(Math.random() * 89999) + 10000) % 100000;
@@ -1233,12 +1171,10 @@ document.addEventListener("alpine:init", () => {
         },
 
         generateOC() {
-            // Simple OC generator: OC + 6 dígitos aleatorios
             const r = Math.floor(Math.random() * 900000) + 100000;
             return "OC" + r;
         },
 
-        // Nueva versión segura de totalToLetras con formato: '... exactos' o '... con X centavo(s)'
         totalToLetras2(value) {
             const n = Math.abs(parseFloat(value) || 0);
             const entero = Math.floor(n);
@@ -1345,10 +1281,8 @@ document.addEventListener("alpine:init", () => {
             );
         },
 
-        // Recalcula subtotal/total/total_letras basándose en los detalles actualmente cargados
         recomputeFacturaTotals() {
             try {
-                // Sumar total_linea si existe, sino calcular desde precio_unitario * cantidad + impuesto - descuento
                 let subtotal = 0;
                 if (Array.isArray(this.detalles)) {
                     this.detalles.forEach((d) => {
@@ -1369,7 +1303,7 @@ document.addEventListener("alpine:init", () => {
                     });
                 }
                 subtotal = Number(subtotal.toFixed(2));
-                // Actualizar modelos y DOM
+
                 this.subtotal = subtotal;
                 const elSub = document.getElementById("subtotal_factura");
                 if (elSub) elSub.value = subtotal;
@@ -1378,7 +1312,6 @@ document.addEventListener("alpine:init", () => {
                 );
                 if (elEditSub) elEditSub.value = subtotal;
 
-                // Calcular impuesto como 15% del subtotal (no editable en los modales)
                 const impuestoVal = Number((subtotal * 0.15).toFixed(2));
 
                 const total = Number((subtotal + impuestoVal).toFixed(2));
@@ -1389,7 +1322,6 @@ document.addEventListener("alpine:init", () => {
                     document.getElementById("edit_total_factura");
                 if (elEditTotal) elEditTotal.value = total;
 
-                // Total en letras
                 const letras = this.totalToLetras2(total);
                 this.total_letras = letras;
                 const elTL = document.getElementById("total_letras_factura");
@@ -1398,20 +1330,19 @@ document.addEventListener("alpine:init", () => {
                     "edit_total_letras_factura"
                 );
                 if (elEditTL) elEditTL.value = letras;
-                // También actualizar la factura en la lista si corresponde (para reflejar cambios en la tabla)
+
                 try {
                     const fid =
                         this.itemToEdit?.id_factura_pk ||
                         this.itemToEdit?.id ||
                         null;
                     if (fid) {
-                        // actualizar itemToEdit
                         this.itemToEdit.subtotal = subtotal;
-                        // actualizar impuesto calculado
+
                         this.itemToEdit.impuesto = impuestoVal;
                         this.itemToEdit.total = total;
                         this.itemToEdit.total_letras = letras;
-                        // actualizar entrada en facturas
+
                         const idx = (this.facturas || []).findIndex(
                             (f) =>
                                 (f.id_factura_pk || f.id || f.numero) ==
@@ -1426,7 +1357,6 @@ document.addEventListener("alpine:init", () => {
                             this.facturas[idx].total_letras = letras;
                         }
                     } else if (this.currentFacturaFilter) {
-                        // si estamos filtrando por una factura en particular, actualizar la coincidencia
                         const fid2 = this.currentFacturaFilter;
                         const idx2 = (this.facturas || []).findIndex(
                             (f) => (f.id_factura_pk || f.id) == fid2
@@ -1449,7 +1379,6 @@ document.addEventListener("alpine:init", () => {
         },
 
         totalToLetras(value) {
-            // value puede ser número o cadena; devolver texto en español simple
             const n = Math.abs(parseFloat(value) || 0);
             const entero = Math.floor(n);
             const cent = Math.round((n - entero) * 100);
@@ -1545,7 +1474,6 @@ document.addEventListener("alpine:init", () => {
             words = words.trim();
             if (!words) words = "cero";
 
-            // Añadir céntimos en formato 'con XX/100'
             const centStr = String(cent).padStart(2, "0");
             return (words + " con " + centStr + "/100").replace(
                 /uno mil/,
@@ -1564,7 +1492,6 @@ document.addEventListener("alpine:init", () => {
                 this.updateFactura();
             }
 
-            // Detalle handlers (form ids used in detalle modals)
             if (event.detail.formId === "formDetalle") {
                 console.log("Calling submitDetalle");
                 this.submitDetalle();
@@ -1576,7 +1503,6 @@ document.addEventListener("alpine:init", () => {
         },
 
         handleDelete() {
-            // Prefer detalle deletion if that modal is open
             if (this.isDeleteDetalleModalOpen) {
                 this.deleteDetalle();
                 return;
@@ -1586,8 +1512,6 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
-        // ---------- Detalle functions (copied/adapted from detalle-factura.js) ----------
-        // Form fields for detalle (DOM-backed forms are used)
         id_factura_fk: "",
         id_servicio_fk: "",
         descripcion: "",
@@ -1691,12 +1615,11 @@ document.addEventListener("alpine:init", () => {
                     window.showToast("Detalle creado exitosamente", "success");
                 this.isDetalleModalOpen = false;
                 this.clearDetalleForm();
-                // Refrescar detalles filtrados para la factura y recomputar totales globales
+
                 await this.fetchDetallesFactura(
                     this.currentFacturaFilter || payload.id_factura_fk
                 );
-                // Asegurar que la lista de facturas y sus totales/impuestos se actualicen inmediatamente
-                // sin necesidad de recargar la página
+
                 try {
                     await this.fetchAllDetallesAndRecompute();
                 } catch (e) {
@@ -1853,7 +1776,7 @@ document.addEventListener("alpine:init", () => {
 
         openCreateDetalleModal() {
             this.clearDetalleForm();
-            // Clear DOM inputs if present
+
             try {
                 [
                     "id_factura_fk",
@@ -1870,7 +1793,7 @@ document.addEventListener("alpine:init", () => {
                     if (el) el.value = "";
                 });
             } catch (e) {}
-            // If we're viewing detalles filtered to a factura, preselect it
+
             try {
                 if (this.currentFacturaFilter) {
                     const sel = document.getElementById("id_factura_fk");
@@ -1882,10 +1805,7 @@ document.addEventListener("alpine:init", () => {
 
         openEditDetalleModal(detalle) {
             this.detalleToEdit = detalle;
-            // Llenar el formulario con los datos del detalle (para edicion)
-            // Se usan bindings directos al DOM para mantener compatibilidad
-            // Con servers que devuelven varios nombres de campo
-            // Populate DOM inputs so document.getElementById reads the correct values
+
             try {
                 const facturaVal =
                     detalle.id_factura_fk ||
@@ -1934,12 +1854,9 @@ document.addEventListener("alpine:init", () => {
             this.detalleToDelete = detalle;
             this.isDeleteDetalleModalOpen = true;
         },
-
-        // ----------------------------------------------------------------------------------
     }));
 });
 
-// Event listeners para manejar envíos de modales
 window.addEventListener("modal-submit", function (event) {
     try {
         const el = document.querySelector('[x-data*="facturasCrud"]');

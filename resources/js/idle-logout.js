@@ -175,7 +175,6 @@
                 else window.location.replace("/login");
             }, Math.max(0, remain));
         } else {
-            // Schedule warning to appear warnMs before logout
             logoutTimer = setTimeout(() => {
                 const deadline = now() + warnMs;
                 startWarningCountdown(deadline);

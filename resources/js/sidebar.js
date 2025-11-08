@@ -103,6 +103,5 @@ window.initResponsiveSidebar = function (scope) {
 
     window.addEventListener("resize", checkMobile);
 
-    // Aplicar el estado inicial
     toggleBodyOverflow(scope.sidebarOpen, scope.isMobile);
 };

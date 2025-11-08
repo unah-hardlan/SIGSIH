@@ -1,4 +1,3 @@
-// Alpine store to assign roles to users
 const API = { users: "/api/usuarios", roles: "/api/roles" };
 
 const authHeaders = () => ({ Accept: "application/json" });
@@ -185,12 +184,12 @@ document.addEventListener("alpine:init", () => {
 
         buildQuery(page) {
             const p = new URLSearchParams();
-            p.set("per_page", "10000"); // Obtener todos los usuarios para paginación del cliente
-            p.set("page", "1"); // Siempre página 1 para obtener todos
+            p.set("per_page", "10000");
+            p.set("page", "1");
             if (this.q) p.set("q", this.q);
             if (this.sort) p.set("sort", this.sort);
             if (this.direction) p.set("direction", this.direction);
-            // mostrar todos los estados por defecto para ver inactivos también
+
             p.set("all", "1");
             return `${API.users}?${p.toString()}`;
         },
@@ -443,7 +442,7 @@ document.addEventListener("alpine:init", () => {
                 });
                 if (!r.ok)
                     throw new Error(await r.text().catch(() => r.statusText));
-                // reflejar en memoria
+
                 const idx = this.items.findIndex((u) => u.id === id);
                 if (idx > -1)
                     this.items[idx].id_rol_fk = this.form.id_rol_fk
@@ -461,22 +460,21 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
-        // Helpers multi-rol
         isRoleSelected(id) {
             return this.rolesSelected.some((x) => String(x) === String(id));
         },
         toggleRole(id) {
             const sid = String(id);
-            // no permitir quitar el principal
+
             if (this.rol_principal === sid) return;
-            // Regla: Cliente no se puede combinar con Admin/Técnico
+
             const adding = !this.rolesSelected.map(String).includes(sid);
             if (adding) {
                 if (this._isCliente(sid) && this._hasAdminOTecnicoSelected()) {
                     this._notify(
                         "Un usuario con rol Cliente no puede tener Administrador ni Técnico."
                     );
-                    return; // no agregar Cliente
+                    return;
                 }
                 if (
                     (this._isAdmin(sid) || this._isTecnico(sid)) &&
@@ -485,7 +483,7 @@ document.addEventListener("alpine:init", () => {
                     this._notify(
                         "No se puede combinar Cliente con Administrador/Técnico."
                     );
-                    return; // no agregar Admin/Técnico
+                    return;
                 }
             }
             const idx = this.rolesSelected
@@ -494,7 +492,7 @@ document.addEventListener("alpine:init", () => {
             if (idx > -1) this.rolesSelected.splice(idx, 1);
             else this.rolesSelected.push(sid);
             this.rolesSelected = this.rolesSelected.map(String);
-            // enforcement post-cambio
+
             this._enforceClienteRule();
         },
         setPrincipal(id) {
@@ -521,7 +519,6 @@ document.addEventListener("alpine:init", () => {
             const rs = this.rolesSelected.map(String);
             let changed = false;
             if (this._isCliente(this.rol_principal)) {
-                // quitar admin/tecnico
                 const forbid = [adminId, tecnicoId].filter(Boolean).map(String);
                 this.rolesSelected = rs.filter(
                     (x) =>
@@ -533,7 +530,6 @@ document.addEventListener("alpine:init", () => {
                         "Con rol principal Cliente no se permiten roles Administrador ni Técnico."
                     );
             } else {
-                // si hay admin/tecnico como principal o adicional, quitar Cliente de adicionales
                 const hasAdminOTec = this._hasAdminOTecnicoSelected();
                 if (hasAdminOTec && clienteId) {
                     this.rolesSelected = rs.filter(
@@ -546,7 +542,7 @@ document.addEventListener("alpine:init", () => {
                         );
                 }
             }
-            // mantener principal siempre incluido
+
             if (
                 this.rol_principal &&
                 !this.rolesSelected.includes(String(this.rol_principal))
@@ -558,7 +554,7 @@ document.addEventListener("alpine:init", () => {
         isRoleDisabled(id) {
             const sid = String(id);
             if (this.rol_principal === sid) return true;
-            // deshabilitar combinaciones inválidas para mejorar UX
+
             if (this._isCliente(this.rol_principal)) {
                 return this._isAdmin(sid) || this._isTecnico(sid);
             }
@@ -568,7 +564,7 @@ document.addEventListener("alpine:init", () => {
             ) {
                 return this._isCliente(sid);
             }
-            // si cliente está seleccionado como adicional, bloquear admin/tecnico; y viceversa
+
             const clienteSel = this.rolesSelected
                 .map(String)
                 .some((x) => this._isCliente(x));
@@ -583,14 +579,14 @@ document.addEventListener("alpine:init", () => {
         async saveAssignMulti() {
             if (!this.current?.id) return;
             const id = this.current.id;
-            // x-model en checkboxes usa strings; convertimos a números limpios
+
             const roles = (this.rolesSelected || [])
                 .map((v) => Number(String(v).trim()))
                 .filter((v) => Number.isFinite(v) && v > 0);
             const rol_principal = this.rol_principal
                 ? Number(this.rol_principal)
                 : null;
-            // Validación previa: Cliente no se combina con Admin/Técnico
+
             const clienteId = this._idForRole("cliente");
             const adminId = this._idForRole("administrador");
             const tecnicoId = this._idForRole("tecnico");
@@ -635,7 +631,7 @@ document.addEventListener("alpine:init", () => {
                 if (idx > -1)
                     this.items[idx].id_rol_fk =
                         rol_principal ?? (roles[0] || null);
-                // actualizar cache local para evitar refetchs posteriores
+
                 this._rolesCache[id] = {
                     roles: this.rolesSelected.map(String),
                     rol_principal: String(this.rol_principal || ""),
@@ -657,7 +653,6 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
-        // debounce
         _debounceTimer: null,
         debouncedApplyFilters() {
             if (this._debounceTimer) clearTimeout(this._debounceTimer);

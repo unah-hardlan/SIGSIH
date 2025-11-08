@@ -1,4 +1,3 @@
-// Simple cache-first helper for GET endpoints using server-side caching
 export async function getCached(
     url,
     { ttlMs = 2 * 60 * 1000, force = false, mapper } = {}

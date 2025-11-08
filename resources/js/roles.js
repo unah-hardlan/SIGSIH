@@ -1,4 +1,3 @@
-// Alpine store for CRUD de Roles
 const API = { roles: "/api/roles" };
 
 const authHeaders = () => ({
@@ -64,7 +63,6 @@ function createRolesStore() {
         _abortCtrl: null,
         blocked: false,
 
-        // Variables de Paginación del lado del cliente
         allItems: [],
         currentPage: 1,
 
@@ -100,8 +98,8 @@ function createRolesStore() {
         },
         buildQuery(page) {
             const params = new URLSearchParams();
-            params.set("per_page", "10000"); // Obtener todos los roles para paginación del cliente
-            params.set("page", "1"); // Siempre página 1 para obtener todos
+            params.set("per_page", "10000");
+            params.set("page", "1");
             if (this.q) params.set("q", this.q);
             if (this.sort) params.set("sort", this.sort);
             if (this.direction) params.set("direction", this.direction);
@@ -152,7 +150,7 @@ function createRolesStore() {
                 this.allItems = normalizeList(data);
                 this.applyFiltersAndPagination();
             } catch (e) {
-                if ((e && e.name) === "AbortError") return; // ignorar
+                if ((e && e.name) === "AbortError") return;
                 this.error = e && e.message ? e.message : String(e || "Error");
             } finally {
                 this.loading = false;
@@ -160,7 +158,6 @@ function createRolesStore() {
             }
         },
         applyFiltersAndPagination() {
-            // Aplicar filtros de búsqueda si existe
             let filtered = this.allItems;
             if (this.q) {
                 const searchTerm = this.q.toLowerCase();
@@ -186,14 +183,12 @@ function createRolesStore() {
                 });
             }
 
-            // Actualizar meta para compatibilidad
             this.meta.total = filtered.length;
             this.meta.last_page = Math.ceil(filtered.length / this.perPage);
 
-            // Aplicar paginación del cliente
             this.items = this.paginatedRoles(filtered);
         },
-        // Métodos de paginación del lado del cliente
+
         paginatedRoles(items = null) {
             const source = items || this.allItems;
             const start = (this.currentPage - 1) * this.perPage;
@@ -269,7 +264,7 @@ function createRolesStore() {
                 const res = await apiSend(API.roles, "POST", payload);
                 this.isCreateOpen = false;
                 await this.fetchList(1);
-                // refrescar store de access roles si existe
+
                 const access = window.Alpine?.store("access");
                 if (access) {
                     const all = await fetch(`${API.roles}?all=1`, {
@@ -384,7 +379,6 @@ function createRolesStore() {
             }
         },
 
-        // debounce búsqueda
         _debounceTimer: null,
         debouncedFetch() {
             if (this._debounceTimer) clearTimeout(this._debounceTimer);
