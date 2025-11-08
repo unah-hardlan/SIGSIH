@@ -6,12 +6,9 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-5xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="CAI" :logoSize="96" />
-            <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de CAI Registrados</h2>
 
-            <!-- Estadísticas -->
             <div class="grid grid-cols-4 gap-4 mb-6">
                 <div class="bg-blue-50 p-4 rounded-lg border">
                     <div class="text-2xl font-bold text-blue-600">{{ $total }}</div>
@@ -31,7 +28,6 @@
                 </div>
             </div>
 
-            <!-- Tabla de CAI -->
             <div class="overflow-x-auto mb-8">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
@@ -77,7 +73,6 @@
                 </table>
             </div>
 
-            <!-- Botones de acción -->
             <div class="mt-6 flex justify-center gap-4 no-print">
                 <button onclick="window.print()"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">

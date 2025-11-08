@@ -472,16 +472,12 @@ class OrdenServicioController extends Controller
         return view('admin.formato-reporte', compact('orden', 'telefonos', 'correo', 'direccion', 'oficina', 'ciudad'));
     }
 
-    /**
-     * Mostrar el detalle de una orden de servicio con datos procesados.
-     */
+ 
     public function detalleOrden(Request $request, $id = null)
     {
-        // Si no se proporciona ID en la ruta, intentar obtenerlo del query string
         $ordenId = $id ?? $request->query('orden');
         
         if (!$ordenId) {
-            // Si no hay ID, mostrar vista vacía para que JS maneje la carga
             return view('admin.detalle-orden');
         }
 
@@ -501,13 +497,10 @@ class OrdenServicioController extends Controller
                 return view('admin.detalle-orden');
             }
 
-            // Procesar datos del cliente
             $datosCliente = $this->procesarDatosCliente($orden);
             
-            // Procesar repuestos
             $repuestosList = $this->procesarRepuestos($orden);
             
-            // Calificación del servicio
             $calificacionServicio = $orden->calificacion_servicio ?? null;
 
             return view('admin.detalle-orden', compact('orden') + $datosCliente + [
@@ -516,29 +509,23 @@ class OrdenServicioController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-            // En caso de error, mostrar vista vacía para que JS maneje la carga
             return view('admin.detalle-orden');
         }
     }
 
-    /**
-     * Procesar datos del cliente de la orden.
-     */
+  
     private function procesarDatosCliente($orden)
     {
-        // Nombre cliente: preferir empresa; si no existe, construir nombre desde la persona
         $clienteNombre = data_get($orden, 'solicitudServicio.cliente.empresa.nombre_comercial')
             ?: data_get($orden, 'solicitudServicio.cliente.empresa.razon_social');
 
         if (!$clienteNombre) {
-            // Intentar tomar la primera persona ligada al cliente y concatenar sus partes del nombre
             $personasTmp = data_get($orden, 'solicitudServicio.cliente.personas', []);
             $personaCandidate = null;
             if (!empty($personasTmp)) {
                 if (is_array($personasTmp)) {
                     $personaCandidate = $personasTmp[0] ?? null;
                 } else {
-                    // colección (Eloquent)
                     $personaCandidate = count($personasTmp) ? $personasTmp->first() : null;
                 }
             }
@@ -550,26 +537,20 @@ class OrdenServicioController extends Controller
                     data_get($personaCandidate, 'primer_apellido'),
                     data_get($personaCandidate, 'segundo_apellido'),
                 ])));
-                // si no se pudo construir, intentar campos alternativos
                 $clienteNombre = $pn ?: data_get($personaCandidate, 'full_name') ?: data_get($personaCandidate, 'nombre_completo');
             }
         }
 
         $clienteNombre = $clienteNombre ?: '—';
 
-        // Contacto principal (de la solicitud)
         $contactoNombre = $this->procesarNombreContacto($orden);
 
-        // Teléfonos desde contactos del cliente
         $telefonosVal = $this->procesarTelefonos($orden);
 
-        // Correo: primero desde contactos, luego desde la persona->usuario
         $correoVal = $this->procesarCorreo($orden);
 
-        // Dirección / Oficina / Ciudad: preferir agencia asociada al cliente
         $ubicacion = $this->procesarUbicacion($orden);
 
-        // Preparar valores para la sección de firma del cliente
         $firmaNombre = $clienteNombre ?: '—';
         $firmaCi = data_get($orden, 'solicitudServicio.cliente.empresa.rtn') 
             ?: data_get($orden, 'solicitudServicio.cliente.personas.0.dni') 
@@ -590,23 +571,18 @@ class OrdenServicioController extends Controller
         ];
     }
 
-    /**
-     * Procesar nombre del contacto.
-     */
     private function procesarNombreContacto($orden)
     {
         $contactoNombre = '—';
         $solContacto = data_get($orden, 'solicitudServicio.contacto', []);
         
         if (!empty($solContacto)) {
-            // intentar campos explícitos de nombre primero
             $nombreFromContacto = data_get($solContacto, 'nombre') ?: data_get($solContacto, 'valor_contacto');
             if ($nombreFromContacto && preg_match('/[A-Za-zÁÉÍÓÚáéíóúÑñ]/', (string) $nombreFromContacto)) {
                 $contactoNombre = trim((string) $nombreFromContacto);
             }
         }
 
-        // Si todavía no existe un nombre significativo, intentar con las personas del cliente
         if (empty($contactoNombre) || $contactoNombre === '—') {
             $personasTmp = data_get($orden, 'solicitudServicio.cliente.personas', []);
             $personaCandidate = null;
@@ -628,7 +604,6 @@ class OrdenServicioController extends Controller
             }
         }
 
-        // Último recurso: recorrer los contactos del cliente y elegir el primer valor textual
         if (empty($contactoNombre) || $contactoNombre === '—') {
             $ct = data_get($orden, 'solicitudServicio.cliente.contactos', []);
             if (!empty($ct)) {
@@ -645,9 +620,7 @@ class OrdenServicioController extends Controller
         return $contactoNombre ?: '—';
     }
 
-    /**
-     * Procesar teléfonos del cliente.
-     */
+ 
     private function procesarTelefonos($orden)
     {
         $telefonosVal = '—';
@@ -669,9 +642,7 @@ class OrdenServicioController extends Controller
         return $telefonosVal;
     }
 
-    /**
-     * Procesar correo del cliente.
-     */
+    
     private function procesarCorreo($orden)
     {
         $correoVal = '—';
@@ -688,7 +659,6 @@ class OrdenServicioController extends Controller
             }
         }
 
-        // Si no viene por contactos, intentar obtener correo del usuario asociado a la persona del cliente
         if ($correoVal === '—') {
             $personas = data_get($orden, 'solicitudServicio.cliente.personas', []);
             if (!empty($personas)) {
@@ -705,9 +675,6 @@ class OrdenServicioController extends Controller
         return $correoVal;
     }
 
-    /**
-     * Procesar ubicación (dirección, oficina, ciudad).
-     */
     private function procesarUbicacion($orden)
     {
         $direccionVal = '—';
@@ -716,13 +683,11 @@ class OrdenServicioController extends Controller
 
         $agencias = data_get($orden, 'solicitudServicio.cliente.agencias', []);
         if (!empty($agencias)) {
-            // Tomar la primera agencia disponible
             $ag = is_array($agencias) ? ($agencias[0] ?? null) : (count($agencias) ? $agencias->first() : null);
             if ($ag) {
                 $oficinaVal = data_get($ag, 'nombre_agencia') ?: $oficinaVal;
                 $dir = data_get($ag, 'direccion');
                 if ($dir) {
-                    // Usar accessor direccion_completa si existe, o concatenar campos conocidos
                     $direccionVal = data_get($dir, 'direccion_completa')
                         ?: (trim((data_get($dir, 'calle', '') . ' ' . data_get($dir, 'numero', '') . ' ' . data_get($dir, 'colonia', '')))) ?: $direccionVal;
                     $ciudadVal = data_get($dir, 'ciudad.nombre_ciudad') ?: $ciudadVal;
@@ -737,9 +702,6 @@ class OrdenServicioController extends Controller
         ];
     }
 
-    /**
-     * Procesar repuestos de la orden.
-     */
     private function procesarRepuestos($orden)
     {
         $repuestosList = [];
@@ -761,7 +723,6 @@ class OrdenServicioController extends Controller
                 }
             }
         } catch (\Throwable $_) {
-            // no bloquear la vista
             $repuestosList = [];
         }
         

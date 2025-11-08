@@ -7,7 +7,6 @@
     accionesRealizadas: [],
     loadingAccionesRealizadas: false,
 
-    //  Variables de Paginación
     numbersAccionesRealizadas: [],
     currentPageAccionesRealizadas: 1,
     perPageAccionesRealizadas: 10,
@@ -19,7 +18,6 @@
     filtroAccionRealizada: '',
     ordenarPor: 'nombre',
 
-    //  Métodos de Paginación
     paginatedAccionesRealizadas() {
         return this.accionesRealizadas.slice(
             (this.currentPageAccionesRealizadas - 1) * this.perPageAccionesRealizadas, 
@@ -40,22 +38,21 @@
         }
     },
 
-    //  Sincronizar Alias en cada operación CRUD
     async fetchAccionesRealizadas() {
         await window.accionesRealizadasApiHandlers.fetchAccionesRealizadas(this);
-        this.numbersAccionesRealizadas = this.accionesRealizadas; // ← LÍNEA AGREGADA
+        this.numbersAccionesRealizadas = this.accionesRealizadas; 
     },
     async submitAccionRealizada() {
         await window.accionesRealizadasApiHandlers.submitAccionRealizada(this);
-        this.fetchAccionesRealizadas(); // Refrescar datos
+        this.fetchAccionesRealizadas(); 
     },
     async updateAccionRealizada() {
         await window.accionesRealizadasApiHandlers.updateAccionRealizada(this);
-        this.fetchAccionesRealizadas(); // Refrescar datos
+        this.fetchAccionesRealizadas(); 
     },
     async deleteAccionRealizada() {
         await window.accionesRealizadasApiHandlers.deleteAccionRealizada(this);
-        this.fetchAccionesRealizadas(); // Refrescar datos
+        this.fetchAccionesRealizadas();
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formAccionRealizada') this.submitAccionRealizada();
@@ -69,7 +66,6 @@
 }"
     x-init="fetchAccionesRealizadas()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroAccionRealizada', () => { fetchAccionesRealizadas(); currentPageAccionesRealizadas = 1; });
     $watch('ordenarPor', () => { fetchAccionesRealizadas(); currentPageAccionesRealizadas = 1; });
 "
@@ -137,7 +133,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingAccionesRealizadas && accionesRealizadas.length > 0">
-                        <!--  Usar paginatedAccionesRealizadas() en el template -->
                         <template x-for="(accion, index) in paginatedAccionesRealizadas()" :key="accion.id_accion_realizada_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedAccionesRealizadas().length - 1 }">
@@ -204,9 +199,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!--  Componente de Paginación -->
     <div x-show="accionesRealizadas.length > perPageAccionesRealizadas" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -219,7 +212,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageAccionesRealizadas()" :disabled="currentPageAccionesRealizadas === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -249,9 +241,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nueva Acción -->
         @perm(['Catálogo','Acciones Realizadas','Accion Realizada','Acción Realizada'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isAccionRealizadaModalOpen" title="Nueva Acción Realizada"
             submitLabel="Guardar Acción" formId="formAccionRealizada" maxWidth="max-w-md">
@@ -278,7 +268,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Acción -->
         @perm(['Catálogo','Acciones Realizadas','Accion Realizada','Acción Realizada'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isAccionRealizadaEditModalOpen" title="Editar Acción Realizada"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditAccionRealizada">
@@ -307,7 +296,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Acciones Realizadas','Accion Realizada','Acción Realizada'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isAccionRealizadaDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar esta acción?" />

@@ -6,11 +6,8 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-5xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="AGENCIAS" :logoSize="96" />
-            <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Agencias</h2>
-            <!-- Tabla de Agencias -->
             <div class="overflow-x-auto mb-8">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
@@ -46,7 +43,6 @@
                 </table>
             </div>
 
-            <!-- Estadísticas -->
             <div class="mb-8">
                 <h3 class="text-lg nunito-bold text-gray-800 mb-4">Estadísticas</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -60,7 +56,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Botones de acción -->
             <div class="report-print-controls no-print">
                 <button onclick="window.print()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">

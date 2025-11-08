@@ -591,7 +591,7 @@
                 try {
                     const id = this.idFromQuery();
                     const END = window.COTI_ENDPOINTS || null;
-                    if (!END || !id) return; // solo cliente
+                    if (!END || !id) return; 
                     const tokenEl = document.querySelector('meta[name="csrf-token"]');
                     const csrf = tokenEl ? tokenEl.getAttribute('content') : '';
                     const res = await fetch(`/cliente/cotizaciones/${id}/cambiar-estado`, {

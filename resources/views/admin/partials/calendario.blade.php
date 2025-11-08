@@ -1,6 +1,5 @@
 <div x-data="{
     tab: 'calendario',
-    // Permisos inyectados desde servidor
     canInsertCal: @perm(['Gestión de Calendario','Gestion de Calendario'], 'insercion') true @else false @endperm,
     canEditCal: @perm(['Gestión de Calendario','Gestion de Calendario'], 'actualizacion') true @else false @endperm,
     canDeleteCal: @perm(['Gestión de Calendario','Gestion de Calendario'], 'eliminacion') true @else false @endperm,
@@ -11,10 +10,8 @@
     isAddCalendarioModalOpen: false,
     isEditCalendarioModalOpen: false,
     selectedEvent: null,
-    // Delete modal state
     isDeleteModalOpen: false,
     eventToDelete: null,
-    // LISTA: estado y selección independientes
     isAddListModalOpen: false,
     isEditListModalOpen: false,
     isDetailListModalOpen: false,
@@ -38,7 +35,6 @@
         this.selectedEventLista = null;
         this.isAddListModalOpen = true;
     },
-    // API-bound form state
     formEvento: {
         fecha: '',
         descripcion_calendario: '',
@@ -50,7 +46,6 @@
         id_cliente_fk: '',
         _touched: {},
     },
-    // LISTA: formulario separado
     formEventoLista: {
         fecha: '',
         descripcion_calendario: '',
@@ -71,12 +66,9 @@
     catalogEstados: [],
     catalogTiposMantenimiento: [],
     catalogClientes: [],
-    // Clientes filtrados por agencia seleccionada (si aplica)
     filteredClientes: [],
-    // Ordenes filtradas por cliente seleccionado (si aplica)
     filteredOrdenesServicio: [],
     catalogOrdenesServicio: [],
-    // Calendar variables
     currentYear: new Date().getFullYear(),
     currentMonth: new Date().getMonth(),
     isMonthModalOpen: false,
@@ -85,16 +77,12 @@
     monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
     dayNames: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     events: {},
-    // List view filters to avoid ReferenceError when not defined
     searchEventos: '',
     estadoEventoFiltro: '',
     agenciaEventoFiltro: '',
     ordenarPor: 'fecha', // <-- CORREGIDO AQUÍ
 
-    // Computed helpers for Eventos Listado
     flattenEvents(){
-        // ... el resto de tu código sigue igual
-        // returns a flat array of all events in the current month with date key
         const out = [];
         for(const day in this.events){
             const arr = this.events[day]||[];
@@ -103,7 +91,6 @@
         return out;
     },
     formatDateEs(dateStr){
-        // dateStr expected 'YYYY-MM-DD HH:mm:ss' or 'YYYY-MM-DD'
         const d = (dateStr||'').slice(0,10).split('-');
         if(d.length<3) return dateStr||'';
         const y=+d[0], m=+d[1]-1, day=+d[2];
@@ -114,24 +101,20 @@
         const q = (this.searchEventos||'').toLowerCase();
         const estado = (this.estadoEventoFiltro||'').toLowerCase();
         const agencia = (this.agenciaEventoFiltro||'').toLowerCase();
-        // Build list
         let list = this.flattenEvents().filter(ev => {
             const hayQ = !q || [ev.titulo, ev.cliente, ev.agencia, ev.tipo, ev.direccion].some(v=> (v||'').toLowerCase().includes(q));
             const okEstado = !estado || (ev.estado||'').toLowerCase() === estado;
             const okAgencia = !agencia || (ev.agencia||'').toLowerCase() === agencia;
             return hayQ && okEstado && okAgencia;
         });
-        // Sorting
         const by = this.ordenarPor||'fecha';
         list.sort((a,b)=>{
             if(by==='estado') return (a.estado||'').localeCompare(b.estado||'');
             if(by==='cliente') return (a.cliente||'').localeCompare(b.cliente||'');
-            // default fecha using raw.fecha
             return (a.raw?.fecha||'').localeCompare(b.raw?.fecha||'');
         });
         return list;
     },
-    // Helpers
     openEdit(ev){
         if(!ev) return;
         // Clone to break references and force Alpine reactivity
@@ -151,10 +134,8 @@
             id_cliente_fk: raw.id_cliente_fk || '',
             _touched: {}
         };
-        // Alinear dependientes como en Agregar: cargar clientes por agencia y OS por cliente
         try { window.calendarioApiHandlers && window.calendarioApiHandlers.onAgenciaChange(this, this.formEvento.id_agencias_fk); } catch(_) {}
         try { window.calendarioApiHandlers && window.calendarioApiHandlers.onClienteChange(this, this.formEvento.id_cliente_fk); } catch(_) {}
-        // pequeño delay para asegurar que el modal capta el nuevo estado antes de abrir
         requestAnimationFrame(()=>{ this.isEditModalOpen = true; });
     },
     openEditList(ev){
@@ -174,13 +155,11 @@
             id_cliente_fk: raw.id_cliente_fk || '',
             _touched: {}
         };
-        // Alinear dependientes como en Agregar para la vista de Lista
         try { window.calendarioApiHandlers && window.calendarioApiHandlers.onAgenciaChange(this, this.formEventoLista.id_agencias_fk); } catch(_) {}
         try { window.calendarioApiHandlers && window.calendarioApiHandlers.onClienteChange(this, this.formEventoLista.id_cliente_fk); } catch(_) {}
         requestAnimationFrame(()=>{ this.isEditListModalOpen = true; });
     },
     async quickDelete(ev){
-        // Deprecated direct confirm; keep for fallback
         if(!ev) return;
         this.openDelete(ev);
     },
@@ -201,7 +180,6 @@
     cancelDelete(){ this.isDeleteModalOpen = false; this.eventToDelete = null; },
     cancelDeleteList(){ this.isDeleteListModalOpen = false; this.eventToDeleteLista = null; },
     
-    // Calendar methods
     getDaysInMonth(year, month) {
         return new Date(year, month + 1, 0).getDate();
     },
@@ -215,12 +193,10 @@
         const firstDay = this.getFirstDayOfMonth(this.currentYear, this.currentMonth);
         const days = [];
         
-        // Add empty days for previous month
         for (let i = 0; i < firstDay; i++) {
             days.push({ day: '', isEmpty: true });
         }
         
-        // Add days of current month
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             days.push({ 
@@ -261,20 +237,17 @@
     isToday(day) {
         const today = new Date();
         return day === today.getDate() && 
-               this.currentMonth === today.getMonth() && 
-               this.currentYear === today.getFullYear();
+        this.currentMonth === today.getMonth() && 
+        this.currentYear === today.getFullYear();
     },
     async init() {
-        // Pre-set form date to today at 08:00 for quick add
         const now = new Date();
         const pad = (n) => String(n).padStart(2,'0');
         this.formEvento.fecha = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T08:00`;
         await window.calendarioApiHandlers.loadCatalogs(this);
         await window.calendarioApiHandlers.fetchMonth(this);
-        // Watch for modal close to clear stale selectedEvent
         this.$watch('isEditModalOpen', (open) => { if(!open){ this.selectedEvent=null; } });
         this.$watch('isEditListModalOpen', (open) => { if(!open){ this.selectedEventLista=null; } });
-        // Dependientes: cuando cambia la agencia, cargar solo clientes de esa agencia
         this.$watch('formEvento.id_agencias_fk', (val) => {
             if(!val){ this.formEvento.id_cliente_fk=''; this.filteredClientes=[]; }
             window.calendarioApiHandlers.onAgenciaChange(this, val);
@@ -283,7 +256,6 @@
             if(!val){ this.formEventoLista.id_cliente_fk=''; this.filteredClientes=[]; }
             window.calendarioApiHandlers.onAgenciaChange(this, val);
         });
-        // Cuando cambia el cliente, cargar ordenes de servicio de ese cliente
         this.$watch('formEvento.id_cliente_fk', (val) => {
             if(!val){ this.formEvento.id_orden_servicio_fk=''; this.filteredOrdenesServicio=[]; }
             window.calendarioApiHandlers.onClienteChange(this, val);
@@ -423,7 +395,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Modal Detalle Evento -->
             <x-admin.edit-modal class="nunito-bold" modalName="isDetailModalOpen" title="Detalle del Evento"
                 itemToEdit="selectedEvent">
                 <div class="space-y-2">
@@ -461,7 +432,6 @@
                     </div>
                 </div>
             </x-admin.edit-modal>
-            <!-- Modal Crear Evento -->
             <x-admin.form-modal class="nunito-bold" modalName="isAddModalOpen" title="Agregar Evento"
                 submitLabel="Guardar" :formId="'form-add-event'">
                 <div class="space-y-4">
@@ -609,7 +579,6 @@
                     x-init="resetForm = () => { const now=new Date(); const pad=n=>String(n).padStart(2,'0'); const fecha=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T08:00`; formEvento = { fecha, descripcion_calendario:'', observaciones_calendario:'', id_estado_calendario_fk:'', id_agencias_fk:'', id_orden_servicio_fk:'', id_tipo_mantenimiento_fk:'', id_cliente_fk:'' }; }; normalizeForm = (f) => ({ ...f, fecha: f.fecha?.includes('T') ? f.fecha.replace('T',' ') + ':00' : f.fecha });">
                 </div>
             </x-admin.form-modal>
-            <!-- Modal Editar Evento -->
             <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Evento"
                 itemToEdit="selectedEvent" :formId="'form-edit-event'">
                 <div class="space-y-4"
@@ -753,7 +722,6 @@
                     @modal-submit.window="if($event.detail.formId==='form-edit-event' && selectedEvent && !submitting){ const f=document.getElementById('form-edit-event'); if(f && !f.reportValidity()){ return; } submitting=true; window.calendarioApiHandlers.updateEvent($data, selectedEvent.id, normalizeForm(formEvento)).finally(()=>{ submitting=false; isEditModalOpen=false; }); }">
                 </div>
             </x-admin.edit-modal>
-            <!-- Modal Cancelar Evento -->
             <x-admin.confirmation-modal class="nunito-bold" modalName="isCancelModalOpen" itemToDelete="selectedEvent"
                 message="¿Está seguro que desea cancelar este evento? El estado cambiará a 'Cancelado'." />
             <div
@@ -891,7 +859,6 @@
             </div>
         </div>
 
-        <!-- Modal Ver Detalles del Evento (Calendario) -->
         <x-admin.form-modal modalName="isDetailModalOpen" title="Detalles del Evento" submitLabel="" hideActions="true"
             maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -974,8 +941,6 @@
             </div>
         </x-admin.form-modal>
 
-        <!-- LISTA: Modales independientes -->
-        <!-- Detalle -->
         <x-admin.form-modal modalName="isDetailListModalOpen" title="Detalles del Evento" submitLabel=""
             hideActions="true" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -999,10 +964,11 @@
                             <label
                                 class="block text-sm font-medium text-gray-600 dark:text-gray-300 nunito-bold">Estado</label>
                             <span class="px-2 py-1 rounded-full text-xs font-semibold nunito-bold" :class="selectedEventLista ? {
-                                      'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300': selectedEventLista.estado === 'Programado',
-                                      'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300': selectedEventLista.estado === 'Realizado',
-                                      'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': selectedEventLista.estado === 'Cancelado'
-                                  } : ''" x-text="selectedEventLista ? selectedEventLista.estado : ''"></span>
+                                    'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300': selectedEventLista.estado === 'Programado',
+                                    'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300': selectedEventLista.estado === 'Realizado',
+                                    'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': selectedEventLista.estado === 'Cancelado'
+                                } : ''" x-text="selectedEventLista ? selectedEventLista.estado : ''">
+                            </span>
                         </div>
                         <div>
                             <label
@@ -1051,7 +1017,6 @@
             </div>
         </x-admin.form-modal>
 
-        <!-- Crear -->
         <x-admin.form-modal class="nunito-bold" modalName="isAddListModalOpen" title="Agregar Evento"
             submitLabel="Guardar" :formId="'form-add-event-list'">
             <div class="space-y-4">
@@ -1215,7 +1180,6 @@
             </div>
         </x-admin.form-modal>
 
-        <!-- Editar -->
         <x-admin.edit-modal class="nunito-bold" modalName="isEditListModalOpen" title="Editar Evento"
             itemToEdit="selectedEventLista" :formId="'form-edit-event-list'">
             <div class="space-y-4"
@@ -1345,9 +1309,6 @@
             </div>
         </x-admin.edit-modal>
 
-        <!-- (Modal de cancelar para LISTA removido; se usa Eliminar) -->
-
-        <!-- Eliminar -->
         <div x-show="isDeleteListModalOpen" x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
@@ -1380,7 +1341,6 @@
         </div>
     </div>
 
-    <!-- Modal Selección de Mes/Año -->
     <div x-show="isMonthModalOpen" x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
@@ -1414,7 +1374,6 @@
         </div>
     </div>
 
-    <!-- Modal Eliminar Evento -->
     <div x-show="isDeleteModalOpen" x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"

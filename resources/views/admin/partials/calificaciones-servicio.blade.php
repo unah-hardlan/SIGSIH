@@ -15,7 +15,6 @@
     filtroCalificacion: ''
 }">
     <div class="bg-white rounded-lg shadow p-6 mt-6 w-full">
-        <!-- HEADER Y FILTROS -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full pb-4 mb-4 border-b">
             <h2 class="text-2xl text-gray-800 nunito-bold">Calificaciones de Servicio</h2>
             <div class="flex flex-col sm:flex-row gap-2 flex-1 md:ml-6 nunito-bold">
@@ -30,7 +29,6 @@
             </div>
         </div>
 
-        <!-- TABLA -->
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm w-full">
                 <thead class="bg-gray-100 nunito-bold">
@@ -69,7 +67,6 @@
         </div>
     </div>
 
-    <!-- MODAL AGREGAR CALIFICACIÓN -->
     <div x-show="isCalificacionModalOpen" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
         <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
             <h2 class="text-xl font-bold mb-4">Agregar Calificación de Servicio</h2>
@@ -103,7 +100,6 @@
         </div>
     </div>
 
-    <!-- MODAL EDITAR CALIFICACIÓN -->
     <div x-show="isEditCalificacionModalOpen"
         class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
         <div class="bg-white p-6 rounded-lg shadow max-w-md w-full relative">
@@ -131,7 +127,6 @@
         </div>
     </div>
 
-    <!-- MODAL ELIMINAR CALIFICACIÓN -->
     <div x-show="isDeleteCalificacionModalOpen" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"

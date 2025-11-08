@@ -6,13 +6,8 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-6xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="Movimientos de Proyecto" :logoSize="96" />
-
-            <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Movimientos Financieros</h2>
-
-            <!-- Resumen general -->
             <div class="mb-6 p-4 bg-gray-50 rounded">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div class="text-center">
@@ -39,7 +34,6 @@
                 </div>
             </div>
 
-            <!-- Sección de Ingresos -->
             <div class="mb-8">
                 <h3 class="text-lg nunito-bold text-green-700 mb-4 border-b border-green-200 pb-2">INGRESOS</h3>
                 <div class="overflow-x-auto">
@@ -74,7 +68,6 @@
                 </div>
             </div>
 
-            <!-- Sección de Gastos -->
             <div class="mb-8">
                 <h3 class="text-lg nunito-bold text-red-700 mb-4 border-b border-red-200 pb-2">GASTOS</h3>
                 <div class="overflow-x-auto">
@@ -109,7 +102,6 @@
                 </div>
             </div>
 
-            <!-- Botones de acción -->
             <div class="report-print-controls no-print">
                 <button onclick="window.print()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
