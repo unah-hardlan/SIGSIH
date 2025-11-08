@@ -7,17 +7,23 @@
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl p-4">
         <x-slot name="filters">
             @include('partials.filtros-generales', [
-                'searchModel' => 'search',
-                'filtrosSelect' => [],
-                'ordenarOptions' => ['parametro' => 'Parámetro', 'valor' => 'Valor', 'creado' => 'Creación']
+            'searchModel' => 'search',
+            'filtrosSelect' => [],
+            'ordenarOptions' => ['parametro' => 'Parámetro', 'valor' => 'Valor', 'creado' => 'Creación']
             ])
         </x-slot>
 
         <x-slot name="actions">
             <div class="flex flex-col sm:flex-row items-center gap-2">
+                @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'insercion')
                 <button @click="openCreate()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                     <i class="fas fa-plus"></i> Agregar Parámetro
                 </button>
+                @else
+                <button disabled title="Sin permiso para crear" class="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2 opacity-60 cursor-not-allowed">
+                    <i class="fas fa-plus"></i> Agregar Parámetro
+                </button>
+                @endperm
                 <button @click="openReporte()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </button>
@@ -37,10 +43,14 @@
                 </thead>
                 <tbody>
                     <template x-if="loading">
-                        <tr><td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td></tr>
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
+                        </tr>
                     </template>
                     <template x-if="!loading && parametros.length === 0">
-                        <tr><td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400 nunito-regular">Sin resultados</td></tr>
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400 nunito-regular">Sin resultados</td>
+                        </tr>
                     </template>
                     <template x-if="!loading && parametros.length > 0">
                         <template x-for="(p, index) in paginatedParametros()" :key="p.id">
@@ -51,8 +61,16 @@
                                 <td class="py-2 px-4 text-gray-700 dark:text-gray-300" x-text="p.creado_por || '-'"></td>
                                 <td class="py-2 px-4 text-gray-700 dark:text-gray-300" x-text="p.fecha_creacion_formatted || p.fecha_creacion || '-' "></td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'actualizacion')
                                     <button @click="openEdit(p)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span title="Sin permiso para editar" class="text-blue-300 cursor-not-allowed"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'eliminacion')
                                     <button @click="openDelete(p)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span title="Sin permiso para eliminar" class="text-red-300 cursor-not-allowed"><i class="fas fa-trash"></i></span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -82,8 +100,16 @@
                             </div>
                             <p class="text-xs text-gray-400">Creado por: <span x-text="p.creado_por || '-'"></span> el <span x-text="p.fecha_creacion_formatted || p.fecha_creacion || '-' "></span></p>
                             <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700 flex-wrap">
+                                @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'actualizacion')
                                 <button @click="openEdit(p)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                                @else
+                                <button disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                                @endperm
+                                @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'eliminacion')
                                 <button @click="openDelete(p)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                                @else
+                                <button disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-red-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                                @endperm
                             </div>
                         </div>
                     </template>
@@ -107,23 +133,27 @@
         </div>
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageParametros()" :disabled="currentPageParametros === 1"
-                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
                 <span>Anterior</span>
             </button>
             <div class="flex items-center gap-1">
                 <template x-for="page in Array.from({length: totalPagesParametros()}, (_, i) => i + 1).slice(Math.max(0, currentPageParametros - 3), currentPageParametros + 2)" :key="page">
                     <button @click="currentPageParametros = page"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                            :class="page === currentPageParametros ? 'bg-blue-600 text-white' : ''">
+                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        :class="page === currentPageParametros ? 'bg-blue-600 text-white' : ''">
                         <span x-text="page"></span>
                     </button>
                 </template>
             </div>
             <button @click="nextPageParametros()" :disabled="currentPageParametros === totalPagesParametros()"
-                    class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
                 <span>Siguiente</span>
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
             </button>
         </div>
     </div>
@@ -132,38 +162,41 @@
 
     <!-- Modales -->
     <div>
+        @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Agregar Parámetro" submitLabel="Guardar" formId="formCrearParametro" maxWidth="max-w-md">
             <div class="space-y-4 text-gray-700 dark:text-gray-200">
                 <div>
                     <label class="block text-sm font-medium">Parámetro</label>
                     <input type="text"
-                           x-model="createForm.parametro"
-                           @blur="createForm._touched = createForm._touched || {}; createForm._touched.parametro = true"
-                           @input="createForm._touched = createForm._touched || {}; createForm._touched.parametro = true"
-                           :class="{'border-red-500': (createForm._touched && createForm._touched.parametro)  && (createForm.parametro === '' || createForm.parametro.length >= 50)}"
-                           maxlength="50"
-                           class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
-                           required
-                           autocomplete="off">
+                        x-model="createForm.parametro"
+                        @blur="createForm._touched = createForm._touched || {}; createForm._touched.parametro = true"
+                        @input="createForm._touched = createForm._touched || {}; createForm._touched.parametro = true"
+                        :class="{'border-red-500': (createForm._touched && createForm._touched.parametro)  && (createForm.parametro === '' || createForm.parametro.length >= 50)}"
+                        maxlength="50"
+                        class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
+                        required
+                        autocomplete="off">
                     <small :class="(createForm._touched && createForm._touched.parametro) && (createForm.parametro === '' || createForm.parametro.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 50 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Valor</label>
                     <input type="text"
-                           x-model="createForm.valor"
-                           @blur="createForm._touched = createForm._touched || {}; createForm._touched.valor = true"
-                           @input="createForm._touched = createForm._touched || {}; createForm._touched.valor = true"
-                           :class="{'border-red-500': (createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100)}"
-                           maxlength="100"
-                           class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
-                           required
-                           autocomplete="off">
+                        x-model="createForm.valor"
+                        @blur="createForm._touched = createForm._touched || {}; createForm._touched.valor = true"
+                        @input="createForm._touched = createForm._touched || {}; createForm._touched.valor = true"
+                        :class="{'border-red-500': (createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100)}"
+                        maxlength="100"
+                        class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
+                        required
+                        autocomplete="off">
                     <small :class="(createForm._touched && createForm._touched.valor) && (createForm.valor === '' || createForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div class="text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
         </x-admin.form-modal>
+        @endperm
 
+        @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Parámetro" itemToEdit="parametroToEdit" formId="formEditarParametro" maxWidth="max-w-md">
             <div class="space-y-4 text-gray-700 dark:text-gray-200">
                 <div>
@@ -174,19 +207,22 @@
                 <div>
                     <label class="block text-sm font-medium">Valor</label>
                     <input type="text"
-                           x-model="editForm.valor"
-                           @blur="editForm._touched = editForm._touched || {}; editForm._touched.valor = true"
-                           @input="editForm._touched = editForm._touched || {}; editForm._touched.valor = true"
-                           :class="{'border-red-500': (editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100)}"
-                           maxlength="100"
-                           class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
-                           required>
+                        x-model="editForm.valor"
+                        @blur="editForm._touched = editForm._touched || {}; editForm._touched.valor = true"
+                        @input="editForm._touched = editForm._touched || {}; editForm._touched.valor = true"
+                        :class="{'border-red-500': (editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100)}"
+                        maxlength="100"
+                        class="mt-1 w-full border border-gray-500 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-800 dark:text-gray-200"
+                        required>
                     <small :class="(editForm._touched && editForm._touched.valor) && (editForm.valor === '' || editForm.valor.length >= 100) ? 'text-red-500' : 'text-gray-500 dark:text-white'" class="text-xs">Requerido. Máximo 100 caracteres.</small>
                 </div>
                 <div class="text-red-500 text-sm" x-show="formError" x-text="formError"></div>
             </div>
         </x-admin.edit-modal>
+        @endperm
 
+        @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'eliminacion')
         <x-admin.confirmation-modal class="nunito-bold" modalName="showDeleteModal" title="Confirmar Eliminación" itemToDelete="parametroToDelete" itemNameProperty="parametro" message="¿Seguro que deseas eliminar el parámetro" />
+        @endperm
     </div>
 </div>
