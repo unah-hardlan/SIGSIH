@@ -42,7 +42,6 @@
                 <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                     <div class="flex-1">
                         <div class="flex items-center gap-3">
-                            <!-- Icono según tipo -->
                             @if($movimiento['tipo'] === 'ingreso')
                                 <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                     <i class="fas fa-arrow-up text-green-600"></i>

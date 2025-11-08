@@ -57,7 +57,6 @@
                     al<br>{{ $factura->cai->rango_fin ?? '—' }}</p>
 
                 @php
-                // Usar fecha límite calculada desde el controlador
                 @endphp
                 <p><strong>Fecha límite de emisión:</strong><br>
                     {{ $fechaLimite ? (\Carbon\Carbon::parse($fechaLimite)->format('d/m/Y')) : '—' }}
@@ -157,7 +156,6 @@
         margin: 20mm;
     }
 
-    /* Ocultar botón al imprimir */
     @media print {
         .print-button-container {
             display: none !important;
@@ -170,7 +168,6 @@
         padding: 30px 0;
     }
 
-    /* Estilos del botón de imprimir */
     .print-button-container {
         position: fixed;
         top: 20px;

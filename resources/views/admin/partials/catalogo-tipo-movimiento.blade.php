@@ -7,7 +7,6 @@
     tipoMovimientos: [],
     loadingTipoMovimientos: false,
     
-    // 1️⃣ Variables de Paginación
     numbersTipoMovimientos: [],
     currentPageTipoMovimientos: 1,
     perPageTipoMovimientos: 10,
@@ -17,7 +16,6 @@
     filtroTipoMovimiento: '',
     ordenarPor: 'nombre',
 
-    // 2️⃣ Métodos de Paginación
     paginatedTipoMovimientos() {
         return this.tipoMovimientos.slice(
             (this.currentPageTipoMovimientos - 1) * this.perPageTipoMovimientos, 
@@ -38,22 +36,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchTipoMovimientos() {
         await window.tipoMovimientosApiHandlers.fetchTipoMovimientos(this);
-        this.numbersTipoMovimientos = this.tipoMovimientos; // ← LÍNEA AGREGADA
+        this.numbersTipoMovimientos = this.tipoMovimientos;
     },
     async submitTipoMovimiento() {
         await window.tipoMovimientosApiHandlers.submitTipoMovimiento(this);
-        this.fetchTipoMovimientos(); // Refrescar datos
+        this.fetchTipoMovimientos(); 
     },
     async updateTipoMovimiento() {
         await window.tipoMovimientosApiHandlers.updateTipoMovimiento(this);
-        this.fetchTipoMovimientos(); // Refrescar datos
+        this.fetchTipoMovimientos(); 
     },
     async deleteTipoMovimiento() {
         await window.tipoMovimientosApiHandlers.deleteTipoMovimiento(this);
-        this.fetchTipoMovimientos(); // Refrescar datos
+        this.fetchTipoMovimientos(); 
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formTipoMovimiento') this.submitTipoMovimiento();
@@ -67,7 +64,6 @@
 }"
     x-init="fetchTipoMovimientos()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroTipoMovimiento', () => { fetchTipoMovimientos(); currentPageTipoMovimientos = 1; });
     $watch('ordenarPor', () => { fetchTipoMovimientos(); currentPageTipoMovimientos = 1; });
 "

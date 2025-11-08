@@ -190,7 +190,6 @@
                         </ul>
                     </div>
                     
-                    <!-- Modal de confirmación de eliminación -->
                     <div x-show="deleteModalOpen" x-cloak x-transition.opacity.duration.200ms
                         class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-200 ease-in-out bg-black/40"
                         style="-webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);"

@@ -3,7 +3,6 @@
 @section('title', 'Reporte de Proyecto BAC')
 
 @push('styles')
-{{-- Estilos para el efecto glassmorphism con ruido (se mantiene por si lo usas en otros elementos) --}}
 <style>
     .glass-noise {
         position: relative;

@@ -7,7 +7,6 @@
     estadosTickets: [],
     loadingEstadosTickets: false,
 
-    // 1️⃣ Variables de Paginación
     numbersEstadosTickets: [],
     currentPageEstadosTickets: 1,
     perPageEstadosTickets: 10,
@@ -22,7 +21,6 @@
     filtroEstadoTicket: '',
     ordenarPor: 'nombre',
 
-    // 2️⃣ Métodos de Paginación
     paginatedEstadosTickets() {
         return this.estadosTickets.slice(
             (this.currentPageEstadosTickets - 1) * this.perPageEstadosTickets, 
@@ -43,22 +41,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchEstadosTickets() {
         await window.estadosTicketsApiHandlers.fetchEstadosTickets(this);
-        this.numbersEstadosTickets = this.estadosTickets; // ← LÍNEA AGREGADA
+        this.numbersEstadosTickets = this.estadosTickets;
     },
     async submitEstadoTicket() {
         await window.estadosTicketsApiHandlers.submitEstadoTicket(this);
-        this.fetchEstadosTickets(); // Refrescar datos
+        this.fetchEstadosTickets(); 
     },
     async updateEstadoTicket() {
         await window.estadosTicketsApiHandlers.updateEstadoTicket(this);
-        this.fetchEstadosTickets(); // Refrescar datos
+        this.fetchEstadosTickets(); 
     },
     async deleteEstadoTicket() {
         await window.estadosTicketsApiHandlers.deleteEstadoTicket(this);
-        this.fetchEstadosTickets(); // Refrescar datos
+        this.fetchEstadosTickets(); 
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formEstadoTicket') this.submitEstadoTicket();
@@ -143,7 +140,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosTickets && estadosTickets.length > 0">
-                        <!-- 5️⃣ Usar paginatedEstadosTickets() en el template -->
                         <template x-for="(estadoTicket, index) in paginatedEstadosTickets()" :key="estadoTicket.id_estado_ticket_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedEstadosTickets().length - 1 }">
@@ -216,9 +212,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="estadosTickets.length > perPageEstadosTickets" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -231,7 +225,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageEstadosTickets()" :disabled="currentPageEstadosTickets === 1"
 
@@ -262,9 +255,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Estado de Ticket -->
         @perm(['Catálogo','Estados de Tickets','Estado de Ticket'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isEstadoTicketModalOpen" title="Nuevo Estado de Ticket"
             submitLabel="Guardar Estado de Ticket" formId="formEstadoTicket" maxWidth="max-w-2xl">
@@ -308,7 +299,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Estado de Ticket -->
         @perm(['Catálogo','Estados de Tickets','Estado de Ticket'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEstadoTicketEditModalOpen" title="Editar Estado de Ticket" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditEstadoTicket">
             <template x-if="itemToEdit">
@@ -352,7 +342,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Estados de Tickets','Estado de Ticket'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isEstadoTicketDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar este estado de ticket?" />

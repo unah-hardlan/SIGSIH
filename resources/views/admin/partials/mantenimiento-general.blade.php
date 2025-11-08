@@ -10,7 +10,6 @@
             class="px-4 py-2 font-semibold focus:outline-none nunito-regular w-full sm:w-auto text-center">Parámetros</button>
     </div>
 
-    <!-- TAB Personalización -->
     <div x-show="tab === 'personalizacion'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
         <h2 class="text-lg font-semibold mb-4 nunito-bold text-gray-800 dark:text-white">Apariencia e Identidad</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -71,7 +70,6 @@
         </div>
     </div>
 
-    <!-- TAB Parámetros -->
     <div x-show="tab === 'parametros'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold mb-4 nunito-bold text-gray-800 dark:text-white">Parámetros Generales</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -199,5 +197,3 @@
         </div>
     </div>
 </div>
-
-<!-- Inline x-data used (no external script execution dependency) -->

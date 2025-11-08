@@ -9,9 +9,7 @@
         Las cotizaciones es la propuesta comercial que le hemos preparado. Desde esta sección puede revisarlas, aprobarlas o rechazarlas según su conveniencia. Puede hacer clic en el botón "Ver" para abrir la cotización en una nueva pestaña y revisarla en detalle. Si está de acuerdo con los términos, puede aprobarla haciendo clic en "Aprobar". Si no está de acuerdo, puede rechazarla haciendo clic en "Rechazar". Recuerde que una vez aprobada o rechazada, la cotización no podrá ser modificada. 
     </div>
 
-    <!-- Tarjetas resumen -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
-        <!-- Total Cotizaciones -->
         <div
             class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
@@ -25,7 +23,6 @@
             </div>
         </div>
 
-        <!-- Cotizaciones Aprobadas -->
         <div
             class="bg-gradient-to-r from-green-700 to-green-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
@@ -39,7 +36,6 @@
             </div>
         </div>
 
-        <!-- Cotizaciones en Borrador -->
         <div
             class="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
@@ -53,7 +49,6 @@
             </div>
         </div>
 
-        <!-- Cotizaciones Rechazadas -->
         <div
             class="bg-gradient-to-r from-red-500 to-red-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
@@ -67,7 +62,6 @@
             </div>
         </div>
 
-        <!-- Cotizaciones Vencidas -->
         <div
             class="bg-gradient-to-r from-slate-600 to-slate-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex items-center justify-between">
@@ -82,7 +76,6 @@
         </div>
     </div>
 
-    <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4 serif">
         <div class="flex flex-col lg:flex-row gap-4">
             <div class="flex-1 flex items-center gap-2">
@@ -113,7 +106,6 @@
         </div>
     </div>
 
-    <!-- Tabla -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
@@ -197,7 +189,6 @@
                 </tbody>
             </table>
         </div>
-        <!-- Paginación simple -->
         <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900/40"
             x-show="filtradas.length > pageSize">
             <div class="text-gray-600 dark:text-gray-400"
@@ -211,7 +202,6 @@
         </div>
     </div>
 
-    <!-- Modal de confirmación con teleport -->
     <template x-teleport="body">
         <div x-show="confirmacion.open" x-cloak x-transition.opacity.duration.300ms
             class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/65 dark:bg-black/75 backdrop-blur-sm"
@@ -244,7 +234,6 @@
         </div>
     </template>
 
-    <!-- Modal feedback con teleport -->
     <template x-teleport="body">
         <div x-show="feedback.open" x-cloak x-transition.opacity.duration.300ms
             class="fixed inset-0 z-[10002] flex items-center justify-center bg-black/70 dark:bg-black/80 backdrop-blur-sm"
@@ -269,7 +258,6 @@
 </div>
 
 <script>
-// Definir la función globalmente para Alpine.js en navegación SPA
 if (typeof window.cotizacionesCliente === 'undefined') {
     window.cotizacionesCliente = function() {
         return {
@@ -297,10 +285,9 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                 desde: '',
                 hasta: ''
             },
-            estados: [], // [{ codigo, nombre }]
+            estados: [], 
             datos: [],
             async init() {
-                // Cargar datos desde el backend del portal cliente
                 this.loading = true;
                 try {
                     const res = await fetch('/cliente/cotizaciones-data', {
@@ -312,7 +299,6 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                     const j = await res.json();
                     const arr = j.data || [];
                     this.datos = Array.isArray(arr) ? arr : [];
-                    // Derivar catálogo de estados únicos
                     const map = {};
                     this.datos.forEach(d => {
                         const cod = d.estado_codigo || '';
@@ -331,7 +317,6 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                 } finally {
                     this.loading = false;
                 }
-                // Watchers simples para reiniciar página al filtrar
                 const debounce = (fn, ms = 300) => {
                     let h;
                     return (...a) => {
@@ -356,7 +341,6 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                 const s = (this.filtros.search || '').toLowerCase();
                 const est = (this.filtros.estado || '').toLowerCase();
                 return this.datos.filter(d => {
-                    // Filtro por estado
                     let estadoOk = true;
                     if (est) {
                         const estadoCodigo = String(d.estado_codigo || '').toLowerCase();
@@ -437,7 +421,6 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                     'VEN': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
                 } [code];
                 if (byCode) return byCode;
-                // Fallback por nombre textual
                 return {
                     'borrador': 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
                     'pendiente': 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
@@ -554,7 +537,6 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                         credentials: 'same-origin'
                     });
                     if (res.ok) {
-                        // Actualizar en memoria para reflejar el cambio
                         if (String(estado).toLowerCase() === 'aprobada') {
                             c.estado_nombre = 'Aprobada';
                             c.estado_codigo = 'APB';
@@ -602,7 +584,6 @@ if (typeof window.cotizacionesCliente === 'undefined') {
                     borrador: pend,
                     vencidas: ven,
                     rechazadas: rec,
-                    // compatibilidad si alguna parte aún lee 'pendientes'
                     pendientes: pend
                 };
             }

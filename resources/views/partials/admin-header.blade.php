@@ -4,7 +4,6 @@
 <body>
     <header class="flex items-center justify-between h-16 px-3 sm:px-6 bg-white dark:bg-gray-900"
         data-user-id="{{ Auth::user()->id_usuario_pk ?? 0 }}">
-        <!-- Botón colapsar sidebar -->
         <button @click="sidebarOpen = !sidebarOpen"
             class="p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 focus:ring-transparent md:hidden">
             <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -12,7 +11,6 @@
             </svg>
         </button>
 
-        <!-- Botón colapsar sidebar desktop -->
         <button @click="sidebarOpen = !sidebarOpen"
             class="hidden md:block p-1 sm:p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-0 focus:ring-transparent">
             <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -20,22 +18,18 @@
             </svg>
         </button>
 
-        <!-- Logo -->
         <div class="flex items-center gap-2 ml-2 sm:ml-4 md:ml-16 lg:ml-24 sm:gap-3">
             <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
                 class="app-logo ml-2 sm:ml-20 md:ml-16 lg:ml-24"
                 style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
-            <!-- Optional app name display -->
             {{-- <span class="hidden sm:block text-xl nunito-bold ml-2">{{ $appName ?? '' }}</span> --}}
         </div>
 
-        <!-- Acciones derecha -->
         <div class="flex items-center gap-3 md:gap-6 z-50">
             <label class="switch">
                 <input id="theme-switch" type="checkbox" aria-label="Alternar tema">
                 <span class="slider"></span>
             </label>
-            <!-- Notificaciones -->
             <div x-data="notificationsDropdown()" x-init="init()" class="relative">
                 <button @click="toggle()" class="relative text-gray-500 dark:text-gray-400 hover:text-blue-600 mt-1">
                     <i class="fas fa-bell text-base sm:text-lg"></i>
@@ -88,10 +82,7 @@
                             </template>
                         </ul>
                     </div>
-                    <!-- <div class="px-4 py-3 mt-2 text-xs nunito-regular text-blue-600 dark:text-blue-400 hover:underline cursor-pointer border-t"
-                         @click="$dispatch('navigate', {url:'/admin/notificaciones', viewName:'notificaciones'})">Ver
-                        todas</div> -->
-                    <!-- Delete confirmation modal for notifications (scoped to notificationsDropdown() Alpine data) -->
+                   
                     <div x-show="deleteModalOpen" x-cloak x-transition.opacity.duration.200ms
                         class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-200 ease-in-out bg-black/40"
                         style="-webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);"
@@ -118,7 +109,6 @@
                 </div>
             </div>
 
-            <!-- Usuario y perfil (icono antes del nombre, icono con menú) -->
             <div class="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
                 <div x-data="{ open: false, logoutConfirm: false }" class="relative"
                     x-effect="document.body.classList.toggle('overflow-hidden', logoutConfirm)">
@@ -145,7 +135,6 @@
                         </button>
                     </div>
                     
-                    <!-- Inline logout confirmation modal -->
                     <template x-teleport="body">
                         <div x-show="logoutConfirm" x-cloak x-transition.opacity.duration.300ms
                             class="fixed inset-0 flex items-center justify-center z-[10000] transition-all duration-300 ease-in-out bg-black/60 dark:bg-black/80 backdrop-blur-md"
@@ -165,7 +154,6 @@
                                         @click="logoutConfirm = false"
                                         class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded text-sm md:text-base text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-500 transition-all serif-regular">Cancelar</button>
                                     
-                                    <!-- Formulario de logout tradicional -->
                                     <form method="POST" action="{{ route('logout') }}" class="inline">
                                         @csrf
                                         <button type="submit"

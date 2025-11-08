@@ -11,7 +11,6 @@
         .card { max-width:560px; margin:0 auto; background:#ffffff; border-radius:18px; box-shadow:0 14px 48px rgba(15,23,42,.1); overflow:hidden; }
           .card-header { background:linear-gradient(135deg,#1d4ed8,#2563eb); padding:56px 32px; text-align:center; }
           .brand { display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; font-weight:600; letter-spacing:.3px; }
-    /* Use text-align as a fallback for email clients that strip flexbox */
     .brand { display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-size:20px; font-weight:600; letter-spacing:.3px; }
           .brand img { max-height:80px; display:block; background:#ffffff; border-radius:20px; padding:20px 30px; }
         .brand-placeholder { font-size:24px; font-weight:700; }
@@ -24,7 +23,6 @@
         .footer { padding:0 32px 28px; font-size:12px; color:#6b7280; text-align:center; }
         @media (max-width:600px){ .card-body{padding:28px 22px;} .button{width:100%; text-align:center;} }
     </style>
-    <!-- Safe preview text -->
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
 </head>
@@ -34,7 +32,6 @@
         <tr><td>
             <div class="card">
                 <div class="card-header">
-                    <!-- Table wrapper ensures consistent centering across email clients -->
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                         <tr>
                             <td align="center" style="padding:0;">

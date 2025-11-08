@@ -1,23 +1,19 @@
 <div x-data="{
     tab: 'gestion',
-    // Modales roles y permisos
     isModalOpen: false,
     isEditRoleModalOpen: false,
     isDeleteRoleModalOpen: false,
     roleToEdit: {rol: '', descripcion_rol: '', permisos: [], objeto: '', usuario: '', creado_por: '', fecha_creacion: ''},
     roleToDelete: {rol: '', descripcion_rol: '', permisos: [], objeto: '', usuario: '', creado_por: '', fecha_creacion: ''},
-    // Modales objetos
     isObjetoModalOpen: false,
     isEditObjetoModalOpen: false,
     isDeleteObjetoModalOpen: false,
     objetoToEdit: {nombre: '', descripcion: '', tipo: '', creado_por: '', fecha: ''},
     objetoToDelete: {nombre: '', descripcion: '', tipo: '', creado_por: '', fecha: ''},
-    // Variables para filtros-generales
     search: '',
     searchObjetos: '',
     ordenarPor: ''
 }" @include('partials.persist-tab', ['tabKey'=> 'admin-configuracion-acceso-tab'])>
-    <!-- Tabs -->
     <div class="flex border-b mb-6 flex-wrap gap-2 border-gray-200 dark:border-gray-700">
         <button @click="tab = 'gestion'"
             :class="tab === 'gestion' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-700 dark:text-gray-200'"
@@ -297,7 +293,6 @@
             message="¿Estás seguro de que quieres eliminar el rol?" />
     </div
 
-        <!-- TAB: Lista de Roles -->
     <div x-show="tab === 'crear'" x-data="{ ready:false, searchRoles:'', ordenarPor:'rol', direction:'asc' }" x-init="$store.roles.init(); ready=true; $watch('searchRoles', v => $store.roles.setSearch(v)); $watch('ordenarPor', v => $store.roles.setSort(v)); $watch('direction', v => $store.roles.setDirection(v));">
         <x-admin.tabla-crud class="nunito-bold" :titulo="'Lista de Roles'">
             <x-slot name="filtros">

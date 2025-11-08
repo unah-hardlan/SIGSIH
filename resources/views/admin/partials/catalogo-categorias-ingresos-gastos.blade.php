@@ -5,7 +5,6 @@
     itemToEdit: null,
     itemToDelete: null,
     categorias: [],
-    // alias expected by the pagination component (component checks `numbers.length`)
     numbers: [],
     loadingCategorias: false,
     nombre_categoria: '',
@@ -18,24 +17,19 @@
     currentPage: 1,
     perPage: 10,
     async fetchCategorias() {
-        // NOTA: El JS deberá ser actualizado para usar estos nuevos nombres de campo
         await window.categoriasApiHandlers.fetchCategorias(this);
-        // keep the pagination component's alias in sync
         this.numbers = this.categorias;
     },
     async submitCategoria() {
         await window.categoriasApiHandlers.submitCategoria(this);
-        // ensure numbers reflects the latest categorias after create
         this.numbers = this.categorias;
     },
     async updateCategoria() {
         await window.categoriasApiHandlers.updateCategoria(this);
-        // ensure numbers reflects the latest categorias after update
         this.numbers = this.categorias;
     },
     async deleteCategoria() {
         await window.categoriasApiHandlers.deleteCategoria(this);
-        // ensure numbers reflects the latest categorias after delete
         this.numbers = this.categorias;
     },
     handleModalSubmit(event) {
@@ -207,9 +201,7 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
 
     <x-pagination />
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nueva Categoría -->
         @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isCategoriaModalOpen" title="Nueva Categoría"
             submitLabel="Guardar Categoría" formId="formCategoria" maxWidth="max-w-md">
@@ -248,7 +240,6 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Categoría -->
         @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isCategoriaEditModalOpen" title="Editar Categoría"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditCategoria">
@@ -289,7 +280,6 @@ $watch('ordenarPor', () => { fetchCategorias(); currentPage = 1; });
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Categorías de Ingresos y Gastos','Categorias de Ingresos y Gastos','Categoría de Ingreso','Categoría de Gasto','Categoria de Ingreso','Categoria de Gasto'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isCategoriaDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar esta categoría?" />

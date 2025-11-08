@@ -10,7 +10,6 @@
 
             <h2 class="text-xl nunito-bold text-gray-800 mb-2 text-center">Listado de Empresas</h2>
             @php
-            // Normalizar colección si no se pasa
             $empresas = $empresas ?? collect();
             @endphp
 

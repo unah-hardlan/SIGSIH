@@ -7,7 +7,6 @@
     tipoProductos: [],
     loadingTipoProductos: false,
 
-    // 1️⃣ Variables de Paginación
     numbersTipoProductos: [],
     currentPageTipoProductos: 1,
     perPageTipoProductos: 10,
@@ -17,7 +16,6 @@
     filtroTipoProducto: '',
     ordenarPor: 'nombre',
 
-    // 2️⃣ Métodos de Paginación
     paginatedTipoProductos() {
         return this.tipoProductos.slice(
             (this.currentPageTipoProductos - 1) * this.perPageTipoProductos, 
@@ -38,22 +36,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchTipoProductos() {
         await window.tipoProductosApiHandlers.fetchTipoProductos(this);
-        this.numbersTipoProductos = this.tipoProductos; // ← LÍNEA AGREGADA
+        this.numbersTipoProductos = this.tipoProductos; 
     },
     async submitTipoProducto() {
         await window.tipoProductosApiHandlers.submitTipoProducto(this);
-        this.fetchTipoProductos(); // Refrescar datos
+        this.fetchTipoProductos(); 
     },
     async updateTipoProducto() {
         await window.tipoProductosApiHandlers.updateTipoProducto(this);
-        this.fetchTipoProductos(); // Refrescar datos
+        this.fetchTipoProductos(); 
     },
     async deleteTipoProducto() {
         await window.tipoProductosApiHandlers.deleteTipoProducto(this);
-        this.fetchTipoProductos(); // Refrescar datos
+        this.fetchTipoProductos(); 
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formTipoProducto') this.submitTipoProducto();
@@ -67,7 +64,6 @@
 }"
     x-init="fetchTipoProductos()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroTipoProducto', () => { fetchTipoProductos(); currentPageTipoProductos = 1; });
     $watch('ordenarPor', () => { fetchTipoProductos(); currentPageTipoProductos = 1; });
 "
@@ -134,7 +130,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingTipoProductos && tipoProductos.length > 0">
-                        <!-- 5️⃣ Usar paginatedTipoProductos() en el template -->
                         <template x-for="(tipoProducto, index) in paginatedTipoProductos()" :key="tipoProducto.id_tipo_producto_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedTipoProductos().length - 1 }">
@@ -203,9 +198,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="tipoProductos.length > perPageTipoProductos" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -218,7 +211,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageTipoProductos()" :disabled="currentPageTipoProductos === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -248,9 +240,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Tipo de Producto -->
         @perm(['Catálogo','Tipos de Producto','Tipo de Producto'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isTipoProductoModalOpen" title="Nuevo Tipo de Producto"
             submitLabel="Guardar Tipo de Producto" formId="formTipoProducto" maxWidth="max-w-2xl">
@@ -278,7 +268,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Tipo de Producto -->
         @perm(['Catálogo','Tipos de Producto','Tipo de Producto'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isTipoProductoEditModalOpen" title="Editar Tipo de Producto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditTipoProducto">
             <template x-if="itemToEdit">
@@ -307,7 +296,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Tipos de Producto','Tipo de Producto'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isTipoProductoDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar este tipo de producto?" />

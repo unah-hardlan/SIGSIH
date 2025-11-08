@@ -40,7 +40,6 @@
     ordenarPor: '',
     async fetchEstadosProyecto() {
         await window.estadosProyectoApiHandlers.fetchEstadosProyecto(this);
-    // synchronize aliases for reusable pagination components
     this.categorias = this.estadosProyecto;
     this.numbers = this.estadosProyecto;
     },
@@ -219,12 +218,9 @@ $watch('ordenarPor', () => { fetchEstadosProyecto(); currentPage = 1; });
         </x-slot>
     </x-responsive-table>
 
-    <!-- Paginación del lado del cliente -->
     <x-pagination />
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Estado de Proyecto -->
         @perm(['Catálogo','Estados de Proyecto','Estado de Proyecto'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isEstadoProyectoModalOpen" title="Nuevo Estado de Proyecto"
             submitLabel="Guardar Estado de Proyecto" formId="formEstadoProyecto" maxWidth="max-w-2xl">
@@ -266,7 +262,6 @@ $watch('ordenarPor', () => { fetchEstadosProyecto(); currentPage = 1; });
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Estado de Proyecto -->
         @perm(['Catálogo','Estados de Proyecto','Estado de Proyecto'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEstadoProyectoEditModalOpen" title="Editar Estado de Proyecto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditEstadoProyecto">
             <template x-if="itemToEdit">
@@ -309,7 +304,6 @@ $watch('ordenarPor', () => { fetchEstadosProyecto(); currentPage = 1; });
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Estados de Proyecto','Estado de Proyecto'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isEstadoProyectoDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar este estado de proyecto?" />

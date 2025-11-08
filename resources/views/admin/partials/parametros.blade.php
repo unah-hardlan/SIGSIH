@@ -118,7 +118,6 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- Paginación client-side -->
     <div x-show="numbersParametros.length > perPageParametros" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
@@ -160,7 +159,6 @@
 
     <div x-show="error" class="mt-2 text-red-500 text-sm text-center" x-text="error"></div>
 
-    <!-- Modales -->
     <div>
         @perm(['Parámetros','Parametros','Gestión de Parámetros','Gestion de Parámetros','Gestion de Parametros'],'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Agregar Parámetro" submitLabel="Guardar" formId="formCrearParametro" maxWidth="max-w-md">

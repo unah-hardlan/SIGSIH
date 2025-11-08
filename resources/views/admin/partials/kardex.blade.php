@@ -1,5 +1,4 @@
 <div x-data="{
-    // --- Estado del CRUD ---
     isKardexModalOpen: false,
     isKardexEditModalOpen: false,
     isKardexDeleteModalOpen: false,
@@ -8,12 +7,10 @@
     kardex: [],
     loadingKardex: false,
 
-    // 1️⃣ Variables de Paginación
     numbersKardex: [],
     currentPageKardex: 1,
     perPageKardex: 10,
 
-    // --- Modelo para el formulario de Nuevo Movimiento ---
     formKardex: { _touched: {} },
     formEditKardex: { _touched: {} },
     newMovimiento: {
@@ -25,17 +22,14 @@
         motivo: ''
     },
 
-    // --- Catálogos para los <select> ---
     catalogoProductos: [],
     catalogoTiposMovimiento: [],
     catalogoOrigenes: [],
     
-    // --- Filtros ---
     filtroKardex: '',
     ordenarPor: 'fecha_movimiento',
     ordenarDirection: 'desc',
 
-    // --- Paleta de colores ---
     tipoColorPalette: [ 'bg-green-100 text-green-800', 'bg-red-100 text-red-800', 'bg-blue-100 text-blue-800', 'bg-yellow-100 text-yellow-800', 'bg-purple-100 text-purple-800', 'bg-teal-100 text-teal-800', 'bg-indigo-100 text-indigo-800', 'bg-pink-100 text-pink-800' ],
     getTipoColorClass(tipo) {
         if (!tipo) return 'bg-gray-100 text-gray-800';
@@ -50,7 +44,6 @@
         return this.tipoColorPalette[idx];
     },
 
-    // 2️⃣ Métodos de Paginación
     paginatedKardex() {
         return this.kardex.slice(
             (this.currentPageKardex - 1) * this.perPageKardex, 
@@ -71,7 +64,6 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchKardex() {
         await window.kardexApiHandlers.fetchKardex(this);
         this.numbersKardex = this.kardex; // ← LÍNEA AGREGADA
@@ -104,7 +96,6 @@
         if (this.isKardexDeleteModalOpen) this.deleteKardex();
     }
 }" x-init="fetchKardex(); fetchCatalogos();" x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroKardex', () => { fetchKardex(); currentPageKardex = 1; });
     $watch('ordenarPor', () => { fetchKardex(); currentPageKardex = 1; });
     $watch('ordenarDirection', () => { fetchKardex(); currentPageKardex = 1; });
@@ -191,7 +182,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingKardex && kardex.length > 0">
-                        <!-- 5️⃣ Usar paginatedKardex() en el template -->
                         <template x-for="(movimiento, index) in paginatedKardex()" :key="movimiento.id_kardex_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedKardex().length - 1 }">
@@ -298,7 +288,6 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="kardex.length > perPageKardex"
         class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
         <div class="mb-2">
@@ -345,10 +334,7 @@
         </div>
     </div>
 
-
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Movimiento -->
         <x-admin.form-modal modalName="isKardexModalOpen" title="Nuevo Movimiento" submitLabel="Guardar Movimiento"
             formId="formKardex" maxWidth="max-w-lg">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -428,7 +414,6 @@
             </div>
         </x-admin.form-modal>
 
-        <!-- Modal Editar Movimiento -->
         <x-admin.edit-modal modalName="isKardexEditModalOpen" title="Editar Movimiento" itemToEdit="itemToEdit"
             formId="formEditKardex" maxWidth="max-w-lg">
             <template x-if="itemToEdit">
@@ -512,7 +497,6 @@
             </template>
         </x-admin.edit-modal>
 
-        <!-- Modal Confirmar Eliminación -->
         <x-admin.confirmation-modal modalName="isKardexDeleteModalOpen" itemToDelete="itemToDelete"
             message="¿Estás seguro de que quieres eliminar este movimiento?" />
     </div>

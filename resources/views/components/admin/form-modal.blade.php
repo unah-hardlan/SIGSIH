@@ -79,7 +79,6 @@
     background: #9ca3af;
   }
 
-  /* Mobile tweaks: reduce sizes and spacing on small screens */
   @media (max-width: 640px) {
     .modal-form {
       padding-left: 1rem;
@@ -106,7 +105,6 @@
       padding: 0.5rem 0.75rem !important;
     }
 
-    /* Reduce overall modal vertical footprint */
     .max-h-\[85vh\] {
       max-height: 80vh !important;
     }
@@ -163,14 +161,12 @@
     color: #9ca3af !important;
   }
 
-  /* Asegurar que todos los textos sean blancos en modo oscuro */
   .dark form .block,
   .dark form .font-medium,
   .dark form .nunito-bold {
     color: white !important;
   }
 
-  /* Compact mode to avoid scroll and fit content */
   .modal-compact * {
     font-size: 0.95rem !important;
   }
@@ -190,7 +186,6 @@
     font-size: 1.15rem !important;
   }
 
-  /* Scroll container when enabled */
   .modal-form-scroll {
     max-height: calc(85vh - 80px);
   }

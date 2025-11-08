@@ -7,7 +7,6 @@
     generos: [],
     loadingGeneros: false,
     
-    // 1️⃣ Variables de Paginación
     numbersGeneros: [],
     currentPageGeneros: 1,
     perPageGeneros: 10,
@@ -18,7 +17,6 @@
     filtroGenero: '',
     ordenarPor: 'genero',
     
-    // Lista filtrada y ordenada (ascendente)
     get filteredGeneros() {
         const term = String(this.filtroGenero || '').toLowerCase().trim();
         const sortKey = this.ordenarPor || 'genero';
@@ -52,7 +50,6 @@
         return items;
     },
 
-    // 2️⃣ Métodos de Paginación (operan sobre la lista filtrada)
     paginatedGeneros() {
         return this.filteredGeneros.slice(
             (this.currentPageGeneros - 1) * this.perPageGeneros,
@@ -73,22 +70,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchGeneros() {
         await window.generosApiHandlers.fetchGeneros(this);
-        this.numbersGeneros = this.generos; // ← LÍNEA AGREGADA
+        this.numbersGeneros = this.generos; 
     },
     async submitGenero() {
         await window.generosApiHandlers.submitGenero(this);
-        this.fetchGeneros(); // Refrescar datos
+        this.fetchGeneros();
     },
     async updateGenero() {
         await window.generosApiHandlers.updateGenero(this);
-        this.fetchGeneros(); // Refrescar datos
+        this.fetchGeneros(); 
     },
     async deleteGenero() {
         await window.generosApiHandlers.deleteGenero(this);
-        this.fetchGeneros(); // Refrescar datos
+        this.fetchGeneros(); 
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formGenero') this.submitGenero();
@@ -102,7 +98,6 @@
 }"
     x-init="fetchGeneros()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroGenero', () => currentPageGeneros = 1);
     $watch('ordenarPor', () => currentPageGeneros = 1);
 "
@@ -168,7 +163,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingGeneros && filteredGeneros.length > 0">
-                        <!-- 5️⃣ Usar paginatedGeneros() en el template -->
                         <template x-for="(genero, index) in paginatedGeneros()" :key="genero.id_genero_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedGeneros().length - 1 }">
@@ -251,9 +245,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="filteredGeneros.length > perPageGeneros" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -266,7 +258,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageGeneros()" :disabled="currentPageGeneros === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -296,9 +287,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Género -->
         @perm(['Catálogo','Género','Genero','Géneros'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isGeneroModalOpen" title="Nuevo Género"
             submitLabel="Guardar Género" formId="formGenero" maxWidth="max-w-md">
@@ -314,7 +303,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Género -->
         @perm(['Catálogo','Género','Genero','Géneros'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isGeneroEditModalOpen" title="Editar Género"
             itemToEdit="itemToEdit" maxWidth="max-w-md" formId="formEditGenero">
@@ -332,7 +320,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Género','Genero','Géneros'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isGeneroDeleteModalOpen"
             itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este género?" />

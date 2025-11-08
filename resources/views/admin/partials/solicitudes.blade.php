@@ -32,7 +32,6 @@
             class="mr-6 pb-2 nunito-bold">Contactos</li>
     </ul>
 
-    <!-- TAB: Solicitudes -->
     <div x-show="tab==='solicitudes'">
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
@@ -212,7 +211,6 @@
         <x-pagination />
     </div>
 
-    <!-- TAB: Contactos -->
     <div x-show="tab==='contactos'" class="mt-6">
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
@@ -349,7 +347,6 @@
         <x-pagination />
     </div>
 
-    <!-- Modal Nueva Solicitud -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Solicitud"
         submitLabel="Guardar Solicitud" formId="solicitud-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -437,7 +434,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Solicitud -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Solicitud"
         itemToEdit="solicitudToEdit" formId="solicitud-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -533,12 +529,10 @@
         </template>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Solicitud -->
     <x-admin.confirmation-modal modal-name="isDeleteModalOpen" title="Eliminar Solicitud"
         item-to-delete="solicitudToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar la solicitud ID" />
 
-    <!-- Modal Nuevo Estado -->
     <x-admin.form-modal class="nunito-bold" modalName="isEstadoModalOpen" title="Nuevo Estado de Solicitud"
         submitLabel="Guardar Estado" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -558,7 +552,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Estado -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoModalOpen" title="Editar Estado de Solicitud"
         itemToEdit="estadoToEdit" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -583,12 +576,10 @@
         </template>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Estado -->
     <x-admin.confirmation-modal modal-name="isDeleteEstadoModalOpen" title="Eliminar Estado"
         item-to-delete="estadoToDelete" item-name-property="nombre_estado"
         message="¿Estás seguro de que deseas eliminar el estado" />
 
-    <!-- Modal Nuevo Contacto -->
     <x-admin.form-modal class="nunito-bold" modalName="isContactoModalOpen" title="Nuevo Contacto"
         submitLabel="Guardar Contacto" formId="contacto-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -645,7 +636,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Contacto -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditContactoModalOpen" title="Editar Contacto"
         itemToEdit="contactoToEdit" formId="contacto-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -698,7 +688,6 @@
         </template>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Contacto -->
     <x-admin.confirmation-modal modal-name="isDeleteContactoModalOpen" title="Eliminar Contacto"
         item-to-delete="contactoToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar el contacto ID" />

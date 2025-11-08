@@ -1,5 +1,4 @@
 <div x-data="{
-        // estado
         isReporteModalOpen: false,
         isReporteEditModalOpen: false,
         isReporteDeleteModalOpen: false,
@@ -8,23 +7,17 @@
         reportes: [],
         loadingReportes: false,
         
-        // 1️⃣ Variables de Paginación
         numbersReportes: [],
         currentPageReportes: 1,
         perPageReportes: 10,
 
-        // catálogos
         tiposVisita: [], serviciosRealizados: [], accionesRealizadas: [], ordenesServicio: [],
-        // filtros
         searchReportes: '', ordenarPor: 'fecha', ordenarDirection: 'desc',
         filtroTipoVisita: '', filtroServicioRealizado: '', filtroAccionRealizada: '', filtroOrdenServicio: '',
         desde: '', hasta: '',
-    // crear
     formReporte: { _touched: {} }, new_fecha_reporte: '', new_observaciones: '', new_id_tipo_visita_fk: '', new_id_servicio_realizado_fk: '', new_id_accion_realizada_fk: '', new_id_orden_servicio_fk: '',
-    // editar (campos locales)
     formEditReporte: { _touched: {} }, edit_fecha_reporte: '', edit_observaciones: '', edit_id_tipo_visita_fk: '', edit_id_servicio_realizado_fk: '', edit_id_accion_realizada_fk: '', edit_id_orden_servicio_fk: '',
         
-        // 2️⃣ Métodos de Paginación
         paginatedReportes() {
             return this.reportes.slice(
                 (this.currentPageReportes - 1) * this.perPageReportes, 
@@ -45,25 +38,23 @@
             }
         },
 
-        // métodos
         async fetchCatalogs(){ await window.reportesVisitaApiHandlers.fetchCatalogs(this); },
         
-        // 3️⃣ Sincronizar Alias en cada operación CRUD
         async fetchReportes(){ 
             await window.reportesVisitaApiHandlers.fetchReportes(this); 
-            this.numbersReportes = this.reportes; // ← LÍNEA AGREGADA
+            this.numbersReportes = this.reportes; 
         },
         async storeReporte(){ 
             await window.reportesVisitaApiHandlers.storeReporte(this); 
-            this.fetchReportes(); // Refrescar datos
+            this.fetchReportes(); 
         },
         async updateReporte(){ 
             await window.reportesVisitaApiHandlers.updateReporte(this); 
-            this.fetchReportes(); // Refrescar datos
+            this.fetchReportes(); 
         },
         async deleteReporte(){ 
             await window.reportesVisitaApiHandlers.deleteReporte(this); 
-            this.fetchReportes(); // Refrescar datos
+            this.fetchReportes();
         },
         handleModalSubmit(e){ if(e.detail.formId==='form-reporte-visita-add') this.storeReporte(); if(e.detail.formId==='form-reporte-visita-edit') this.updateReporte(); },
         handleDelete(){ if(this.isReporteDeleteModalOpen) this.deleteReporte(); },
@@ -83,7 +74,6 @@
 }" x-init="(async()=>{ 
     await fetchCatalogs(); 
     await fetchReportes(); 
-    // 4️⃣ Reset de página en filtros
     $watch('searchReportes', ()=> { fetchReportes(); currentPageReportes = 1; }); 
     $watch('filtroTipoVisita', ()=> { fetchReportes(); currentPageReportes = 1; }); 
     $watch('filtroServicioRealizado', ()=> { fetchReportes(); currentPageReportes = 1; }); 
@@ -177,7 +167,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingReportes && reportes.length>0">
-                        <!-- 5️⃣ Usar paginatedReportes() en el template -->
                         <template x-for="rep in paginatedReportes()" :key="rep.id_reportes_pk">
                             <tr class="border-b dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4" x-text="rep.fecha_reporte"></td>
@@ -291,10 +280,8 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="reportes.length > perPageReportes"
         class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span
                 class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
@@ -310,7 +297,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div
             class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageReportes()" :disabled="currentPageReportes === 1"
@@ -345,7 +331,6 @@
         </div>
     </div>
 
-    <!-- Modal Nuevo Reporte -->
     <x-admin.form-modal class="nunito-bold" modalName="isReporteModalOpen" title="Nuevo Reporte"
         submitLabel="Guardar Reporte" maxWidth="max-w-2xl" formId="form-reporte-visita-add">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -426,7 +411,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Reporte -->
     <x-admin.edit-modal class="nunito-bold" modalName="isReporteEditModalOpen" title="Editar Reporte"
         itemToEdit="reporteToEdit" maxWidth="max-w-2xl" formId="form-reporte-visita-edit">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -508,7 +492,6 @@
         </div>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación -->
     <x-admin.confirmation-modal class="nunito-bold" modalName="isReporteDeleteModalOpen" itemToDelete="reporteToDelete"
         message="¿Estás seguro de que quieres eliminar el reporte?" />
 

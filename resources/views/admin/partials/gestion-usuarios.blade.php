@@ -204,7 +204,6 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
         <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Agregar Usuario" submitLabel="Guardar"
             formId="formCrear" maxWidth="max-w-xl">
@@ -404,7 +403,6 @@
         function buildRegexFromValue(v) {
             if (!v) return null;
             v = v.toString().trim();
-            // regex literal
             if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
                 try {
                     return new RegExp(v.slice(1, -1));

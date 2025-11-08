@@ -151,12 +151,9 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- Paginación del lado del cliente -->
     <x-pagination />
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Servicio -->
         @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'insercion')
         <x-admin.form-modal class="nunito-bold" modalName="isServicioModalOpen" title="Nuevo Servicio"
             submitLabel="Guardar Servicio" formId="formServicio" maxWidth="max-w-2xl">
@@ -184,7 +181,6 @@
         </x-admin.form-modal>
         @endperm
 
-        <!-- Modal Editar Servicio -->
         @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'actualizacion')
         <x-admin.edit-modal class="nunito-bold" modalName="isEditServicioModalOpen" title="Editar Servicio"
             itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditServicio">
@@ -212,7 +208,6 @@
         </x-admin.edit-modal>
         @endperm
 
-        <!-- Modal Confirmar Eliminación -->
         @perm(['Catálogo','Servicios Factura','Servicio Factura','Servicios de Factura'], 'eliminacion')
         <x-admin.confirmation-modal class="nunito-regular" modalName="isDeleteServicioModalOpen"
             itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este servicio?" />

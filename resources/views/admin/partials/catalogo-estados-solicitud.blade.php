@@ -7,12 +7,10 @@
     estadosSolicitud: [],
     loadingEstadosSolicitud: false,
 
-    // 1️⃣ Variables de Paginación
     numbersEstadosSolicitud: [],
     currentPageEstadosSolicitud: 1,
     perPageEstadosSolicitud: 10,
 
-    // Campos para el formulario de 'Nuevo'
     codigo: '',
     nombre: '',
     descripcion: '',
@@ -24,7 +22,6 @@
     filtroEstadoSolicitud: '',
     ordenarPor: 'nombre',
     ordenarDireccion: 'asc',
-    // Colección filtrada y ordenada
     get filteredEstadosSolicitud() {
         const term = String(this.filtroEstadoSolicitud || '').toLowerCase().trim();
         const sortKey = this.ordenarPor || 'nombre';
@@ -71,7 +68,6 @@
         return items;
     },
 
-    // 2️⃣ Métodos de Paginación (operan sobre la lista filtrada)
     paginatedEstadosSolicitud() {
         return this.filteredEstadosSolicitud.slice(
             (this.currentPageEstadosSolicitud - 1) * this.perPageEstadosSolicitud,
@@ -92,22 +88,21 @@
         }
     },
 
-    // 3️⃣ Sincronizar Alias en cada operación CRUD
     async fetchEstadosSolicitud() {
         await window.estadosSolicitudApiHandlers.fetchEstadosSolicitud(this);
-        this.numbersEstadosSolicitud = this.estadosSolicitud; // ← LÍNEA AGREGADA
+        this.numbersEstadosSolicitud = this.estadosSolicitud; 
     },
     async submitEstadoSolicitud() {
         await window.estadosSolicitudApiHandlers.submitEstadoSolicitud(this);
-        this.fetchEstadosSolicitud(); // Refrescar datos
+        this.fetchEstadosSolicitud();
     },
     async updateEstadoSolicitud() {
         await window.estadosSolicitudApiHandlers.updateEstadoSolicitud(this);
-        this.fetchEstadosSolicitud(); // Refrescar datos
+        this.fetchEstadosSolicitud(); 
     },
     async deleteEstadoSolicitud() {
         await window.estadosSolicitudApiHandlers.deleteEstadoSolicitud(this);
-        this.fetchEstadosSolicitud(); // Refrescar datos
+        this.fetchEstadosSolicitud();
     },
     // Manejadores de eventos de los modales
     handleModalSubmit(event) {
@@ -122,7 +117,6 @@
 }"
     x-init="fetchEstadosSolicitud()"
     x-effect="
-    // 4️⃣ Reset de página en filtros
     $watch('filtroEstadoSolicitud', () => currentPageEstadosSolicitud = 1);
     $watch('ordenarPor', () => currentPageEstadosSolicitud = 1);
     $watch('ordenarDireccion', () => currentPageEstadosSolicitud = 1);
@@ -193,7 +187,6 @@
                         </tr>
                     </template>
                     <template x-if="!loadingEstadosSolicitud && filteredEstadosSolicitud.length > 0">
-                        <!-- 5️⃣ Usar paginatedEstadosSolicitud() en el template -->
                         <template x-for="(estado, index) in paginatedEstadosSolicitud()"
                             :key="estado.id_estado_solicitud_pk">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
@@ -275,9 +268,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- 6️⃣ Componente de Paginación -->
     <div x-show="filteredEstadosSolicitud.length > perPageEstadosSolicitud" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando (centered, supports light/dark) -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -290,7 +281,6 @@
             </span>
         </div>
 
-        <!-- Controls (light/dark) -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageEstadosSolicitud()" :disabled="currentPageEstadosSolicitud === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">

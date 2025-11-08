@@ -7,7 +7,6 @@
     productos: [],
     loadingProductos: false,
 
-    // Variables de Paginación
     numbersProductos: [],
     currentPageProductos: 1,
     perPageProductos: 10,
@@ -27,7 +26,6 @@
     filtroProducto: '',
     ordenarPor: 'nombre_producto',
 
-    // Métodos de Paginación
     paginatedProductos() {
         return this.productos.slice(
             (this.currentPageProductos - 1) * this.perPageProductos, 
@@ -48,7 +46,6 @@
         }
     },
 
-    // Sincronizar Alias en cada operación CRUD
     async fetchProductos() { 
         await window.productosApiHandlers.fetchProductos(this); 
         this.numbersProductos = this.productos;
@@ -227,9 +224,7 @@
         </x-slot>
     </x-responsive-table>
 
-    <!-- Componente de Paginación -->
     <div x-show="productos.length > perPageProductos" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
-        <!-- Mostrando -->
         <div class="mb-2">
             <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
@@ -242,7 +237,6 @@
             </span>
         </div>
 
-        <!-- Controls -->
         <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPageProductos()" :disabled="currentPageProductos === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -272,9 +266,7 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div>
-        <!-- Modal Nuevo Producto -->
         <x-admin.form-modal class="nunito-bold" modalName="isProductoModalOpen" title="Nuevo Producto" submitLabel="Guardar Producto" formId="formProducto" maxWidth="max-w-2xl">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -340,7 +332,6 @@
             </div>
         </x-admin.form-modal>
 
-        <!-- Modal Editar Producto -->
         <x-admin.edit-modal class="nunito-bold" modalName="isProductoEditModalOpen" title="Editar Producto" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditProducto">
             <template x-if="itemToEdit">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -408,7 +399,6 @@
             </template>
         </x-admin.edit-modal>
 
-        <!-- Modal Confirmar Eliminación -->
         <x-admin.confirmation-modal class="nunito-regular" modalName="isProductoDeleteModalOpen" itemToDelete="itemToDelete"
             itemNameProperty="nombre_producto"
             message="¿Estás seguro de que quieres eliminar este producto?" />

@@ -297,7 +297,6 @@
 
     </div>
 
-    <!-- Botón Generar PDF (simple y oculto al imprimir) -->
     <div class="no-print" style="text-align: center; margin: 20px 0;">
         <button onclick="window.print()"
             style="

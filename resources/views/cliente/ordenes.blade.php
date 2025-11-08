@@ -11,9 +11,7 @@
         Las órdenes de servicio es el trabajo que se esta o estará realizando en su empresa. Desde esta sección puede revisar el estado de sus órdenes de servicio, filtrar por diferentes criterios y calificar el servicio recibido una vez finalizado. Haga clic en el botón "Ver" para abrir los detalles de la orden en una nueva pestaña. 
     </div>
 
-    <!-- Tarjetas resumen -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Total Órdenes -->
         <div
             class="w-full min-h-[96px] bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
             <div class="flex items-center justify-between h-full">
@@ -27,7 +25,6 @@
             </div>
         </div>
 
-        <!-- Abiertas -->
         <div
             class="w-full min-h-[96px] bg-gradient-to-r from-emerald-800 to-green-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
             <div class="flex items-center justify-between h-full">
@@ -41,7 +38,6 @@
             </div>
         </div>
 
-        <!-- Cerradas -->
         <div
             class="w-full min-h-[96px] bg-gradient-to-r from-slate-800 to-slate-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
             <div class="flex items-center justify-between h-full">
@@ -56,7 +52,6 @@
         </div>
     </div>
 
-    <!-- Filtros -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
         <div class="flex flex-col xl:flex-row gap-4">
             <div class="flex-1 flex items-center gap-2">
@@ -85,7 +80,6 @@
         </div>
     </div>
 
-    <!-- Tabla -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
@@ -168,7 +162,6 @@
         </div>
     </div>
 
-    <!-- Modal Calificación (dentro del mismo scope x-data) -->
     <div x-show="showRateModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/50" @click="showRateModal=false"></div>
         <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-5">
@@ -211,7 +204,6 @@
         </style>
     </div>
 
-    <!-- Modal Confirmación de Calificación -->
     <div x-show="showRatedModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="absolute inset-0 bg-black/50" @click="showRatedModal=false"></div>
         <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm p-5 text-center">
@@ -229,7 +221,6 @@
 </div>
 
 <script>
-// Definir la función globalmente para que pueda ser usada por Alpine.js en navegación SPA
 if (typeof window.ordenesCliente === 'undefined') {
     window.ordenesCliente = function() {
         return {
@@ -260,7 +251,6 @@ if (typeof window.ordenesCliente === 'undefined') {
                     const j = await res.json();
                     const arr = j.data || [];
                     this.datos = Array.isArray(arr) ? arr : [];
-                    // Derivar catálogo de estados únicos
                     const uniq = {};
                     this.datos.forEach(d => {
                         const k = (d.estado || '').trim();
@@ -273,7 +263,6 @@ if (typeof window.ordenesCliente === 'undefined') {
                 } finally {
                     this.loading = false;
                 }
-                // Watchers para reiniciar paginación
                 const debounce = (fn, ms = 300) => {
                     let h;
                     return (...a) => {
@@ -309,16 +298,13 @@ if (typeof window.ordenesCliente === 'undefined') {
                 return Math.max(1, Math.ceil(this.filtradas.length / this.pageSize));
             },
             get totalOrdenes() {
-                // Total basado en resultados filtrados (más útil para el usuario)
                 return this.filtradas.length;
             },
             get abiertasCount() {
-                // Consideramos "Abiertas" como estados no finales (Programada/En Proceso/Abierta)
                 const open = ['programada', 'en proceso', 'abierta'];
                 return this.filtradas.filter(d => open.includes(String(d.estado || '').toLowerCase())).length;
             },
             get cerradasCount() {
-                // Consideramos "Cerradas" = Finalizada, Cancelada, Cerrada
                 const closed = ['finalizada', 'cancelada', 'cerrada'];
                 return this.filtradas.filter(d => closed.includes(String(d.estado || '').toLowerCase())).length;
             },
@@ -358,14 +344,11 @@ if (typeof window.ordenesCliente === 'undefined') {
                     'cerrada': 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
                 } [key] || 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
             },
-            // Mostrar botón Calificar si el estado es final/cerrado con varios aliases
             isCalificable(o) {
                 const n = String((o && o.estado) || '').toLowerCase();
                 if (!n) return false;
                 if (o && o.calificada === true) return false;
-                // Coincidencias comunes: cerrada/o, finalizada/o, resuelta/o
                 if (n.includes('cerrad') || n.includes('finaliz') || n.includes('resuelt')) return true;
-                // Otros alias posibles: completada/o, concluida/o
                 if (n.includes('complet') || n.includes('conclu')) return true;
                 return false;
             },

@@ -1,15 +1,13 @@
-{{-- resources/views/partials/filtros-generales.blade.php --}}
 @props([
 'searchModel' => 'search',
 'filtrosSelect' => [],
 'ordenarOptions' => [],
 'ordenarModel' => 'ordenarPor',
-'ordenarDirectionModel' => null, // Prop opcional para el modelo de dirección (asc/desc)
+'ordenarDirectionModel' => null, 
 ])
 
 <div class="flex flex-col sm:flex-row flex-wrap gap-4 w-full items-center">
 
-    <!-- Búsqueda General -->
     <div class="relative w-full sm:w-auto sm:flex-grow">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <i class="fas fa-search text-gray-400"></i>
@@ -18,7 +16,6 @@
             class="border border-gray-500 rounded px-3 py-2 pl-10 w-full text-sm font-semibold nunito-bold dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
     </div>
 
-    <!-- Filtros Select Personalizados (si se proporcionan) -->
     @foreach ($filtrosSelect as $variable => $data)
     <select x-model="{{ $variable }}"
         class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
@@ -29,7 +26,6 @@
     </select>
     @endforeach
 
-    <!-- Ordenamiento -->
     @if (count($ordenarOptions))
     <div class="flex items-center gap-2 w-full sm:w-auto">
 
@@ -40,7 +36,6 @@
             @endforeach
         </select>
 
-        {{-- Botón para cambiar la dirección del ordenamiento --}}
         @if(isset($ordenarDirectionModel))
         <button @click="{{ $ordenarDirectionModel }} = ({{ $ordenarDirectionModel }} === 'asc' ? 'desc' : 'asc')"
             x-show="{{ $ordenarModel }}" title="Cambiar dirección de ordenamiento"

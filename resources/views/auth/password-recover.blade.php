@@ -16,7 +16,6 @@
 
 <body class="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-800">
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
-        <!-- Dark mode toggle removed -->
 
         <div class="w-full max-w-sm mx-auto">
             <div class="bg-white rounded-lg border border-gray-600 p-4 transition-colors shadow-lg">

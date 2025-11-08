@@ -1,12 +1,8 @@
 <div x-data="{
-    // Tabla y filtros
     items:[], loading:false, search:'', sort:'id', direction:'asc',
-    // Productos (para el modal)
     products: [],
-    // Modales
     isItemModalOpen:false, isEditItemModalOpen:false, isDeleteItemModalOpen:false,
     itemToEdit:null, itemToDelete:null,
-    // Form
     formItem:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null },
     errors:{},
     apiHeaders(){ return { 'Content-Type':'application/json', 'Accept':'application/json' }; },
@@ -46,10 +42,8 @@
             if(!r.ok) throw new Error();
             const j = await r.json();
             const data = j.data || j || [];
-            // normalize product fields expected by UI
             this.products = data.map(p=>({ id_producto_pk:p.id_producto_pk, nombre_producto:p.nombre_producto, precio_unitario:p.precio_unitario, impuesto:p.impuesto }));
         }catch(e){
-            // fail silently, but keep products empty
             console.debug('No se pudieron cargar productos para el modal', e);
         }
     },
@@ -63,7 +57,6 @@
         this.fetchItems(); this.fetchProducts();
         const deb=(fn,ms=400)=>{ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),ms); }; };
         this.$watch('search', deb(()=>this.fetchItems()));
-        // clear modal form state when modals close
         this.$watch('isItemModalOpen', val=>{ if(!val){ this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null }; this.errors={}; } });
         this.$watch('isEditItemModalOpen', val=>{ if(!val){ this.itemToEdit=null; this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null }; this.errors={}; } });
     }
@@ -107,7 +100,8 @@
                     <template x-if="loading">
                         <tr>
                             <td colspan="8" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300"><i
-                                    class="fas fa-spinner fa-spin mr-2"></i> Cargando items...</td>
+                                class="fas fa-spinner fa-spin mr-2"></i> Cargando items...
+                            </td>
                         </tr>
                     </template>
                     <template x-if="!loading && items.length===0">
@@ -139,7 +133,6 @@
         </div>
     </x-admin.tabla-crud>
 
-    <!-- Modal Crear Item -->
     <x-admin.form-modal class="nunito-bold" modalName="isItemModalOpen" title="Nuevo Item" submitLabel="Guardar"
         formId="item-form" maxWidth="max-w-2xl"
         @modal-submit.window="if($event.detail.formId==='item-form'){ submitCreate(); }">
@@ -194,7 +187,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Item -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditItemModalOpen" title="Editar Item" itemToEdit="itemToEdit"
         formId="item-edit-form" maxWidth="max-w-2xl"
         @modal-submit.window="if($event.detail.formId==='item-edit-form'){ submitEdit(); }">
@@ -249,7 +241,6 @@
         </div>
     </x-admin.edit-modal>
 
-    <!-- Confirmar Eliminación -->
     <x-admin.confirmation-modal modal-name="isDeleteItemModalOpen" title="Eliminar Item" item-to-delete="itemToDelete"
         item-name-property="descripcion" message="¿Estás seguro de eliminar el item" />
 </div>

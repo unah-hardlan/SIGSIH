@@ -1,5 +1,4 @@
 <div x-data="{
-    // State
     tickets: [],
     loading: false,
     isModalOpen: false,
@@ -8,13 +7,11 @@
     ticketToEdit: null,
     ticketToDelete: null,
 
-    // Catalogs
     estadosTicket: [],
     personas: [],
     clientes: [],
     tecnicos: [],
 
-    // Filters
     search: '',
     filtroEstado: '',
     filtroTecnico: '',
@@ -24,29 +21,24 @@
     ordenarPor: 'fecha',
     ordenarDirection: 'desc',
 
-    // Form fields (New)
     new_fecha_creacion: '',
     new_descripcion_ticket: '',
     new_id_estado_ticket_fk: '',
     new_id_tecnico_fk: '',
     new_id_cliente_fk: '',
 
-    // Form fields (Edit)
     edit_fecha_creacion: '',
     edit_descripcion_ticket: '',
     edit_id_estado_ticket_fk: '',
     edit_id_tecnico_fk: '',
     edit_id_cliente_fk: '',
-  // Form touched trackers for frontend validation
   formTicketAdd: { _touched: {} },
   formTicketEdit: { _touched: {} },
 
-    // 1️⃣ Paginación Variables
     numbersTickets: [],
     currentPageTickets: 1,
     perPageTickets: 10,
 
-    // 2️⃣ Paginación Métodos
     paginatedTickets() {
         return this.tickets.slice(
             (this.currentPageTickets - 1) * this.perPageTickets,
@@ -67,7 +59,6 @@
         }
     },
 
-    // 3️⃣ API Methods (con sincronización correcta)
     async fetchCatalogs() {
       await window.ticketsApiHandlers.fetchCatalogs(this);
     },
@@ -77,18 +68,17 @@
     },
     async store() {
       await window.ticketsApiHandlers.store(this);
-      this.fetchTickets(); // Vuelve a cargar los datos para reflejar el cambio
+      this.fetchTickets(); 
     },
     async update() {
       await window.ticketsApiHandlers.update(this);
-      this.fetchTickets(); // Vuelve a cargar los datos para reflejar el cambio
+      this.fetchTickets();
     },
     async remove() {
       await window.ticketsApiHandlers.remove(this);
-      this.fetchTickets(); // Vuelve a cargar los datos para reflejar el cambio
+      this.fetchTickets(); 
     },
 
-    // --- Event Handlers ---
     handleModalSubmit(e) {
       if (e.detail.formId === 'form-ticket-add') this.store();
       if (e.detail.formId === 'form-ticket-edit') this.update();
@@ -97,7 +87,6 @@
       if (this.isDeleteModalOpen) this.remove();
     },
 
-    // --- UI Actions ---
     openAdd() {
       try {
         const d = new Date();
@@ -107,7 +96,6 @@
       } catch (_) {
         this.new_fecha_creacion = '';
       }
-      // reset touched flags when opening the modal so we don't show errors immediately
       this.formTicketAdd._touched = {};
       this.isModalOpen = true;
     },
@@ -118,7 +106,6 @@
       this.edit_id_estado_ticket_fk = item.id_estado_ticket_fk || '';
       this.edit_id_tecnico_fk = item.id_tecnico_fk || '';
       this.edit_id_cliente_fk = item.id_cliente_fk || '';
-      // reset touched flags for edit modal
       this.formTicketEdit._touched = {};
       this.isEditModalOpen = true;
     },
@@ -126,7 +113,6 @@
       this.ticketToDelete = item;
       this.isDeleteModalOpen = true;
     },
-        // Estado -> clases de badge (Admin)
         estadoBadge(name) {
             const n = String(name || '').toLowerCase();
             if (n.includes('pend')) {
@@ -150,7 +136,6 @@
   }" x-init="
     await fetchCatalogs();
     await fetchTickets();
-    // 4️⃣ Reset de página en filtros
     $watch('search', () => { fetchTickets(); currentPageTickets = 1; });
     $watch('filtroEstado', () => { fetchTickets(); currentPageTickets = 1; });
     $watch('filtroTecnico', () => { fetchTickets(); currentPageTickets = 1; });
@@ -250,7 +235,6 @@
             </tr>
           </template>
           <template x-if="!loading && tickets.length>0">
-            <!-- 5️⃣ Usar paginatedTickets() en el template -->
             <template x-for="(t, index) in paginatedTickets()" :key="t.id_ticket_pk">
               <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                 :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedTickets().length - 1 }">
@@ -306,7 +290,7 @@
                 </div>
               </div>
               <span class="px-2 py-1 rounded text-xs" :class="{
-                                        }" :class="estadoBadge(t.estado_nombre)" x-text="t.estado_nombre"></span>
+              }" :class="estadoBadge(t.estado_nombre)" x-text="t.estado_nombre"></span>
             </div>
             <div class="space-y-1 text-sm">
               <div><span
@@ -350,7 +334,6 @@
     </x-slot>
   </x-responsive-table>
 
-  <!-- 6️⃣ Paginación para Tickets -->
   <div x-show="tickets.length > perPageTickets"
     class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
     <div class="mb-2">
@@ -397,7 +380,6 @@
     </div>
   </div>
 
-  <!-- Modal Nuevo Ticket -->
   <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nuevo Ticket" submitLabel="Guardar Ticket"
     maxWidth="max-w-2xl" formId="form-ticket-add">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -462,7 +444,6 @@
     </div>
   </x-admin.form-modal>
 
-  <!-- Modal Editar Ticket -->
   <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Ticket" itemToEdit="ticketToEdit"
     maxWidth="max-w-2xl" formId="form-ticket-edit">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -528,7 +509,6 @@
     </div>
   </x-admin.edit-modal>
 
-  <!-- Modal Confirmar Eliminación -->
   <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpen" itemToDelete="ticketToDelete"
     message="¿Estás seguro de que quieres eliminar el ticket?" />
 
