@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class AgenciaResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -20,10 +16,10 @@ class AgenciaResource extends JsonResource
             'horario_agencia' => $this->horario_agencia,
             'id_direccion_fk' => $this->id_direccion_fk,
             
-            // Relaciones
+            
             'direccion' => $this->whenLoaded('direccion'),
 
-            // Clientes asociados (cuando estén cargados). Se expone un arreglo simple {id,nombre}
+            
             'clientes' => $this->whenLoaded('clientes', function () {
                 return $this->clientes->map(function ($c) {
                     $nombre = '';

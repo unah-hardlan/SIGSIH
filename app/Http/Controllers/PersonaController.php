@@ -53,19 +53,19 @@ class PersonaController extends Controller
     public function store(StorePersonaRequest $request)
     {
     $data = $request->validated();
-    // Crear persona y, si viene id_cliente_fk, insertar vínculo en pivot tbl_cliente_persona
+    
     $persona = null;
     DB::transaction(function () use ($data, &$persona) {
         $persona = Persona::create($data);
-        // Determinar cliente a enlazar
+        
         $clienteToLink = null;
         if (!empty($data['id_cliente_fk'])) {
-            // Se proporcionó explícitamente un cliente (por ejemplo: empresa seleccionada)
+            
             $clienteToLink = (int) $data['id_cliente_fk'];
         } elseif (!empty($data['id_usuario_fk'])) {
-            // Si no se pasó id_cliente_fk pero la persona está vinculada a un usuario
-            // y existe un Cliente cuyo PK coincide con ese usuario (flujo de cliente persona),
-            // enlazamos automáticamente.
+            
+            
+            
                 try {
                     $cliente = Cliente::firstOrCreate(
                         ['id_cliente_pk' => (int) $data['id_usuario_fk']],
@@ -77,7 +77,7 @@ class PersonaController extends Controller
                     );
                     $clienteToLink = $cliente->id_cliente_pk;
                 } catch (\Throwable $e) {
-                    // silencioso: no interrumpir la creación de la persona por problemas de mapeo
+                    
                     $clienteToLink = null;
                 }
         }
@@ -123,14 +123,14 @@ class PersonaController extends Controller
         return response()->json(['message'=>'Persona eliminada']);
     }
 
-    // Reporte de Gestión de Personas (vista)
+    
     public function reporte(Request $request)
     {
         $q = $request->input('q');
         $sort = $request->input('sort','nombre');
         $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
-    $tipo = $request->input('tipo'); // deprecado
-        $genero = $request->input('genero'); // puede ser nombre
+    $tipo = $request->input('tipo'); 
+        $genero = $request->input('genero'); 
 
     $query = Persona::query()->with(['genero','usuario']);
         if($q){
@@ -142,7 +142,7 @@ class PersonaController extends Controller
                         ->orWhere('dni','like',"%$q%");
             });
         }
-        // filtro tipo persona eliminado
+        
         if($genero){
             if(is_numeric($genero)){
                 $query->where('id_genero_fk',(int)$genero);

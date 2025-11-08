@@ -10,12 +10,10 @@ class SystemNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
-    /** @var array<string,mixed> */
+    
     protected array $payload;
 
-    /**
-     * @param array<string,mixed> $payload keys: title, body, url, icon, severity, module, meta
-     */
+    
     public function __construct(array $payload)
     {
         $defaults = [
@@ -32,17 +30,17 @@ class SystemNotification extends Notification implements ShouldBroadcast
 
     public function via($notifiable): array
     {
-        // Database for persistence and broadcast for realtime UI
+        
         return ['database', 'broadcast'];
     }
 
-    /** @return array<string,mixed> */
+    
     public function toArray($notifiable): array
     {
         return $this->payload;
     }
 
-    /** @return array<string,mixed> */
+    
     public function toBroadcast($notifiable): array
     {
         return [

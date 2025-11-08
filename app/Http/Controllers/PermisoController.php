@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 class PermisoController extends Controller
 {
     public function __construct(private BitacoraService $bitacora) {}
-    /** Listado con búsqueda, filtros, orden y paginación */
+    
     public function index(Request $request)
     {
         $query = Permiso::query()->with(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto']);
@@ -74,7 +74,7 @@ class PermisoController extends Controller
         ]);
     }
 
-    /** Crear */
+    
     public function store(StorePermisoRequest $request)
     {
         $data = $request->validated();
@@ -100,7 +100,7 @@ class PermisoController extends Controller
         return (new PermisoResource($permiso))->response()->setStatusCode(201);
     }
 
-    /** Detalle por ID */
+    
     public function show($id)
     {
         $permiso = Permiso::with(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto'])->find($id);
@@ -156,7 +156,7 @@ class PermisoController extends Controller
         return Str::of($rolNombre)->ascii()->lower()->trim() === 'administrador';
     }
 
-    /** Actualizar por ID */
+    
     public function update(UpdatePermisoRequest $request, $id)
     {
         $permiso = Permiso::find($id);
@@ -188,7 +188,7 @@ class PermisoController extends Controller
     }
 
 
-    /** Eliminar por ID */
+    
     public function destroy($id)
     {
         $permiso = Permiso::with(['rol:id_rol_pk,rol', 'objeto:id_objetos_pk,nombre_objeto'])->find($id);
@@ -205,12 +205,10 @@ class PermisoController extends Controller
         return response()->json(['message' => 'Permiso eliminado']);
     }
 
-    /**
-     * Upsert por combinación (rol,objeto): actualiza o crea una fila única con los flags recibidos.
-     */
+    
     public function upsertForRoleObject($idRol, $idObjeto, Request $request)
     {
-        // Validaciones de flags opcionales; si no vienen, no se modifican
+        
         $validated = $request->validate([
             'permiso_insercion' => 'sometimes|boolean',
             'permiso_consultar' => 'sometimes|boolean',
@@ -219,7 +217,7 @@ class PermisoController extends Controller
             'permiso_eliminacion' => 'sometimes|boolean',
         ]);
 
-        // Validar existencia de llaves foráneas para evitar 500
+        
         $rolExists = \App\Models\Rol::where('id_rol_pk', (int)$idRol)->exists();
         if (!$rolExists) return response()->json(['error' => 'Rol no encontrado'], 404);
         $objExists = \App\Models\Objeto::where('id_objetos_pk', (int)$idObjeto)->exists();
@@ -229,13 +227,13 @@ class PermisoController extends Controller
             return $response;
         }
 
-        // Traer existente por clave compuesta
+        
         $permiso = Permiso::where('id_rol_fk', (int)$idRol)
             ->where('id_objeto_fk', (int)$idObjeto)
             ->first();
 
         if ($permiso) {
-            // Actualizar usando query por clave compuesta para evitar dependencia del PK
+            
             $update = $validated;
             $update['modificado_por'] = auth()->user()->usuario ?? 'system';
             $update['fecha_modificacion'] = now();
@@ -246,7 +244,7 @@ class PermisoController extends Controller
                 ->where('id_objeto_fk', (int)$idObjeto)
                 ->first();
         } else {
-            // Crear con defaults false para flags no provistos
+            
             $payload = array_merge([
                 'id_rol_fk' => (int)$idRol,
                 'id_objeto_fk' => (int)$idObjeto,

@@ -17,13 +17,11 @@ use Illuminate\Support\Facades\DB;
 
 class OrdenServicioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         $query = OrdenServicio::with([
-            // Ensure cliente.personas is loaded so we can display person-type clients
+            
             'solicitudServicio.cliente.empresa',
             'solicitudServicio.cliente.personas',
             'solicitudServicio.contacto',
@@ -33,7 +31,7 @@ class OrdenServicioController extends Controller
             'cotizacionGenerada',
         ]);
 
-        // Filtros opcionales
+        
         if ($request->has('id_solicitud_servicio_fk')) {
             $query->where('id_solicitud_servicio_fk', $request->id_solicitud_servicio_fk);
         }
@@ -45,7 +43,7 @@ class OrdenServicioController extends Controller
         if ($request->has('fecha_recepcion')) {
             $query->whereDate('fecha_recepcion', $request->fecha_recepcion);
         }
-        // Filtrar por cliente (ordenes cuya solicitud pertenece a un cliente)
+        
         $clienteId = $request->input('cliente_id', $request->input('id_cliente_fk'));
         if (!empty($clienteId)) {
             $query->whereHas('solicitudServicio', function ($q) use ($clienteId) {
@@ -53,7 +51,7 @@ class OrdenServicioController extends Controller
             });
         }
 
-        // Paginación flexible: per_page y all
+        
         $perPage = (int) $request->input('per_page', 15);
         $all = $request->boolean('all') || $perPage === -1;
         if ($all) {
@@ -64,9 +62,7 @@ class OrdenServicioController extends Controller
         return OrdenServicioResource::collection($ordenesServicio);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -90,12 +86,12 @@ class OrdenServicioController extends Controller
         ]);
 
         $ordenServicio = OrdenServicio::create($validatedData);
-        // If the client sent repuestos inline, persist them into detalle table
+        
         try {
             $inputRepuestos = $request->input('repuestos', []);
             if (is_array($inputRepuestos) && count($inputRepuestos)) {
                 foreach ($inputRepuestos as $r) {
-                    // Defensive mapping
+                    
                     $prodId = $r['id_producto_fk'] ?? ($r['id_producto'] ?? null);
                     $cantidad = $r['cantidad'] ?? ($r['cant'] ?? 1);
                     if ($prodId) {
@@ -108,7 +104,7 @@ class OrdenServicioController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // Don't break creation on detalle errors
+            
         }
         $ordenServicio->load([
             'solicitudServicio.cliente.empresa',
@@ -120,7 +116,7 @@ class OrdenServicioController extends Controller
             'cotizacionGenerada',
         ]);
 
-        // Construir y almacenar lista de repuestos asociados a la orden (si existen detalles registrados)
+        
         try {
             $detalles = DetalleOrdenProducto::with('producto')
                 ->where('id_orden_servicio_fk', $ordenServicio->id_orden_servicio_pk)
@@ -138,10 +134,10 @@ class OrdenServicioController extends Controller
                 $ordenServicio->forceFill(['repuestos' => $repuestos])->saveQuietly();
             }
         } catch (\Throwable $e) {
-            // No interrumpir la creación por un problema al poblar repuestos
+            
         }
 
-        // Notificar a los usuarios del cliente cuando se crea una nueva Orden de Servicio
+        
         try {
             $clienteId = $ordenServicio->solicitudServicio?->id_cliente_fk;
             if ($clienteId) {
@@ -179,7 +175,7 @@ class OrdenServicioController extends Controller
                         try {
                             $u->notify(new SystemNotification($payload));
                         } catch (\Throwable $t) {
-                            // Evitar que un fallo individual interrumpa el flujo
+                            
                         }
                     }
                 }
@@ -191,9 +187,7 @@ class OrdenServicioController extends Controller
         return new OrdenServicioResource($ordenServicio);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id)
     {
         $ordenServicio = OrdenServicio::with([
@@ -208,9 +202,7 @@ class OrdenServicioController extends Controller
         return new OrdenServicioResource($ordenServicio);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, $id)
     {
         $ordenServicio = OrdenServicio::findOrFail($id);
@@ -235,7 +227,7 @@ class OrdenServicioController extends Controller
             'repuestos.*.cantidad' => 'required_with:repuestos|integer|min:1',
         ]);
 
-        // Detectar cambio de estado para notificar después de aplicar la actualización
+        
         $oldEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
         $ordenServicio->update($validatedData);
         $ordenServicio->load([
@@ -247,12 +239,12 @@ class OrdenServicioController extends Controller
             'cotizacion',
             'cotizacionGenerada',
         ]);
-        // Actualizar campo 'repuestos' tras la actualización (recalcular desde detalles existentes)
-        // If the client provided repuestos in the request, replace existing detalle rows with the provided list
+        
+        
         try {
             $inputRepuestos = $request->input('repuestos', null);
             if (is_array($inputRepuestos)) {
-                // Remove existing detalle rows for this order and recreate
+                
                 DetalleOrdenProducto::where('id_orden_servicio_fk', $ordenServicio->id_orden_servicio_pk)->delete();
                 foreach ($inputRepuestos as $r) {
                     $prodId = $r['id_producto_fk'] ?? ($r['id_producto'] ?? null);
@@ -267,10 +259,10 @@ class OrdenServicioController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // Ignore detalle persistence errors — we still try to sync cached repuestos below
+            
         }
 
-        // Actualizar campo 'repuestos' tras la actualización (recalcular desde detalles existentes)
+        
         try {
             $detalles = DetalleOrdenProducto::with('producto')
                 ->where('id_orden_servicio_fk', $ordenServicio->id_orden_servicio_pk)
@@ -287,18 +279,18 @@ class OrdenServicioController extends Controller
 
                 $ordenServicio->forceFill(['repuestos' => $repuestos])->saveQuietly();
             } else {
-                // Si no quedan detalles, limpiar el campo
+                
                 $ordenServicio->forceFill(['repuestos' => null])->saveQuietly();
             }
         } catch (\Throwable $e) {
-            // Ignorar errores de sincronización de repuestos
+            
         }
 
-        // Si el estado cambió, notificar a técnicos
+        
         try {
             $newEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
             if (isset($validatedData['id_estado_orden_servicio_fk']) && $newEstadoId != $oldEstadoId) {
-                // obtener nombres de estado
+                
                 $oldName = null;
                 try {
                     $oldName = \App\Models\EstadoOrdenServicio::find($oldEstadoId)?->nombre;
@@ -307,7 +299,7 @@ class OrdenServicioController extends Controller
                 }
                 $newName = $ordenServicio->estado?->nombre ?? null;
 
-                // Obtener técnicos (roles que contengan 'tecn')
+                
                 $rols = Rol::where('rol', 'like', '%tecn%')->get();
                 $roleIds = $rols->pluck('id_rol_pk')->all();
                 $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
@@ -343,7 +335,7 @@ class OrdenServicioController extends Controller
             Log::error('Error sending orden servicio state-change notifications: ' . $e->getMessage());
         }
 
-        // Si la orden fue CERRADA (estado final), notificar a los usuarios del cliente
+        
         try {
             if (isset($validatedData['id_estado_orden_servicio_fk']) && $ordenServicio->estado) {
                 $isClosed = false;
@@ -352,12 +344,12 @@ class OrdenServicioController extends Controller
                 if (str_contains($nombreEstado, 'cerrad') || $codigoEstado === 'cer') {
                     $isClosed = true;
                 }
-                // Alternativamente, si la tabla maneja bandera de final
+                
                 if (!$isClosed) {
                     try {
                         $isClosed = (bool) \App\Models\EstadoOrdenServicio::where('id_estado_orden_servicio_pk', $ordenServicio->id_estado_orden_servicio_fk)
                             ->value('es_final');
-                    } catch (\Throwable $_) { /* ignore */
+                    } catch (\Throwable $_) { 
                     }
                 }
 
@@ -405,9 +397,7 @@ class OrdenServicioController extends Controller
         return new OrdenServicioResource($ordenServicio);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $ordenServicio = OrdenServicio::findOrFail($id);
@@ -418,12 +408,7 @@ class OrdenServicioController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * Renderiza el formato de reporte (vista imprimible) con todos los datos del cliente.
-     * Intenta armar teléfono, correo, dirección y oficina a partir de las relaciones existentes
-     * para mantener compatibilidad con esquemas que guardan estos valores en tbl_contacto o en
-     * referencias a direccion/oficina.
-     */
+    
     public function reporte($id)
     {
         $orden = OrdenServicio::with([
@@ -438,7 +423,7 @@ class OrdenServicioController extends Controller
         $cliente = $orden->solicitudServicio->cliente ?? null;
         $empresa = $cliente?->empresa ?? null;
 
-        // Contactos (tel/email/direccion) almacenados en tbl_contacto
+        
         $contactos = $cliente?->contactos ?? collect();
 
         $telefonos = $contactos->filter(function ($c) {
@@ -450,7 +435,7 @@ class OrdenServicioController extends Controller
             ?? $contactos->firstWhere('tipo_contacto', 'correo')?->valor_contacto
             ?? '';
 
-        // Dirección: preferir referencia en empresa (id_direccion_fk) si existe, si no, buscar contacto tipo 'direccion'
+        
         $direccion = '';
         if ($empresa && isset($empresa->id_direccion_fk) && $empresa->id_direccion_fk) {
             $dir = Direccion::with('ciudad.departamento.pais')->find($empresa->id_direccion_fk);
@@ -465,14 +450,14 @@ class OrdenServicioController extends Controller
             if ($dirContacto) $direccion = $dirContacto->valor_contacto;
         }
 
-        // Oficina: preferir id_oficina_fk en empresa y resolver nombre si existe
+        
         $oficina = '';
         if ($empresa && isset($empresa->id_oficina_fk) && $empresa->id_oficina_fk) {
             $of = OficinaEmpresa::find($empresa->id_oficina_fk);
             if ($of) $oficina = $of->nombre_oficina;
         }
 
-        // Ciudad: preferir la ciudad de la direccion cargada o contacto con tipo ciudad
+        
         $ciudad = '';
         if (!empty($direccion) && isset($dir) && $dir?->ciudad) {
             $ciudad = $dir->ciudad->nombre_ciudad ?? '';
@@ -483,7 +468,7 @@ class OrdenServicioController extends Controller
             if ($ciContacto) $ciudad = $ciContacto->valor_contacto;
         }
 
-        // Pasar variables útiles a la vista junto con el modelo completo
+        
         return view('admin.formato-reporte', compact('orden', 'telefonos', 'correo', 'direccion', 'oficina', 'ciudad'));
     }
 }

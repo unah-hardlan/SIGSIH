@@ -42,13 +42,13 @@ class Rol extends Model
 
     public function usuarios()
     {
-        // Compatibilidad: usuarios con FK directa y también N:M via pivot
+        
         return $this->hasMany(Usuario::class, 'id_rol_fk', 'id_rol_pk');
     }
 
     public function permisos()
     {
-        // Mantener relación existente (Permiso por rol-objeto con flags)
+        
         return $this->hasMany(Permiso::class, 'id_rol_fk');
     }
 

@@ -34,7 +34,7 @@ class ItemCotizacion extends Model
     {
         parent::boot();
         static::saving(function ($model) {
-            // Sólo recalcula el total si cambian componentes base o si no se envió total manualmente.
+            
             $dirty = array_keys($model->getDirty());
             $componentes = ['precio_unitario', 'cantidad', 'impuesto'];
             $cambiaronComponentes = count(array_intersect($componentes, $dirty)) > 0;
@@ -43,7 +43,7 @@ class ItemCotizacion extends Model
                 $precio = (float) $model->precio_unitario;
                 $cant = (float) $model->cantidad;
                 $imp = (float) $model->impuesto;
-                $model->total = $precio * $cant + $imp; // Ajustar fórmula si negocio cambia
+                $model->total = $precio * $cant + $imp; 
             }
         });
     }

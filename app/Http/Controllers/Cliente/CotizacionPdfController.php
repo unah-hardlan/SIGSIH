@@ -35,7 +35,7 @@ class CotizacionPdfController extends Controller
             abort(404);
         }
         if (!in_array($cot->id_cliente_fk, $clienteIds)) {
-            // No revelar si existe: devolver 404 para privacidad
+            
             abort(404);
         }
 

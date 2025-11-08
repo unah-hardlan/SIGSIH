@@ -24,7 +24,7 @@ class AvisoOrdenServicioPorIniciar implements ShouldQueue
     {
         $os = OrdenServicio::find($this->ordenServicioId);
         if (!$os) return;
-        // TODO: implementar envío de aviso a interesados (técnico/cliente/ops)
-        // Notification::send($destinatarios, new OrdenServicioPorIniciar($os));
+        
+        
     }
 }

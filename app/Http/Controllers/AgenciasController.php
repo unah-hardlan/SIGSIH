@@ -14,12 +14,12 @@ class AgenciasController extends Controller
     {
     $query = Agencia::with(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas']);
 
-        // Filtro por dirección exacta
+        
         if ($request->filled('id_direccion_fk')) {
             $query->where('id_direccion_fk', $request->integer('id_direccion_fk'));
         }
 
-        // Filtro por ciudad/departamento/pais a través de relaciones
+        
         if ($request->filled('id_ciudad_fk')) {
             $query->whereHas('direccion', function ($q) use ($request) {
                 $q->where('id_ciudad_fk', $request->integer('id_ciudad_fk'));
@@ -42,7 +42,7 @@ class AgenciasController extends Controller
             });
         }
 
-        // Filtro de búsqueda por nombre/horario/dirección
+        
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -55,7 +55,7 @@ class AgenciasController extends Controller
             });
         }
 
-        // Ordenamiento: nombre (default), ciudad, departamento, pais
+        
         $ordenarPor = $request->input('ordenarPor', 'nombre');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
 
@@ -87,19 +87,17 @@ class AgenciasController extends Controller
                 break;
         }
 
-        // Se reemplaza paginate() por get() para obtener todos los registros
+        
         $agencias = $query->get();
 
-        // Se elimina el objeto 'pagination' de la respuesta
+        
         return response()->json([
             'success' => true,
             'data' => AgenciaResource::collection($agencias),
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -125,9 +123,7 @@ class AgenciasController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $agencia = Agencia::with(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas'])->find($id);
@@ -145,9 +141,7 @@ class AgenciasController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id): JsonResponse
     {
         $agencia = Agencia::find($id);
@@ -182,9 +176,7 @@ class AgenciasController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $agencia = Agencia::find($id);
@@ -214,35 +206,33 @@ class AgenciasController extends Controller
         }
     }
 
-    /**
-     * Generate agencias report
-     */
+    
     public function reporte(Request $request)
     {
         $query = Agencia::with(['direccion.ciudad.departamento.pais', 'clientes.empresa', 'clientes.personas']);
 
-        // Filtro por ciudad
+        
         if ($ciudad = $request->input('ciudad')) {
             $query->whereHas('direccion.ciudad', function($q) use ($ciudad) {
                 $q->where('nombre_ciudad', 'like', "%$ciudad%");
             });
         }
 
-        // Filtro por departamento
+        
         if ($departamento = $request->input('departamento')) {
             $query->whereHas('direccion.ciudad.departamento', function($q) use ($departamento) {
                 $q->where('nombre_departamento', 'like', "%$departamento%");
             });
         }
 
-        // Filtro por país
+        
         if ($pais = $request->input('pais')) {
             $query->whereHas('direccion.ciudad.departamento.pais', function($q) use ($pais) {
                 $q->where('nombre_pais', 'like', "%$pais%");
             });
         }
 
-        // Filtro de búsqueda por nombre/horario/dirección
+        
         if ($q = $request->input('q')) {
             $query->where(function ($sub) use ($q) {
                 $sub->where('nombre_agencia', 'like', "%$q%")
@@ -254,7 +244,7 @@ class AgenciasController extends Controller
             });
         }
 
-        // Orden
+        
         $sortable = [
             'nombre' => 'nombre_agencia',
             'ciudad' => 'direccion.ciudad.nombre_ciudad',

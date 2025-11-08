@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrdenServicioResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -42,11 +38,11 @@ class OrdenServicioResource extends JsonResource
             'codigo_orden' => $this->numero_orden_servicio ?? null,
             'nombre_orden' => ($this->numero_orden_servicio ?? '') . ($this->solicitudServicio ? ' - ' . substr($this->solicitudServicio->descripcion_problema, 0, 50) : ''),
 
-            // Repuestos: columna JSON que contiene array de {id_producto,nombre,cantidad}
+            
             'repuestos' => $this->repuestos ?? null,
             'repuestos_count' => is_array($this->repuestos) ? count($this->repuestos) : null,
 
-            // Relaciones
+            
             'solicitud_servicio' => $this->whenLoaded('solicitudServicio', function () {
                 return array_filter([
                     'id_solicitud_pk' => $this->solicitudServicio->id_solicitud_pk,
@@ -65,7 +61,7 @@ class OrdenServicioResource extends JsonResource
                                     'rtn' => $this->solicitudServicio->cliente->empresa->rtn,
                                 ]
                                 : null,
-                            // Persona: si existe una persona asociada al cliente, exponer el primer registro
+                            
                             'persona' => $this->solicitudServicio->cliente->relationLoaded('personas') && $this->solicitudServicio->cliente->personas && $this->solicitudServicio->cliente->personas->count() > 0
                                 ? [
                                     'id_persona_pk' => $this->solicitudServicio->cliente->personas->first()->id_persona_pk ?? null,

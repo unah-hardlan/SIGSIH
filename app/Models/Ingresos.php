@@ -23,17 +23,13 @@ class Ingresos extends Model
         'id_categoria_fk'
     ];
 
-    /**
-     * Relación con el modelo Proyecto
-     */
+    
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'id_proyecto_fk', 'id_proyecto_pk');
     }
 
-    /**
-     * Relación con el modelo Categoria
-     */
+    
     public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'id_categoria_fk', 'id_categoria_pk');

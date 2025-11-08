@@ -14,7 +14,7 @@ class UpdateParametroRequest extends FormRequest
         return [
             'parametro' => 'sometimes|required|string|max:100|unique:tbl_parametros,parametro,' . $id . ',id_parametro_pk',
             'valor' => 'sometimes|required|string|max:255',
-            // Se completará con el usuario autenticado si no se envía
+            
             'id_usuario_fk' => 'nullable|integer|exists:tbl_ms_usuario,id_usuario_pk',
         ];
     }

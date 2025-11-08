@@ -10,14 +10,12 @@ use Illuminate\Http\JsonResponse;
 
 class PaisesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Pais::query();
 
-        // Filtro de búsqueda
+        
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('nombre_pais', 'LIKE', "%{$search}%");
@@ -40,9 +38,7 @@ class PaisesController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StorePaisRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -56,9 +52,7 @@ class PaisesController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $pais = Pais::find($id);
@@ -76,9 +70,7 @@ class PaisesController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $pais = Pais::find($id);
@@ -90,7 +82,7 @@ class PaisesController extends Controller
             ], 404);
         }
 
-        // Verificar si el país tiene departamentos asociados
+        
         if ($pais->departamentos()->exists()) {
             return response()->json([
                 'success' => false,

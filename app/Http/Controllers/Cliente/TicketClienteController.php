@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class TicketClienteController extends Controller
 {
-    /**
-     * Listado de tickets del cliente autenticado para el portal cliente.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         try {

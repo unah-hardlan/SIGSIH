@@ -15,7 +15,7 @@ class EstadoProyectoController extends Controller
     {
         $query = EstadoProyecto::query();
 
-        // Búsqueda general (q)
+        
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             $query->where(function($sub) use ($searchTerm) {
@@ -25,7 +25,7 @@ class EstadoProyectoController extends Controller
             });
         }
 
-        // Ordenamiento
+        
         if ($request->has('sort') && !empty($request->sort)) {
             $sortField = $request->sort;
             switch ($sortField) {

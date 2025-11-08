@@ -44,7 +44,7 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
     ];
 
     protected $casts = [
-        // 'primer_ingreso' se normaliza con accessor para soportar 'S'/'N' en BD
+        
         'fecha_ultima_conexion' => 'datetime',
         'fecha_vencimiento' => 'date',
         'fecha_creacion' => 'datetime',
@@ -67,14 +67,14 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
             if (!$model->creado_por) {
                 $model->creado_por = auth()->user()->usuario ?? 'system';
             }
-            // primer ingreso por defecto (si no se envía)
+            
             $rawPrimerIngreso = method_exists($model, 'getRawOriginal')
                 ? $model->getRawOriginal('primer_ingreso')
                 : ($model->attributes['primer_ingreso'] ?? null);
             if ($rawPrimerIngreso === null) {
                 $model->primer_ingreso = 1;
             }
-            // Valor por defecto para estado_usuario si la BD lo requiere (NOT NULL)
+            
             if (empty($model->estado_usuario)) {
                 $model->estado_usuario = 'ACTIVO';
             }
@@ -86,17 +86,13 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         });
     }
 
-    /**
-     * Get the password for the user.
-     *
-     * @return string
-     */
+    
     public function getAuthPassword()
     {
         return $this->contrasena;
     }
 
-    // Relación directa (FK) al rol
+    
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'id_rol_fk', 'id_rol_pk');
@@ -107,14 +103,14 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         return $this->belongsToMany(Rol::class, 'tbl_usuario_rol', 'id_usuario_fk', 'id_rol_fk');
     }
 
-    // Hash de contraseña automático con verificación de rehash
+    
     protected function setContrasenaAttribute($value)
     {
         if (!isset($value) || $value === '') {
             $this->attributes['contrasena'] = $value;
             return;
         }
-        // Si ya parece ser un hash bcrypt/argon (60+ chars con prefijo), no rehash
+        
         $str = (string)$value;
         $isHashed = preg_match('/^\$2y\$|^\$argon2id\$|^\$argon2i\$/', $str) === 1;
         $this->attributes['contrasena'] = $isHashed ? $str : \Illuminate\Support\Facades\Hash::make($str);
@@ -135,27 +131,25 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         return $this->hasOne(Persona::class, 'id_usuario_fk', 'id_usuario_pk');
     }
 
-    // Normaliza primer_ingreso: true para 1/'1'/true/'S'/'Y'; false para 0/'0'/false/'N' o null
+    
     public function getPrimerIngresoAttribute($value)
     {
         return in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true);
     }
 
-    // Al asignar, almacenamos 1 o 0 (entero) para compatibilidad con la columna en BD
+    
     public function setPrimerIngresoAttribute($value)
     {
         $this->attributes['primer_ingreso'] = in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true) ? 1 : 0;
     }
 
-    // Mutator: garantizar que el nombre de usuario se almacene en MAYÚSCULAS sin espacios extremos
+    
     public function setUsuarioAttribute($value)
     {
         $this->attributes['usuario'] = strtoupper(trim((string)$value));
     }
 
-    /**
-     * Obtiene el correo a utilizar para el flujo de restablecimiento de contraseña.
-     */
+    
     public function getEmailForPasswordReset()
     {
         return (string) $this->correo_electronico;
@@ -166,20 +160,20 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         return $this->correo_electronico;
     }
 
-    // Broadcast notifications use private channel App.Models.Usuario.{id}
+    
     public function receivesBroadcastNotificationsOn(): string
     {
         return 'App.Models.Usuario.' . $this->getKey();
     }
 
-    // Use custom DB notifications table/model
+    
     public function notifications()
     {
         return $this->morphMany(DbNotification::class, 'notifiable', 'tipo_notificable', 'id_notificable')
             ->orderBy('fecha_creacion', 'desc');
     }
 
-    // Direct hint for Database channel: use our custom relation for persistence
+    
     public function routeNotificationForDatabase($notification)
     {
         return $this->notifications();
@@ -199,7 +193,7 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
             ->orderBy('fecha_creacion', 'desc');
     }
 
-    // Email verification helpers
+    
     public function hasVerifiedEmail(): bool
     {
         return !is_null($this->email_verified_at);

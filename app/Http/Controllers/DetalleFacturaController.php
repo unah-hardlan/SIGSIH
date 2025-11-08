@@ -17,7 +17,7 @@ class DetalleFacturaController extends Controller
         try {
             $query = DetalleFactura::with(['factura', 'servicio']);
             
-            // Filtro por búsqueda general
+            
             if ($q = $request->input('q')) {
                 $query->where(function($sub) use ($q) {
                     $sub->where('descripcion', 'like', "%$q%")
@@ -32,17 +32,17 @@ class DetalleFacturaController extends Controller
                 });
             }
             
-            // Filtro por servicio
+            
             if ($servicio = $request->input('servicio')) {
                 $query->where('id_servicio_fk', $servicio);
             }
             
-            // Filtro por factura
+            
             if ($factura = $request->input('factura')) {
                 $query->where('id_factura_fk', $factura);
             }
             
-            // Ordenamiento
+            
             $sortable = [
                 'fecha_servicio' => 'fecha_servicio',
                 'horas' => 'horas',
@@ -55,7 +55,7 @@ class DetalleFacturaController extends Controller
             $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
             $query->orderBy($sortable[$sort] ?? 'id_detalle_pk', $direction);
             
-            // Headers anti-caché
+            
             $headers = [
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
                 'Pragma' => 'no-cache',
@@ -176,9 +176,7 @@ class DetalleFacturaController extends Controller
         }
     }
 
-    /**
-     * Obtener servicios para dropdown
-     */
+    
     public function getServicios(Request $request)
     {
         try {
@@ -209,9 +207,7 @@ class DetalleFacturaController extends Controller
         }
     }
 
-    /**
-     * Obtener facturas para dropdown
-     */
+    
     public function getFacturas(Request $request)
     {
         try {

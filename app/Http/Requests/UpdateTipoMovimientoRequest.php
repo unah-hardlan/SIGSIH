@@ -16,7 +16,7 @@ class UpdateTipoMovimientoRequest extends FormRequest
             ?? $this->route('id')
             ?? $this->id_tipo_movimiento_pk
             ?? null;
-        // Fallback: último segmento numérico de la URL (por si el nombre del parámetro no coincide)
+        
         if(!$id){
             $segments = $this->segments();
             $last = end($segments);

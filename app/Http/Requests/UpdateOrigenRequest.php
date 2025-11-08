@@ -18,12 +18,12 @@ class UpdateOrigenRequest extends FormRequest
     }
     public function rules(): array
     {
-        // Resolve the current record id from the route, regardless of parameter name or model binding
+        
         $route = $this->route();
         $paramCandidates = [
-            'origen',        // explicit mapping if configured
-            'origene',       // Laravel's default singularization for "origenes"
-            'origenes',      // sometimes people reuse the plural
+            'origen',        
+            'origene',       
+            'origenes',      
             'id',
         ];
         $routeParam = null;
@@ -32,7 +32,7 @@ class UpdateOrigenRequest extends FormRequest
             if (!is_null($val)) { $routeParam = $val; break; }
         }
         if (is_null($routeParam)) {
-            // Fallback: inspect all parameters and pick the first numeric or model id
+            
             foreach ((array)($route?->parameters() ?? []) as $val) {
                 if (is_object($val) && method_exists($val, 'getKey')) { $routeParam = $val->getKey(); break; }
                 if (is_scalar($val) && is_numeric($val)) { $routeParam = $val; break; }
@@ -45,7 +45,7 @@ class UpdateOrigenRequest extends FormRequest
                 'required',
                 'string',
                 'max:50',
-                // Ignore the current PK column (id_origen_pk) on update
+                
                 Rule::unique('tbl_origen', 'nombre_origen')->ignore($id, 'id_origen_pk'),
             ],
             'descripcion_origen' => 'sometimes|nullable|string|max:255',

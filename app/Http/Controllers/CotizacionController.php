@@ -23,7 +23,7 @@ class CotizacionController extends Controller
             $query->where('id_cliente_fk', $cliente);
         }
         if ($q = $request->input('q')) {
-            // Busqueda sobre algunos campos numéricos convertidos a string
+            
             $query->where(function ($sub) use ($q) {
                 $sub->where('subtotal', 'like', "%$q%")
                     ->orWhere('total', 'like', "%$q%")
@@ -67,7 +67,7 @@ class CotizacionController extends Controller
         $cotizacion = Cotizacion::create($request->validated());
         $cotizacion->load(['cliente.empresa', 'cliente.personas', 'estado']);
 
-        // Notificar a usuarios del cliente (portal cliente) al crear una nueva cotización
+        
         try {
             $clienteId = $cotizacion->id_cliente_fk;
             if ($clienteId) {
@@ -80,7 +80,7 @@ class CotizacionController extends Controller
 
                 if (!empty($userIds)) {
                     $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
-                    // Etiqueta para UI
+                    
                     try {
                         $fechaFmt = \Carbon\Carbon::parse($cotizacion->fecha_cotizacion ?? now())->format('Ymd');
                     } catch (\Throwable $e) {
@@ -121,7 +121,7 @@ class CotizacionController extends Controller
 
     public function show($id)
     {
-        // Traer datos del cliente suficientes para imprimir (empresa/persona)
+        
         $cotizacion = Cotizacion::with(['cliente.empresa', 'cliente.personas', 'estado'])->find($id);
         if (!$cotizacion) return response()->json(['error' => 'Cotizacion no encontrada'], 404);
         return (new CotizacionResource($cotizacion))->response();
@@ -136,7 +136,7 @@ class CotizacionController extends Controller
         $cotizacion->update($validated);
         $cotizacion->load(['cliente.empresa', 'cliente.personas', 'estado']);
 
-        // Si el estado cambió a "enviada", notificar al cliente
+        
         try {
             if (array_key_exists('id_estado_cotizacion_fk', $validated)) {
                 $newId = (int) $validated['id_estado_cotizacion_fk'];
@@ -173,7 +173,7 @@ class CotizacionController extends Controller
                                     try {
                                         $u->notify(new SystemNotification($payload));
                                     } catch (\Throwable $t) {
-                                        // swallow notify errors for individual users
+                                        
                                     }
                                 }
                             }
@@ -185,13 +185,13 @@ class CotizacionController extends Controller
             Log::error('Error notifying client on cotizacion status change: ' . $e->getMessage());
         }
 
-        // Siempre que cambie de estado, notificar al técnico asignado (si hay OS); si no, fallback a usuarios con rol técnico
+        
         try {
             if (array_key_exists('id_estado_cotizacion_fk', $validated)) {
                 $newId = (int) $validated['id_estado_cotizacion_fk'];
                 if ((int)$oldEstado !== $newId) {
                     $estado = EstadoCotizacion::find($newId);
-                    // Resolver destinatarios por OS
+                    
                     $tecUserIds = [];
                     $osId = $cotizacion->id_orden_servicio_fk ?: DB::table('tbl_orden_servicio')
                         ->where('id_cotizacion_fk', $cotizacion->getKey())
@@ -207,7 +207,7 @@ class CotizacionController extends Controller
                             if ($id) $tecUserIds[] = (int)$id;
                         }
                     }
-                    // Fallback por rol
+                    
                     if (empty($tecUserIds)) {
                         $rolIds = DB::table('tbl_ms_rol')
                             ->where(function ($q) {
@@ -258,7 +258,7 @@ class CotizacionController extends Controller
                                 try {
                                     $u->notify(new SystemNotification($payloadTec));
                                 } catch (\Throwable $t) {
-                                    // swallow notify errors for individual users
+                                    
                                 }
                             }
                         }
@@ -266,7 +266,7 @@ class CotizacionController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // ignore tech notify errors
+            
         }
 
         return (new CotizacionResource($cotizacion))->response();

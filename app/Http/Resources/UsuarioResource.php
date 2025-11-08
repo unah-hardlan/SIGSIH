@@ -6,7 +6,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UsuarioResource extends JsonResource
 {
-    /** @return array<string,mixed> */
+    
     public function toArray($request): array
     {
         return [
@@ -16,7 +16,7 @@ class UsuarioResource extends JsonResource
             'estado_usuario' => $this->estado_usuario,
             'correo_electronico' => $this->correo_electronico,
             'id_rol_fk' => $this->id_rol_fk,
-            // Nombre del rol (puede venir null si no asignado)
+            
             'rol' => optional($this->whenLoaded('rol', $this->rol))->rol ?? optional($this->rol)->rol,
             'primer_ingreso' => (bool) $this->primer_ingreso,
             'fecha_ultima_conexion' => optional($this->fecha_ultima_conexion)->toDateTimeString(),

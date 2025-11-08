@@ -38,7 +38,7 @@ class DetalleFactura extends Model
     {
         parent::boot();
         
-        // Auto-calcular total_linea cuando cambian los componentes
+        
         static::saving(function($model){
             $dirty = array_keys($model->getDirty());
             $componentes = ['precio_unitario','cantidad','impuesto','descuento'];
@@ -56,7 +56,7 @@ class DetalleFactura extends Model
             }
         });
 
-        // Recalcular totales de la factura cuando se guarda o elimina un detalle
+        
         static::saved(function($detalle){
             self::recalcularFactura($detalle->id_factura_fk);
         });
@@ -73,7 +73,7 @@ class DetalleFactura extends Model
 
         $detalles = DetalleFactura::where('id_factura_fk', $facturaId)->get();
         $subtotal = $detalles->sum('total_linea');
-        $impuesto = $subtotal * 0.15; // 15% IVA
+        $impuesto = $subtotal * 0.15; 
         $total = $subtotal + $impuesto;
 
         $factura->update([

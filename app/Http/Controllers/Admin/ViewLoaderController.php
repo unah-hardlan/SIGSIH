@@ -25,10 +25,10 @@ class ViewLoaderController extends Controller
             return $this->denyAccessResponse($view, __('La vista solicitada no está disponible.'));
         }
 
-        // Enforce permisos for specific admin views (consultar)
+        
         $user = Auth::user();
         if ($user) {
-            // Admin bypass
+            
             try {
                 if (mb_strtolower($user->rol?->rol ?? '') !== 'administrador') {
                     $candidates = AdminModuleRegistry::permissionCandidates($view);
@@ -40,18 +40,18 @@ class ViewLoaderController extends Controller
                     }
                 }
             } catch (\Throwable $e) {
-                // Si falla relación u otro error, negar por seguridad
+                
                 return $this->denyAccessResponse($view);
             }
         }
 
-        // Primero verificar si existe una vista parcial específica
+        
         $partialBlade = $viewDefinition['blade'] ?? "admin.partials.{$view}";
         if (($viewDefinition['type'] ?? 'partial') === 'partial' && View::exists($partialBlade)) {
             return $this->renderPartial($partialBlade);
         }
 
-        // Si no existe vista parcial, intentar cargar la vista completa y extraer contenido
+        
         $fullView = $viewDefinition['blade'] ?? "admin.{$view}";
         if (!View::exists($fullView)) {
             return response('View not found', 404);

@@ -27,13 +27,13 @@ class Gastos extends Model
         'monto_gasto' => 'decimal:2'
     ];
 
-    // Relación con Proyecto
+    
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'id_proyecto_fk', 'id_proyecto_pk');
     }
 
-    // Relación con Categoria
+    
     public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'id_categoria_fk', 'id_categoria_pk');

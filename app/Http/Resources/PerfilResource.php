@@ -6,7 +6,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PerfilResource extends JsonResource
 {
-    /** @return array<string,mixed> */
+    
     public function toArray($request): array
     {
         return [

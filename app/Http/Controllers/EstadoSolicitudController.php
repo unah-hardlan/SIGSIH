@@ -52,12 +52,10 @@ class EstadoSolicitudController extends Controller
         
         return (new EstadoSolicitudResource($estadoSolicitud))
                 ->response()
-                ->setStatusCode(201); // 201 Created
+                ->setStatusCode(201); 
     }
 
-    /**
-     * Muestra un recurso específico.
-     */
+    
     public function show(EstadoSolicitud $estadoSolicitud)
     {
         return new EstadoSolicitudResource($estadoSolicitud);

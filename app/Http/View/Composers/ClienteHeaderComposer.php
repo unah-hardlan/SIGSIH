@@ -8,19 +8,14 @@ use App\Models\Persona;
 
 class ClienteHeaderComposer
 {
-    /**
-     * Bind data to the view.
-     *
-     * @param  \Illuminate\View\View  $view
-     * @return void
-     */
+    
     public function compose(View $view)
     {
         $authUser = Auth::user();
         $clienteUsuario = $authUser->usuario ?? 'Usuario';
         $clienteIniciales = strtoupper(substr($clienteUsuario, 0, 2));
         
-        // Obtener avatar del usuario autenticado
+        
         $clienteAvatar = null;
         if ($authUser) {
             $persona = Persona::where('id_usuario_fk', $authUser->id_usuario_pk)->first();

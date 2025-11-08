@@ -20,9 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class SolicitudClienteController extends Controller
 {
-    /**
-     * Listado simple de solicitudes del cliente autenticado (para UI del portal).
-     */
+    
     public function index(Request $request): JsonResponse
     {
         try {
@@ -31,7 +29,7 @@ class SolicitudClienteController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            // Resolver por persona -> cliente(s) para evitar desalineaciones de IDs
+            
             $user = auth()->user();
             $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
             if (!$persona) {
@@ -54,12 +52,12 @@ class SolicitudClienteController extends Controller
                     DB::raw('COALESCE(co.valor_contacto, "") as contacto'),
                 ]);
 
-            // Formateo para UI (prefijos y año)
+            
             $yearDate = now()->format('Ymd');
             $pad = fn($n) => str_pad((string) max(0, (int) $n), 3, '0', STR_PAD_LEFT);
             $items = $rows->map(function ($r) use ($yearDate, $pad) {
                 $fmtAcf = 'ACF-' . $pad($r->numero_solicitud_acf);
-                // Formato solicitado: CLI-AÑOFECHA-ID (ej. CLI-20251103-168)
+                
                 $fmtCli = 'CLI-' . $yearDate . '-' . (int) ($r->id ?? 0);
                 return [
                     'id' => (int) ($r->id ?? 0),
@@ -81,12 +79,7 @@ class SolicitudClienteController extends Controller
         }
     }
 
-    /**
-     * Crear una solicitud de soporte del cliente y un ticket asociado.
-     * Reglas solicitadas:
-     * - Ticket: estado Pendiente; técnico asignado aleatoriamente; descripción igual a la solicitud
-     * - Solicitud: estado "En Espera"; números ACF y Cliente autogenerados; contacto correo ingresado
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -103,7 +96,7 @@ class SolicitudClienteController extends Controller
         try {
             DB::beginTransaction();
 
-            // Contacto (email)
+            
             $contacto = Contacto::updateOrCreate(
                 [
                     'id_cliente_fk' => $clienteId,
@@ -114,7 +107,7 @@ class SolicitudClienteController extends Controller
                 ]
             );
 
-            // Estados
+            
             $estadoSolicitudId = EstadoSolicitud::query()
                 ->whereRaw('LOWER(nombre) = ?', ['en espera'])
                 ->value('id_estado_solicitud_pk');
@@ -129,12 +122,12 @@ class SolicitudClienteController extends Controller
                 $estadoTicketId = EstadoTicket::query()->orderBy('orden')->value('id_estado_ticket_pk');
             }
 
-            // Números autogenerados (mismo criterio que Admin):
-            //  - ACF: correlativo global mínimo 1000
-            //  - Cliente: correlativo por cliente mínimo 1000
-            // Usamos bloqueo para evitar condiciones de carrera
+            
+            
+            
+            
 
-            // ACF global
+            
             $lastAcfRow = DB::table('tbl_solicitud')
                 ->select('numero_solicitud_acf')
                 ->orderByDesc('numero_solicitud_acf')
@@ -148,7 +141,7 @@ class SolicitudClienteController extends Controller
                 $numeroAcf = $maxAcf < 1000 ? 1000 : ($maxAcf + 1);
             }
 
-            // Correlativo por cliente
+            
             $lockCli = DB::table('tbl_solicitud')
                 ->where('id_cliente_fk', $clienteId)
                 ->lockForUpdate()
@@ -162,7 +155,7 @@ class SolicitudClienteController extends Controller
                 $numeroCliente = $maxCli < 1000 ? 1000 : ($maxCli + 1);
             }
 
-            // Crear solicitud
+            
             $solicitud = Solicitud::create([
                 'id_cliente_fk' => $clienteId,
                 'nombre_solicitud' => $request->string('nombre_solicitud'),
@@ -173,7 +166,7 @@ class SolicitudClienteController extends Controller
                 'id_contacto_fk' => $contacto?->id_contacto_pk,
             ]);
 
-            // Elegir técnico aleatorio (por rol que contenga TECN)
+            
             $tecnico = Persona::query()
                 ->whereHas('usuario.rol', function ($q) {
                     $q->whereRaw('UPPER(rol) like ?', ['%TECN%']);
@@ -182,7 +175,7 @@ class SolicitudClienteController extends Controller
                 ->first();
 
             if (!$tecnico) {
-                // Fallback: alguna persona disponible
+                
                 $tecnico = Persona::query()->inRandomOrder()->first();
             }
 
@@ -190,7 +183,7 @@ class SolicitudClienteController extends Controller
                 throw new \RuntimeException('No hay técnicos disponibles para asignar');
             }
 
-            // Crear ticket vinculado al cliente (no hay FK directa a solicitud en el esquema actual)
+            
             $ticket = Ticket::create([
                 'fecha_creacion' => now(),
                 'descripcion_ticket' => (string) $request->string('descripcion_problema'),
@@ -201,9 +194,9 @@ class SolicitudClienteController extends Controller
 
             DB::commit();
 
-            // Notificar a técnicos sobre NUEVA SOLICITUD y NUEVO TICKET
+            
             try {
-                // Cargar nombre de cliente (empresa o persona)
+                
                 $clienteNombre = DB::table('tbl_cliente as c')
                     ->leftJoin('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'c.id_cliente_pk')
                     ->leftJoin('tbl_cliente_persona as cp', 'cp.id_cliente_fk', '=', 'c.id_cliente_pk')
@@ -263,7 +256,7 @@ class SolicitudClienteController extends Controller
                     }
                 }
 
-                // Notificar también al/los usuarios del cliente que su ticket fue creado (enlace del portal cliente)
+                
                 try {
                     $clientUserIds = DB::table('tbl_cliente_persona as cp')
                         ->join('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
@@ -308,7 +301,7 @@ class SolicitudClienteController extends Controller
                     'numero_solicitud_acf' => $solicitud->numero_solicitud_acf,
                     'numero_solicitud_cliente' => $solicitud->numero_solicitud_cliente,
                     'numero_solicitud_acf_fmt' => 'ACF-' . $pad($solicitud->numero_solicitud_acf),
-                    // Formato solicitado: CLI-AÑOFECHA-ID (ej. CLI-20251103-168)
+                    
                     'numero_solicitud_cliente_fmt' => 'CLI-' . now()->format('Ymd') . '-' . (int) $solicitud->id_solicitud_pk,
                     'descripcion_problema' => $solicitud->descripcion_problema,
                     'estado' => 'En Espera',

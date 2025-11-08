@@ -6,9 +6,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DetalleFacturaResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     */
+    
     public function toArray($request)
     {
         return [
@@ -27,7 +25,7 @@ class DetalleFacturaResource extends JsonResource
             'horas' => $this->horas,
             'descuento' => $this->descuento,
             
-            // Relaciones usando patrón whenLoaded como en facturas
+            
             'factura' => $this->whenLoaded('factura', function () {
                 if (!$this->factura) return null;
                 return [
@@ -46,7 +44,7 @@ class DetalleFacturaResource extends JsonResource
                 ];
             }),
             
-            // Nombres para display
+            
             'factura_numero' => $this->whenLoaded('factura', function () {
                 return $this->factura ? $this->factura->numero : 'Sin factura';
             }),

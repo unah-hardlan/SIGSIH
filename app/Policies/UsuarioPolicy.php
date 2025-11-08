@@ -6,11 +6,11 @@ use App\Models\Usuario;
 
 class UsuarioPolicy
 {
-    // Cualquiera autenticado puede listar/ver
+    
     public function viewAny(Usuario $user): bool { return true; }
     public function view(Usuario $user, Usuario $model): bool { return true; }
 
-    // Crear/actualizar/eliminar restringido a no-Técnico
+    
     public function create(Usuario $user): bool
     {
     $nombreRol = optional($user->rol)->rol;

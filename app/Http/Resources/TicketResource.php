@@ -7,23 +7,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TicketResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         $clienteData = null;
         if ($this->relationLoaded('cliente') && $this->cliente) {
             $cli = $this->cliente;
-            // Intentar componer nombre amigable desde relaciones si están cargadas
+            
             $nombre = null;
             try {
                 if ($cli->relationLoaded('empresa') && $cli->empresa) {
                     $nombre = $cli->empresa->nombre_comercial ?: $cli->empresa->razon_social;
                 }
-            } catch (\Throwable $e) { /* ignore */ }
+            } catch (\Throwable $e) {  }
             $clienteData = array_filter([
                 'id_cliente_pk' => $cli->id_cliente_pk ?? null,
                 'tipo_cliente' => $cli->tipo_cliente ?? null,
@@ -39,7 +35,7 @@ class TicketResource extends JsonResource
             'id_tecnico_fk' => $this->id_tecnico_fk,
             'id_cliente_fk' => $this->id_cliente_fk,
             
-            // Relaciones
+            
             'estado' => $this->whenLoaded('estado'),
             'tecnico' => $this->whenLoaded('tecnico'),
             'cliente' => $this->whenLoaded('cliente', fn() => $clienteData),

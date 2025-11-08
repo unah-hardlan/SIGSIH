@@ -9,14 +9,12 @@ use Illuminate\Http\Response;
 
 class ProyectoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         $query = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto']);
 
-        // Filtros opcionales
+        
         if ($request->has('id_orden_servicio_fk')) {
             $query->where('id_orden_servicio_fk', $request->id_orden_servicio_fk);
         }
@@ -29,7 +27,7 @@ class ProyectoController extends Controller
             $query->where('nombre_proyecto', 'like', '%' . $request->nombre_proyecto . '%');
         }
 
-        // Búsqueda general (q)
+        
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             $query->where(function($q) use ($searchTerm) {
@@ -44,7 +42,7 @@ class ProyectoController extends Controller
             });
         }
 
-        // Ordenamiento
+        
         if ($request->has('sort') && !empty($request->sort)) {
             $sortField = $request->sort;
             switch ($sortField) {
@@ -72,9 +70,7 @@ class ProyectoController extends Controller
         return ProyectoResource::collection($proyectos);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -93,18 +89,14 @@ class ProyectoController extends Controller
         return new ProyectoResource($proyecto);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id)
     {
         $proyecto = Proyecto::with(['ordenServicio.solicitudServicio', 'estadoProyecto'])->findOrFail($id);
         return new ProyectoResource($proyecto);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, $id)
     {
         $proyecto = Proyecto::findOrFail($id);
@@ -125,9 +117,7 @@ class ProyectoController extends Controller
         return new ProyectoResource($proyecto);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $proyecto = Proyecto::findOrFail($id);
@@ -138,12 +128,12 @@ class ProyectoController extends Controller
         ], Response::HTTP_OK);
     }
 
-    // Reporte web (HTML) dinámico
+    
     public function reporte(Request $request)
     {
         $query = Proyecto::with(['ordenServicio', 'estadoProyecto']);
 
-        // Por defecto mostrar todos los proyectos para el reporte
+        
         if ($estado = $request->input('estado')) {
             $query->whereHas('estadoProyecto', function($q) use ($estado) {
                 $q->where('codigo', $estado);
@@ -158,7 +148,7 @@ class ProyectoController extends Controller
                     });
             });
         }
-        // Orden
+        
         $sortable = [
             'nombre' => 'nombre_proyecto',
             'fecha_inicio' => 'fecha_inicio_proyecto',
@@ -183,10 +173,10 @@ class ProyectoController extends Controller
         return view('admin.reporte-proyectos', compact('proyectos', 'total', 'activos', 'finalizados', 'inactivos', 'fecha', 'modulo', 'sort', 'direction'));
     }
 
-    // Reporte web (HTML) dinámico para movimientos (ingresos y gastos)
+    
     public function reporteMovimientos(Request $request)
     {
-        // Obtener ingresos
+        
         $queryIngresos = \App\Models\Ingresos::with(['proyecto', 'categoria']);
         if ($q = $request->input('q_ingreso')) {
             $queryIngresos->where(function ($sub) use ($q) {
@@ -214,7 +204,7 @@ class ProyectoController extends Controller
         }
         $ingresos = $queryIngresos->get();
 
-        // Obtener gastos
+        
         $queryGastos = \App\Models\Gastos::with(['proyecto', 'categoria']);
         if ($q = $request->input('q_gasto')) {
             $queryGastos->where(function ($sub) use ($q) {
@@ -241,7 +231,7 @@ class ProyectoController extends Controller
         }
         $gastos = $queryGastos->get();
 
-        // Estadísticas
+        
         $totalIngresos = $ingresos->count();
         $totalGastos = $gastos->count();
         $sumaIngresos = $ingresos->sum('monto_ingreso');
@@ -257,34 +247,34 @@ class ProyectoController extends Controller
         ));
     }
 
-    // Reporte financiero específico para un proyecto
+    
     public function reporteFinanciero(Request $request, $idProyecto = null)
     {
-        // Si no se especifica proyecto, usar el del request
+        
         $proyectoId = $idProyecto ?? $request->input('id_proyecto');
 
         if (!$proyectoId) {
             return redirect()->back()->with('error', 'Debe seleccionar un proyecto para generar el reporte.');
         }
 
-        // Obtener el proyecto
+        
         $proyecto = Proyecto::with(['ordenServicio', 'estadoProyecto'])->findOrFail($proyectoId);
 
-        // Obtener ingresos del proyecto
+        
         $ingresos = $proyecto->ingresos()->with('categoria')->get();
 
-        // Obtener gastos del proyecto
+        
         $gastos = $proyecto->gastos()->with('categoria')->get();
 
-        // Calcular estadísticas
+        
         $totalIngresos = $ingresos->sum('monto_ingreso');
         $totalGastos = $gastos->sum('monto_gasto');
         $balance = $totalIngresos - $totalGastos;
 
-        // Combinar movimientos para el historial (ordenados por fecha descendente)
+        
         $movimientos = collect();
 
-        // Agregar ingresos al historial
+        
         foreach ($ingresos as $ingreso) {
             $movimientos->push([
                 'tipo' => 'ingreso',
@@ -297,7 +287,7 @@ class ProyectoController extends Controller
             ]);
         }
 
-        // Agregar gastos al historial
+        
         foreach ($gastos as $gasto) {
             $movimientos->push([
                 'tipo' => 'gasto',
@@ -310,7 +300,7 @@ class ProyectoController extends Controller
             ]);
         }
 
-        // Ordenar por fecha descendente
+        
         $movimientos = $movimientos->sortByDesc('fecha');
 
         $fecha = now()->format('d/m/Y');

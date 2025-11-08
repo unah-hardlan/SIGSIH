@@ -19,7 +19,7 @@ class UpdatePersonaRequest extends FormRequest
         $dniRegex = $this->buildDniRegex($format);
         $dniRule = 'regex:/' . $dniRegex . '/';
         return [
-            // Siempre obligatorios
+            
             'primer_nombre' => 'required|string|max:50',
             'segundo_nombre' => 'sometimes|nullable|string|max:50',
             'primer_apellido' => 'required|string|max:50',
@@ -64,9 +64,7 @@ class UpdatePersonaRequest extends FormRequest
         ];
     }
 
-    /**
-     * Convierte la máscara o número mínimo en una expresión regular usable.
-     */
+    
     private function buildDniRegex($format): string
     {
         $fallback = '^(?:\\d{13}|\\d{4}-\\d{4}-\\d{5})$';

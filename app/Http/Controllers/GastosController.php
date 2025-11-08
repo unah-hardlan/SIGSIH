@@ -9,14 +9,12 @@ use Illuminate\Http\JsonResponse;
 
 class GastosController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Gastos::with(['proyecto', 'categoria']);
 
-        // Filtros opcionales
+        
         if ($request->has('id_proyecto_fk')) {
             $query->where('id_proyecto_fk', $request->id_proyecto_fk);
         }
@@ -41,7 +39,7 @@ class GastosController extends Controller
             $query->where('monto_gasto', '<=', $request->monto_max);
         }
 
-        // Búsqueda general (q)
+        
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             $query->where(function($q) use ($searchTerm) {
@@ -56,7 +54,7 @@ class GastosController extends Controller
             });
         }
 
-        // Ordenamiento
+        
         if ($request->has('sort') && !empty($request->sort)) {
             $sortField = $request->sort;
             switch ($sortField) {
@@ -90,9 +88,7 @@ class GastosController extends Controller
         ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -104,7 +100,7 @@ class GastosController extends Controller
             'id_categoria_fk' => 'required|exists:tbl_categorias,id_categoria_pk'
         ]);
 
-        // Mapear los campos al formato de la base de datos
+        
         $data = [
             'nombre_gasto' => $validated['nombre'],
             'fecha_gasto' => $validated['fecha'],
@@ -124,9 +120,7 @@ class GastosController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id): JsonResponse
     {
         $gasto = Gastos::with(['proyecto', 'categoria'])->find($id);
@@ -145,9 +139,7 @@ class GastosController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, $id): JsonResponse
     {
         $gasto = Gastos::find($id);
@@ -168,7 +160,7 @@ class GastosController extends Controller
             'id_categoria_fk' => 'sometimes|required|exists:tbl_categorias,id_categoria_pk'
         ]);
 
-        // Mapear los campos al formato de la base de datos
+        
         $data = [];
         if (isset($validated['nombre'])) $data['nombre_gasto'] = $validated['nombre'];
         if (isset($validated['fecha'])) $data['fecha_gasto'] = $validated['fecha'];
@@ -187,9 +179,7 @@ class GastosController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id): JsonResponse
     {
         $gasto = Gastos::find($id);

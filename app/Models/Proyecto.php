@@ -30,7 +30,7 @@ class Proyecto extends Model
         'fecha_finalizacion_proyecto' => 'date',
     ];
 
-    // Accessors para nombres simplificados (usando columnas virtuales)
+    
     public function getFechaInicioAttribute()
     {
         return $this->fecha_inicio_proyecto;
@@ -46,47 +46,37 @@ class Proyecto extends Model
         return $this->fecha_finalizacion_proyecto;
     }
 
-    /**
-     * Relación con el modelo OrdenServicio
-     */
+    
     public function ordenServicio()
     {
         return $this->belongsTo(OrdenServicio::class, 'id_orden_servicio_fk', 'id_orden_servicio_pk');
     }
 
-    /**
-     * Relación con el modelo EstadoProyecto
-     */
+    
     public function estadoProyecto()
     {
         return $this->belongsTo(EstadoProyecto::class, 'id_estado_proyecto_fk', 'id_estado_proyecto_pk');
     }
 
-    /**
-     * Relación con actividades del proyecto (plan estructurado)
-     */
+    
     public function actividades()
     {
         return $this->hasMany(ProyectoActividad::class, 'id_proyecto_fk', 'id_proyecto_pk');
     }
 
-    /**
-     * Relación con gastos del proyecto
-     */
+    
     public function gastos()
     {
         return $this->hasMany(Gastos::class, 'id_proyecto_fk', 'id_proyecto_pk');
     }
 
-    /**
-     * Relación con ingresos del proyecto
-     */
+    
     public function ingresos()
     {
         return $this->hasMany(Ingresos::class, 'id_proyecto_fk', 'id_proyecto_pk');
     }
 
-    // Métodos de utilidad para actividades
+    
     public function getActividadActual()
     {
         return $this->actividades()
@@ -124,13 +114,13 @@ class Proyecto extends Model
         return $this->fecha_inicio_proyecto->diffInDays($fechaFin);
     }
 
-    // Accessor para calcular total de ingresos
+    
     public function getTotalIngresosAttribute()
     {
         return $this->ingresos()->sum('monto_ingreso');
     }
 
-    // Accessor para calcular total de gastos
+    
     public function getTotalGastosAttribute()
     {
         return $this->gastos()->sum('monto_gasto');

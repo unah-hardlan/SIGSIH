@@ -15,34 +15,32 @@ use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Ticket::with(['estado', 'tecnico', 'cliente']);
 
-        // Filtro por estado del ticket
+        
         if ($request->has('id_estado_ticket_fk')) {
             $query->where('id_estado_ticket_fk', $request->id_estado_ticket_fk);
         }
 
-        // Filtro por técnico
+        
         if ($request->has('id_tecnico_fk')) {
             $query->where('id_tecnico_fk', $request->id_tecnico_fk);
         }
 
-        // Filtro por cliente
+        
         if ($request->has('id_cliente_fk')) {
             $query->where('id_cliente_fk', $request->id_cliente_fk);
         }
 
-        // Filtro por descripción
+        
         if ($request->has('descripcion_ticket')) {
             $query->where('descripcion_ticket', 'like', '%' . $request->descripcion_ticket . '%');
         }
 
-        // Filtro por rango de fechas
+        
         if ($request->has('fecha_desde')) {
             $query->where('fecha_creacion', '>=', $request->fecha_desde);
         }
@@ -68,16 +66,14 @@ class TicketController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreTicketRequest $request): JsonResponse
     {
         $validated = $request->validated();
         $ticket = Ticket::create($validated);
         $ticket->load(['estado', 'tecnico', 'cliente']);
 
-        // Enviar notificación a técnicos (rol que contenga 'tecn' en su nombre)
+        
         try {
             $rols = Rol::where('rol', 'like', '%tecn%')->get();
             if ($rols->isNotEmpty()) {
@@ -122,9 +118,7 @@ class TicketController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $ticket = Ticket::with(['estado', 'tecnico', 'cliente'])->find($id);
@@ -142,9 +136,7 @@ class TicketController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(UpdateTicketRequest $request, string $id): JsonResponse
     {
         $ticket = Ticket::find($id);
@@ -161,7 +153,7 @@ class TicketController extends Controller
         $ticket->update($validated);
         $ticket->load(['estado', 'tecnico', 'cliente']);
 
-        // Si cambió el estado, notificar a los usuarios del cliente con un mensaje específico
+        
         try {
             if (array_key_exists('id_estado_ticket_fk', $validated)) {
                 $newEstadoId = (int) $validated['id_estado_ticket_fk'];
@@ -169,7 +161,7 @@ class TicketController extends Controller
                     $oldNombre = optional(\App\Models\EstadoTicket::find($oldEstadoId))->nombre ?? 'N/A';
                     $newNombre = optional(\App\Models\EstadoTicket::find($newEstadoId))->nombre ?? 'N/A';
 
-                    // Buscar usuarios (clientes) vinculados al cliente de este ticket
+                    
                     $userIds = \Illuminate\Support\Facades\DB::table('tbl_cliente_persona as cp')
                         ->join('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
                         ->join('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'p.id_usuario_fk')
@@ -180,11 +172,11 @@ class TicketController extends Controller
                     if (!empty($userIds)) {
                         $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
 
-                        // Etiqueta del ticket solo para UI (no almacenada)
+                        
                         $tckFmt = 'TCK-' . now()->format('Ymd') . '-' . $ticket->getKey();
                         $tecNombre = $ticket->tecnico ? trim(($ticket->tecnico->primer_nombre ?? '') . ' ' . ($ticket->tecnico->primer_apellido ?? '')) : null;
 
-                        // Mensajes según estado destino (evitar duplicidad con Solicitud)
+                        
                         $titulo = 'Actualización de ticket';
                         $cuerpo = "Tu ticket {$tckFmt} cambió de {$oldNombre} a {$newNombre}";
                         $sev = 'info';
@@ -240,9 +232,7 @@ class TicketController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $ticket = Ticket::find($id);
@@ -262,9 +252,7 @@ class TicketController extends Controller
         ]);
     }
 
-    /**
-     * Generate tickets report
-     */
+    
     public function reporte(Request $request)
     {
         $query = Ticket::with([
@@ -275,29 +263,29 @@ class TicketController extends Controller
             }
         ]);
 
-        // Filtro por estado del ticket
+        
         if ($estado = $request->input('estado')) {
             $query->whereHas('estado', function ($q) use ($estado) {
                 $q->where('codigo', $estado);
             });
         }
 
-        // Filtro por técnico
+        
         if ($tecnico = $request->input('tecnico')) {
             $query->where('id_tecnico_fk', $tecnico);
         }
 
-        // Filtro por cliente
+        
         if ($cliente = $request->input('cliente')) {
             $query->where('id_cliente_fk', $cliente);
         }
 
-        // Filtro por descripción
+        
         if ($q = $request->input('q')) {
             $query->where('descripcion_ticket', 'like', "%$q%");
         }
 
-        // Filtro por rango de fechas
+        
         if ($desde = $request->input('desde')) {
             $query->where('fecha_creacion', '>=', $desde);
         }
@@ -306,7 +294,7 @@ class TicketController extends Controller
             $query->where('fecha_creacion', '<=', $hasta);
         }
 
-        // Orden
+        
         $sortable = [
             'id' => 'id_ticket_pk',
             'cliente' => 'id_cliente_fk',

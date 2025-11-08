@@ -8,10 +8,7 @@ use Carbon\Carbon;
 
 class DateHelper
 {
-    /**
-     * Formatea una fecha según el formato global (o uno proporcionado).
-     * $value puede ser string|int|\DateTimeInterface|null
-     */
+    
     public static function format($value, ?string $format = null): string
     {
         if (empty($value)) return '';

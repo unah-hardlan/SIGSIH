@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class CotizacionClienteController extends Controller
 {
-    /**
-     * Listado de cotizaciones del cliente autenticado (portal cliente).
-     */
+    
     public function index(Request $request): JsonResponse
     {
         try {
@@ -22,7 +20,7 @@ class CotizacionClienteController extends Controller
             $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
             if (!$persona) return response()->json(['data' => []]);
 
-            // Cotizaciones del/los clientes asociados a la persona
+            
             $clienteIds = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->pluck('id_cliente_fk')
@@ -53,7 +51,7 @@ class CotizacionClienteController extends Controller
             };
 
             $items = $rows->map(function ($r) use ($fmtMoney) {
-                // Código amigable para UI: COT-YYYYMMDD-ID
+                
                 $dateDigits = preg_replace('/[^0-9]/', '', (string)($r->fecha_cotizacion ?? ''));
                 $yymmdd = $dateDigits ? substr($dateDigits, 0, 8) : now()->format('Ymd');
                 $codigo = 'COT-' . $yymmdd . '-' . (int) ($r->id ?? 0);
@@ -79,9 +77,7 @@ class CotizacionClienteController extends Controller
         }
     }
 
-    /**
-     * Detalle de una cotización (cabecera) para el cliente autenticado.
-     */
+    
     public function show($id): JsonResponse
     {
         try {
@@ -148,9 +144,7 @@ class CotizacionClienteController extends Controller
         }
     }
 
-    /**
-     * Items de una cotización para el cliente autenticado.
-     */
+    
     public function items($id): JsonResponse
     {
         try {
@@ -166,7 +160,7 @@ class CotizacionClienteController extends Controller
                 ->all();
             if (empty($clienteIds)) return response()->json(['data' => []], 404);
 
-            // Validar pertenencia de la cotización
+            
             $owns = DB::table('tbl_cotizacion')
                 ->where('id_cotizacion_pk', (int)$id)
                 ->whereIn('id_cliente_fk', $clienteIds)
@@ -192,17 +186,14 @@ class CotizacionClienteController extends Controller
         }
     }
 
-    /**
-     * Cambiar estado de una cotización por el cliente (Aprobar/Rechazar).
-     * Avisa al técnico asignado en la Orden de Servicio relacionada, si existe.
-     */
+    
     public function updateEstado(Request $request, $id): JsonResponse
     {
         try {
             $user = auth()->user();
             if (!$user) return response()->json(['error' => 'Unauthorized'], 401);
 
-            // Validar pertenencia del cliente
+            
             $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
             if (!$persona) return response()->json(['error' => 'Not found'], 404);
             $clienteIds = DB::table('tbl_cliente_persona')
@@ -216,7 +207,7 @@ class CotizacionClienteController extends Controller
                 ->first();
             if (!$cot) return response()->json(['error' => 'Not found'], 404);
 
-            // Resolver estado destino
+            
             $estadoInput = trim((string)($request->input('estado') ?? ''));
             $estadoIdInput = $request->input('estado_id');
 
@@ -232,7 +223,7 @@ class CotizacionClienteController extends Controller
                 }
             }
             if (!$estado && $estadoInput !== '') {
-                // Buscar por código o nombre
+                
                 $estado = \App\Models\EstadoCotizacion::query()
                     ->whereRaw('LOWER(codigo) = ?', [strtolower($estadoInput)])
                     ->orWhereRaw('LOWER(nombre) = ?', [strtolower($estadoInput)])
@@ -248,20 +239,20 @@ class CotizacionClienteController extends Controller
                 return response()->json(['error' => 'Estado no permitido'], 422);
             }
 
-            // Si ya está en ese estado, devolver sin cambios
+            
             if ((int)$cot->id_estado_cotizacion_fk === (int)$estado->id_estado_cotizacion_pk) {
                 return response()->json(['ok' => true]);
             }
 
-            // Actualizar
+            
             $old = $cot->id_estado_cotizacion_fk;
             $cot->id_estado_cotizacion_fk = (int)$estado->id_estado_cotizacion_pk;
             $cot->save();
 
-            // Notificar al técnico asignado; si no hay, fallback a usuarios con rol técnico
+            
             try {
                 $tecUserIds = [];
-                // 1) OS vinculada por FK directa o inversa
+                
                 $osId = $cot->id_orden_servicio_fk ?: DB::table('tbl_orden_servicio')
                     ->where('id_cotizacion_fk', $cot->id_cotizacion_pk)
                     ->value('id_orden_servicio_pk');
@@ -274,7 +265,7 @@ class CotizacionClienteController extends Controller
                         if ($id) $tecUserIds[] = (int) $id;
                     }
                 }
-                // 2) Fallback por rol (soporta columnas rol o nombre_rol)
+                
                 if (empty($tecUserIds)) {
                     $rolIds = DB::table('tbl_ms_rol')
                         ->where(function ($q) {
@@ -301,7 +292,7 @@ class CotizacionClienteController extends Controller
                     }
                 }
                 if (!empty($tecUserIds)) {
-                    // Resolver nombre del cliente para el título (empresa o persona)
+                    
                     $clienteNombre = DB::table('tbl_cotizacion as c')
                         ->leftJoin('tbl_cliente as cl', 'cl.id_cliente_pk', '=', 'c.id_cliente_fk')
                         ->leftJoin('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'cl.id_cliente_pk')

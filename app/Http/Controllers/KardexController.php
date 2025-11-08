@@ -12,14 +12,14 @@ class KardexController extends Controller
 {
     public function index(Request $request)
     {
-        // Esta línea es crucial: carga todas las relaciones necesarias
+        
         $query = Kardex::query()->with(['producto', 'tipoMovimiento', 'origen']);
 
-        // Obtener parámetros de ordenamiento
+        
         $ordenarPor = $request->input('ordenarPor', 'fecha_movimiento');
         $ordenarDirection = $request->input('ordenarDirection', 'desc');
 
-        // Validar columna y dirección
+        
         $allowedColumns = ['fecha_movimiento', 'cantidad'];
         $allowedDirections = ['asc', 'desc'];
         if (!in_array($ordenarPor, $allowedColumns)) {
@@ -66,22 +66,22 @@ class KardexController extends Controller
     {
         $query = Kardex::with(['producto', 'tipoMovimiento', 'origen']);
 
-        // Filtro por producto
+        
         if ($producto = $request->input('id_producto_fk')) {
             $query->where('id_producto_fk', $producto);
         }
 
-        // Filtro por tipo de movimiento
+        
         if ($tipo_movimiento = $request->input('id_tipo_movimiento_fk')) {
             $query->where('id_tipo_movimiento_fk', $tipo_movimiento);
         }
 
-        // Filtro por origen
+        
         if ($origen = $request->input('id_origen_fk')) {
             $query->where('id_origen_fk', $origen);
         }
 
-        // Filtro por rango de fechas
+        
         if ($fecha_desde = $request->input('fecha_desde')) {
             $query->where('fecha_movimiento', '>=', $fecha_desde);
         }
@@ -90,12 +90,12 @@ class KardexController extends Controller
             $query->where('fecha_movimiento', '<=', $fecha_hasta);
         }
 
-        // Filtro de búsqueda por motivo
+        
         if ($q = $request->input('q')) {
             $query->where('motivo', 'like', "%$q%");
         }
 
-        // Orden
+        
         $sortable = [
             'fecha_movimiento' => 'fecha_movimiento',
             'cantidad' => 'cantidad',

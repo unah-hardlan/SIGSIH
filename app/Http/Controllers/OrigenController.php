@@ -70,7 +70,7 @@ class OrigenController extends Controller
         $origen = Origen::find($id);
         if (!$origen) return response()->json(['error' => 'Origen no encontrado'], 404);
 
-        // Evitar eliminar si existe en kardex
+        
         if (Kardex::where('id_origen_fk', $id)->exists()) {
             return response()->json(['error' => 'No se puede eliminar: existen movimientos en Kardex que referencian este origen'], 422);
         }

@@ -13,18 +13,10 @@ use Carbon\Carbon;
 
 class ProgramarRecordatoriosCalendario extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    
     protected $signature = 'calendario:programar-recordatorios {--days=2 : Number of days ahead to notify}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    
     protected $description = 'Enviar notificaciones para eventos de calendario con fecha cercana';
 
     public function handle()
@@ -44,7 +36,7 @@ class ProgramarRecordatoriosCalendario extends Command
             return 0;
         }
 
-        // Obtener roles técnicos
+        
         $rols = Rol::where('rol', 'like', '%tecn%')->get();
         $roleIds = $rols->pluck('id_rol_pk')->all();
         $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
@@ -63,7 +55,7 @@ class ProgramarRecordatoriosCalendario extends Command
         $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
 
         foreach ($events as $ev) {
-            // Skip completed events if estado indicates final
+            
             try {
                 $fechaStr = Carbon::parse($ev->fecha)->format('d/m/Y H:i');
             } catch (\Throwable $t) {
@@ -92,7 +84,7 @@ class ProgramarRecordatoriosCalendario extends Command
             $this->info('Notificaciones enviadas para evento ' . $ev->getKey());
         }
 
-        // Además, notificar proyectos con fecha de inicio próxima
+        
         $this->info('Buscando proyectos con fecha de inicio entre {$start} y {$end}...');
         $projects = Proyecto::whereBetween('fecha_inicio_proyecto', [$start->toDateString(), $end->toDateString()])
             ->get();

@@ -24,9 +24,7 @@ class Factura extends Model
         'id_cotizacion_fk'
     ];
 
-    /**
-     * Get the route key for the model.
-     */
+    
     public function getRouteKeyName()
     {
         return 'id_factura_pk';

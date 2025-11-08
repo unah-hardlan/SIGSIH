@@ -10,10 +10,7 @@ use App\Models\OrdenServicio;
 
 class OrdenServicioClienteController extends Controller
 {
-    /**
-     * Listado simple de órdenes de servicio del cliente autenticado (para UI del portal).
-     * Devuelve una lista plana con los campos necesarios para la tabla.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         try {
@@ -27,7 +24,7 @@ class OrdenServicioClienteController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            // Clientes asociados a esta persona
+            
             $clienteIds = DB::table('tbl_cliente_persona')
                 ->where('id_persona_fk', $persona->id_persona_pk)
                 ->pluck('id_cliente_fk')
@@ -36,7 +33,7 @@ class OrdenServicioClienteController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            // Ordenes cuya solicitud pertenece a alguno de los clientes del usuario
+            
             $rows = DB::table('tbl_orden_servicio as os')
                 ->join('tbl_solicitud as s', 's.id_solicitud_pk', '=', 'os.id_solicitud_servicio_fk')
                 ->leftJoin('tbl_estado_orden_servicio as eos', 'eos.id_estado_orden_servicio_pk', '=', 'os.id_estado_orden_servicio_fk')
@@ -53,16 +50,16 @@ class OrdenServicioClienteController extends Controller
                 ]);
 
             $fmtDate = function ($v) {
-                if (!$v) return null; // dejar que UI maneje null
+                if (!$v) return null; 
                 $s = (string) $v;
-                // Asegurar formato YYYY-MM-DD
+                
                 return substr($s, 0, 10);
             };
 
             $items = $rows->map(function ($r) use ($fmtDate) {
                 $numero = (string) ($r->numero ?? '');
                 if ($numero === '') {
-                    // Fallback si no tiene generado el número aún
+                    
                     $numero = 'OS-' . now()->format('Ym') . '-' . str_pad((string) ((int) ($r->id ?? 0)), 6, '0', STR_PAD_LEFT);
                 }
                 return [
@@ -82,9 +79,7 @@ class OrdenServicioClienteController extends Controller
         }
     }
 
-    /**
-     * Detalle de una orden de servicio para el cliente autenticado.
-     */
+    
     public function show(Request $request, int $id): JsonResponse
     {
         try {
@@ -135,7 +130,7 @@ class OrdenServicioClienteController extends Controller
 
             if (!$row) return response()->json(['error' => 'Not found'], 404);
 
-            // Cliente empresa/persona (para el encabezado)
+            
             $client = DB::table('tbl_cliente as cl')
                 ->leftJoin('tbl_cliente_empresa as ce', 'ce.id_cliente_fk', '=', 'cl.id_cliente_pk')
                 ->leftJoin('tbl_cliente_persona as cp', 'cp.id_cliente_fk', '=', 'cl.id_cliente_pk')
@@ -187,10 +182,7 @@ class OrdenServicioClienteController extends Controller
             return response()->json(['error' => 'Server error'], 500);
         }
     }
-    /**
-     * Calificar la orden de servicio por parte del cliente.
-     * Requiere que la OS pertenezca a alguno de los clientes del usuario y que el estado sea final/cerrado.
-     */
+    
     public function calificar(Request $request, int $id): JsonResponse
     {
         $request->validate([
@@ -209,7 +201,7 @@ class OrdenServicioClienteController extends Controller
             ->all();
         if (empty($clienteIds)) return response()->json(['success' => false, 'message' => 'Cliente no encontrado'], 404);
 
-        // Validar pertenencia y estado cerrado
+        
         $row = DB::table('tbl_orden_servicio as os')
             ->join('tbl_solicitud as s', 's.id_solicitud_pk', '=', 'os.id_solicitud_servicio_fk')
             ->leftJoin('tbl_estado_orden_servicio as eos', 'eos.id_estado_orden_servicio_pk', '=', 'os.id_estado_orden_servicio_fk')
@@ -235,7 +227,7 @@ class OrdenServicioClienteController extends Controller
             return response()->json(['success' => false, 'message' => 'Solo puedes calificar órdenes cerradas'], 422);
         }
 
-        // Actualizar calificación
+        
         $os = OrdenServicio::find((int)$id);
         if (!$os) return response()->json(['success' => false, 'message' => 'Orden no encontrada'], 404);
 
@@ -243,7 +235,7 @@ class OrdenServicioClienteController extends Controller
         $os->calificacion_servicio = $calificacion;
         $os->save();
 
-        // Notificar al técnico asignado
+        
         try {
             $os->loadMissing(['tecnico.usuario']);
             $tecnicoUser = optional($os->tecnico)->usuario;
@@ -266,11 +258,11 @@ class OrdenServicioClienteController extends Controller
                 try {
                     $tecnicoUser->notify(new \App\Notifications\SystemNotification($payload));
                 } catch (\Throwable $e) {
-                    // intentionally ignore notification failures for technician
+                    
                 }
             }
         } catch (\Throwable $_) {
-            // no-op
+            
         }
 
         return response()->json(['success' => true]);

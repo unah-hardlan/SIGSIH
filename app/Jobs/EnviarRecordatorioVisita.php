@@ -24,8 +24,8 @@ class EnviarRecordatorioVisita implements ShouldQueue
     {
         $evento = Calendario::find($this->calendarioId);
         if (!$evento) return;
-        // TODO: implementar envío (notificación/email) a técnico y cliente
-        // Notificación placeholder
-        // Notification::send([$evento->tecnico, $evento->cliente], new VisitaRecordatorio($evento));
+        
+        
+        
     }
 }

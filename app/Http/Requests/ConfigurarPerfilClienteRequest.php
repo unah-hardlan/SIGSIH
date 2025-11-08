@@ -56,7 +56,7 @@ class ConfigurarPerfilClienteRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,webp',
-                'max:2048' // 2MB máximo
+                'max:2048' 
             ],
             'email_contacto' => [
                 'required',

@@ -11,7 +11,7 @@ class CoreObjetosSeeder extends Seeder
     {
         $now = now();
         $usuario = 'system';
-        // Resolve a sensible tipo de objeto (Configuración) as default; fallback to the first available ID
+        
         $tipoId = DB::table('tbl_tipo_objetos')
             ->whereRaw("LOWER(nombre_tipo_objeto) LIKE 'configur%'")
             ->value('id_tipo_objeto_pk');
@@ -27,7 +27,7 @@ class CoreObjetosSeeder extends Seeder
             ['nombre_objeto' => 'Parámetros', 'descripcion_objeto' => 'Parámetros del sistema'],
             ['nombre_objeto' => 'Objetos', 'descripcion_objeto' => 'Catálogo de objetos'],
             ['nombre_objeto' => 'Bitácora', 'descripcion_objeto' => 'Registro de eventos'],
-            // Nuevos objetos solicitados
+            
             ['nombre_objeto' => 'Mantenimiento del sistema', 'descripcion_objeto' => 'Operaciones de mantenimiento del sistema'],
             ['nombre_objeto' => 'Gestión de personas', 'descripcion_objeto' => 'Módulos para administrar personas y sus catálogos'],
             ['nombre_objeto' => 'Gestión de base de datos', 'descripcion_objeto' => 'Herramientas de gestión de base de datos'],
@@ -47,7 +47,7 @@ class CoreObjetosSeeder extends Seeder
             ]);
         }
 
-        // Otorgar todos los permisos al rol Administrador para el nuevo objeto si existe
+        
         try {
             $adminRolId = DB::table('tbl_ms_rol')->whereRaw("LOWER(rol) = 'administrador'")->value('id_rol_pk');
             if ($adminRolId) {

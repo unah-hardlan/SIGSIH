@@ -14,7 +14,7 @@ class TipoObjeto extends Model
     public $incrementing = true;
     protected $keyType = 'int';
     
-    // Usar timestamps personalizados
+    
     const CREATED_AT = 'fecha_creacion';
     const UPDATED_AT = 'fecha_modificacion';
     
@@ -30,7 +30,7 @@ class TipoObjeto extends Model
         'fecha_modificacion',
     ];
 
-    // Evento para establecer automáticamente creado_por y modificado_por
+    
     protected static function boot()
     {
         parent::boot();

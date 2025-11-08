@@ -9,14 +9,12 @@ use Illuminate\Http\JsonResponse;
 
 class OficinasEmpresaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = OficinaEmpresa::query();
 
-        // Filtro de búsqueda
+        
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('nombre_oficina', 'LIKE', "%{$search}%");
@@ -39,9 +37,7 @@ class OficinasEmpresaController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -57,9 +53,7 @@ class OficinasEmpresaController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $oficina = OficinaEmpresa::find($id);
@@ -77,9 +71,7 @@ class OficinasEmpresaController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id): JsonResponse
     {
         $oficina = OficinaEmpresa::find($id);
@@ -104,9 +96,7 @@ class OficinasEmpresaController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $oficina = OficinaEmpresa::find($id);

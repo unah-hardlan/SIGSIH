@@ -20,19 +20,13 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Indicadores agregados (KPIs) para las tarjetas del dashboard.
-     * Notas/Asunciones:
-     * - "Empresas Activas": se cuenta total de EmpresaCliente por simplicidad.
-     * - Tickets abiertos/cerrados: se infieren por el nombre del estado (LIKE 'Abierto%' / 'Cerrado%').
-     * - Proyectos activos/finalizados: se infieren por nombre del estado (LIKE 'Finaliz%').
-     */
+    
     public function indicators(): JsonResponse
     {
-        // Usuarios
+        
         $totalUsuarios = \App\Models\Usuario::query()->count();
 
-        // Empresas: preferimos catálogo de nombres si existe; de lo contrario, EmpresaCliente
+        
         $empresasActivas = 0;
         try {
             if (Schema::hasTable('tbl_nombre_empresa')) {
@@ -43,7 +37,7 @@ class DashboardController extends Controller
             try { $empresasActivas = EmpresaCliente::query()->count(); } catch (\Throwable $e) { $empresasActivas = 0; }
         }
 
-        // Órdenes de servicio, Cotizaciones
+        
         $ordenesServicio = class_exists(OrdenServicio::class)
             ? OrdenServicio::query()->count()
             : 0;
@@ -51,11 +45,11 @@ class DashboardController extends Controller
             ? Cotizacion::query()->count()
             : 0;
 
-        // Proyectos: activos vs finalizados
+        
         $proyectosActivos = 0;
         $proyectosFinalizados = 0;
         if (class_exists(Proyecto::class)) {
-            // 1) Intentar por catálogo de estados (columna real 'nombre')
+            
             $idsFinalizado = collect();
             $idsActivo = collect();
             try {
@@ -77,7 +71,7 @@ class DashboardController extends Controller
                         })
                         ->pluck('id_estado_proyecto_pk');
                 }
-            } catch (\Throwable $e) { /* fallback por fecha */ }
+            } catch (\Throwable $e) {  }
 
             if ($idsFinalizado->isNotEmpty() || $idsActivo->isNotEmpty()) {
                 if ($idsFinalizado->isNotEmpty()) {
@@ -90,11 +84,11 @@ class DashboardController extends Controller
                         ->whereIn('id_estado_proyecto_fk', $idsActivo)
                         ->count();
                 }
-                // Si alguno de los conjuntos está vacío, completar con 0 explícito
+                
                 $proyectosFinalizados = (int) $proyectosFinalizados;
                 $proyectosActivos = (int) $proyectosActivos;
             } else {
-                // 2) Fallback por fecha, evitando valores inválidos por defecto como '0000-00-00'
+                
                 $proyectosFinalizados = Proyecto::query()
                     ->whereNotNull('fecha_finalizacion_proyecto')
                     ->whereNotIn('fecha_finalizacion_proyecto', ['0000-00-00', '0000-00-00 00:00:00'])
@@ -109,7 +103,7 @@ class DashboardController extends Controller
             }
         }
 
-        // Tickets abiertos/cerrados
+        
         $ticketsAbiertos = 0;
         $ticketsCerrados = 0;
         if (class_exists(Ticket::class)) {
@@ -132,7 +126,7 @@ class DashboardController extends Controller
                         })
                         ->pluck('id_estado_ticket_pk');
                 }
-            } catch (\Throwable $e) { /* fallback total abierto abajo */ }
+            } catch (\Throwable $e) {  }
 
             if ($idsAbierto->isNotEmpty()) {
                 $ticketsAbiertos = Ticket::query()->whereIn('id_estado_ticket_fk', $idsAbierto)->count();
@@ -146,12 +140,12 @@ class DashboardController extends Controller
             }
         }
 
-        // Inventario: total de productos
+        
         $inventarioProductos = class_exists(Producto::class)
             ? Producto::query()->count()
             : 0;
 
-    // Reportes generados: contar registros directamente desde tbl_reportes_visita
+    
     $reportesGenerados = DB::table('tbl_reportes_visita')->count();
 
         return response()->json([
@@ -200,7 +194,7 @@ class DashboardController extends Controller
 
         $labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        // Asegurar 12 valores
+        
         $data = [];
         for ($i = 1; $i <= 12; $i++) {
             $data[] = $counts[$i] ?? 0;

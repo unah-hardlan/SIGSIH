@@ -134,7 +134,7 @@ class ClienteController extends Controller
         if ($cliente && $cliente->tipo_cliente === 'empresa') {
             $empresa = EmpresaCliente::where('id_cliente_fk', $cliente->id_cliente_pk)->first();
 
-            // Obtener la primera agencia vinculada al cliente con su dirección completa
+            
             $agencia = $cliente->agencias()
                 ->with(['direccion.ciudad.departamento.pais'])
                 ->first();
@@ -159,7 +159,7 @@ class ClienteController extends Controller
             }
         }
 
-        // Preparar datos para el formulario de Alpine.js
+        
         $personaData = $persona ? [
             'primer_nombre' => $persona->primer_nombre ?? '',
             'segundo_nombre' => $persona->segundo_nombre ?? '',
@@ -209,7 +209,7 @@ class ClienteController extends Controller
 
     public function solicitudes()
     {
-        // Obtener correo de contacto del cliente
+        
         $correoContacto = null;
         $user = auth()->user();
         $persona = $user?->persona;
@@ -247,11 +247,11 @@ class ClienteController extends Controller
             'razon_social' => 'nullable|string|max:150',
             'rtn' => 'required|string|max:30|unique:tbl_cliente_empresa,rtn',
             'descripcion_empresa' => 'nullable|string|max:500',
-            // Ubicación
+            
             'id_pais_fk' => 'required|exists:tbl_pais,id_pais_pk',
             'id_departamento_fk' => 'required|exists:tbl_departamento,id_departamento_pk',
             'id_ciudad_fk' => 'required|exists:tbl_ciudad,id_ciudad_pk',
-            // Dirección
+            
             'calle' => 'required|string|max:100',
             'numero' => 'required|string|max:20',
             'colonia' => 'required|string|max:100',
@@ -280,14 +280,14 @@ class ClienteController extends Controller
             $user = auth()->user();
 
 
-            // Asegurar que exista la persona asociada al usuario sin usar el RTN como DNI
+            
             $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
             if (!$persona) {
                 $persona = \App\Models\Persona::create([
                     'id_usuario_fk' => $user->id_usuario_pk,
                     'primer_nombre' => $request->nombre_comercial,
                     'primer_apellido' => 'Empresa',
-                    // DNI placeholder único para evitar colisión con DNIs reales
+                    
                     'dni' => 'EMPRESA-' . $user->id_usuario_pk,
                     'id_genero_fk' => 1,
                 ]);
@@ -336,7 +336,7 @@ class ClienteController extends Controller
                 $empresaData
             );
 
-            // Crear o actualizar dirección principal de la empresa
+            
             $direccion = Direccion::create([
                 'id_ciudad_fk' => $request->id_ciudad_fk,
                 'calle' => $request->calle,
@@ -346,7 +346,7 @@ class ClienteController extends Controller
                 'referencia' => $request->referencia,
             ]);
 
-            // Crear o actualizar agencia principal del cliente y asociarla a la dirección
+            
             $agencia = $cliente->agencias()->first();
             $agenciaData = [
                 'nombre_agencia' => $request->nombre_comercial,
@@ -358,7 +358,7 @@ class ClienteController extends Controller
                 $agencia->update($agenciaData);
             } else {
                 $agencia = \App\Models\Agencia::create($agenciaData);
-                // Vincular agencia con el cliente en la tabla pivote
+                
                 $cliente->agencias()->attach($agencia->id_agencias_pk);
             }
 
@@ -381,7 +381,7 @@ class ClienteController extends Controller
                 ->with('success', 'Datos de empresa guardados correctamente.');
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            // Tratar duplicados de RTN con un mensaje claro
+            
             if ((int)($e->errorInfo[1] ?? 0) === 1062) {
                 return back()
                     ->withInput()
@@ -538,7 +538,7 @@ class ClienteController extends Controller
                 ],
                 'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
                 'email_contacto' => 'sometimes|email|max:255',
-                // Validación de campos de dirección
+                
                 'calle' => 'required|string|max:100',
                 'numero' => 'required|string|max:20',
                 'colonia' => 'required|string|max:100',
@@ -573,7 +573,7 @@ class ClienteController extends Controller
 
             $data = $request->only(['nombre_comercial', 'razon_social', 'rtn', 'descripcion_empresa', 'horario_atencion']);
 
-            // Avatar
+            
             if ($request->hasFile('avatar')) {
                 if ($empresa->avatar && Storage::disk('public')->exists($empresa->avatar)) {
                     Storage::disk('public')->delete($empresa->avatar);
@@ -599,13 +599,13 @@ class ClienteController extends Controller
                 );
             }
 
-            // Actualizar dirección de la agencia
+            
             if ($request->filled(['calle', 'numero', 'colonia', 'codigo_postal', 'referencia'])) {
-                // Obtener la primera agencia del cliente
+                
                 $agencia = $cliente->agencias()->first();
                 
                 if ($agencia && $agencia->id_direccion_fk) {
-                    // Actualizar la dirección existente
+                    
                     $direccion = \App\Models\Direccion::find($agencia->id_direccion_fk);
                     if ($direccion) {
                         $direccion->update([
@@ -645,13 +645,11 @@ class ClienteController extends Controller
         return true;
     }
 
-    /**
-     * Get departamentos by país ID
-     */
+    
     public function getDepartamentosByPais($paisId)
     {
         try {
-            // En la tabla de departamentos, la columna FK hacia país es 'id_pais_pk'
+            
             $departamentos = \App\Models\Departamento::where('id_pais_pk', $paisId)
                 ->orderBy('nombre_departamento')
                 ->get(['id_departamento_pk', 'nombre_departamento']);
@@ -662,9 +660,7 @@ class ClienteController extends Controller
         }
     }
 
-    /**
-     * Get ciudades by departamento ID
-     */
+    
     public function getCiudadesByDepartamento($departamentoId)
     {
         try {
@@ -678,9 +674,7 @@ class ClienteController extends Controller
         }
     }
 
-    /**
-     * Validar si un DNI está disponible
-     */
+    
     public function validarDni(Request $request)
     {
         $request->validate([
@@ -689,7 +683,7 @@ class ClienteController extends Controller
 
         $dni = $request->input('dni');
         
-        // Verificar si el DNI ya existe
+        
         $exists = Persona::where('dni', $dni)->exists();
         
         return response()->json([

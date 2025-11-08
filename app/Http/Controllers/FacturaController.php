@@ -49,7 +49,7 @@ class FacturaController extends Controller
             $validated = $request->validated();
             Log::info('Validation passed', ['validated' => $validated]);
 
-            // Validar que se seleccione un CAI
+            
             if (empty($validated['id_cai_fk'])) {
                 return response()->json([
                     'success' => false,
@@ -58,17 +58,17 @@ class FacturaController extends Controller
             }
 
             $factura = DB::transaction(function () use ($validated) {
-                // Bloquear el CAI para evitar condiciones de carrera al generar el consecutivo
+                
                 $cai = Cai::where('id_cai_pk', $validated['id_cai_fk'])
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                // Validar fecha límite (no permitir usar un CAI vencido por fecha)
+                
                 if (!empty($cai->fecha_limite) && $cai->fecha_limite < now()->format('Y-m-d')) {
                     throw new \Exception('El CAI seleccionado está vencido (fecha límite superada).');
                 }
 
-                // Validar estado del CAI: solo CAI en estado ACTIVO pueden usarse
+                
                 $cai->loadMissing('estadoCai');
                 if ($cai->estadoCai) {
                     $estadoNombre = Str::lower(trim((string)($cai->estadoCai->nombre_estado_cai
@@ -77,19 +77,19 @@ class FacturaController extends Controller
                         ?? '')));
                     $estadoCodigo = Str::lower(trim((string)($cai->estadoCai->codigo ?? '')));
                     $esActivo = Str::contains($estadoNombre, 'activ') || Str::startsWith($estadoCodigo, 'act');
-                    // Bloquear explícitamente estados vencidos/inactivos/cerrados/agotados
+                    
                     $esVencido = Str::contains($estadoNombre, 'vencid') || Str::contains($estadoCodigo, 'venc');
                     if (!$esActivo || $esVencido) {
                         throw new \Exception('El CAI seleccionado no está ACTIVO (estado actual: ' . ($cai->estadoCai->nombre ?? $estadoCodigo ?: 'desconocido') . ') y no puede usarse en facturas.');
                     }
                 }
 
-                // Extraer prefijo y rangos del CAI (formato esperado: 000-000-00-00000000)
+                
                 $parseRango = function (string $rango) {
                     $rango = (string) $rango;
-                    // Asegurar patrón ######-##-######## con guiones
+                    
                     $digits = preg_replace('/\D+/', '', $rango ?? '');
-                    // Pad a 16 dígitos y reinsertar guiones
+                    
                     $digits = str_pad(substr($digits, -16), 16, '0', STR_PAD_LEFT);
                     $p1 = substr($digits, 0, 3);
                     $p2 = substr($digits, 3, 3);
@@ -101,38 +101,38 @@ class FacturaController extends Controller
                 [$i1, $i2, $i3, $ini] = $parseRango((string) $cai->rango_inicio);
                 [$f1, $f2, $f3, $fin] = $parseRango((string) $cai->rango_fin);
 
-                // Prefijo se toma del rango de inicio (primeros 3 bloques)
+                
                 $prefix = sprintf('%s-%s-%s-', $i1, $i2, $i3);
                 $startNum = (int) $ini;
                 $endNum = (int) $fin;
 
-                // Próximo número: max(consecutivo_actual + 1, startNum)
+                
                 $proximo = max(((int) $cai->consecutivo_actual) + 1, $startNum);
 
                 if ($proximo > $endNum) {
                     throw new \Exception('El CAI seleccionado ya no tiene números disponibles en su rango.');
                 }
 
-                // No usar el número del CAI para el número de factura.
-                // El número de factura debe ser "FAC-FECHA-ID" donde:
-                //  - FECHA proviene de la fecha de la factura (o la fecha actual si no se envía)
-                //  - ID es el id autoincremental de la factura
-                // Forzar CAI en la factura y evitar que vengan manipulados del frontend
+                
+                
+                
+                
+                
                 $payload = $validated;
-                // Para evitar violar NOT NULL/UNIQUE en DB, usamos un número temporal corto
-                // y luego lo reemplazamos por el definitivo una vez tengamos el ID.
-                // Límite: 20 caracteres (varchar(20))
-                $payload['numero'] = 'TMP-'.now()->format('His').'-'.rand(1000, 9999); // TMP-HHMMSS-NNNN (16 chars)
+                
+                
+                
+                $payload['numero'] = 'TMP-'.now()->format('His').'-'.rand(1000, 9999); 
                 $payload['id_cai_fk'] = $cai->id_cai_pk;
 
-                // Valores por defecto cuando no se envían (se calculan luego con los detalles)
+                
                 $payload['subtotal'] = isset($payload['subtotal']) ? (float)$payload['subtotal'] : 0.0;
                 $payload['impuesto'] = isset($payload['impuesto']) ? (float)$payload['impuesto'] : 0.0;
                 $payload['total'] = isset($payload['total']) ? (float)$payload['total'] : 0.0;
 
                 $factura = Factura::create($payload);
 
-                // Establecer número de factura con el formato FAC-FECHA-ID
+                
                 try {
                     $fechaStr = $payload['fecha'] ?? ($factura->fecha ?? now()->format('Y-m-d'));
                     $fecha = Carbon::parse($fechaStr);
@@ -144,7 +144,7 @@ class FacturaController extends Controller
                 $factura->numero = $numeroFactura;
                 $factura->save();
 
-                // Actualizar consecutivo del CAI (independiente del número de factura)
+                
                 $cai->consecutivo_actual = $proximo;
                 $cai->save();
 
@@ -159,10 +159,10 @@ class FacturaController extends Controller
                 'data' => new FacturaResource($factura)
             ], 201);
         } catch (\Throwable $e) {
-            // Log el error completo para debugging
+            
             Log::error('Error al crear factura: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
             
-            // Manejar errores de validación de negocio como 422
+            
             $message = $e->getMessage();
             if (str_contains($message, 'CAI') && (
                 str_contains($message, 'vencido') || 
@@ -191,7 +191,7 @@ class FacturaController extends Controller
 
     public function update(UpdateFacturaRequest $request, Factura $factura)
     {
-        // Evitar cambios de CAI o del número de factura una vez generada
+        
         $validated = $request->validated();
         if (array_key_exists('id_cai_fk', $validated) && (int)$validated['id_cai_fk'] !== (int)$factura->id_cai_fk) {
             return response()->json([
@@ -213,7 +213,7 @@ class FacturaController extends Controller
 
     public function destroy(Factura $factura)
     {
-        // Verificar si la factura tiene detalles asociados
+        
         if ($factura->detalles()->count() > 0) {
             return response()->json([
                 'success' => false, 
@@ -225,9 +225,7 @@ class FacturaController extends Controller
         return response()->json(['success' => true, 'message' => 'Factura eliminada']);
     }
 
-    /**
-     * Renderiza la vista de formato de factura (PDF/Impresión) con datos completos
-     */
+    
     public function formatoFactura($id)
     {
         $factura = Factura::with([
@@ -245,15 +243,13 @@ class FacturaController extends Controller
         return view('admin.formato-factura', compact('factura', 'detalles'));
     }
 
-    /**
-     * Obtener clientes para el dropdown
-     */
+    
     public function getClientes()
     {
         try {
             $clientes = Cliente::with(['empresa', 'persona'])->get();
  
-            // Filtrar solo clientes que tienen datos válidos
+            
             $clientesValidos = $clientes->filter(function ($cliente) {
                 if ($cliente->tipo_cliente === 'empresa') {
                     return $cliente->empresa &&
@@ -289,7 +285,7 @@ class FacturaController extends Controller
                 ];
             });
 
-            return response()->json($result->values()); // values() reindexar array
+            return response()->json($result->values()); 
 
         } catch (\Exception $e) {
 

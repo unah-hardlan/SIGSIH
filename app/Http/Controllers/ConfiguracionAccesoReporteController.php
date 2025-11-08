@@ -11,26 +11,24 @@ use Illuminate\Support\Str;
 
 class ConfiguracionAccesoReporteController extends Controller
 {
-    /**
-     * Renderiza el reporte dinámico por sección del módulo Configuración de Acceso.
-     */
+    
     public function reporte(Request $request)
     {
-        $seccion = $request->input('seccion'); // gestion | roles | objetos | asignar
+        $seccion = $request->input('seccion'); 
         $fecha = $request->input('fecha', now()->format('d-M-Y'));
         $modulo = 'configuracion-acceso';
 
-        // Parámetros comunes
+        
         $q = $request->input('q');
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        // Datasets por sección
+        
         $roles = collect();
         $objetos = collect();
         $usuarios = collect();
         $matriz = collect();
-        // Alinear columnas con la UI (Ver, Crear, Editar, Eliminar)
+        
         $permColumns = [
             ['field' => 'permiso_ver', 'label' => 'Ver'],
             ['field' => 'permiso_consultar', 'label' => 'Leer'],
@@ -46,7 +44,7 @@ class ConfiguracionAccesoReporteController extends Controller
             'objetosTotal' => Objeto::count(),
             'usuariosConRolFiltered' => 0,
             'usuariosConRolTotal' => Usuario::whereNotNull('id_rol_fk')->count(),
-            // Solo para gestión
+            
             'permResumen' => [
                 'insercion' => 0,
                 'consultar' => 0,
@@ -132,7 +130,7 @@ class ConfiguracionAccesoReporteController extends Controller
             $stats['objetosFiltered'] = $stats['objetosTotal'];
             $stats['usuariosConRolFiltered'] = (clone $usuariosQ)->count();
         } elseif ($seccion === 'gestion') {
-            // Matriz de permisos para un rol específico (agrupada y ordenada por módulos del sidebar)
+            
             $rolId = (int)($request->input('rol_id') ?? $request->input('id_rol_fk'));
             if ($rolId) {
                 $rol = Rol::find($rolId);
@@ -141,7 +139,7 @@ class ConfiguracionAccesoReporteController extends Controller
                 $rol = Rol::where('rol', $rolName)->first();
             }
             if ($rol) {
-                // Configuración para ordenar/agrupar como el sidebar
+                
                 $SIDEBAR_ORDER = [
                     ['title' => 'Seguridad', 'items' => ['Usuarios', 'Parámetros', 'Parametros', 'Configuración de accesos', 'Configuracion de accesos']],
                     ['title' => 'Clientes', 'items' => ['Empresas', 'Cotizaciones', 'Solicitudes', 'Órdenes de Servicios', 'Ordenes de Servicios']],
@@ -215,7 +213,7 @@ class ConfiguracionAccesoReporteController extends Controller
                         if ($assigned->has($o->id_objetos_pk)) continue;
                         $n = $norm($o->nombre_objeto);
                         if ($labelOrder->contains($n)) {
-                            // Evitar incluir el objeto del MÓDULO como submódulo
+                            
                             if ($moduleObj && $o->id_objetos_pk === $moduleObj->id_objetos_pk) continue;
                             $rows->push($buildRow($o));
                             $assigned->put($o->id_objetos_pk, true);
@@ -229,7 +227,7 @@ class ConfiguracionAccesoReporteController extends Controller
                     }
                 }
 
-                // Fallback: agrupar el resto por tipo
+                
                 $rest = $objs->reject(fn($o) => $assigned->has($o->id_objetos_pk));
                 if ($rest->isNotEmpty()) {
                     $byTipo = $rest->groupBy(function ($o) {
@@ -245,7 +243,7 @@ class ConfiguracionAccesoReporteController extends Controller
                 }
 
                 $matriz = $mat;
-                // Resumen de permisos
+                
                 $stats['permResumen']['insercion'] = $matriz->where('permiso_insercion', true)->count();
                 $stats['permResumen']['consultar'] = $matriz->where('permiso_consultar', true)->count();
                 $stats['permResumen']['actualizar'] = $matriz->where('permiso_actualizar', true)->count();
@@ -257,10 +255,10 @@ class ConfiguracionAccesoReporteController extends Controller
                     return !empty($row['objeto']) && !$row['permiso_insercion'] && !$row['permiso_consultar'] && !$row['permiso_actualizar'] && !$row['permiso_eliminacion'];
                 })->count();
             } else {
-                // Sin rol elegido, devolver vacío
+                
                 $matriz = collect();
             }
-            // Cajas muestran totales del sistema
+            
             $stats['rolesFiltered'] = $stats['rolesTotal'];
             $stats['objetosFiltered'] = $stats['objetosTotal'];
             $stats['usuariosConRolFiltered'] = $stats['usuariosConRolTotal'];

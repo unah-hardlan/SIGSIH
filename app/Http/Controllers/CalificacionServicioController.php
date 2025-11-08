@@ -14,7 +14,7 @@ class CalificacionServicioController extends Controller
     {
         $query = CalificacionServicio::query();
 
-        // Búsqueda
+        
         if ($q = request('q')) {
             $query->where(function($sub) use ($q) {
                 $sub->where('nombre_calificacion', 'like', "%$q%")
@@ -22,7 +22,7 @@ class CalificacionServicioController extends Controller
             });
         }
 
-        // Ordenamiento dinámico
+        
         $sortable = [
             'nombre_calificacion' => 'nombre_calificacion',
             'descripcion_calificacion' => 'descripcion_calificacion',
@@ -34,7 +34,7 @@ class CalificacionServicioController extends Controller
         if ($sort && isset($sortable[$sort])) {
             $query->orderBy($sortable[$sort], $direction);
         } else {
-            // orden por defecto
+            
             $query->orderBy('id_calificacion_servicio_pk', 'desc');
         }
 
@@ -95,7 +95,7 @@ class CalificacionServicioController extends Controller
         return response()->json(['message' => 'Calificación de servicio eliminada correctamente'], 200);
     }
 
-    // Reporte web (HTML) dinámico
+    
     public function reporte(Request $request)
     {
         $query = CalificacionServicio::query();
@@ -107,7 +107,7 @@ class CalificacionServicioController extends Controller
             });
         }
         
-        // Orden
+        
         $sortable = [
             'nombre_calificacion' => 'nombre_calificacion',
             'descripcion_calificacion' => 'descripcion_calificacion',

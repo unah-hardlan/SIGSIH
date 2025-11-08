@@ -98,26 +98,24 @@ class CaiController extends Controller
         }
     }
 
-    /**
-     * Generate cai report
-     */
+    
     public function reporte(Request $request)
     {
         $query = Cai::with(['estadoCai']);
 
-        // Filtro por estado del CAI
+        
         if ($estado = $request->input('estado')) {
             $query->whereHas('estadoCai', function($q) use ($estado) {
                 $q->where('codigo', $estado);
             });
         }
 
-        // Filtro de búsqueda por código
+        
         if ($q = $request->input('q')) {
             $query->where('codigo', 'like', "%$q%");
         }
 
-        // Filtro por rango de fechas
+        
         if ($desde = $request->input('desde')) {
             $query->where('fecha_limite', '>=', $desde);
         }
@@ -126,7 +124,7 @@ class CaiController extends Controller
             $query->where('fecha_limite', '<=', $hasta);
         }
 
-        // Orden
+        
         $sortable = [
             'codigo' => 'codigo',
             'fecha_limite' => 'fecha_limite',
