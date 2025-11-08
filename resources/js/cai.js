@@ -1,5 +1,4 @@
 window.caiApiHandlers = {
-    // ===== Formatting helpers (shared by add/edit) =====
     normalizeCodigo(v) {
         try {
             return String(v || "")
@@ -40,12 +39,12 @@ window.caiApiHandlers = {
     normalizeFecha(v) {
         try {
             const s = String(v || "").trim();
-            // dd/mm/yyyy -> yyyy-mm-dd
+
             const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
             if (m) {
                 return `${m[3]}-${m[2]}-${m[1]}`;
             }
-            return s; // assume yyyy-mm-dd or empty
+            return s;
         } catch (_) {
             return v;
         }
@@ -63,7 +62,6 @@ window.caiApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async fetchCai(component) {
-        // Prevenir llamadas concurrentes
         if (component.loadingCai) {
             return;
         }
@@ -77,21 +75,18 @@ window.caiApiHandlers = {
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
 
-            // Assuming the API returns data in 'data' key or directly an array
             component.cais = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
                 ? data
                 : [];
 
-            // Synchronize aliases for reusable pagination components
             try {
                 component.numbers = component.cais;
             } catch (error) {
                 console.warn("Error synchronizing CAI numbers alias:", error);
             }
 
-            // También cargar los estados CAI para los selects
             await this.fetchEstadosCai(component);
         } catch (error) {
             console.error("Error fetching CAI:", error);
@@ -108,7 +103,6 @@ window.caiApiHandlers = {
      */
     async fetchEstadosCai(component) {
         try {
-            // Agregar timestamp único y forzar recarga completa
             const timestamp = Date.now() + Math.random();
             const response = await fetch(
                 `/api/estados-cai?_t=${timestamp}&_bust=${Math.random()}`,
@@ -121,7 +115,7 @@ window.caiApiHandlers = {
                         Expires: "0",
                     },
                     credentials: "same-origin",
-                    cache: "no-store", // Forzar no usar caché
+                    cache: "no-store",
                 }
             );
             const data = await response.json().catch(() => ({}));
@@ -175,13 +169,12 @@ window.caiApiHandlers = {
                 window.showToast("El estado CAI es obligatorio", "error");
             return;
         }
-        // Formatear a formatos consistentes
+
         codigoTrim = this.normalizeCodigo(codigoTrim);
         rangoInicioTrim = this.formatRango(rangoInicioTrim);
         rangoFinTrim = this.formatRango(rangoFinTrim);
         fechaLimite = this.normalizeFecha(fechaLimite);
 
-        // Validaciones de formato
         if (!this.isValidRango(rangoInicioTrim)) {
             window.showToast &&
                 window.showToast(
@@ -261,7 +254,6 @@ window.caiApiHandlers = {
         )
             return;
 
-        // Leer valores directamente desde los campos del formulario
         let codigoTrim = String(
             document.getElementById("edit_codigo")?.value || ""
         ).trim();
@@ -308,13 +300,12 @@ window.caiApiHandlers = {
                 window.showToast("El estado CAI es obligatorio", "error");
             return;
         }
-        // Formatear a formatos consistentes
+
         codigoTrim = this.normalizeCodigo(codigoTrim);
         rangoInicioTrim = this.formatRango(rangoInicioTrim);
         rangoFinTrim = this.formatRango(rangoFinTrim);
         fechaLimite = this.normalizeFecha(fechaLimite);
 
-        // Validaciones de formato
         if (!this.isValidRango(rangoInicioTrim)) {
             window.showToast &&
                 window.showToast(
@@ -378,7 +369,6 @@ window.caiApiHandlers = {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {

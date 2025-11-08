@@ -46,7 +46,6 @@ window.estadosSolicitudApiHandlers = {
             return;
         }
 
-        // Validar duplicados
         if (
             component.estadosSolicitud.some(
                 (es) => es.nombre.toLowerCase() === nombreTrim.toLowerCase()
@@ -117,7 +116,6 @@ window.estadosSolicitudApiHandlers = {
             return;
         }
 
-        // Validar duplicados, excluyendo el item actual
         if (
             component.estadosSolicitud.some(
                 (es) =>

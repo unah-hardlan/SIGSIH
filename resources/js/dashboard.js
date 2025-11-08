@@ -15,7 +15,6 @@ async function dashTryFetch(url, headers) {
 document.addEventListener("alpine:init", () => {
     const TTL_MS = 120000;
 
-    // Scroll position component - Defined globally
     window.scrollPosition = function () {
         return {
             saveScrollPosition() {
@@ -43,25 +42,21 @@ document.addEventListener("alpine:init", () => {
                 }
             },
             init() {
-                // Save scroll position before page unload
                 window.addEventListener("beforeunload", () =>
                     this.saveScrollPosition()
                 );
 
-                // Also save on visibility change (when tab becomes hidden)
                 document.addEventListener("visibilitychange", () => {
                     if (document.hidden) {
                         this.saveScrollPosition();
                     }
                 });
 
-                // Restore position on page load
                 this.restoreScrollPosition();
             },
         };
     };
 
-    // Load persisted cache
     let persisted = {};
     try {
         persisted = JSON.parse(
@@ -101,7 +96,6 @@ document.addEventListener("alpine:init", () => {
             } catch (_) {}
         },
 
-        // KPIs
         async getIndicators({ force = false } = {}) {
             if (
                 !force &&
@@ -127,7 +121,6 @@ document.addEventListener("alpine:init", () => {
             return this.indicators;
         },
 
-        // Charts
         async getChart(name, { force = false } = {}) {
             const keyToUrl = {
                 ordenes: [
@@ -164,10 +157,8 @@ document.addEventListener("alpine:init", () => {
         },
     });
 
-    // Provide a global Alpine component factory for the KPIs box
     window.dashboardKPIs = function () {
         return {
-            // mirrored props for simple templates
             totalUsuarios: 0,
             empresasActivas: 0,
             ordenesServicio: 0,
@@ -180,10 +171,9 @@ document.addEventListener("alpine:init", () => {
             reportesGenerados: 0,
 
             init() {
-                // Hydrate from cache immediately if available
                 const cached = this.$store.dashboard.indicators;
                 if (cached) this.assign(cached);
-                // Background revalidation
+
                 this.revalidate();
             },
 

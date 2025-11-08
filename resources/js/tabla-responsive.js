@@ -1,13 +1,9 @@
-// Utilidades para tablas responsive
 document.addEventListener("alpine:init", () => {
-    // Helper para crear datos de tabla responsive
     Alpine.magic("responsive", () => ({
-        // Detectar si es móvil
         isMobile() {
             return window.innerWidth < 768;
         },
 
-        // Crear estructura de datos para cards
         createCardData(item, fields) {
             const cardData = {};
             fields.forEach((field) => {
@@ -24,7 +20,6 @@ document.addEventListener("alpine:init", () => {
             return cardData;
         },
 
-        // Formatear valor según tipo
         formatValue(value, type = "text") {
             switch (type) {
                 case "date":
@@ -42,10 +37,9 @@ document.addEventListener("alpine:init", () => {
         },
     }));
 
-    // Componente para manejo de tablas responsive
     Alpine.data("tablaResponsive", (config = {}) => ({
         isMobile: window.innerWidth < 768,
-        viewMode: "auto", // 'auto', 'table', 'cards'
+        viewMode: "auto",
         searchTerm: "",
         sortField: "",
         sortDirection: "asc",
@@ -75,7 +69,6 @@ document.addEventListener("alpine:init", () => {
             this.viewMode = this.currentView === "table" ? "cards" : "table";
         },
 
-        // Filtrar datos
         get filteredData() {
             let data = this.data || [];
 
@@ -105,7 +98,6 @@ document.addEventListener("alpine:init", () => {
             return data;
         },
 
-        // Ordenar por campo
         sortBy(field) {
             if (this.sortField === field) {
                 this.sortDirection =
@@ -118,7 +110,6 @@ document.addEventListener("alpine:init", () => {
     }));
 });
 
-// CSS adicional para animaciones suaves
 const style = document.createElement("style");
 style.textContent = `
     .table-responsive-transition {

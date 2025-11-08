@@ -1,4 +1,3 @@
-// Alpine store for CRUD de Objetos del sistema
 const API = {
     objetos: "/api/objetos",
     tipos: "/api/tipos-objeto",
@@ -130,8 +129,8 @@ function createObjetosStore() {
 
         buildQuery(page) {
             const params = new URLSearchParams();
-            params.set("per_page", "10000"); // Obtener todos los objetos para paginación del cliente
-            params.set("page", "1"); // Siempre página 1 para obtener todos
+            params.set("per_page", "10000");
+            params.set("page", "1");
             if (this.q) params.set("q", this.q);
             if (this.tipoId) params.set("id_tipo_objetos_fk", this.tipoId);
             params.set("sort", "id");
@@ -141,7 +140,7 @@ function createObjetosStore() {
 
         applyFiltersAndPagination() {
             let filtered = [...this.allItems];
-            // filtro por búsqueda
+
             if (this.q) {
                 const s = this.q.toLowerCase();
                 filtered = filtered.filter(
@@ -256,7 +255,6 @@ function createObjetosStore() {
             }
         },
 
-        // helpers UI
         setSearch(val) {
             this.q = val;
             this.error = "";
@@ -419,7 +417,7 @@ function createObjetosStore() {
                     throw new Error(await r.text().catch(() => r.statusText));
                 this.isDeleteOpen = false;
                 this.current = null;
-                // si se borró el último de la página, retroceder de página si corresponde
+
                 const page =
                     this.items.length === 1 && this.meta.page > 1
                         ? this.meta.page - 1
@@ -444,14 +442,13 @@ function createObjetosStore() {
             }
         },
 
-        // Mantener sincronizado el store de access (matriz de permisos)
         async syncAccessStore() {
             try {
                 const access = window.Alpine?.store("access");
                 if (access && typeof access === "object") {
                     const all = await apiGet(`${API.objetos}?all=1`);
                     access.objetos = normalizeList(all);
-                    // Recalcular permisos si hay rol seleccionado
+
                     if (access.selectedRoleId) {
                         await access.loadPermisosForRole(access.selectedRoleId);
                     }
@@ -459,7 +456,6 @@ function createObjetosStore() {
             } catch (_) {}
         },
 
-        // debounce para búsqueda
         _debounceTimer: null,
         debouncedApplyFilters() {
             if (this._debounceTimer) clearTimeout(this._debounceTimer);

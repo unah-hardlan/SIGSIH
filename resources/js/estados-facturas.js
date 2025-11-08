@@ -1,13 +1,13 @@
-document.addEventListener('alpine:init', () => {
-    Alpine.data('estadosFacturaCrud', () => ({
+document.addEventListener("alpine:init", () => {
+    Alpine.data("estadosFacturaCrud", () => ({
         isEstadoFacturaModalOpen: false,
         isEditEstadoFacturaModalOpen: false,
         isDeleteEstadoFacturaModalOpen: false,
         itemToEdit: {
             id_estado_factura_pk: null,
-            codigo: '',
-            nombre: '',
-            descripcion: '',
+            codigo: "",
+            nombre: "",
+            descripcion: "",
             es_final: false,
             orden: 0,
         },
@@ -16,28 +16,31 @@ document.addEventListener('alpine:init', () => {
         categorias: [],
         numbers: [],
         loadingEstadosFactura: false,
-        nombre: '',
-        descripcion: '',
-        codigo: '',
+        nombre: "",
+        descripcion: "",
+        codigo: "",
         es_final: false,
         orden: 0,
-        filtroEstadoFactura: '',
-        ordenarPor: 'nombre',
+        filtroEstadoFactura: "",
+        ordenarPor: "nombre",
         currentPage: 1,
         perPage: 10,
 
         async init() {
             await this.fetchEstadosFactura();
-            this.$watch('filtroEstadoFactura', () => {
+            this.$watch("filtroEstadoFactura", () => {
                 this.currentPage = 1;
             });
-            this.$watch('ordenarPor', () => {
+            this.$watch("ordenarPor", () => {
                 this.currentPage = 1;
             });
         },
 
         paginatedEstadosFactura() {
-            return this.filteredEstadosFactura.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+            return this.filteredEstadosFactura.slice(
+                (this.currentPage - 1) * this.perPage,
+                this.currentPage * this.perPage
+            );
         },
 
         totalPages() {
@@ -61,14 +64,20 @@ document.addEventListener('alpine:init', () => {
         },
 
         get filteredEstadosFactura() {
-            const term = String(this.filtroEstadoFactura || '').toLowerCase().trim();
+            const term = String(this.filtroEstadoFactura || "")
+                .toLowerCase()
+                .trim();
             let list = Array.from(this.estadosFactura || []);
             if (term) {
                 list = list.filter((ef) => {
-                    const codigo = String(ef?.codigo || '').toLowerCase();
-                    const nombre = String(ef?.nombre_estado || '').toLowerCase();
-                    const desc = String(ef?.descripcion_estado_factura || '').toLowerCase();
-                    const orden = String(ef?.orden ?? '').toLowerCase();
+                    const codigo = String(ef?.codigo || "").toLowerCase();
+                    const nombre = String(
+                        ef?.nombre_estado || ""
+                    ).toLowerCase();
+                    const desc = String(
+                        ef?.descripcion_estado_factura || ""
+                    ).toLowerCase();
+                    const orden = String(ef?.orden ?? "").toLowerCase();
                     return (
                         codigo.includes(term) ||
                         nombre.includes(term) ||
@@ -77,17 +86,20 @@ document.addEventListener('alpine:init', () => {
                     );
                 });
             }
-            const key = this.ordenarPor || 'nombre';
-            const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true });
+            const key = this.ordenarPor || "nombre";
+            const collator = new Intl.Collator("es", {
+                sensitivity: "base",
+                numeric: true,
+            });
             const getVal = (ef) => {
-                if (key === 'codigo') return String(ef?.codigo || '');
-                if (key === 'orden') return Number(ef?.orden) || 0;
-                return String(ef?.nombre_estado || '');
+                if (key === "codigo") return String(ef?.codigo || "");
+                if (key === "orden") return Number(ef?.orden) || 0;
+                return String(ef?.nombre_estado || "");
             };
             list.sort((a, b) => {
                 const va = getVal(a);
                 const vb = getVal(b);
-                if (key === 'orden') return (va - vb);
+                if (key === "orden") return va - vb;
                 return collator.compare(va, vb);
             });
             return list;
@@ -102,13 +114,13 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
-                // Assuming the API returns data in 'data' key or directly an array
+
                 this.estadosFactura = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                        ? data
-                        : [];
-                // synchronize aliases for reusable pagination components
+                    ? data
+                    : [];
+
                 this.categorias = this.estadosFactura;
                 this.numbers = this.estadosFactura;
             } catch (error) {
@@ -137,7 +149,13 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
 
-            if (this.estadosFactura.some((ef) => String(ef?.nombre_estado || '').toLowerCase() === nombreTrim.toLowerCase())) {
+            if (
+                this.estadosFactura.some(
+                    (ef) =>
+                        String(ef?.nombre_estado || "").toLowerCase() ===
+                        nombreTrim.toLowerCase()
+                )
+            ) {
                 window.showToast &&
                     window.showToast("El estado de factura ya existe", "error");
                 return;
@@ -190,12 +208,20 @@ document.addEventListener('alpine:init', () => {
         async updateEstadoFactura() {
             if (!this.itemToEdit || !this.itemToEdit.id_estado_factura_pk)
                 return;
-            // Leer valores directamente desde los campos del formulario
-            const nombreTrim = String(document.getElementById('edit_nombre')?.value || "").trim();
-            const descripcionTrim = String(document.getElementById('edit_descripcion')?.value || "").trim();
-            const codigoTrim = String(document.getElementById('edit_codigo')?.value || "").trim();
-            const esFinal = document.getElementById('edit_es_final')?.checked || false;
-            const orden = parseInt(document.getElementById('edit_orden')?.value) || 0;
+
+            const nombreTrim = String(
+                document.getElementById("edit_nombre")?.value || ""
+            ).trim();
+            const descripcionTrim = String(
+                document.getElementById("edit_descripcion")?.value || ""
+            ).trim();
+            const codigoTrim = String(
+                document.getElementById("edit_codigo")?.value || ""
+            ).trim();
+            const esFinal =
+                document.getElementById("edit_es_final")?.checked || false;
+            const orden =
+                parseInt(document.getElementById("edit_orden")?.value) || 0;
 
             if (!nombreTrim) {
                 window.showToast &&
@@ -206,7 +232,15 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
 
-            if (this.estadosFactura.some((ef) => String(ef?.nombre_estado || '').toLowerCase() === nombreTrim.toLowerCase() && ef.id_estado_factura_pk !== this.itemToEdit.id_estado_factura_pk)) {
+            if (
+                this.estadosFactura.some(
+                    (ef) =>
+                        String(ef?.nombre_estado || "").toLowerCase() ===
+                            nombreTrim.toLowerCase() &&
+                        ef.id_estado_factura_pk !==
+                            this.itemToEdit.id_estado_factura_pk
+                )
+            ) {
                 window.showToast &&
                     window.showToast(
                         "Ya existe otro estado con ese nombre",
@@ -221,7 +255,8 @@ document.addEventListener('alpine:init', () => {
                     (ef) =>
                         ef.codigo &&
                         ef.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
-                        ef.id_estado_factura_pk !== this.itemToEdit.id_estado_factura_pk
+                        ef.id_estado_factura_pk !==
+                            this.itemToEdit.id_estado_factura_pk
                 )
             ) {
                 window.showToast &&
@@ -254,7 +289,6 @@ document.addEventListener('alpine:init', () => {
                 );
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    // Mostrar errores de validación si existen
                     if (data && data.errors) {
                         Object.values(data.errors).forEach((errArr) => {
                             if (Array.isArray(errArr)) {
@@ -281,9 +315,9 @@ document.addEventListener('alpine:init', () => {
                 this.isEditEstadoFacturaModalOpen = false;
                 this.itemToEdit = {
                     id_estado_factura_pk: null,
-                    codigo: '',
-                    nombre: '',
-                    descripcion: '',
+                    codigo: "",
+                    nombre: "",
+                    descripcion: "",
                     es_final: false,
                     orden: 0,
                 };
@@ -328,14 +362,16 @@ document.addEventListener('alpine:init', () => {
         },
 
         handleModalSubmit(event) {
-            if (event.detail.formId === 'formEstadoFactura') this.submitEstadoFactura();
-            if (event.detail.formId === 'formEditEstadoFactura') this.updateEstadoFactura();
+            if (event.detail.formId === "formEstadoFactura")
+                this.submitEstadoFactura();
+            if (event.detail.formId === "formEditEstadoFactura")
+                this.updateEstadoFactura();
         },
 
         handleDelete() {
             if (this.isDeleteEstadoFacturaModalOpen) {
                 this.deleteEstadoFactura();
             }
-        }
+        },
     }));
 });

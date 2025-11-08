@@ -1,7 +1,5 @@
 const AppSession = (() => {
-    function applyNewTokenFromHeader(_resp) {
-        // Placeholder for token refresh logic if needed
-    }
+    function applyNewTokenFromHeader(_resp) {}
 
     function logout() {
         try {
@@ -17,9 +15,7 @@ const AppSession = (() => {
             headers: { Accept: "application/json" },
             credentials: "same-origin",
         })
-            .catch(() => {
-                // Handle fetch error if needed
-            })
+            .catch(() => {})
             .finally(() => {
                 document.cookie =
                     "auth_token=; path=/; Max-Age=0; SameSite=Strict; Secure";
@@ -39,7 +35,6 @@ const AppSession = (() => {
         return resp;
     }
 
-    // Listener for BroadcastChannel
     if ("BroadcastChannel" in window) {
         const channel = new BroadcastChannel("idle-logout");
         channel.onmessage = (event) => {
@@ -52,6 +47,5 @@ const AppSession = (() => {
     return { logout, apiFetch };
 })();
 
-// Expose globally for backward compatibility
 window.appLogout = AppSession.logout;
 window.apiFetch = AppSession.apiFetch;

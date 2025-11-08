@@ -7,7 +7,7 @@ export function notificationsDropdown() {
         async init() {
             await this.fetchItems();
             this.setupRealtime();
-            // Polling fallback cada 45s
+
             this.timer = setInterval(() => this.fetchItems(), 45000);
         },
         destroy() {
@@ -46,7 +46,7 @@ export function notificationsDropdown() {
                 this.unread = 0;
             } catch (_) {}
         },
-        // Modal state for delete confirmation
+
         deleteModalOpen: false,
         deleteTarget: null,
         openDeleteModal(n) {
@@ -83,7 +83,7 @@ export function notificationsDropdown() {
                     );
                     return;
                 }
-                // Remove from local list
+
                 this.items = this.items.filter((it) => it.id !== n.id);
                 if (!n.read_at && this.unread > 0)
                     this.unread = Math.max(0, this.unread - 1);
@@ -93,7 +93,6 @@ export function notificationsDropdown() {
         },
         go(n) {
             if (!n.read_at) {
-                // Fire and forget mark as read (cookie-auth)
                 const doFetch = window.apiFetch || fetch;
                 doFetch(`/api/notifications/${n.id}/read`, {
                     method: "POST",
@@ -104,7 +103,6 @@ export function notificationsDropdown() {
                 if (this.unread > 0) this.unread--;
             }
             if (n.url) {
-                // Integrate with SPA navigation store if available
                 try {
                     const nav = window.Alpine?.store("navigation");
                     if (nav && typeof nav.navigate === "function") {
@@ -159,7 +157,6 @@ export function notificationsDropdown() {
     };
 }
 
-// Expose globally for Alpine inline usage in Blade
 if (!window.notificationsDropdown) {
     window.notificationsDropdown = notificationsDropdown;
 }

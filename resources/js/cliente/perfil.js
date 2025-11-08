@@ -65,7 +65,7 @@ window.perfilData = function (el) {
             };
         })(),
 
-        twoFAEnabled: null, // null = no inicializado, true/false = estado real
+        twoFAEnabled: null,
         twoFAReady: false,
         show2FASetup: false,
         twoFASetup: {
@@ -88,7 +88,6 @@ window.perfilData = function (el) {
         },
         pendingAction: null,
 
-        // Datos de actividad
         actividadData: {
             facturas: { total: 0, pagadas: 0, pendientes: 0 },
             cotizaciones: { total: 0, aprobadas: 0, enRevision: 0 },
@@ -285,7 +284,6 @@ window.perfilData = function (el) {
                         "Perfil actualizado correctamente",
                         "success"
                     );
-                    // Refrescar encabezado sin recargar página
                     try {
                         const headerName = document.getElementById(
                             "perfil-header-nombre"
@@ -315,11 +313,9 @@ window.perfilData = function (el) {
                         }
                     } catch (_) {}
 
-                    // Actualizar estado local y cerrar modal
                     this.originalData = { ...this.formData };
                     this.closeEditModal();
                     this.avatarFile = null;
-                    // Mantener la vista previa actual para que el usuario la vea; no la revocamos de inmediato
                 } else {
                     window.showToast?.(
                         result.message || "Error al actualizar el perfil",
@@ -371,7 +367,6 @@ window.perfilData = function (el) {
                         "success"
                     );
 
-                    // Recargar la página después de un breve delay para que el usuario vea el mensaje
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
@@ -409,7 +404,6 @@ window.perfilData = function (el) {
             } catch (error) {
                 console.error("Error loading 2FA status:", error);
             } finally {
-                // Marcar que ya se resolvió el estado inicial para evitar parpadeos
                 this.twoFAReady = true;
             }
         },
@@ -702,7 +696,6 @@ window.perfilData = function (el) {
 
         async loadActividadData() {
             try {
-                // Cargar datos de facturas
                 const resFacturas = await fetch("/cliente/facturas-data", {
                     headers: { Accept: "application/json" },
                     credentials: "same-origin",
@@ -737,7 +730,6 @@ window.perfilData = function (el) {
                     ).length;
                 }
 
-                // Cargar datos de cotizaciones
                 const resCotizaciones = await fetch(
                     "/cliente/cotizaciones-data",
                     {
@@ -790,7 +782,6 @@ window.perfilData = function (el) {
                         }).length;
                 }
 
-                // Cargar datos de órdenes
                 const resOrdenes = await fetch("/cliente/ordenes-data", {
                     headers: { Accept: "application/json" },
                     credentials: "same-origin",
@@ -834,7 +825,6 @@ window.perfilData = function (el) {
                     ).length;
                 }
 
-                // Cargar datos de solicitudes
                 const resSolicitudes = await fetch(
                     "/cliente/solicitudes-data",
                     {
@@ -881,7 +871,6 @@ window.perfilData = function (el) {
                         }).length;
                 }
 
-                // Cargar datos de tickets
                 const resTickets = await fetch("/cliente/tickets-data", {
                     headers: { Accept: "application/json" },
                     credentials: "same-origin",

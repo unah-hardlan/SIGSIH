@@ -12,7 +12,7 @@ window.estadosCaiApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.estadosCai = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -21,10 +21,7 @@ window.estadosCaiApiHandlers = {
         } catch (error) {
             console.error("Error fetching estados cai:", error);
             window.showToast &&
-                window.showToast(
-                    "Error al cargar estados CAI",
-                    "error"
-                );
+                window.showToast("Error al cargar estados CAI", "error");
         } finally {
             component.loadingEstadosCai = false;
         }
@@ -36,9 +33,11 @@ window.estadosCaiApiHandlers = {
      */
     async submitEstadoCai(component) {
         const nombreTrim = String(component.nombre_estado_cai || "").trim();
-        const descripcionTrim = String(component.descripcion_estado_cai || "").trim();
+        const descripcionTrim = String(
+            component.descripcion_estado_cai || ""
+        ).trim();
         const codigoTrim = String(component.codigo_estado_cai || "").trim();
-        
+
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -47,7 +46,7 @@ window.estadosCaiApiHandlers = {
                 );
             return;
         }
-        
+
         if (
             component.estadosCai.some(
                 (ec) =>
@@ -59,7 +58,7 @@ window.estadosCaiApiHandlers = {
                 window.showToast("El estado CAI ya existe", "error");
             return;
         }
-        
+
         try {
             const payload = {
                 codigo_estado_cai: codigoTrim || null,
@@ -80,10 +79,7 @@ window.estadosCaiApiHandlers = {
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
             window.showToast &&
-                window.showToast(
-                    "Estado CAI creado exitosamente",
-                    "success"
-                );
+                window.showToast("Estado CAI creado exitosamente", "success");
             component.codigo_estado_cai = "";
             component.nombre_estado_cai = "";
             component.descripcion_estado_cai = "";
@@ -94,10 +90,7 @@ window.estadosCaiApiHandlers = {
         } catch (error) {
             console.error("Error creating estado cai:", error);
             window.showToast &&
-                window.showToast(
-                    "Error al crear el estado CAI",
-                    "error"
-                );
+                window.showToast("Error al crear el estado CAI", "error");
         }
     },
 
@@ -108,11 +101,17 @@ window.estadosCaiApiHandlers = {
     async updateEstadoCai(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_estado_cai_pk)
             return;
-            
-        const nombreTrim = String(component.itemToEdit.nombre_estado_cai || "").trim();
-        const descripcionTrim = String(component.itemToEdit.descripcion_estado_cai || "").trim();
-        const codigoTrim = String(component.itemToEdit.codigo_estado_cai || "").trim();
-        
+
+        const nombreTrim = String(
+            component.itemToEdit.nombre_estado_cai || ""
+        ).trim();
+        const descripcionTrim = String(
+            component.itemToEdit.descripcion_estado_cai || ""
+        ).trim();
+        const codigoTrim = String(
+            component.itemToEdit.codigo_estado_cai || ""
+        ).trim();
+
         if (!nombreTrim) {
             window.showToast &&
                 window.showToast(
@@ -121,7 +120,7 @@ window.estadosCaiApiHandlers = {
                 );
             return;
         }
-        
+
         if (
             component.estadosCai.some(
                 (ec) =>
@@ -138,7 +137,7 @@ window.estadosCaiApiHandlers = {
                 );
             return;
         }
-        
+
         try {
             const payload = {
                 codigo_estado_cai: codigoTrim || null,
@@ -161,7 +160,6 @@ window.estadosCaiApiHandlers = {
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
@@ -188,11 +186,11 @@ window.estadosCaiApiHandlers = {
             component.isEditEstadoCaiModalOpen = false;
             component.itemToEdit = {
                 id_estado_cai_pk: null,
-                codigo_estado_cai: '',
-                nombre_estado_cai: '',
-                descripcion_estado_cai: '',
+                codigo_estado_cai: "",
+                nombre_estado_cai: "",
+                descripcion_estado_cai: "",
                 es_final: false,
-                orden: 0
+                orden: 0,
             };
             await this.fetchEstadosCai(component);
         } catch (error) {
@@ -207,7 +205,7 @@ window.estadosCaiApiHandlers = {
     async deleteEstadoCai(component) {
         if (!component.itemToDelete || !component.itemToDelete.id_estado_cai_pk)
             return;
-            
+
         try {
             const response = await fetch(
                 `/api/estados-cai/${component.itemToDelete.id_estado_cai_pk}`,

@@ -313,7 +313,7 @@
                     x-for="page in Array.from({length: totalPagesReportes()}, (_, i) => i + 1).slice(Math.max(0, currentPageReportes - 3), currentPageReportes + 2)"
                     :key="page">
                     <button @click="currentPageReportes = page"
-                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                         :class="page === currentPageReportes ? 'bg-blue-600 text-white' : ''">
                         <span x-text="page"></span>
                     </button>

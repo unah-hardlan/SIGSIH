@@ -10,7 +10,6 @@ document.addEventListener("alpine:init", () => {
         formError: "",
         isSubmitting: false,
 
-        // Paginación client-side
         currentPageParametros: 1,
         perPageParametros: 10,
 
@@ -32,7 +31,6 @@ document.addEventListener("alpine:init", () => {
         parametroToDelete: null,
         apiBase: "/api/parametros",
 
-        // Métodos de paginación client-side
         paginatedParametros() {
             return this.parametros.slice(
                 (this.currentPageParametros - 1) * this.perPageParametros,
@@ -122,7 +120,7 @@ document.addEventListener("alpine:init", () => {
             this.error = "";
 
             const params = new URLSearchParams();
-            params.append("all", "1"); // Traer todos para paginación client-side
+            params.append("all", "1");
 
             if (this.search) params.append("q", this.search);
             if (this.ordenarPor) {

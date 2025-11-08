@@ -45,7 +45,7 @@ document.addEventListener("alpine:init", () => {
         },
         userToEdit: null,
         userToInactivate: null,
-        // Variables de Paginación
+
         numbers: [],
         currentPage: 1,
         perPage: 10,
@@ -65,7 +65,7 @@ document.addEventListener("alpine:init", () => {
             }, 2500);
             setTimeout(() => el.remove(), 3000);
         },
-        // Métodos de Paginación
+
         paginatedUsuarios() {
             return this.numbers.slice(
                 (this.currentPage - 1) * this.perPage,
@@ -108,7 +108,6 @@ document.addEventListener("alpine:init", () => {
             });
             this.$watch("ordenarPor", (val, old) => {
                 if (old === val) {
-                    // toggle
                     this.ordenDirection =
                         this.ordenDirection === "asc" ? "desc" : "asc";
                 } else {
@@ -120,7 +119,7 @@ document.addEventListener("alpine:init", () => {
             this.$watch("showDeleteModal", (val) => {
                 if (!val) this.userToInactivate = null;
             });
-            // Compatibilidad: antes el modal emitía 'inactivar-user'; ahora emite 'confirm-delete'
+
             window.addEventListener("inactivar-user", () => {
                 if (this.userToInactivate)
                     this.inactivarUser(this.userToInactivate);
@@ -193,7 +192,6 @@ document.addEventListener("alpine:init", () => {
             if (this.filtroPerfil) {
                 params.append("estado", this.filtroPerfil);
             } else {
-                // Mostrar todos los estados cuando no se selecciona filtro explícito
                 params.append("all", "1");
             }
             if (this.ordenarPor) {
@@ -389,7 +387,7 @@ document.addEventListener("alpine:init", () => {
                 this.notify(e.message || "Error al inactivar", "error");
             }
         },
-        // Métodos de paginación del lado del cliente
+
         paginatedUsuarios() {
             const start = (this.currentPage - 1) * this.perPage;
             const end = start + this.perPage;

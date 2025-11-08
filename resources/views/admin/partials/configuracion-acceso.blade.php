@@ -291,7 +291,7 @@
         </x-admin.edit-modal>
         <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteRoleModalOpen" itemToDelete="roleToDelete"
             message="¿Estás seguro de que quieres eliminar el rol?" />
-    </div
+    </div>
 
     <div x-show="tab === 'crear'" x-data="{ ready:false, searchRoles:'', ordenarPor:'rol', direction:'asc' }" x-init="$store.roles.init(); ready=true; $watch('searchRoles', v => $store.roles.setSearch(v)); $watch('ordenarPor', v => $store.roles.setSort(v)); $watch('direction', v => $store.roles.setDirection(v));">
         <x-admin.tabla-crud class="nunito-bold" :titulo="'Lista de Roles'">
@@ -429,7 +429,7 @@
                 <div class="flex items-center gap-1">
                     <template x-for="page in Array.from({length: $store.roles.totalPages()}, (_, i) => i + 1).slice(Math.max(0, $store.roles.currentPage - 3), $store.roles.currentPage + 2)" :key="page">
                         <button @click="$store.roles.goToPage(page)"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                             :class="page === $store.roles.currentPage ? 'bg-blue-600 text-white' : ''">
                             <span x-text="page"></span>
                         </button>
@@ -635,7 +635,7 @@
                 <div class="flex items-center gap-1">
                     <template x-for="page in Array.from({length: $store.objetos.totalPages()}, (_, i) => i + 1).slice(Math.max(0, $store.objetos.currentPage - 3), $store.objetos.currentPage + 2)" :key="page">
                         <button @click="$store.objetos.goToPage(page)"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                             :class="page === $store.objetos.currentPage ? 'bg-blue-600 text-white' : ''">
                             <span x-text="page"></span>
                         </button>
@@ -843,7 +843,7 @@
                 <div class="flex items-center gap-1">
                     <template x-for="page in Array.from({length: $store.assignRoles.totalPages()}, (_, i) => i + 1).slice(Math.max(0, $store.assignRoles.currentPage - 3), $store.assignRoles.currentPage + 2)" :key="page">
                         <button @click="$store.assignRoles.goToPage(page)"
-                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                            class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                             :class="page === $store.assignRoles.currentPage ? 'bg-blue-600 text-white' : ''">
                             <span x-text="page"></span>
                         </button>

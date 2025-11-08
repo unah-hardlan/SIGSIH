@@ -19,7 +19,7 @@ window.tipoProductosApiHandlers = {
             if (component.ordenarPor) {
                 params.set("sort", component.ordenarPor);
             }
-            // Para asegurar que obtenemos todos los resultados para el frontend
+
             params.set("all", "true");
 
             const response = await fetch(

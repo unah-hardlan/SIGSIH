@@ -1,5 +1,3 @@
-// Registro global de la fábrica Alpine para Gestión de Empresas
-// Esto permite que funcione al navegar vía SPA (innerHTML no ejecuta <script> inline)
 if (typeof window !== "undefined") {
     window.empresaData = function () {
         return {
@@ -9,7 +7,7 @@ if (typeof window !== "undefined") {
             empresaToEdit: null,
             empresaToDelete: null,
             empresas: [],
-            // alias expected by the pagination component (component checks `numbers.length`)
+
             numbers: [],
             formEmpresa: {
                 id: null,
@@ -41,7 +39,7 @@ if (typeof window !== "undefined") {
             searchEmpresa: "",
             estadoEmpresa: "",
             ordenarPor: "nombre_comercial",
-            // pagination properties
+
             currentPage: 1,
             perPage: 10,
             reportUrl() {
@@ -49,13 +47,13 @@ if (typeof window !== "undefined") {
                 params.set("modulo", "Empresas");
                 if (this.searchEmpresa)
                     params.set("search", this.searchEmpresa);
-                // Backend espera 'estado_empresa'
+
                 if (this.estadoEmpresa)
                     params.set(
                         "estado_empresa",
                         this.estadoEmpresa.toLowerCase()
                     );
-                // Mapear ordenarPor del UI a campos permitidos del backend
+
                 if (this.ordenarPor) {
                     const mapOrden = {
                         nombre_comercial: "nombre_empresa",
@@ -66,7 +64,7 @@ if (typeof window !== "undefined") {
                         mapOrden[this.ordenarPor] || this.ordenarPor;
                     params.set("ordenar_por", serverOrden);
                 }
-                // Mostrar fecha (para header) y fecha de generación detallada en el cuerpo
+
                 const now = new Date();
                 params.set(
                     "fecha",
@@ -80,7 +78,7 @@ if (typeof window !== "undefined") {
 
                 return "/admin/reportes-header?" + params.toString();
             },
-            // Helpers para normalizar y validar duplicados
+
             _norm(v) {
                 return (v || "").toString().trim().toLowerCase();
             },
@@ -96,7 +94,6 @@ if (typeof window !== "undefined") {
                 try {
                     if (!jsonOrText) return false;
                     if (typeof jsonOrText === "object") {
-                        // Forma Laravel típica { errors: { field: [msg] } }
                         if (
                             jsonOrText.errors &&
                             typeof jsonOrText.errors === "object"
@@ -104,7 +101,7 @@ if (typeof window !== "undefined") {
                             this.errors = jsonOrText.errors;
                             return true;
                         }
-                        // A veces regresa { message: '...' }
+
                         if (jsonOrText.message) {
                             return this._applyDuplicateFromMessage(
                                 jsonOrText.message,
@@ -128,13 +125,12 @@ if (typeof window !== "undefined") {
                     (this.errors[k] || (this.errors[k] = [])).push(m);
                     matched = true;
                 };
-                // Coincidencias comunes
+
                 if (
                     /Duplicate entry/i.test(msg) ||
                     /ya ha sido (tomad|utilizad)/i.test(msg) ||
                     /already been taken/i.test(msg)
                 ) {
-                    // Intenta mapear por claves comunes en el mensaje
                     if (
                         /nombre|nombre_comercial/i.test(msg) &&
                         payload?.nombre_comercial
@@ -150,7 +146,7 @@ if (typeof window !== "undefined") {
                         push("razon_social", "La razón social ya existe.");
                     if (/rtn/i.test(msg) && payload?.rtn)
                         push("rtn", "El RTN ya existe.");
-                    // Si no detecta campo específico, asigna genérico según payload
+
                     if (!matched) {
                         if (payload?.nombre_comercial)
                             push("nombre_comercial", "Valor duplicado.");
@@ -160,7 +156,7 @@ if (typeof window !== "undefined") {
                     }
                     return true;
                 }
-                // Mensajes genéricos pero sin la palabra Duplicate
+
                 if (/existe|existente|taken|únic|unique/i.test(msg)) {
                     if (payload?.nombre_comercial)
                         push(
@@ -218,7 +214,6 @@ if (typeof window !== "undefined") {
                 this.isDeleteEmpresaModalOpen = true;
             },
             apiHeaders() {
-                // El backend usa cookie HttpOnly; aún aceptamos Authorization si existiera
                 const t = localStorage.getItem("authToken");
                 return {
                     "Content-Type": "application/json",
@@ -320,7 +315,7 @@ if (typeof window !== "undefined") {
                         this.mapEmpresa(e)
                     );
                     this.sortEmpresasLocal();
-                    // keep the pagination component's alias in sync
+
                     this.numbers = this.empresas;
                 } catch (e) {
                     this.showToast("No se pudieron cargar empresas", "error");
@@ -368,7 +363,6 @@ if (typeof window !== "undefined") {
                         throw new Error("Validación");
                     }
                     if (!r.ok) {
-                        // Intentar mapear duplicados (409, 400, 500 con Duplicate entry, etc.)
                         let data = null;
                         let text = "";
                         try {
@@ -386,7 +380,7 @@ if (typeof window !== "undefined") {
                     this.showToast("Empresa creada");
                     this.isEmpresaModalOpen = false;
                     this.resetForm();
-                    // ensure numbers reflects the latest empresas after create
+
                     this.numbers = this.empresas;
                 } catch (e) {
                     this.showToast(
@@ -464,7 +458,7 @@ if (typeof window !== "undefined") {
                     this.showToast("Empresa actualizada");
                     this.isEmpresaModalOpen = false;
                     this.resetForm();
-                    // ensure numbers reflects the latest empresas after update
+
                     this.numbers = this.empresas;
                 } catch (e) {
                     this.showToast(
@@ -496,7 +490,7 @@ if (typeof window !== "undefined") {
                     if (!r.ok) throw new Error("Error");
                     this.empresas = this.empresas.filter((e) => e.id !== id);
                     this.showToast("Empresa eliminada");
-                    // ensure numbers reflects the latest empresas after delete
+
                     this.numbers = this.empresas;
                 } catch (e) {
                     this.showToast("Error al eliminar empresa", "error");
@@ -539,7 +533,7 @@ if (typeof window !== "undefined") {
                         );
                     }
                 );
-                // Limpiar modal al cerrarse sin guardar
+
                 this.$watch("isEmpresaModalOpen", (open) => {
                     if (!open) {
                         this.resetForm();
@@ -556,7 +550,6 @@ if (typeof window !== "undefined") {
                 if (!this.ordenarPor) return;
                 const campo = this.ordenarPor;
                 if (campo === "fecha_registro") {
-                    // Ordenar por fecha más reciente primero (desc)
                     this.empresas.sort((a, b) => {
                         const ad = new Date(
                             a.raw?.fecha_registro || a.fecha_registro || 0
@@ -576,7 +569,7 @@ if (typeof window !== "undefined") {
                     return 0;
                 });
             },
-            // pagination methods
+
             paginatedEmpresas() {
                 return this.empresas.slice(
                     (this.currentPage - 1) * this.perPage,
@@ -797,7 +790,7 @@ if (typeof window !== "undefined") {
                     add("descripcion_empresa", "Máximo 255 caracteres.");
                 if (!this.formEmpresa.fecha_registro)
                     add("fecha_registro", "La fecha es obligatoria.");
-                // Validaciones de duplicados en cliente (rápidas). En update se excluye el propio id.
+
                 const excludeId = this.formEmpresa.id || null;
                 if (
                     this._isDuplicateLocal(

@@ -141,7 +141,7 @@ window.tipoVisitasApiHandlers = {
             const response = await fetch(
                 `/api/tipos-visita/${component.itemToEdit.id_tipo_visita_pk}`,
                 {
-                    method: "PUT", // Usar PUT para reemplazo completo, o PATCH si la API lo soporta para cambios parciales
+                    method: "PUT",
                     headers: this.authHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),

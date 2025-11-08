@@ -19,7 +19,7 @@ window.generosApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.generos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -131,7 +131,6 @@ window.generosApiHandlers = {
             );
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                // Mostrar errores de validación si existen
                 if (data && data.errors) {
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
