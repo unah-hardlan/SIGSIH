@@ -6,9 +6,7 @@ window.estadosSolicitudApiHandlers = {
         };
     },
 
-    /**
-     * Fetches the list of estados de solicitud from the API.
-     */
+
     async fetchEstadosSolicitud(component) {
         component.loadingEstadosSolicitud = true;
         try {
@@ -21,8 +19,8 @@ window.estadosSolicitudApiHandlers = {
             component.estadosSolicitud = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching estados de solicitud:", error);
             window.showToast?.("Error al cargar los estados", "error");
@@ -31,9 +29,7 @@ window.estadosSolicitudApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new estado de solicitud to the API.
-     */
+
     async submitEstadoSolicitud(component) {
         const nombreTrim = String(component.nombre || "").trim();
         const codigoTrim = String(component.codigo || "").trim();
@@ -99,9 +95,8 @@ window.estadosSolicitudApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing estado de solicitud via the API.
-     */
+
+
     async updateEstadoSolicitud(component) {
         if (!component.itemToEdit?.id_estado_solicitud_pk) return;
 
@@ -121,7 +116,7 @@ window.estadosSolicitudApiHandlers = {
                 (es) =>
                     es.nombre.toLowerCase() === nombreTrim.toLowerCase() &&
                     es.id_estado_solicitud_pk !==
-                        component.itemToEdit.id_estado_solicitud_pk
+                    component.itemToEdit.id_estado_solicitud_pk
             )
         ) {
             window.showToast?.("Ya existe otro estado con ese nombre", "error");
@@ -132,7 +127,7 @@ window.estadosSolicitudApiHandlers = {
                 (es) =>
                     es.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
                     es.id_estado_solicitud_pk !==
-                        component.itemToEdit.id_estado_solicitud_pk
+                    component.itemToEdit.id_estado_solicitud_pk
             )
         ) {
             window.showToast?.("Ya existe otro estado con ese código", "error");
@@ -175,9 +170,7 @@ window.estadosSolicitudApiHandlers = {
         }
     },
 
-    /**
-     * Deletes an estado de solicitud via the API.
-     */
+
     async deleteEstadoSolicitud(component) {
         if (!component.itemToDelete?.id_estado_solicitud_pk) return;
 

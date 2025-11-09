@@ -63,25 +63,25 @@ function createObjetosStore() {
     return {
         loading: false,
         error: "",
-        // listado y paginación
+
         items: [],
         meta: { page: 1, per_page: 10, total: 0, last_page: 1 },
         q: "",
-        tipoId: "", // id_tipo_objetos_fk
+        tipoId: "",
         perPage: 10,
         _abortCtrl: null,
         blocked: false,
 
-        // Variables de Paginación del lado del cliente
+
         allItems: [],
         filteredItems: [],
         totalFiltered: 0,
         currentPage: 1,
 
-        // catalogos
-        tipos: [], // [{id,nombre}]
 
-        // formularios / modales
+        tipos: [],
+
+
         isCreateOpen: false,
         isEditOpen: false,
         isDeleteOpen: false,
@@ -90,7 +90,7 @@ function createObjetosStore() {
             descripcion_objeto: "",
             id_tipo_objetos_fk: "",
         },
-        current: null, // objeto seleccionado para editar/eliminar
+        current: null,
 
         async init() {
             if (!hasConfiguracionAcceso()) {
@@ -123,7 +123,7 @@ function createObjetosStore() {
                     this.error =
                         "No tienes permisos para ver los catálogos de objetos.";
                     this.tipos = [];
-                } /* no bloquear UI principal */
+                }
             }
         },
 
@@ -149,7 +149,7 @@ function createObjetosStore() {
                         (o.descripcion_objeto || "").toLowerCase().includes(s)
                 );
             }
-            // filtro por tipo
+
             if (this.tipoId)
                 filtered = filtered.filter(
                     (o) =>
@@ -158,7 +158,7 @@ function createObjetosStore() {
                 );
             this.filteredItems = filtered;
             this.totalFiltered = filtered.length;
-            this.currentPage = 1; // reset to first page when filters change
+            this.currentPage = 1;
             this.updatePagination();
         },
 
@@ -220,7 +220,7 @@ function createObjetosStore() {
                 if (this._abortCtrl) {
                     try {
                         this._abortCtrl.abort();
-                    } catch (_) {}
+                    } catch (_) { }
                 }
                 this._abortCtrl = new AbortController();
                 const url = this.buildQuery(page);
@@ -266,10 +266,10 @@ function createObjetosStore() {
             if (!this.blocked) this.applyFiltersAndPagination();
         },
 
-        // opciones y helpers de tipos
+
         tipoOptions() {
             if (this.tipos && this.tipos.length) return this.tipos;
-            // intentar derivar de los items (si vienen con { tipo: {id,nombre} })
+
             const map = new Map();
             for (const it of this.items) {
                 const t = it && it.tipo;
@@ -283,7 +283,7 @@ function createObjetosStore() {
                 return Array.from(map.values()).sort(
                     (a, b) => Number(a.id) - Number(b.id)
                 );
-            // último recurso: solo ids
+
             const set = new Set();
             for (const it of this.items) {
                 if (it.id_tipo_objetos_fk != null)
@@ -294,12 +294,12 @@ function createObjetosStore() {
                 .map((id) => ({ id, nombre: `Tipo #${id}` }));
         },
         tipoNombre(id) {
-            // preferir catálogo si está cargado
+
             const t = (this.tipos || []).find(
                 (x) => String(x.id) === String(id)
             );
             if (t) return t.nombre;
-            // intentar hallar en los items actuales
+
             const fromItem = (this.items || [])
                 .map((it) => it.tipo)
                 .find((tt) => tt && String(tt.id) === String(id));
@@ -351,14 +351,14 @@ function createObjetosStore() {
                             "Objeto creado correctamente",
                             "success"
                         );
-                } catch (_) {}
+                } catch (_) { }
                 return res;
             } catch (e) {
                 this.error = parseErr(e);
                 try {
                     window.showToast &&
                         window.showToast("Error al crear el objeto", "error");
-                } catch (_) {}
+                } catch (_) { }
             } finally {
                 this.loading = false;
             }
@@ -387,7 +387,7 @@ function createObjetosStore() {
                 try {
                     window.showToast &&
                         window.showToast("Objeto actualizado", "success");
-                } catch (_) {}
+                } catch (_) { }
                 return res;
             } catch (e) {
                 this.error = parseErr(e);
@@ -397,7 +397,7 @@ function createObjetosStore() {
                             "Error al actualizar el objeto",
                             "error"
                         );
-                } catch (_) {}
+                } catch (_) { }
             } finally {
                 this.loading = false;
             }
@@ -427,7 +427,7 @@ function createObjetosStore() {
                 try {
                     window.showToast &&
                         window.showToast("Objeto eliminado", "success");
-                } catch (_) {}
+                } catch (_) { }
             } catch (e) {
                 this.error = parseErr(e);
                 try {
@@ -436,7 +436,7 @@ function createObjetosStore() {
                             "Error al eliminar el objeto",
                             "error"
                         );
-                } catch (_) {}
+                } catch (_) { }
             } finally {
                 this.loading = false;
             }
@@ -453,7 +453,7 @@ function createObjetosStore() {
                         await access.loadPermisosForRole(access.selectedRoleId);
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
         },
 
         _debounceTimer: null,

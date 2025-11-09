@@ -1,8 +1,6 @@
 
 window.estadosTicketsApiHandlers = {
-    /**
-     * @param {object} component
-     */
+
     async fetchEstadosTickets(component) {
         component.loadingEstadosTickets = true;
         try {
@@ -29,8 +27,8 @@ window.estadosTicketsApiHandlers = {
             component.estadosTickets = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching estados tickets:", error);
             window.showToast &&
@@ -40,9 +38,7 @@ window.estadosTicketsApiHandlers = {
         }
     },
 
-    /**
-     * @param {object} component
-     */
+
     async submitEstadoTicket(component) {
         const nombreTrim = String(component.nombre || "").trim();
         const codigoTrim = String(component.codigo || "").trim();
@@ -136,9 +132,7 @@ window.estadosTicketsApiHandlers = {
         }
     },
 
-    /**
-     * @param {object} component
-     */
+
     async updateEstadoTicket(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_estado_ticket_pk)
             return;
@@ -170,7 +164,7 @@ window.estadosTicketsApiHandlers = {
                 (et) =>
                     et.nombre.toLowerCase() === nombreTrim.toLowerCase() &&
                     et.id_estado_ticket_pk !==
-                        component.itemToEdit.id_estado_ticket_pk
+                    component.itemToEdit.id_estado_ticket_pk
             )
         ) {
             window.showToast &&
@@ -185,7 +179,7 @@ window.estadosTicketsApiHandlers = {
                 (et) =>
                     et.codigo.toLowerCase() === codigoTrim.toLowerCase() &&
                     et.id_estado_ticket_pk !==
-                        component.itemToEdit.id_estado_ticket_pk
+                    component.itemToEdit.id_estado_ticket_pk
             )
         ) {
             window.showToast &&
@@ -248,10 +242,7 @@ window.estadosTicketsApiHandlers = {
         }
     },
 
-    /**
-     
-     * @param {object} component 
-     */
+
     async deleteEstadoTicket(component) {
         if (
             !component.itemToDelete ||
