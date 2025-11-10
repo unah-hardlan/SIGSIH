@@ -59,9 +59,7 @@ use App\Models\EstadoOrdenServicio;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('auth:sanctum')->get('/user', [ProfileController::class, 'sanctumUser']);
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
@@ -77,13 +75,7 @@ Route::post('email-contacto/verificar-codigo', [\App\Http\Controllers\EmailVerif
 Route::post('email-contacto/verificar-estado', [\App\Http\Controllers\EmailVerificationController::class, 'verificarEstado']);
 
 // Get de genero para cliente
-Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', function () {
-    $items = \App\Models\Genero::select('id_genero_pk as id', 'genero')->orderBy('genero')->get();
-    return response()->json([
-        'data' => $items,
-        'meta' => ['count' => $items->count()]
-    ]);
-});
+Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', [\App\Http\Controllers\GeneroController::class, 'catalog']);
 
 
 // Protegidas con JWT + Auto Permission (Authorization: Bearer <token>)
@@ -181,20 +173,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
         ->withoutMiddleware('auto.permiso');
 
     // Catálogo: Estados de Orden de Servicio
-    Route::get('estados-orden-servicio', function () {
-        $items = EstadoOrdenServicio::select(
-            'id_estado_orden_servicio_pk as id',
-            'nombre',
-            'codigo'
-        )
-            ->orderBy('orden')
-            ->orderBy('nombre')
-            ->get();
-        return response()->json([
-            'data' => $items,
-            'meta' => ['count' => $items->count()],
-        ]);
-    });
+    Route::get('estados-orden-servicio', [OrdenServicioController::class, 'estadosCatalog']);
 
     // Rol único del usuario (FK directa)
     Route::get('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'rol']);
@@ -204,34 +183,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
 
     // Catálogo de Técnicos: personas vinculadas a usuarios con rol Técnico (rol principal o en tabla pivot)
-    Route::get('tecnicos', function () {
-        // Buscar rol técnico (match por 'tecn' case/acento-insensible en la medida posible)
-        $roles = \App\Models\Rol::query()
-            ->where('rol', 'like', '%tecn%')
-            ->get(['id_rol_pk', 'rol']);
-        if ($roles->isEmpty()) {
-            return response()->json(['data' => [], 'meta' => ['count' => 0]]);
-        }
-        $roleIds = $roles->pluck('id_rol_pk')->all();
-        // Usuarios con rol principal técnico
-        $userIdsPrimary = \App\Models\Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
-        // Usuarios con rol técnico en pivot N:M
-        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
-            ->whereIn('id_rol_fk', $roleIds)
-            ->pluck('id_usuario_fk')->all();
-        $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
-        if (empty($userIds)) {
-            return response()->json(['data' => [], 'meta' => ['count' => 0]]);
-        }
-        $personas = \App\Models\Persona::whereIn('id_usuario_fk', $userIds)
-            ->orderBy('primer_nombre')
-            ->orderBy('primer_apellido')
-            ->get(['id_persona_pk as id', 'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido', 'id_usuario_fk']);
-        return response()->json([
-            'data' => $personas,
-            'meta' => ['count' => $personas->count()],
-        ]);
-    })->withoutMiddleware('auto.permiso');
+    Route::get('tecnicos', [UsuarioController::class, 'tecnicosCatalog'])->withoutMiddleware('auto.permiso');
 
     // Dashboard datasets
     Route::get('dashboard/indicadores', [DashboardController::class, 'indicators']);

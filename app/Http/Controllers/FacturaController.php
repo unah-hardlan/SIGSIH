@@ -49,7 +49,7 @@ class FacturaController extends Controller
             $validated = $request->validated();
             Log::info('Validation passed', ['validated' => $validated]);
 
-            
+
             if (empty($validated['id_cai_fk'])) {
                 return response()->json([
                     'success' => false,
@@ -58,17 +58,17 @@ class FacturaController extends Controller
             }
 
             $factura = DB::transaction(function () use ($validated) {
-                
+
                 $cai = Cai::where('id_cai_pk', $validated['id_cai_fk'])
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                
+
                 if (!empty($cai->fecha_limite) && $cai->fecha_limite < now()->format('Y-m-d')) {
                     throw new \Exception('El CAI seleccionado está vencido (fecha límite superada).');
                 }
 
-                
+
                 $cai->loadMissing('estadoCai');
                 if ($cai->estadoCai) {
                     $estadoNombre = Str::lower(trim((string)($cai->estadoCai->nombre_estado_cai
@@ -77,19 +77,19 @@ class FacturaController extends Controller
                         ?? '')));
                     $estadoCodigo = Str::lower(trim((string)($cai->estadoCai->codigo ?? '')));
                     $esActivo = Str::contains($estadoNombre, 'activ') || Str::startsWith($estadoCodigo, 'act');
-                    
+
                     $esVencido = Str::contains($estadoNombre, 'vencid') || Str::contains($estadoCodigo, 'venc');
                     if (!$esActivo || $esVencido) {
                         throw new \Exception('El CAI seleccionado no está ACTIVO (estado actual: ' . ($cai->estadoCai->nombre ?? $estadoCodigo ?: 'desconocido') . ') y no puede usarse en facturas.');
                     }
                 }
 
-                
+
                 $parseRango = function (string $rango) {
                     $rango = (string) $rango;
-                    
+
                     $digits = preg_replace('/\D+/', '', $rango ?? '');
-                    
+
                     $digits = str_pad(substr($digits, -16), 16, '0', STR_PAD_LEFT);
                     $p1 = substr($digits, 0, 3);
                     $p2 = substr($digits, 3, 3);
@@ -101,12 +101,12 @@ class FacturaController extends Controller
                 [$i1, $i2, $i3, $ini] = $parseRango((string) $cai->rango_inicio);
                 [$f1, $f2, $f3, $fin] = $parseRango((string) $cai->rango_fin);
 
-                
+
                 $prefix = sprintf('%s-%s-%s-', $i1, $i2, $i3);
                 $startNum = (int) $ini;
                 $endNum = (int) $fin;
 
-                
+
                 $proximo = max(((int) $cai->consecutivo_actual) + 1, $startNum);
 
                 if ($proximo > $endNum) {
@@ -114,18 +114,18 @@ class FacturaController extends Controller
                 }
 
                 $payload = $validated;
-                
-                $payload['numero'] = 'TMP-'.now()->format('His').'-'.rand(1000, 9999); 
+
+                $payload['numero'] = 'TMP-' . now()->format('His') . '-' . rand(1000, 9999);
                 $payload['id_cai_fk'] = $cai->id_cai_pk;
 
-                
+
                 $payload['subtotal'] = isset($payload['subtotal']) ? (float)$payload['subtotal'] : 0.0;
                 $payload['impuesto'] = isset($payload['impuesto']) ? (float)$payload['impuesto'] : 0.0;
                 $payload['total'] = isset($payload['total']) ? (float)$payload['total'] : 0.0;
 
                 $factura = Factura::create($payload);
 
-                
+
                 try {
                     $fechaStr = $payload['fecha'] ?? ($factura->fecha ?? now()->format('Y-m-d'));
                     $fecha = Carbon::parse($fechaStr);
@@ -137,7 +137,7 @@ class FacturaController extends Controller
                 $factura->numero = $numeroFactura;
                 $factura->save();
 
-                
+
                 $cai->consecutivo_actual = $proximo;
                 $cai->save();
 
@@ -152,14 +152,14 @@ class FacturaController extends Controller
                 'data' => new FacturaResource($factura)
             ], 201);
         } catch (\Throwable $e) {
-            
+
             Log::error('Error al crear factura: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
-            
-            
+
+
             $message = $e->getMessage();
             if (str_contains($message, 'CAI') && (
-                str_contains($message, 'vencido') || 
-                str_contains($message, 'ACTIVO') || 
+                str_contains($message, 'vencido') ||
+                str_contains($message, 'ACTIVO') ||
                 str_contains($message, 'números disponibles')
             )) {
                 return response()->json([
@@ -167,7 +167,7 @@ class FacturaController extends Controller
                     'message' => $message
                 ], 422);
             }
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear la factura',
@@ -184,7 +184,7 @@ class FacturaController extends Controller
 
     public function update(UpdateFacturaRequest $request, Factura $factura)
     {
-        
+
         $validated = $request->validated();
         if (array_key_exists('id_cai_fk', $validated) && (int)$validated['id_cai_fk'] !== (int)$factura->id_cai_fk) {
             return response()->json([
@@ -206,10 +206,10 @@ class FacturaController extends Controller
 
     public function destroy(Factura $factura)
     {
-        
+
         if ($factura->detalles()->count() > 0) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'error' => 'No se puede eliminar la factura porque tiene detalles asociados. Elimine primero los detalles de la factura.'
             ], 422);
         }
@@ -218,7 +218,7 @@ class FacturaController extends Controller
         return response()->json(['success' => true, 'message' => 'Factura eliminada']);
     }
 
-    
+
     public function formatoFactura($id)
     {
         $factura = Factura::with([
@@ -241,14 +241,13 @@ class FacturaController extends Controller
 
         $fechaLimite = $this->calcularFechaLimite($factura);
 
-        return view('admin.formato-factura', compact(
-            'factura', 
-            'detalles', 
-            'datosCliente', 
-            'totales', 
-            'datosContacto', 
-            'fechaLimite'
-        ));
+        $viewData = array_merge([
+            'factura' => $factura,
+            'detalles' => $detalles,
+            'fechaLimite' => $fechaLimite,
+        ], $datosCliente, $totales, $datosContacto);
+
+        return view('admin.formato-factura', $viewData);
     }
 
     private function procesarDatosCliente($cliente)
@@ -289,7 +288,7 @@ class FacturaController extends Controller
     {
         $computedBaseSubtotal = 0.0;
         $computedTotalImpuesto = 0.0;
-        
+
         if (!empty($detalles) && is_iterable($detalles)) {
             foreach ($detalles as $d) {
                 $qty = (float) ($d->cantidad ?? $d->horas ?? 1);
@@ -308,7 +307,7 @@ class FacturaController extends Controller
             ? (float) $factura->subtotal
             : $computedBaseSubtotal;
 
-   
+
         if (isset($factura->total) && $factura->total !== null && (float) $factura->total > 0.0) {
             $facturaTotal = (float) $factura->total;
         } else {
@@ -318,7 +317,7 @@ class FacturaController extends Controller
             $facturaTotal = $facturaSubtotal + $impuestoFromFactura;
         }
 
-        
+
         if (isset($factura->impuesto) && $factura->impuesto !== null && (float) $factura->impuesto > 0.0) {
             $impuesto = (float) $factura->impuesto;
         } elseif ($computedTotalImpuesto > 0) {
@@ -336,10 +335,10 @@ class FacturaController extends Controller
     {
         $ag = optional($cliente->agencias->first());
         $agDireccion = optional($ag->direccion);
-        
+
         $telefono_fallback = '';
         $correo_fallback = '';
-        
+
         if ($cliente) {
             if (($cliente->tipo_cliente ?? null) === 'empresa' && $cliente->empresa) {
                 $telefono_fallback = $cliente->empresa->telefono ?? '';
@@ -361,10 +360,10 @@ class FacturaController extends Controller
             foreach ($contactos as $c) {
                 $tipo = strtolower(trim($c->tipo_contacto ?? ''));
                 $valor = $c->valor_contacto ?? '';
-                if (empty($telefono_fallback) && in_array($tipo, ['telefono','tel','phone','movil','mobile'])) {
+                if (empty($telefono_fallback) && in_array($tipo, ['telefono', 'tel', 'phone', 'movil', 'mobile'])) {
                     $telefono_fallback = $valor;
                 }
-                if (empty($correo_fallback) && in_array($tipo, ['email','correo','mail'])) {
+                if (empty($correo_fallback) && in_array($tipo, ['email', 'correo', 'mail'])) {
                     $correo_fallback = $valor;
                 }
             }
@@ -372,7 +371,7 @@ class FacturaController extends Controller
 
         $addr_cp = '';
         $cliente_direccion = '';
-        
+
         if ($cliente) {
             if (($cliente->tipo_cliente ?? null) === 'empresa' && $cliente->empresa) {
                 $cliente_direccion = $cliente->empresa->direccion ?? '';
@@ -422,7 +421,7 @@ class FacturaController extends Controller
 
         if (empty($contactoNombre)) {
             $contactos = $cliente->contactos ?? collect();
-            $preferKeys = ['nombre','contacto','representante','contacto_persona','contacto_nombre'];
+            $preferKeys = ['nombre', 'contacto', 'representante', 'contacto_persona', 'contacto_nombre'];
             foreach ($contactos as $c) {
                 $tipo = strtolower(trim($c->tipo_contacto ?? ''));
                 $valor = trim((string) ($c->valor_contacto ?? ''));
@@ -443,20 +442,20 @@ class FacturaController extends Controller
         }
 
         return compact(
-            'telefono_fallback', 
-            'correo_fallback', 
-            'addr_line1', 
-            'addr_colonia', 
-            'addr_cp', 
-            'addr_city', 
-            'addr_depto', 
+            'telefono_fallback',
+            'correo_fallback',
+            'addr_line1',
+            'addr_colonia',
+            'addr_cp',
+            'addr_city',
+            'addr_depto',
             'contactoNombre'
         );
     }
 
     private function calcularFechaLimite($factura)
     {
-        
+
         $fecha_limite = null;
         if (!empty($factura->fecha_limite_emision)) {
             $fecha_limite = $factura->fecha_limite_emision;
@@ -467,17 +466,17 @@ class FacturaController extends Controller
         } elseif (!empty(optional($factura->cai)->fecha_limite)) {
             $fecha_limite = optional($factura->cai)->fecha_limite;
         }
-        
+
         return $fecha_limite;
     }
 
-    
+
     public function getClientes()
     {
         try {
             $clientes = Cliente::with(['empresa', 'persona'])->get();
- 
-            
+
+
             $clientesValidos = $clientes->filter(function ($cliente) {
                 if ($cliente->tipo_cliente === 'empresa') {
                     return $cliente->empresa &&
@@ -495,7 +494,7 @@ class FacturaController extends Controller
                 if ($cliente->tipo_cliente === 'empresa' && $cliente->empresa) {
                     $nombre = $cliente->empresa->nombre_comercial ?? $cliente->empresa->razon_social ?? 'Empresa sin nombre';
                 } elseif ($cliente->type === 'persona' || $cliente->tipo_cliente === 'persona') {
-                   
+
                     $persona = $cliente->persona;
                     if ($persona instanceof \Illuminate\Database\Eloquent\Collection) {
                         $persona = $persona->first();
@@ -513,8 +512,7 @@ class FacturaController extends Controller
                 ];
             });
 
-            return response()->json($result->values()); 
-
+            return response()->json($result->values());
         } catch (\Exception $e) {
 
             return response()->json([

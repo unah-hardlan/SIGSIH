@@ -11,24 +11,24 @@ use Illuminate\Support\Str;
 
 class ConfiguracionAccesoReporteController extends Controller
 {
-    
+
     public function reporte(Request $request)
     {
-        $seccion = $request->input('seccion'); 
+        $seccion = $request->input('seccion');
         $fecha = $request->input('fecha', now()->format('d-M-Y'));
         $modulo = 'configuracion-acceso';
 
-        
+
         $q = $request->input('q');
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        
+
         $roles = collect();
         $objetos = collect();
         $usuarios = collect();
         $matriz = collect();
-        
+
         $permColumns = [
             ['field' => 'permiso_ver', 'label' => 'Ver'],
             ['field' => 'permiso_consultar', 'label' => 'Leer'],
@@ -44,7 +44,7 @@ class ConfiguracionAccesoReporteController extends Controller
             'objetosTotal' => Objeto::count(),
             'usuariosConRolFiltered' => 0,
             'usuariosConRolTotal' => Usuario::whereNotNull('id_rol_fk')->count(),
-            
+
             'permResumen' => [
                 'insercion' => 0,
                 'consultar' => 0,
@@ -130,7 +130,7 @@ class ConfiguracionAccesoReporteController extends Controller
             $stats['objetosFiltered'] = $stats['objetosTotal'];
             $stats['usuariosConRolFiltered'] = (clone $usuariosQ)->count();
         } elseif ($seccion === 'gestion') {
-            
+
             $rolId = (int)($request->input('rol_id') ?? $request->input('id_rol_fk'));
             if ($rolId) {
                 $rol = Rol::find($rolId);
@@ -139,7 +139,7 @@ class ConfiguracionAccesoReporteController extends Controller
                 $rol = Rol::where('rol', $rolName)->first();
             }
             if ($rol) {
-                
+
                 $SIDEBAR_ORDER = [
                     ['title' => 'Seguridad', 'items' => ['Usuarios', 'Parámetros', 'Parametros', 'Configuración de accesos', 'Configuracion de accesos']],
                     ['title' => 'Clientes', 'items' => ['Empresas', 'Cotizaciones', 'Solicitudes', 'Órdenes de Servicios', 'Ordenes de Servicios']],
@@ -213,7 +213,7 @@ class ConfiguracionAccesoReporteController extends Controller
                         if ($assigned->has($o->id_objetos_pk)) continue;
                         $n = $norm($o->nombre_objeto);
                         if ($labelOrder->contains($n)) {
-                            
+
                             if ($moduleObj && $o->id_objetos_pk === $moduleObj->id_objetos_pk) continue;
                             $rows->push($buildRow($o));
                             $assigned->put($o->id_objetos_pk, true);
@@ -227,7 +227,7 @@ class ConfiguracionAccesoReporteController extends Controller
                     }
                 }
 
-                
+
                 $rest = $objs->reject(fn($o) => $assigned->has($o->id_objetos_pk));
                 if ($rest->isNotEmpty()) {
                     $byTipo = $rest->groupBy(function ($o) {
@@ -243,7 +243,7 @@ class ConfiguracionAccesoReporteController extends Controller
                 }
 
                 $matriz = $mat;
-                
+
                 $stats['permResumen']['insercion'] = $matriz->where('permiso_insercion', true)->count();
                 $stats['permResumen']['consultar'] = $matriz->where('permiso_consultar', true)->count();
                 $stats['permResumen']['actualizar'] = $matriz->where('permiso_actualizar', true)->count();
@@ -255,14 +255,32 @@ class ConfiguracionAccesoReporteController extends Controller
                     return !empty($row['objeto']) && !$row['permiso_insercion'] && !$row['permiso_consultar'] && !$row['permiso_actualizar'] && !$row['permiso_eliminacion'];
                 })->count();
             } else {
-                
+
                 $matriz = collect();
             }
-            
+
             $stats['rolesFiltered'] = $stats['rolesTotal'];
             $stats['objetosFiltered'] = $stats['objetosTotal'];
             $stats['usuariosConRolFiltered'] = $stats['usuariosConRolTotal'];
         }
+
+        $section = $seccion ?? '';
+        $theme = [
+            'roles' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'num' => 'text-blue-700', 'label' => 'text-blue-600', 'labelText' => 'ROLES', 'value' => $stats['rolesFiltered'] ?? 0],
+            'objetos' => ['bg' => 'bg-green-50', 'border' => 'border-green-200', 'num' => 'text-green-700', 'label' => 'text-green-600', 'labelText' => 'OBJETOS DEL SISTEMA', 'value' => $stats['objetosFiltered'] ?? 0],
+            'asignar' => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'num' => 'text-orange-700', 'label' => 'text-orange-600', 'labelText' => 'USUARIOS CON ROLES', 'value' => $stats['usuariosConRolFiltered'] ?? 0],
+            'gestion' => ['bg' => 'bg-indigo-50', 'border' => 'border-indigo-200', 'num' => 'text-indigo-700', 'label' => 'text-indigo-600', 'labelText' => 'OBJETOS CON PERMISOS ASIGNADOS', 'value' => isset($matriz) ? max(($matriz->count() - ($stats['permResumen']['ninguno'] ?? 0)), 0) : 0],
+        ][$section] ?? ['bg' => 'bg-slate-50', 'border' => 'border-slate-200', 'num' => 'text-slate-700', 'label' => 'text-slate-600', 'labelText' => 'RESUMEN', 'value' => 0];
+
+        if (($seccion ?? '') === 'gestion' && isset($matriz)) {
+            $theme['value'] = collect($matriz)->filter(function ($r) {
+                return !empty($r['objeto']) && (
+                    !empty($r['permiso_insercion']) || !empty($r['permiso_consultar']) || !empty($r['permiso_actualizar']) || !empty($r['permiso_eliminacion'])
+                );
+            })->count();
+        }
+
+        $cols = 1 + count($permColumns ?? []);
 
         return view('admin.reporte-configuracion-accesos', compact(
             'fecha',
@@ -277,7 +295,9 @@ class ConfiguracionAccesoReporteController extends Controller
             'sort',
             'direction',
             'q',
-            'stats'
+            'stats',
+            'theme',
+            'cols'
         ));
     }
 }
