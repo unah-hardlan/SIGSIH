@@ -15,6 +15,15 @@ use Illuminate\Support\Facades\Log;
 
 class CotizacionController extends Controller
 {
+    /**
+     * Viewer HTML para detalle de cotización (Admin).
+     * Evita usar un controlador dedicado sólo para retornar una vista.
+     */
+    public function viewer()
+    {
+        return view('admin.detalle-cotizacion');
+    }
+
     public function index(Request $request)
     {
         $query = Cotizacion::query()->with(['cliente.empresa', 'cliente.personas', 'estado']);
@@ -23,7 +32,7 @@ class CotizacionController extends Controller
             $query->where('id_cliente_fk', $cliente);
         }
         if ($q = $request->input('q')) {
-            
+
             $query->where(function ($sub) use ($q) {
                 $sub->where('subtotal', 'like', "%$q%")
                     ->orWhere('total', 'like', "%$q%")
@@ -67,7 +76,7 @@ class CotizacionController extends Controller
         $cotizacion = Cotizacion::create($request->validated());
         $cotizacion->load(['cliente.empresa', 'cliente.personas', 'estado']);
 
-        
+
         try {
             $clienteId = $cotizacion->id_cliente_fk;
             if ($clienteId) {
@@ -80,7 +89,7 @@ class CotizacionController extends Controller
 
                 if (!empty($userIds)) {
                     $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
-                    
+
                     try {
                         $fechaFmt = \Carbon\Carbon::parse($cotizacion->fecha_cotizacion ?? now())->format('Ymd');
                     } catch (\Throwable $e) {
@@ -121,7 +130,7 @@ class CotizacionController extends Controller
 
     public function show($id)
     {
-        
+
         $cotizacion = Cotizacion::with(['cliente.empresa', 'cliente.personas', 'estado'])->find($id);
         if (!$cotizacion) return response()->json(['error' => 'Cotizacion no encontrada'], 404);
         return (new CotizacionResource($cotizacion))->response();
@@ -136,7 +145,7 @@ class CotizacionController extends Controller
         $cotizacion->update($validated);
         $cotizacion->load(['cliente.empresa', 'cliente.personas', 'estado']);
 
-        
+
         try {
             if (array_key_exists('id_estado_cotizacion_fk', $validated)) {
                 $newId = (int) $validated['id_estado_cotizacion_fk'];
@@ -173,7 +182,6 @@ class CotizacionController extends Controller
                                     try {
                                         $u->notify(new SystemNotification($payload));
                                     } catch (\Throwable $t) {
-                                        
                                     }
                                 }
                             }
@@ -185,13 +193,13 @@ class CotizacionController extends Controller
             Log::error('Error notifying client on cotizacion status change: ' . $e->getMessage());
         }
 
-        
+
         try {
             if (array_key_exists('id_estado_cotizacion_fk', $validated)) {
                 $newId = (int) $validated['id_estado_cotizacion_fk'];
                 if ((int)$oldEstado !== $newId) {
                     $estado = EstadoCotizacion::find($newId);
-                    
+
                     $tecUserIds = [];
                     $osId = $cotizacion->id_orden_servicio_fk ?: DB::table('tbl_orden_servicio')
                         ->where('id_cotizacion_fk', $cotizacion->getKey())
@@ -207,7 +215,7 @@ class CotizacionController extends Controller
                             if ($id) $tecUserIds[] = (int)$id;
                         }
                     }
-                    
+
                     if (empty($tecUserIds)) {
                         $rolIds = DB::table('tbl_ms_rol')
                             ->where(function ($q) {
@@ -258,7 +266,6 @@ class CotizacionController extends Controller
                                 try {
                                     $u->notify(new SystemNotification($payloadTec));
                                 } catch (\Throwable $t) {
-                                    
                                 }
                             }
                         }
@@ -266,7 +273,6 @@ class CotizacionController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            
         }
 
         return (new CotizacionResource($cotizacion))->response();

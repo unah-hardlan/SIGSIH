@@ -17,11 +17,11 @@ use Illuminate\Support\Facades\DB;
 
 class OrdenServicioController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         $query = OrdenServicio::with([
-            
+
             'solicitudServicio.cliente.empresa',
             'solicitudServicio.cliente.personas',
             'solicitudServicio.contacto',
@@ -31,7 +31,7 @@ class OrdenServicioController extends Controller
             'cotizacionGenerada',
         ]);
 
-        
+
         if ($request->has('id_solicitud_servicio_fk')) {
             $query->where('id_solicitud_servicio_fk', $request->id_solicitud_servicio_fk);
         }
@@ -43,7 +43,7 @@ class OrdenServicioController extends Controller
         if ($request->has('fecha_recepcion')) {
             $query->whereDate('fecha_recepcion', $request->fecha_recepcion);
         }
-        
+
         $clienteId = $request->input('cliente_id', $request->input('id_cliente_fk'));
         if (!empty($clienteId)) {
             $query->whereHas('solicitudServicio', function ($q) use ($clienteId) {
@@ -51,7 +51,7 @@ class OrdenServicioController extends Controller
             });
         }
 
-        
+
         $perPage = (int) $request->input('per_page', 15);
         $all = $request->boolean('all') || $perPage === -1;
         if ($all) {
@@ -62,7 +62,7 @@ class OrdenServicioController extends Controller
         return OrdenServicioResource::collection($ordenesServicio);
     }
 
-    
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -86,12 +86,12 @@ class OrdenServicioController extends Controller
         ]);
 
         $ordenServicio = OrdenServicio::create($validatedData);
-        
+
         try {
             $inputRepuestos = $request->input('repuestos', []);
             if (is_array($inputRepuestos) && count($inputRepuestos)) {
                 foreach ($inputRepuestos as $r) {
-                    
+
                     $prodId = $r['id_producto_fk'] ?? ($r['id_producto'] ?? null);
                     $cantidad = $r['cantidad'] ?? ($r['cant'] ?? 1);
                     if ($prodId) {
@@ -104,7 +104,6 @@ class OrdenServicioController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            
         }
         $ordenServicio->load([
             'solicitudServicio.cliente.empresa',
@@ -116,7 +115,7 @@ class OrdenServicioController extends Controller
             'cotizacionGenerada',
         ]);
 
-        
+
         try {
             $detalles = DetalleOrdenProducto::with('producto')
                 ->where('id_orden_servicio_fk', $ordenServicio->id_orden_servicio_pk)
@@ -134,10 +133,9 @@ class OrdenServicioController extends Controller
                 $ordenServicio->forceFill(['repuestos' => $repuestos])->saveQuietly();
             }
         } catch (\Throwable $e) {
-            
         }
 
-        
+
         try {
             $clienteId = $ordenServicio->solicitudServicio?->id_cliente_fk;
             if ($clienteId) {
@@ -175,7 +173,6 @@ class OrdenServicioController extends Controller
                         try {
                             $u->notify(new SystemNotification($payload));
                         } catch (\Throwable $t) {
-                            
                         }
                     }
                 }
@@ -187,7 +184,7 @@ class OrdenServicioController extends Controller
         return new OrdenServicioResource($ordenServicio);
     }
 
-    
+
     public function show($id)
     {
         $ordenServicio = OrdenServicio::with([
@@ -202,7 +199,7 @@ class OrdenServicioController extends Controller
         return new OrdenServicioResource($ordenServicio);
     }
 
-    
+
     public function update(Request $request, $id)
     {
         $ordenServicio = OrdenServicio::findOrFail($id);
@@ -227,7 +224,7 @@ class OrdenServicioController extends Controller
             'repuestos.*.cantidad' => 'required_with:repuestos|integer|min:1',
         ]);
 
-        
+
         $oldEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
         $ordenServicio->update($validatedData);
         $ordenServicio->load([
@@ -239,12 +236,12 @@ class OrdenServicioController extends Controller
             'cotizacion',
             'cotizacionGenerada',
         ]);
-        
-        
+
+
         try {
             $inputRepuestos = $request->input('repuestos', null);
             if (is_array($inputRepuestos)) {
-                
+
                 DetalleOrdenProducto::where('id_orden_servicio_fk', $ordenServicio->id_orden_servicio_pk)->delete();
                 foreach ($inputRepuestos as $r) {
                     $prodId = $r['id_producto_fk'] ?? ($r['id_producto'] ?? null);
@@ -259,10 +256,9 @@ class OrdenServicioController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            
         }
 
-        
+
         try {
             $detalles = DetalleOrdenProducto::with('producto')
                 ->where('id_orden_servicio_fk', $ordenServicio->id_orden_servicio_pk)
@@ -279,18 +275,17 @@ class OrdenServicioController extends Controller
 
                 $ordenServicio->forceFill(['repuestos' => $repuestos])->saveQuietly();
             } else {
-                
+
                 $ordenServicio->forceFill(['repuestos' => null])->saveQuietly();
             }
         } catch (\Throwable $e) {
-            
         }
 
-        
+
         try {
             $newEstadoId = $ordenServicio->id_estado_orden_servicio_fk;
             if (isset($validatedData['id_estado_orden_servicio_fk']) && $newEstadoId != $oldEstadoId) {
-                
+
                 $oldName = null;
                 try {
                     $oldName = \App\Models\EstadoOrdenServicio::find($oldEstadoId)?->nombre;
@@ -299,7 +294,7 @@ class OrdenServicioController extends Controller
                 }
                 $newName = $ordenServicio->estado?->nombre ?? null;
 
-                
+
                 $rols = Rol::where('rol', 'like', '%tecn%')->get();
                 $roleIds = $rols->pluck('id_rol_pk')->all();
                 $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
@@ -335,7 +330,7 @@ class OrdenServicioController extends Controller
             Log::error('Error sending orden servicio state-change notifications: ' . $e->getMessage());
         }
 
-        
+
         try {
             if (isset($validatedData['id_estado_orden_servicio_fk']) && $ordenServicio->estado) {
                 $isClosed = false;
@@ -344,12 +339,12 @@ class OrdenServicioController extends Controller
                 if (str_contains($nombreEstado, 'cerrad') || $codigoEstado === 'cer') {
                     $isClosed = true;
                 }
-                
+
                 if (!$isClosed) {
                     try {
                         $isClosed = (bool) \App\Models\EstadoOrdenServicio::where('id_estado_orden_servicio_pk', $ordenServicio->id_estado_orden_servicio_fk)
                             ->value('es_final');
-                    } catch (\Throwable $_) { 
+                    } catch (\Throwable $_) {
                     }
                 }
 
@@ -397,7 +392,7 @@ class OrdenServicioController extends Controller
         return new OrdenServicioResource($ordenServicio);
     }
 
-    
+
     public function destroy($id)
     {
         $ordenServicio = OrdenServicio::findOrFail($id);
@@ -408,7 +403,7 @@ class OrdenServicioController extends Controller
         ], Response::HTTP_OK);
     }
 
-    
+
     public function reporte($id)
     {
         $orden = OrdenServicio::with([
@@ -423,7 +418,7 @@ class OrdenServicioController extends Controller
         $cliente = $orden->solicitudServicio->cliente ?? null;
         $empresa = $cliente?->empresa ?? null;
 
-        
+
         $contactos = $cliente?->contactos ?? collect();
 
         $telefonos = $contactos->filter(function ($c) {
@@ -435,7 +430,7 @@ class OrdenServicioController extends Controller
             ?? $contactos->firstWhere('tipo_contacto', 'correo')?->valor_contacto
             ?? '';
 
-        
+
         $direccion = '';
         if ($empresa && isset($empresa->id_direccion_fk) && $empresa->id_direccion_fk) {
             $dir = Direccion::with('ciudad.departamento.pais')->find($empresa->id_direccion_fk);
@@ -450,14 +445,14 @@ class OrdenServicioController extends Controller
             if ($dirContacto) $direccion = $dirContacto->valor_contacto;
         }
 
-        
+
         $oficina = '';
         if ($empresa && isset($empresa->id_oficina_fk) && $empresa->id_oficina_fk) {
             $of = OficinaEmpresa::find($empresa->id_oficina_fk);
             if ($of) $oficina = $of->nombre_oficina;
         }
 
-        
+
         $ciudad = '';
         if (!empty($direccion) && isset($dir) && $dir?->ciudad) {
             $ciudad = $dir->ciudad->nombre_ciudad ?? '';
@@ -468,17 +463,30 @@ class OrdenServicioController extends Controller
             if ($ciContacto) $ciudad = $ciContacto->valor_contacto;
         }
 
-        
+
         return view('admin.formato-reporte', compact('orden', 'telefonos', 'correo', 'direccion', 'oficina', 'ciudad'));
     }
 
- 
+
     public function detalleOrden(Request $request, $id = null)
     {
         $ordenId = $id ?? $request->query('orden');
-        
+
         if (!$ordenId) {
-            return view('admin.detalle-orden');
+
+            return view('admin.detalle-orden', [
+                'clienteNombre' => '—',
+                'contactoNombre' => '—',
+                'telefonosVal' => '—',
+                'correoVal' => '—',
+                'direccionVal' => '—',
+                'oficinaVal' => '—',
+                'ciudadVal' => '—',
+                'firmaNombre' => '—',
+                'firmaCi' => '—',
+                'repuestosList' => [],
+                'calificacionServicio' => null,
+            ]);
         }
 
         try {
@@ -494,26 +502,49 @@ class OrdenServicioController extends Controller
             ])->find($ordenId);
 
             if (!$orden) {
-                return view('admin.detalle-orden');
+                return view('admin.detalle-orden', [
+                    'clienteNombre' => '—',
+                    'contactoNombre' => '—',
+                    'telefonosVal' => '—',
+                    'correoVal' => '—',
+                    'direccionVal' => '—',
+                    'oficinaVal' => '—',
+                    'ciudadVal' => '—',
+                    'firmaNombre' => '—',
+                    'firmaCi' => '—',
+                    'repuestosList' => [],
+                    'calificacionServicio' => null,
+                ]);
             }
 
             $datosCliente = $this->procesarDatosCliente($orden);
-            
+
             $repuestosList = $this->procesarRepuestos($orden);
-            
+
             $calificacionServicio = $orden->calificacion_servicio ?? null;
 
             return view('admin.detalle-orden', compact('orden') + $datosCliente + [
                 'repuestosList' => $repuestosList,
                 'calificacionServicio' => $calificacionServicio
             ]);
-
         } catch (\Throwable $e) {
-            return view('admin.detalle-orden');
+            return view('admin.detalle-orden', [
+                'clienteNombre' => '—',
+                'contactoNombre' => '—',
+                'telefonosVal' => '—',
+                'correoVal' => '—',
+                'direccionVal' => '—',
+                'oficinaVal' => '—',
+                'ciudadVal' => '—',
+                'firmaNombre' => '—',
+                'firmaCi' => '—',
+                'repuestosList' => [],
+                'calificacionServicio' => null,
+            ]);
         }
     }
 
-  
+
     private function procesarDatosCliente($orden)
     {
         $clienteNombre = data_get($orden, 'solicitudServicio.cliente.empresa.nombre_comercial')
@@ -552,10 +583,10 @@ class OrdenServicioController extends Controller
         $ubicacion = $this->procesarUbicacion($orden);
 
         $firmaNombre = $clienteNombre ?: '—';
-        $firmaCi = data_get($orden, 'solicitudServicio.cliente.empresa.rtn') 
-            ?: data_get($orden, 'solicitudServicio.cliente.personas.0.dni') 
-            ?: data_get($orden, 'solicitudServicio.cliente.personas.0.identificacion') 
-            ?: data_get($orden, 'solicitudServicio.cliente.personas.0.ci') 
+        $firmaCi = data_get($orden, 'solicitudServicio.cliente.empresa.rtn')
+            ?: data_get($orden, 'solicitudServicio.cliente.personas.0.dni')
+            ?: data_get($orden, 'solicitudServicio.cliente.personas.0.identificacion')
+            ?: data_get($orden, 'solicitudServicio.cliente.personas.0.ci')
             ?: '—';
 
         return [
@@ -575,7 +606,7 @@ class OrdenServicioController extends Controller
     {
         $contactoNombre = '—';
         $solContacto = data_get($orden, 'solicitudServicio.contacto', []);
-        
+
         if (!empty($solContacto)) {
             $nombreFromContacto = data_get($solContacto, 'nombre') ?: data_get($solContacto, 'valor_contacto');
             if ($nombreFromContacto && preg_match('/[A-Za-zÁÉÍÓÚáéíóúÑñ]/', (string) $nombreFromContacto)) {
@@ -616,45 +647,45 @@ class OrdenServicioController extends Controller
                 }
             }
         }
-        
+
         return $contactoNombre ?: '—';
     }
 
- 
+
     private function procesarTelefonos($orden)
     {
         $telefonosVal = '—';
         $ct = data_get($orden, 'solicitudServicio.cliente.contactos', []);
         $phones = [];
-        
+
         if (!empty($ct)) {
             foreach ($ct as $c) {
                 $tipo = strtolower(trim(data_get($c, 'tipo_contacto', '')));
                 $valor = data_get($c, 'valor_contacto', '');
-                if (in_array($tipo, ['tel','telefono','phone','movil','celular','whatsapp','wa'])) {
+                if (in_array($tipo, ['tel', 'telefono', 'phone', 'movil', 'celular', 'whatsapp', 'wa'])) {
                     if ($valor) $phones[] = $valor;
                 }
             }
             $phones = array_unique(array_filter($phones));
             if (count($phones)) $telefonosVal = implode(', ', $phones);
         }
-        
+
         return $telefonosVal;
     }
 
-    
+
     private function procesarCorreo($orden)
     {
         $correoVal = '—';
         $ct = data_get($orden, 'solicitudServicio.cliente.contactos', []);
-        
+
         if (!empty($ct)) {
             foreach ($ct as $c) {
                 $tipo = strtolower(trim(data_get($c, 'tipo_contacto', '')));
                 $valor = data_get($c, 'valor_contacto', '');
-                if (in_array($tipo, ['email','correo']) && $valor) { 
-                    $correoVal = $valor; 
-                    break; 
+                if (in_array($tipo, ['email', 'correo']) && $valor) {
+                    $correoVal = $valor;
+                    break;
                 }
             }
         }
@@ -664,14 +695,14 @@ class OrdenServicioController extends Controller
             if (!empty($personas)) {
                 foreach ($personas as $p) {
                     $mail = data_get($p, 'usuario.correo_electronico');
-                    if ($mail) { 
-                        $correoVal = $mail; 
-                        break; 
+                    if ($mail) {
+                        $correoVal = $mail;
+                        break;
                     }
                 }
             }
         }
-        
+
         return $correoVal;
     }
 
@@ -705,7 +736,7 @@ class OrdenServicioController extends Controller
     private function procesarRepuestos($orden)
     {
         $repuestosList = [];
-        
+
         try {
             if (!empty($orden->repuestos)) {
                 $tmp = is_array($orden->repuestos) ? $orden->repuestos : json_decode($orden->repuestos, true);
@@ -725,7 +756,19 @@ class OrdenServicioController extends Controller
         } catch (\Throwable $_) {
             $repuestosList = [];
         }
-        
+
         return $repuestosList;
+    }
+
+    /**
+     * Catálogo de estados de orden de servicio (antes CatalogosController::estadosOrdenServicio).
+     */
+    public function estadosCatalog()
+    {
+        $items = \App\Models\EstadoOrdenServicio::select('id_estado_orden_servicio_pk as id', 'nombre', 'codigo')
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get();
+        return response()->json(['data' => $items, 'meta' => ['count' => $items->count()]]);
     }
 }

@@ -7,13 +7,7 @@
 </head>
 
 <body>
-    @php
-    $cliente_nombre = $datosCliente['cliente_nombre'];
-    $cliente_direccion = $datosCliente['cliente_direccion'];
-    $cliente_telefono = $datosCliente['cliente_telefono'];
-    $cliente_correo = $datosCliente['cliente_correo'];
-    $cliente_contacto = $datosCliente['cliente_contacto'];
-    @endphp
+
 
     <div class="factura">
         <div class="print-button-container">
@@ -21,7 +15,7 @@
                 📄 Imprimir Factura
             </button>
         </div>
-        
+
         <div class="encabezado-completo">
             <div class="bloque-encabezado">
                 <div class="fila-superior">
@@ -56,8 +50,7 @@
                 <p><strong>Rango Autorizado:</strong><br>{{ $factura->cai->rango_inicio ?? '—' }}
                     al<br>{{ $factura->cai->rango_fin ?? '—' }}</p>
 
-                @php
-                @endphp
+
                 <p><strong>Fecha límite de emisión:</strong><br>
                     {{ $fechaLimite ? (\Carbon\Carbon::parse($fechaLimite)->format('d/m/Y')) : '—' }}
                 </p>
@@ -65,22 +58,9 @@
         </div>
 
 
-        @php
-        $facturaSubtotal = $totales['facturaSubtotal'];
-        $impuesto = $totales['impuesto'];
-        $facturaTotal = $totales['facturaTotal'];
-        @endphp
+
         <div class="bloque-cliente">
-            @php
-            $telefono_fallback = $datosContacto['telefono_fallback'];
-            $correo_fallback = $datosContacto['correo_fallback'];
-            $addr_line1 = $datosContacto['addr_line1'];
-            $addr_colonia = $datosContacto['addr_colonia'];
-            $addr_cp = $datosContacto['addr_cp'];
-            $addr_city = $datosContacto['addr_city'];
-            $addr_depto = $datosContacto['addr_depto'];
-            $contactoNombre = $datosContacto['contactoNombre'];
-            @endphp
+
             <div class="col">
                 <p><strong>Facturar a:</strong> {{ $cliente_nombre }}</p>
                 <p><strong>Dirección:</strong> {{ $addr_line1 ?: '—' }}</p>
@@ -151,200 +131,200 @@
     </div>
 
     <style>
-    @page {
-        size: letter;
-        margin: 20mm;
-    }
-
-    @media print {
-        .print-button-container {
-            display: none !important;
+        @page {
+            size: letter;
+            margin: 20mm;
         }
-    }
 
-    body {
-        font-family: Arial, sans-serif;
-        background: #f1f1f1;
-        padding: 30px 0;
-    }
+        @media print {
+            .print-button-container {
+                display: none !important;
+            }
+        }
 
-    .print-button-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f1f1;
+            padding: 30px 0;
+        }
 
-    .print-btn {
-        background-color: #1e40af;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
+        .print-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
 
-    .print-btn:hover {
-        background-color: #1d4ed8;
-    }
+        .print-btn {
+            background-color: #1e40af;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
 
-    .factura {
-        width: 820px;
-        margin: auto;
-        background: white;
-        padding: 28px 34px;
-        min-height: 1100px;
-        box-sizing: border-box;
-    }
+        .print-btn:hover {
+            background-color: #1d4ed8;
+        }
 
-    .encabezado-completo {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0;
-    }
+        .factura {
+            width: 820px;
+            margin: auto;
+            background: white;
+            padding: 28px 34px;
+            min-height: 1100px;
+            box-sizing: border-box;
+        }
 
-    .bloque-encabezado {
-        width: 65%;
-        background: #4a4a4a;
-        color: white;
-        padding: 20px;
-        font-size: 13px;
-    }
+        .encabezado-completo {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0;
+        }
 
-    .bloque-encabezado h1 {
-        margin: 5px 0 10px;
-    }
+        .bloque-encabezado {
+            width: 65%;
+            background: #4a4a4a;
+            color: white;
+            padding: 20px;
+            font-size: 13px;
+        }
 
-    .bloque-encabezado .titulo {
-        font-size: 13px;
-        text-transform: uppercase;
-        opacity: 0.85;
-    }
+        .bloque-encabezado h1 {
+            margin: 5px 0 10px;
+        }
 
-    .bloque-factura {
-        width: 34%;
-        background: #e30613;
-        color: white;
-        padding: 20px;
-        font-size: 13px;
-    }
+        .bloque-encabezado .titulo {
+            font-size: 13px;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
 
-    .bloque-factura h3 {
-        margin: 0 0 8px;
-        font-size: 16px;
-    }
+        .bloque-factura {
+            width: 34%;
+            background: #e30613;
+            color: white;
+            padding: 20px;
+            font-size: 13px;
+        }
 
-    .bloque-cliente {
-        background: #f9f9f9;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        font-size: 14px;
-    }
+        .bloque-factura h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+        }
 
-    .bloque-cliente .col {
-        width: 30%;
-    }
+        .bloque-cliente {
+            background: #f9f9f9;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
 
-    .bloque-cliente .letras {
-        width: 35%;
-        text-align: right;
-    }
+        .bloque-cliente .col {
+            width: 30%;
+        }
 
-    .detalle {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-        margin-top: 0;
-    }
+        .bloque-cliente .letras {
+            width: 35%;
+            text-align: right;
+        }
 
-    .detalle thead {
-        background: #e30613;
-        color: white;
-    }
+        .detalle {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 0;
+        }
 
-    .detalle th,
-    .detalle td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-    }
+        .detalle thead {
+            background: #e30613;
+            color: white;
+        }
 
-    .totales {
-        width: 100%;
-        padding: 30px 0;
-        text-align: right;
-        font-size: 14px;
-    }
+        .detalle th,
+        .detalle td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
 
-    .totales p {
-        margin: 5px 30px 5px 0;
-    }
+        .totales {
+            width: 100%;
+            padding: 30px 0;
+            text-align: right;
+            font-size: 14px;
+        }
 
-    .totales span {
-        display: inline-block;
-        min-width: 120px;
-        text-align: right;
-    }
+        .totales p {
+            margin: 5px 30px 5px 0;
+        }
 
-    .totales .total {
-        font-weight: bold;
-        font-size: 15px;
-        border-top: 1px solid black;
-        padding-top: 5px;
-    }
+        .totales span {
+            display: inline-block;
+            min-width: 120px;
+            text-align: right;
+        }
 
-    .encabezado-completo {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-    }
+        .totales .total {
+            font-weight: bold;
+            font-size: 15px;
+            border-top: 1px solid black;
+            padding-top: 5px;
+        }
 
-    .bloque-encabezado {
-        width: 65%;
-        background: #4a4a4a;
-        color: white;
-        padding: 20px;
-        font-size: 13px;
-        box-sizing: border-box;
-    }
+        .encabezado-completo {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
 
-    .bloque-factura {
-        width: 35%;
-        background: #e30613;
-        color: white;
-        padding: 20px;
-        font-size: 13px;
-        box-sizing: border-box;
-    }
+        .bloque-encabezado {
+            width: 65%;
+            background: #4a4a4a;
+            color: white;
+            padding: 20px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
 
-    .fila-superior {
-        margin-bottom: 10px;
-    }
+        .bloque-factura {
+            width: 35%;
+            background: #e30613;
+            color: white;
+            padding: 20px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
 
-    .fila-superior h1 {
-        margin: 0 0 10px;
-    }
+        .fila-superior {
+            margin-bottom: 10px;
+        }
 
-    .titulo {
-        font-size: 13px;
-        text-transform: uppercase;
-        opacity: 0.85;
-        margin: 0;
-    }
+        .fila-superior h1 {
+            margin: 0 0 10px;
+        }
 
-    .fila-inferior {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-    }
+        .titulo {
+            font-size: 13px;
+            text-transform: uppercase;
+            opacity: 0.85;
+            margin: 0;
+        }
 
-    .fila-inferior .col {
-        width: 32%;
-    }
+        .fila-inferior {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .fila-inferior .col {
+            width: 32%;
+        }
     </style>
 </body>
 

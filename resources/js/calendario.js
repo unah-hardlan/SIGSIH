@@ -1,7 +1,4 @@
-/*
-  Handlers for Calendario module: fetch events by month range, create/update/delete events,
-  and fetch catalogs (agencias, clientes, estados-calendario, tipos-mantenimiento, ordenes-servicio optional).
-*/
+
 
 (function initCalendarioApiHandlers() {
     if (window.calendarioApiHandlers) return;
@@ -108,8 +105,8 @@
                 component.catalogOrdenesServicio = Array.isArray(ordenes)
                     ? ordenes
                     : Array.isArray(ordenes?.data)
-                    ? ordenes.data
-                    : [];
+                        ? ordenes.data
+                        : [];
             } finally {
                 component.loadingCatalogs = false;
             }
@@ -141,8 +138,8 @@
                 const list = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                    ? data
-                    : [];
+                        ? data
+                        : [];
                 const clientes = (list || []).map((c) => ({
                     id: c.id,
                     nombre: c.nombre,
@@ -201,8 +198,8 @@
                 const list = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                    ? data
-                    : [];
+                        ? data
+                        : [];
                 const os = (list || [])
                     .map((o) => ({
                         id:
@@ -269,22 +266,21 @@
                         ev.estado?.nombre || ev.estado?.codigo || "";
                     const agenciaNombre = ev.agencia?.nombre_agencia || "";
                     const direccion = ev.agencia?.direccion
-                        ? `${ev.agencia.direccion?.direccion || ""}, ${
-                              ev.agencia.direccion?.ciudad?.ciudad || ""
-                          }`
+                        ? `${ev.agencia.direccion?.direccion || ""}, ${ev.agencia.direccion?.ciudad?.ciudad || ""
+                        }`
                         : "";
                     const clienteNombre =
                         ev.cliente_nombre ||
                         ev.cliente?.nombre ||
                         (ev.cliente
                             ? [
-                                  ev.cliente.primer_nombre,
-                                  ev.cliente.segundo_nombre,
-                                  ev.cliente.primer_apellido,
-                                  ev.cliente.segundo_apellido,
-                              ]
-                                  .filter(Boolean)
-                                  .join(" ")
+                                ev.cliente.primer_nombre,
+                                ev.cliente.segundo_nombre,
+                                ev.cliente.primer_apellido,
+                                ev.cliente.segundo_apellido,
+                            ]
+                                .filter(Boolean)
+                                .join(" ")
                             : "");
                     const tipoNombre =
                         ev.tipo_mantenimiento?.tipo_mantenimiento || "";

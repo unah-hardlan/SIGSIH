@@ -28,7 +28,7 @@ export function notificationsDropdown() {
                 this.items = json.data || [];
                 this.unread = json.unread || 0;
             } catch (_) {
-                /* noop */
+
             }
         },
         async markAll() {
@@ -44,7 +44,7 @@ export function notificationsDropdown() {
                     read_at: new Date().toISOString(),
                 }));
                 this.unread = 0;
-            } catch (_) {}
+            } catch (_) { }
         },
 
         deleteModalOpen: false,
@@ -110,7 +110,7 @@ export function notificationsDropdown() {
                         this.open = false;
                         return;
                     }
-                } catch (_) {}
+                } catch (_) { }
                 window.location.href = n.url;
             }
         },

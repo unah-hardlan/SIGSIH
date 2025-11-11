@@ -8,6 +8,7 @@
         position: relative;
         overflow: hidden;
     }
+
     .glass-noise::before {
         content: '';
         position: absolute;
@@ -20,26 +21,32 @@
         pointer-events: none;
         z-index: 0;
     }
-    .glass-noise > * {
+
+    .glass-noise>* {
         position: relative;
         z-index: 1;
     }
+
     @media print {
-      .no-print {
-        display: none !important;
-      }
-      body, .page-container {
-        background: #fff !important;
-      }
-      .report-card {
-        box-shadow: none !important;
-        border: 1px solid #e5e7eb !important;
-        background: #fff !important;
-        backdrop-filter: none !important;
-      }
-       .glass-noise::before {
-        display: none;
-      }
+        .no-print {
+            display: none !important;
+        }
+
+        body,
+        .page-container {
+            background: #fff !important;
+        }
+
+        .report-card {
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb !important;
+            background: #fff !important;
+            backdrop-filter: none !important;
+        }
+
+        .glass-noise::before {
+            display: none;
+        }
     }
 </style>
 @endpush
@@ -51,45 +58,8 @@
 
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="Proyecto BAC" :logoSize="96" />
 
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
-            @php
-                $totalIngresos = $total_ingresos ?? 'L. 4,787.00';
-                $totalGastos = $total_gastos ?? 'L. 0.00';
-                $balance = $balance ?? 'L. 4,787.00';
-
-                $cards = [
-                    [
-                        'title' => 'Ingresos Totales',
-                        'value' => $totalIngresos,
-                        'icon' => 'fa-arrow-up',
-                        'sub' => 'Total recibido en el período',
-                        'borderColor' => 'border-emerald-500',
-                        'textColor' => 'text-emerald-600',
-                        'bgColor' => 'bg-emerald-50',
-                    ],
-                    [
-                        'title' => 'Gastos Totales',
-                        'value' => $totalGastos,
-                        'icon' => 'fa-arrow-down',
-                        'sub' => 'Total gastado en el período',
-                        'borderColor' => 'border-rose-500',
-                        'textColor' => 'text-rose-600',
-                        'bgColor' => 'bg-rose-50',
-                    ],
-                    [
-                        'title' => 'Balance Neto',
-                        'value' => $balance,
-                        'icon' => 'fa-scale-balanced',
-                        'sub' => 'Diferencia entre ingresos y gastos',
-                        'borderColor' => 'border-blue-500',
-                        'textColor' => 'text-blue-600',
-                        'bgColor' => 'bg-blue-50',
-                    ],
-                ];
-            @endphp
-
-            @foreach ($cards as $card)
-                {{-- El fondo se aplica con una clase personalizada `bg-pattern-dots` --}}
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
+                @foreach ($cards ?? [] as $card)
                 <article class="relative bg-white bg-pattern-dots rounded-lg shadow-sm border-l-4 {{ $card['borderColor'] }} p-6 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between">
@@ -104,9 +74,9 @@
                     </div>
                     <p class="text-xs text-gray-400 mt-2">{{ $card['sub'] }}</p>
                 </article>
-            @endforeach
-        </section>
-           
+                @endforeach
+            </section>
+
             <div class="space-y-10">
                 <section class="avoid-break">
                     <div class="border-b border-gray-200 pb-4 mb-5">
@@ -172,7 +142,7 @@
                     </div>
                 </section>
             </div>
-            
+
             <section class="grid grid-cols-1 md:grid-cols-2 gap-6 avoid-break mt-12 pt-8 border-t border-black/5">
                 <div class="relative glass-noise bg-white/60 backdrop-blur-xl border border-black/5 rounded-lg p-4">
                     <h3 class="text-center text-sm font-medium text-gray-600 mb-4">Desglose de Ingresos</h3>
@@ -200,25 +170,80 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.color = '#374151';
 
         const incomeData = {
-          labels: ["Pago inicial", "Segundo pago"],
-          datasets: [{ data: [15000, 14230], backgroundColor: "rgba(16, 185, 129, 0.7)", borderColor: "rgb(16, 185, 129)", borderWidth: 2, borderRadius: 4, }],
+            labels: ["Pago inicial", "Segundo pago"],
+            datasets: [{
+                data: [15000, 14230],
+                backgroundColor: "rgba(16, 185, 129, 0.7)",
+                borderColor: "rgb(16, 185, 129)",
+                borderWidth: 2,
+                borderRadius: 4,
+            }],
         };
         const expenseData = {
-          labels: ["Compra de software", "Alquiler de oficina"],
-          datasets: [{ data: [5500, 10483], backgroundColor: "rgba(225, 29, 72, 0.7)", borderColor: "rgb(225, 29, 72)", borderWidth: 2, borderRadius: 4, }],
+            labels: ["Compra de software", "Alquiler de oficina"],
+            datasets: [{
+                data: [5500, 10483],
+                backgroundColor: "rgba(225, 29, 72, 0.7)",
+                borderColor: "rgb(225, 29, 72)",
+                borderWidth: 2,
+                borderRadius: 4,
+            }],
         };
         const options = {
-          scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7280' } }, x: { grid: { display: false }, ticks: { color: '#6b7280' } } },
-          plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1f2937', titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 12 }, padding: 12, cornerRadius: 8, displayColors: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    },
+                    ticks: {
+                        color: '#6b7280'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#6b7280'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 12
+                    },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            },
         };
 
-        new Chart(document.getElementById("incomeChart"), { type: "bar", data: incomeData, options });
-        new Chart(document.getElementById("expenseChart"), { type: "bar", data: expenseData, options });
+        new Chart(document.getElementById("incomeChart"), {
+            type: "bar",
+            data: incomeData,
+            options
+        });
+        new Chart(document.getElementById("expenseChart"), {
+            type: "bar",
+            data: expenseData,
+            options
+        });
     });
 </script>
 @endpush

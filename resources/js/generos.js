@@ -6,10 +6,7 @@ window.generosApiHandlers = {
         };
     },
 
-    /**
-     * Fetches the list of generos from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async fetchGeneros(component) {
         component.loadingGeneros = true;
         try {
@@ -23,8 +20,8 @@ window.generosApiHandlers = {
             component.generos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching generos:", error);
             window.showToast &&
@@ -34,10 +31,7 @@ window.generosApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new genero to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async submitGenero(component) {
         const generoTrim = String(component.genero || "").trim();
         if (!generoTrim) {
@@ -84,10 +78,7 @@ window.generosApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing genero via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async updateGenero(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_genero_pk) return;
         const generoTrim = String(component.itemToEdit.genero || "").trim();
@@ -159,10 +150,7 @@ window.generosApiHandlers = {
         }
     },
 
-    /**
-     * Deletes a genero via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async deleteGenero(component) {
         if (!component.itemToDelete || !component.itemToDelete.id_genero_pk)
             return;

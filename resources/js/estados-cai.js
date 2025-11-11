@@ -1,8 +1,5 @@
 window.estadosCaiApiHandlers = {
-    /**
-     * Fetches the list of estados CAI from the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async fetchEstadosCai(component) {
         component.loadingEstadosCai = true;
         try {
@@ -16,8 +13,8 @@ window.estadosCaiApiHandlers = {
             component.estadosCai = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching estados cai:", error);
             window.showToast &&
@@ -27,10 +24,7 @@ window.estadosCaiApiHandlers = {
         }
     },
 
-    /**
-     * Submits a new estado CAI to the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async submitEstadoCai(component) {
         const nombreTrim = String(component.nombre_estado_cai || "").trim();
         const descripcionTrim = String(
@@ -94,10 +88,7 @@ window.estadosCaiApiHandlers = {
         }
     },
 
-    /**
-     * Updates an existing estado CAI via the API.
-     * @param {object} component - The Alpine.js component's `this` context.
-     */
+
     async updateEstadoCai(component) {
         if (!component.itemToEdit || !component.itemToEdit.id_estado_cai_pk)
             return;
@@ -125,9 +116,9 @@ window.estadosCaiApiHandlers = {
             component.estadosCai.some(
                 (ec) =>
                     ec.nombre_estado_cai.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     ec.id_estado_cai_pk !==
-                        component.itemToEdit.id_estado_cai_pk
+                    component.itemToEdit.id_estado_cai_pk
             )
         ) {
             window.showToast &&

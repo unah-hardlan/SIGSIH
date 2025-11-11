@@ -31,10 +31,10 @@ class ProfileController extends Controller
         }
         return $id;
     }
-    
+
     public function me()
     {
-        
+
         $user = Auth::user();
         $uid = $this->getUserId($user);
         $persona = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
@@ -50,18 +50,26 @@ class ProfileController extends Controller
         ]);
     }
 
-    
+    /**
+     * Endpoint Sanctum /api/user consolidado (reemplaza Api\SanctumUserController).
+     */
+    public function sanctumUser(Request $request)
+    {
+        return $request->user();
+    }
+
+
     public function savePersona(Request $request)
     {
         $user = Auth::user();
         $uid = $this->getUserId($user);
         $existing = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
 
-        
-    
-    $format = Parametro::where('parametro', 'FORMATO DNI')->value('valor');
-    $dniRegex = $this->buildDniRegex($format);
-    $dniRule = 'regex:/' . $dniRegex . '/';
+
+
+        $format = Parametro::where('parametro', 'FORMATO DNI')->value('valor');
+        $dniRegex = $this->buildDniRegex($format);
+        $dniRule = 'regex:/' . $dniRegex . '/';
 
         $rules = [
             'primer_nombre' => 'required|string|max:50',
@@ -73,13 +81,13 @@ class ProfileController extends Controller
         ];
 
         if ($existing) {
-            
+
             $rules['dni'] .= '|unique:tbl_persona,dni,' . $existing->getKey() . ',id_persona_pk';
         } else {
             $rules['dni'] .= '|unique:tbl_persona,dni';
         }
 
-        
+
         $messages = [
             'dni.regex' => 'El DNI no cumple con el formato.' . (is_string($format) && trim($format) !== '' && !preg_match('/^\\d+$/', trim($format)) ? ' El formato es: ' . trim($format) . '.' : ''),
             'dni.unique' => 'El DNI ya está registrado.',
@@ -103,12 +111,12 @@ class ProfileController extends Controller
             array_merge($validated, ['id_usuario_fk' => $uid])
         );
 
-        
+
         if ($uid) {
             Usuario::where('id_usuario_pk', $uid)->update(['primer_ingreso' => 0]);
         }
 
-        
+
         try {
             $nombre = trim(($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? ''));
             $accion = $existing ? 'Actualizar' : 'Insertar';
@@ -161,12 +169,12 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $persona->avatar_path = $path;
         $persona->save();
-        
+
         if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
         }
 
-        
+
         try {
             $this->bitacora->logFor('Perfil', 'Actualizar', 'Actualizó foto de perfil', $uid);
         } catch (\Throwable $e) {
@@ -193,7 +201,7 @@ class ProfileController extends Controller
         }
         $persona->avatar_path = null;
         $persona->save();
-        
+
         try {
             $this->bitacora->logFor('Perfil', 'Actualizar', 'Eliminó foto de perfil', $uid);
         } catch (\Throwable $e) {
@@ -218,7 +226,7 @@ class ProfileController extends Controller
 
         $user = Auth::user();
         $uid = $this->getUserId($user);
-        
+
         $currentHash = is_object($user) && isset($user->contrasena)
             ? $user->contrasena
             : ($uid ? Usuario::where('id_usuario_pk', $uid)->value('contrasena') : null);
@@ -234,7 +242,7 @@ class ProfileController extends Controller
                     $currentOk = false;
                 }
             } else {
-                
+
                 $currentOk = hash_equals($hashStr, (string) $request->current_password);
             }
         }
@@ -246,7 +254,7 @@ class ProfileController extends Controller
             ], 400);
         }
 
-        
+
         $N = 5;
         $hashes = $uid
             ? HistorialContrasena::where('id_usuario_fk', $uid)
@@ -257,7 +265,9 @@ class ProfileController extends Controller
             : collect();
 
         foreach ($hashes as $hash) {
-            if (!is_string($hash) || $hash === '') { continue; }
+            if (!is_string($hash) || $hash === '') {
+                continue;
+            }
             $hashStr = (string) $hash;
             $isKnownHash = preg_match('/^\$(2y|argon2id|argon2i)\$/', $hashStr) === 1;
             $reused = false;
@@ -265,10 +275,10 @@ class ProfileController extends Controller
                 try {
                     $reused = Hash::check($request->password, $hashStr);
                 } catch (\Throwable $e) {
-                    $reused = false; 
+                    $reused = false;
                 }
             } else {
-                
+
                 $reused = hash_equals($hashStr, (string) $request->password);
             }
             if ($reused) {
@@ -279,12 +289,12 @@ class ProfileController extends Controller
             }
         }
 
-        
+
         $hashed = Hash::make($request->password);
         if ($uid) {
             Usuario::where('id_usuario_pk', $uid)->update(['contrasena' => $hashed]);
 
-            
+
             try {
                 HistorialContrasena::create([
                     'contrasena' => $hashed,
@@ -293,7 +303,7 @@ class ProfileController extends Controller
                     'fecha_creacion' => now(),
                 ]);
 
-                
+
                 $idsToKeep = HistorialContrasena::where('id_usuario_fk', $uid)
                     ->orderByDesc('fecha_creacion')
                     ->orderByDesc('id_hist_pk')
@@ -306,7 +316,7 @@ class ProfileController extends Controller
             }
         }
 
-        
+
         try {
             $this->bitacora->logFor('Perfil', 'Actualizar', 'Cambio de contraseña', $uid);
         } catch (\Throwable $e) {

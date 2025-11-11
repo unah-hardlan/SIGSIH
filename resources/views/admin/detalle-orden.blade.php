@@ -10,7 +10,6 @@
 
 </head>
 
-
 <style>
     @media print {
         .no-print {
@@ -110,19 +109,6 @@
 
         </div>
 
-        @php
-        $clienteNombre = $clienteNombre ?? '—';
-        $contactoNombre = $contactoNombre ?? '—';
-        $telefonosVal = $telefonosVal ?? '—';
-        $correoVal = $correoVal ?? '—';
-        $direccionVal = $direccionVal ?? '—';
-        $oficinaVal = $oficinaVal ?? '—';
-        $ciudadVal = $ciudadVal ?? '—';
-        $firmaNombre = $firmaNombre ?? '—';
-        $firmaCi = $firmaCi ?? '—';
-        $repuestosList = $repuestosList ?? [];
-        $calificacionServicio = $calificacionServicio ?? null;
-        @endphp
 
         <table style="width: 100%; border-collapse: collapse;">
             <tbody>
@@ -298,8 +284,7 @@
     </div>
 
     <div class="no-print" style="text-align: center; margin: 20px 0;">
-        <button onclick="window.print()"
-            style="
+        <button onclick="window.print()" style="
                 background-color: #1e40af;
                 color: white;
                 padding: 8px 16px;
@@ -307,8 +292,7 @@
                 border-radius: 4px;
                 font-size: 14px;
                 cursor: pointer;
-            "
-        >
+            ">
             Generar PDF
         </button>
     </div>
@@ -324,7 +308,7 @@
                 return;
             }
             const $ = (id) => document.getElementById(id);
-          
+
             const setText = (id, value, options = {}) => {
                 const el = $(id);
                 if (!el) return;
@@ -447,7 +431,7 @@
                     setText('desc-acf', data.diagnostico_tecnico || '');
                     setText('actividad', data.observaciones || '');
 
-                   
+
                     setText('firma-cliente-nombre', clienteNombre || '', {
                         skipEmpty: true
                     });
@@ -474,8 +458,7 @@
                             if (!current || current === '—') {
                                 if (si) si.checked = false;
                                 if (no) no.checked = true;
-                            } else {
-                            }
+                            } else {}
                         } catch (e) {
                             if (si) si.checked = false;
                             if (no) no.checked = true;

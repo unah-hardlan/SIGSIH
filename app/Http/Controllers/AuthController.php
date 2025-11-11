@@ -32,24 +32,71 @@ class AuthController extends Controller
 {
     public function __construct(private AuthService $authService, private BitacoraService $bitacora) {}
 
+    /**
+     * Punto de entrada raíz dinámico según el rol del usuario autenticado.
+     * Sustituye a AuthRedirectController::home().
+     */
+    public function home(Request $request)
+    {
+        return $this->redirectForUser();
+    }
+
+    /**
+     * Redirección utilizada luego de un login efectuado desde el frontend.
+     * Sustituye a AuthRedirectController::postAuth().
+     */
+    public function postAuth(Request $request)
+    {
+        return $this->redirectForUser();
+    }
+
+    /**
+     * Render de la vista de login (antes LoginViewController).
+     */
+    public function showLoginView()
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Lógica de decisión de destino post‑auth. Centralizada aquí para evitar
+     * múltiples controladores pequeños orientados sólo a redirecciones.
+     */
+    private function redirectForUser()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        $rolNombre = strtolower($user->rol->rol ?? '');
+        if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
+            $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+            if (!$persona || empty($persona->primer_nombre) || empty($persona->primer_apellido) || empty($persona->dni) || empty($persona->id_genero_fk)) {
+                return redirect()->route('cliente.configurar-perfil');
+            }
+            return redirect()->route('cliente.perfil');
+        }
+        return redirect()->route('admin.dashboard');
+    }
+
     public function login(LoginRequest $request): JsonResponse
     {
         $data = $request->validated();
-        
+
         $usuario = strtoupper(trim($data['usuario']));
         $password = $data['contrasena'];
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $password)) {
             return response()->json(['error' => 'Usuario/contraseña inválidos'], 401);
         }
-        
+
         $cred = $this->authService->verifyCredentialsOnly($usuario, $password);
         if (isset($cred['error'])) {
             return response()->json(['error' => $cred['error']], $cred['code']);
         }
-        
+
         $user = $cred['user'];
 
-        
+
         $requireVerify = (bool) (\App\Models\Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? \App\Models\Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
@@ -61,7 +108,7 @@ class AuthController extends Controller
             ], 403);
         }
 
-        
+
         if ($user->two_factor_enabled) {
             $challengeId = (string) \Illuminate\Support\Str::uuid();
             Cache::put('2fa:challenge:' . $challengeId, $user->getKey(), now()->addMinutes(5));
@@ -75,25 +122,25 @@ class AuthController extends Controller
                 ->cookie('2fa_challenge', $challengeId, 5, '/', null, $secure, true, false, $sameSite);
         }
 
-        
+
         $result = $this->authService->attempt($usuario, $password);
         if (isset($result['error'])) {
             return response()->json(['error' => $result['error']], $result['code']);
         }
-        
+
         try {
             $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null);
         } catch (\Throwable $e) {
         }
-        
+
         $token = $result['token'] ?? null;
         $payload = $result;
         unset($payload['token']);
-        
+
         try {
             $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
             if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
-                
+
                 $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
 
                 if (
@@ -111,7 +158,7 @@ class AuthController extends Controller
                 $payload['redirect_url'] = route('admin.dashboard');
             }
         } catch (\Throwable $e) {
-            
+
             $payload['redirect_url'] = route('admin.dashboard');
         }
         $response = response()->json($payload, 200);
@@ -125,7 +172,7 @@ class AuthController extends Controller
 
     public function logout(): \Illuminate\Http\Response|JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        
+
         $userId = null;
         $tokenId = null;
         try {
@@ -138,7 +185,7 @@ class AuthController extends Controller
             }
         } catch (\Throwable $e) {
         }
-        
+
         try {
             if ($userId && $tokenId) {
                 $sessionsKey = 'user_sessions:' . $userId;
@@ -197,7 +244,7 @@ class AuthController extends Controller
         $usuario->primer_ingreso = 1;
         $usuario->save();
 
-        
+
         try {
             Cliente::firstOrCreate(
                 ['id_cliente_pk' => $usuario->id_usuario_pk],
@@ -208,10 +255,9 @@ class AuthController extends Controller
                 ]
             );
         } catch (\Throwable $e) {
-            
         }
 
-        
+
         try {
             $adminRoleId = Rol::where('rol', 'Administrador')->value('id_rol_pk');
             if ($adminRoleId) {
@@ -233,10 +279,9 @@ class AuthController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            
         }
 
-        
+
         $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
@@ -251,7 +296,7 @@ class AuthController extends Controller
             return response()->json(['status' => 'verification_sent'], 201);
         }
 
-        
+
         $tokenResult = $this->authService->tokenForUser($usuario);
         if (isset($tokenResult['error'])) {
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
@@ -269,12 +314,12 @@ class AuthController extends Controller
         return $response;
     }
 
-    
+
     public function resendVerification(Request $request): JsonResponse
     {
         $request->validate(['email' => 'required|email']);
         $email = strtolower($request->input('email'));
-        
+
         $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
@@ -283,7 +328,7 @@ class AuthController extends Controller
             return response()->json(['status' => 'already_verified']);
         }
 
-        
+
         $cooldownMinutes = $this->getParametroInt([
             'AUTH.VERIFY_EMAIL.COOLDOWN_MINUTES',
             'auth.verify_email.cooldown_minutes',
@@ -293,7 +338,7 @@ class AuthController extends Controller
             'auth.verify_email.max_per_day',
         ], 5);
 
-        
+
         if ($cooldownMinutes > 0 && $user->email_verification_sent_at) {
             $nextAllowed = \Illuminate\Support\Carbon::parse($user->email_verification_sent_at)->addMinutes($cooldownMinutes);
             if (now()->lt($nextAllowed)) {
@@ -306,7 +351,7 @@ class AuthController extends Controller
             }
         }
 
-        
+
         $rateLimiterKey = null;
         $rateLimiterTtl = 60 * 60 * 24;
         if ($maxPerDay > 0) {
@@ -321,7 +366,7 @@ class AuthController extends Controller
             }
         }
 
-        
+
         $user->email_verification_token = bin2hex(random_bytes(20));
         $user->email_verification_sent_at = now();
         $user->save();
@@ -340,10 +385,10 @@ class AuthController extends Controller
         ]);
     }
 
-    
+
     public function verifyEmail(Request $request)
     {
-        
+
         if (!($request->expectsJson() || $request->wantsJson())) {
             return redirect()->route('verify.email.page', [
                 'token' => $request->query('token'),
@@ -352,7 +397,7 @@ class AuthController extends Controller
         }
         $request->validate(['token' => 'required|string', 'email' => 'required|email']);
         $email = strtolower($request->input('email'));
-        
+
         $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
         if (!$user) return response()->json(['message' => 'Usuario no encontrado'], 404);
         if ($user->hasVerifiedEmail()) return response()->json(['status' => 'already_verified']);
@@ -363,7 +408,7 @@ class AuthController extends Controller
         return response()->json(['status' => 'verified']);
     }
 
-    
+
     public function verifyEmailPage(Request $request)
     {
         $status = 'error';
@@ -373,11 +418,11 @@ class AuthController extends Controller
         $token = (string) $request->query('token', '');
         $email = strtolower((string) $request->query('email', ''));
         if ($token === '' || $email === '') {
-            
+
             return redirect()->route('login');
         }
 
-        
+
         $user = \App\Models\Usuario::whereRaw('LOWER(correo_electronico) = ?', [$email])->first();
         if (!$user) {
             return view('auth.verify-email', [
@@ -403,7 +448,7 @@ class AuthController extends Controller
             ]);
         }
 
-        
+
         $user->markEmailAsVerified();
         return view('auth.verify-email', [
             'status'  => 'verified',
@@ -465,7 +510,7 @@ class AuthController extends Controller
             'AUTH.PASSWORD_RESET.COOLDOWN_MINUTES',
             'auth.password_reset.cooldown_minutes'
         ], 5);
-        $maxPerDay = 0; 
+        $maxPerDay = 0;
         $expireMinutes = $this->getParametroInt([
             'AUTH.PASSWORD_RESET.EXPIRE_MINUTES',
             'auth.password_reset.expire_minutes'
@@ -476,7 +521,7 @@ class AuthController extends Controller
         }
 
         if ($cooldownMinutes > 0) {
-            
+
             $cooldownMinutes = min(25, max(1, $cooldownMinutes));
             config(['auth.passwords.users.throttle' => $cooldownMinutes * 60]);
         }
@@ -509,9 +554,9 @@ class AuthController extends Controller
         $rateLimiterTtl = 60 * 60 * 24;
 
         if ($maxPerDay > 0) {
-            
         }
-        
+
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
         $broker = Password::broker();
 
         try {
@@ -569,9 +614,11 @@ class AuthController extends Controller
                 'message' => 'El token de recuperación no es válido o ha expirado.'
             ], 400);
         }
-        
+
         $broker = Password::broker();
 
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker();
         if (!$broker->tokenExists($usuario, $data['token'])) {
             return response()->json([
                 'message' => 'El token de recuperación no es válido o ha expirado.'
@@ -608,11 +655,11 @@ class AuthController extends Controller
             }
         }
 
-        
-        
+
+
         $usuario->contrasena = $data['password'];
         $usuario->primer_ingreso = 0;
-        
+
         $usuario->estado_usuario = 'ACTIVO';
         $usuario->save();
 
@@ -636,13 +683,14 @@ class AuthController extends Controller
                 ->delete();
         } catch (\Throwable $e) {
         }
+        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        $broker = Password::broker();
         $broker->deleteToken($usuario);
 
-        
+
         try {
             cache()->forget('login_attempts:' . $usuario->getKey());
         } catch (\Throwable $e) {
-            
         }
 
         try {

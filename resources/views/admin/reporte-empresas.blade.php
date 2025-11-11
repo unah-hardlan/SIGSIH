@@ -9,20 +9,7 @@
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="EMPRESAS" :logoSize="96" />
 
             <h2 class="text-xl nunito-bold text-gray-800 mb-2 text-center">Listado de Empresas</h2>
-            @php
-            $empresas = $empresas ?? collect();
-            @endphp
 
-            @php
-            $ordenLabelMap = [
-            'nombre_empresa' => 'nombre (comercial)',
-            'estado_empresa' => 'estado',
-            'fecha_registro' => 'fecha_registro (desc por defecto)'
-            ];
-            $ordenKey = (isset($ordenarPor) && is_string($ordenarPor) && $ordenarPor !== '') ? $ordenarPor : null;
-            $ordenLabel = $ordenKey ? ($ordenLabelMap[$ordenKey] ?? str_replace('_',' ', $ordenKey)) : 'fecha_registro
-            (desc)';
-            @endphp
             <div class="text-xs text-gray-600 mb-4 space-y-1 nunito-regular">
                 <div><span class="font-semibold">Búsqueda:</span> {{ $search ? e($search) : '—' }}</div>
                 <div><span class="font-semibold">Estado:</span> {{ $estadoEmpresa ? ucfirst($estadoEmpresa) : 'Todos' }}

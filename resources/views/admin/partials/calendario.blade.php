@@ -373,14 +373,17 @@
                                                                  'bg-emerald-100/70 dark:bg-emerald-800/40 text-emerald-700 dark:text-emerald-200 ring-emerald-300/60 dark:ring-emerald-500/40': event.estado==='Realizado',
                                                                  'bg-rose-100/70 dark:bg-rose-800/40 text-rose-700 dark:text-rose-200 ring-rose-300/60 dark:ring-rose-500/40': event.estado==='Cancelado'
                                                               }" x-text="event.hora"></span>
-                                                        @perm(['Gestión de Calendario','Gestion de Calendario'], 'eliminacion')
+                                                        @perm(['Gestión de Calendario','Gestion de Calendario'],
+                                                        'eliminacion')
                                                         <button @click.stop="openDelete(event)"
                                                             class="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 flex-shrink-0"
                                                             title="Eliminar">
                                                             <i class="fas fa-trash-alt"></i>
                                                         </button>
                                                         @else
-                                                        <span class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 cursor-not-allowed flex-shrink-0" title="Sin permiso para eliminar">
+                                                        <span
+                                                            class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 cursor-not-allowed flex-shrink-0"
+                                                            title="Sin permiso para eliminar">
                                                             <i class="fas fa-trash-alt"></i>
                                                         </span>
                                                         @endperm
@@ -426,8 +429,13 @@
                             class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center nunito-regular"
                             @click="isCancelModalOpen = true"><i class="fas fa-ban mr-2"></i>Cancelar</button>
                         @else
-                        <button class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded flex items-center nunito-regular cursor-not-allowed" disabled title="Sin permiso para editar"><i class="fas fa-edit mr-2"></i>Editar</button>
-                        <button class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded flex items-center nunito-regular cursor-not-allowed" disabled title="Sin permiso para actualizar"><i class="fas fa-ban mr-2"></i>Cancelar</button>
+                        <button
+                            class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded flex items-center nunito-regular cursor-not-allowed"
+                            disabled title="Sin permiso para editar"><i class="fas fa-edit mr-2"></i>Editar</button>
+                        <button
+                            class="bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded flex items-center nunito-regular cursor-not-allowed"
+                            disabled title="Sin permiso para actualizar"><i
+                                class="fas fa-ban mr-2"></i>Cancelar</button>
                         @endperm
                     </div>
                 </div>
@@ -437,7 +445,8 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
-                        <select x-model.number="formEvento.id_agencias_fk" required @change="formEvento._touched.agencia = true"
+                        <select x-model.number="formEvento.id_agencias_fk" required
+                            @change="formEvento._touched.agencia = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.agencia && !formEvento.id_agencias_fk ? 'border-red-500' : ''">
                             <option value="" disabled>Seleccione...</option>
@@ -445,13 +454,15 @@
                                 <option :value="a.id_agencias_pk" x-text="a.nombre_agencia"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.agencia && !formEvento.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.agencia && !formEvento.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                         <select x-model.number="formEvento.id_cliente_fk" required
-                            :disabled="!formEvento.id_agencias_fk"
-                            class="border rounded px-3 py-2 w-full nunito-regular">
+                            @change="formEvento._touched.cliente = true" :disabled="!formEvento.id_agencias_fk"
+                            class="border rounded px-3 py-2 w-full nunito-regular"
+                            :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'border-red-500' : ''">
                             <option value="" disabled x-show="!formEvento.id_agencias_fk">Seleccione una agencia primero
                             </option>
                             <option value="" disabled x-show="formEvento.id_agencias_fk">Seleccione...</option>
@@ -474,19 +485,13 @@
                                 Cargando clientes...
                             </p>
                         </template>
-                        <select x-model.number="formEvento.id_cliente_fk" required @change="formEvento._touched.cliente = true"
-                            class="border rounded px-3 py-2 w-full nunito-regular"
-                            :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'border-red-500' : ''">
-                            <option value="" disabled>Seleccione...</option>
-                            <template x-for="c in catalogClientes" :key="c.id">
-                                <option :value="c.id" x-text="c.nombre"></option>
-                            </template>
-                        </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
-                        <select x-model.number="formEvento.id_tipo_mantenimiento_fk" required @change="formEvento._touched.tipo = true"
+                        <select x-model.number="formEvento.id_tipo_mantenimiento_fk" required
+                            @change="formEvento._touched.tipo = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.tipo && !formEvento.id_tipo_mantenimiento_fk ? 'border-red-500' : ''">
                             <option value="" disabled>Seleccione...</option>
@@ -494,17 +499,20 @@
                                 <option :value="t.id_tipo_mantenimiento_pk" x-text="t.tipo_mantenimiento"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.tipo && !formEvento.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.tipo && !formEvento.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Fecha y hora</label>
-                        <input type="datetime-local" x-model="formEvento.fecha" required @input="formEvento._touched.fecha = true" @blur="formEvento._touched.fecha = true"
+                        <input type="datetime-local" x-model="formEvento.fecha" required
+                            @input="formEvento._touched.fecha = true" @blur="formEvento._touched.fecha = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.fecha && !formEvento.fecha ? 'border-red-500' : ''" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
-                        <select x-model.number="formEvento.id_estado_calendario_fk" required @change="formEvento._touched.estado = true"
+                        <select x-model.number="formEvento.id_estado_calendario_fk" required
+                            @change="formEvento._touched.estado = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.estado && !formEvento.id_estado_calendario_fk ? 'border-red-500' : ''">
                             <option value="" disabled>Seleccione...</option>
@@ -512,13 +520,15 @@
                                 <option :value="e.id_estado_calendario_pk" x-text="e.nombre"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.estado && !formEvento.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.estado && !formEvento.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                         <select x-model.number="formEvento.id_orden_servicio_fk" required
-                            :disabled="!formEvento.id_cliente_fk"
-                            class="border rounded px-3 py-2 w-full nunito-regular">
+                            @change="formEvento._touched.orden = true" :disabled="!formEvento.id_cliente_fk"
+                            class="border rounded px-3 py-2 w-full nunito-regular"
+                            :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'border-red-500' : ''">
                             <option value="" disabled x-show="!formEvento.id_cliente_fk">Seleccione un cliente primero
                             </option>
                             <option value="" disabled x-show="formEvento.id_cliente_fk">Seleccione una orden...</option>
@@ -543,33 +553,32 @@
                                 Cargando órdenes de servicio...
                             </p>
                         </template>
-                        <select x-model.number="formEvento.id_orden_servicio_fk" required @change="formEvento._touched.orden = true"
-                            class="border rounded px-3 py-2 w-full nunito-regular"
-                            :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'border-red-500' : ''">
-                            <option value="" disabled>Seleccione una orden...</option>
-                            <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                                <option :value="os.id_orden_servicio_pk"
-                                    x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
-                                </option>
-                            </template>
-                        </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                        <input type="text" x-model="formEvento.descripcion_calendario" maxlength="200" required @input="formEvento._touched.descripcion = true" @blur="formEvento._touched.descripcion = true"
+                        <input type="text" x-model="formEvento.descripcion_calendario" maxlength="200" required
+                            @input="formEvento._touched.descripcion = true"
+                            @blur="formEvento._touched.descripcion = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.descripcion && (formEvento.descripcion_calendario === '' || formEvento.descripcion_calendario.length >= 200) ? 'border-red-500' : ''"
                             placeholder="Descripción del evento" />
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.descripcion && (formEvento.descripcion_calendario === '' || formEvento.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido. Máximo 200 caracteres.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.descripcion && (formEvento.descripcion_calendario === '' || formEvento.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido.
+                            Máximo 200 caracteres.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium nunito-bold">Observaciones</label>
-                        <textarea x-model="formEvento.observaciones_calendario" maxlength="500" required @input="formEvento._touched.observaciones = true" @blur="formEvento._touched.observaciones = true"
+                        <textarea x-model="formEvento.observaciones_calendario" maxlength="500" required
+                            @input="formEvento._touched.observaciones = true"
+                            @blur="formEvento._touched.observaciones = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.observaciones && (formEvento.observaciones_calendario === '' || formEvento.observaciones_calendario.length >= 500) ? 'border-red-500' : ''"
                             placeholder="Notas u observaciones"></textarea>
-                        <small class="block text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.observaciones && (formEvento.observaciones_calendario === '' || formEvento.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                        <small class="block text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.observaciones && (formEvento.observaciones_calendario === '' || formEvento.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido.
+                            Máximo 500 caracteres.</small>
                     </div>
                 </div>
                 <div
@@ -585,7 +594,8 @@
                     x-init="$watch('selectedEvent', (ev) => { if(!ev) return; formEvento = { fecha: (ev.raw?.fecha||'').replace(' ','T').slice(0,16), descripcion_calendario: ev.raw?.descripcion_calendario||'', observaciones_calendario: ev.raw?.observaciones_calendario||'', id_estado_calendario_fk: ev.raw?.id_estado_calendario_fk||'', id_agencias_fk: ev.raw?.id_agencias_fk||'', id_orden_servicio_fk: ev.raw?.id_orden_servicio_fk||'', id_tipo_mantenimiento_fk: ev.raw?.id_tipo_mantenimiento_fk||'', id_cliente_fk: ev.raw?.id_cliente_fk||'' }; })">
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
-                        <select x-model.number="formEvento.id_agencias_fk" required @change="formEvento._touched.agencia = true"
+                        <select x-model.number="formEvento.id_agencias_fk" required
+                            @change="formEvento._touched.agencia = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.agencia && !formEvento.id_agencias_fk ? 'border-red-500' : ''">
                             <option value="" disabled>Seleccione...</option>
@@ -593,13 +603,15 @@
                                 <option :value="a.id_agencias_pk" x-text="a.nombre_agencia"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.agencia && !formEvento.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.agencia && !formEvento.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                         <select x-model.number="formEvento.id_cliente_fk" required
-                            :disabled="!formEvento.id_agencias_fk"
-                            class="border rounded px-3 py-2 w-full nunito-regular">
+                            @change="formEvento._touched.cliente = true" :disabled="!formEvento.id_agencias_fk"
+                            class="border rounded px-3 py-2 w-full nunito-regular"
+                            :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'border-red-500' : ''">
                             <option value="" disabled x-show="!formEvento.id_agencias_fk">Seleccione una agencia primero
                             </option>
                             <option value="" disabled x-show="formEvento.id_agencias_fk">Seleccione...</option>
@@ -622,19 +634,13 @@
                                 Cargando clientes...
                             </p>
                         </template>
-                        <select x-model.number="formEvento.id_cliente_fk" required @change="formEvento._touched.cliente = true"
-                            class="border rounded px-3 py-2 w-full nunito-regular"
-                            :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'border-red-500' : ''">
-                            <option value="" disabled>Seleccione...</option>
-                            <template x-for="c in catalogClientes" :key="c.id">
-                                <option :value="c.id" x-text="c.nombre"></option>
-                            </template>
-                        </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.cliente && !formEvento.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
-                        <select x-model.number="formEvento.id_tipo_mantenimiento_fk" required @change="formEvento._touched.tipo = true"
+                        <select x-model.number="formEvento.id_tipo_mantenimiento_fk" required
+                            @change="formEvento._touched.tipo = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.tipo && !formEvento.id_tipo_mantenimiento_fk ? 'border-red-500' : ''">
                             <option value="" disabled>Seleccione...</option>
@@ -642,17 +648,20 @@
                                 <option :value="t.id_tipo_mantenimiento_pk" x-text="t.tipo_mantenimiento"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.tipo && !formEvento.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.tipo && !formEvento.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Fecha y hora</label>
-                        <input type="datetime-local" x-model="formEvento.fecha" required @input="formEvento._touched.fecha = true" @blur="formEvento._touched.fecha = true"
+                        <input type="datetime-local" x-model="formEvento.fecha" required
+                            @input="formEvento._touched.fecha = true" @blur="formEvento._touched.fecha = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.fecha && !formEvento.fecha ? 'border-red-500' : ''" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
-                        <select x-model.number="formEvento.id_estado_calendario_fk" required @change="formEvento._touched.estado = true"
+                        <select x-model.number="formEvento.id_estado_calendario_fk" required
+                            @change="formEvento._touched.estado = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.estado && !formEvento.id_estado_calendario_fk ? 'border-red-500' : ''">
                             <option value="" disabled>Seleccione...</option>
@@ -660,13 +669,15 @@
                                 <option :value="e.id_estado_calendario_pk" x-text="e.nombre"></option>
                             </template>
                         </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.estado && !formEvento.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.estado && !formEvento.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                         <select x-model.number="formEvento.id_orden_servicio_fk" required
-                            :disabled="!formEvento.id_cliente_fk"
-                            class="border rounded px-3 py-2 w-full nunito-regular">
+                            @change="formEvento._touched.orden = true" :disabled="!formEvento.id_cliente_fk"
+                            class="border rounded px-3 py-2 w-full nunito-regular"
+                            :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'border-red-500' : ''">
                             <option value="" disabled x-show="!formEvento.id_cliente_fk">Seleccione un cliente primero
                             </option>
                             <option value="" disabled x-show="formEvento.id_cliente_fk">Seleccione una orden...</option>
@@ -691,31 +702,30 @@
                                 Cargando órdenes de servicio...
                             </p>
                         </template>
-                        <select x-model.number="formEvento.id_orden_servicio_fk" required @change="formEvento._touched.orden = true"
-                            class="border rounded px-3 py-2 w-full nunito-regular"
-                            :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'border-red-500' : ''">
-                            <option value="" disabled>Seleccione una orden...</option>
-                            <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                                <option :value="os.id_orden_servicio_pk"
-                                    x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
-                                </option>
-                            </template>
-                        </select>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.orden && !formEvento.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                        <input type="text" x-model="formEvento.descripcion_calendario" maxlength="200" required @input="formEvento._touched.descripcion = true" @blur="formEvento._touched.descripcion = true"
+                        <input type="text" x-model="formEvento.descripcion_calendario" maxlength="200" required
+                            @input="formEvento._touched.descripcion = true"
+                            @blur="formEvento._touched.descripcion = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.descripcion && (formEvento.descripcion_calendario === '' || formEvento.descripcion_calendario.length >= 200) ? 'border-red-500' : ''" />
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.descripcion && (formEvento.descripcion_calendario === '' || formEvento.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido. Máximo 200 caracteres.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.descripcion && (formEvento.descripcion_calendario === '' || formEvento.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido.
+                            Máximo 200 caracteres.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Observaciones</label>
-                        <textarea x-model="formEvento.observaciones_calendario" maxlength="500" required @input="formEvento._touched.observaciones = true" @blur="formEvento._touched.observaciones = true"
+                        <textarea x-model="formEvento.observaciones_calendario" maxlength="500" required
+                            @input="formEvento._touched.observaciones = true"
+                            @blur="formEvento._touched.observaciones = true"
                             class="border rounded px-3 py-2 w-full nunito-regular"
                             :class="formEvento._touched && formEvento._touched.observaciones && (formEvento.observaciones_calendario === '' || formEvento.observaciones_calendario.length >= 500) ? 'border-red-500' : ''"></textarea>
-                        <small class="block mt-1 text-sm text-gray-500" :class="formEvento._touched && formEvento._touched.observaciones && (formEvento.observaciones_calendario === '' || formEvento.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                        <small class="block mt-1 text-sm text-gray-500"
+                            :class="formEvento._touched && formEvento._touched.observaciones && (formEvento.observaciones_calendario === '' || formEvento.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido.
+                            Máximo 500 caracteres.</small>
                     </div>
                 </div>
                 <div
@@ -830,7 +840,9 @@
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             @else
-                            <button class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1" disabled title="Sin permiso para editar">
+                            <button
+                                class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1"
+                                disabled title="Sin permiso para editar">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             @endperm
@@ -841,7 +853,9 @@
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                             @else
-                            <button class="bg-red-600/50 text-white px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1" disabled title="Sin permiso para eliminar">
+                            <button
+                                class="bg-red-600/50 text-white px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1"
+                                disabled title="Sin permiso para eliminar">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                             @endperm
@@ -1022,7 +1036,8 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
-                    <select x-model.number="formEventoLista.id_agencias_fk" required @change="formEventoLista._touched.agencia = true"
+                    <select x-model.number="formEventoLista.id_agencias_fk" required
+                        @change="formEventoLista._touched.agencia = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.agencia && !formEventoLista.id_agencias_fk ? 'border-red-500' : ''">
                         <option value="" disabled>Seleccione...</option>
@@ -1047,8 +1062,9 @@
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                     <select x-model.number="formEventoLista.id_cliente_fk" required
-                        :disabled="!formEventoLista.id_agencias_fk"
-                        class="border rounded px-3 py-2 w-full nunito-regular">
+                        @change="formEventoLista._touched.cliente = true" :disabled="!formEventoLista.id_agencias_fk"
+                        class="border rounded px-3 py-2 w-full nunito-regular"
+                        :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'border-red-500' : ''">
                         <option value="" disabled x-show="!formEventoLista.id_agencias_fk">Seleccione una agencia
                             primero</option>
                         <option value="" disabled x-show="formEventoLista.id_agencias_fk">Seleccione...</option>
@@ -1071,23 +1087,13 @@
                             Cargando clientes...
                         </p>
                     </template>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.agencia && !formEventoLista.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
-                    <select x-model.number="formEventoLista.id_cliente_fk" required @change="formEventoLista._touched.cliente = true"
-                        class="border rounded px-3 py-2 w-full nunito-regular"
-                        :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'border-red-500' : ''">
-                        <option value="" disabled>Seleccione...</option>
-                        <template x-for="c in catalogClientes" :key="c.id">
-                            <option :value="c.id" x-text="c.nombre"></option>
-                        </template>
-                    </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
-                    <select x-model.number="formEventoLista.id_tipo_mantenimiento_fk" required @change="formEventoLista._touched.tipo = true"
+                    <select x-model.number="formEventoLista.id_tipo_mantenimiento_fk" required
+                        @change="formEventoLista._touched.tipo = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.tipo && !formEventoLista.id_tipo_mantenimiento_fk ? 'border-red-500' : ''">
                         <option value="" disabled>Seleccione...</option>
@@ -1095,17 +1101,20 @@
                             <option :value="t.id_tipo_mantenimiento_pk" x-text="t.tipo_mantenimiento"></option>
                         </template>
                     </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.tipo && !formEventoLista.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.tipo && !formEventoLista.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Fecha y hora</label>
-                    <input type="datetime-local" x-model="formEventoLista.fecha" required @input="formEventoLista._touched.fecha = true" @blur="formEventoLista._touched.fecha = true"
+                    <input type="datetime-local" x-model="formEventoLista.fecha" required
+                        @input="formEventoLista._touched.fecha = true" @blur="formEventoLista._touched.fecha = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.fecha && !formEventoLista.fecha ? 'border-red-500' : ''" />
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
-                    <select x-model.number="formEventoLista.id_estado_calendario_fk" required @change="formEventoLista._touched.estado = true"
+                    <select x-model.number="formEventoLista.id_estado_calendario_fk" required
+                        @change="formEventoLista._touched.estado = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.estado && !formEventoLista.id_estado_calendario_fk ? 'border-red-500' : ''">
                         <option value="" disabled>Seleccione...</option>
@@ -1113,13 +1122,15 @@
                             <option :value="e.id_estado_calendario_pk" x-text="e.nombre"></option>
                         </template>
                     </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.estado && !formEventoLista.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.estado && !formEventoLista.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
                     <select x-model.number="formEventoLista.id_orden_servicio_fk" required
-                        :disabled="!formEventoLista.id_cliente_fk"
-                        class="border rounded px-3 py-2 w-full nunito-regular">
+                        @change="formEventoLista._touched.orden = true" :disabled="!formEventoLista.id_cliente_fk"
+                        class="border rounded px-3 py-2 w-full nunito-regular"
+                        :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'border-red-500' : ''">
                         <option value="" disabled x-show="!formEventoLista.id_cliente_fk">Seleccione un cliente primero
                         </option>
                         <option value="" disabled x-show="formEventoLista.id_cliente_fk">Seleccione una orden...
@@ -1145,31 +1156,30 @@
                             Cargando órdenes de servicio...
                         </p>
                     </template>
-                    <select x-model.number="formEventoLista.id_orden_servicio_fk" required @change="formEventoLista._touched.orden = true"
-                        class="border rounded px-3 py-2 w-full nunito-regular"
-                        :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'border-red-500' : ''">
-                        <option value="" disabled>Seleccione una orden...</option>
-                        <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                            <option :value="os.id_orden_servicio_pk"
-                                x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
-                            </option>
-                        </template>
-                    </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                    <input type="text" x-model="formEventoLista.descripcion_calendario" maxlength="200" required @input="formEventoLista._touched.descripcion = true" @blur="formEventoLista._touched.descripcion = true"
+                    <input type="text" x-model="formEventoLista.descripcion_calendario" maxlength="200" required
+                        @input="formEventoLista._touched.descripcion = true"
+                        @blur="formEventoLista._touched.descripcion = true"
                         class="border rounded px-3 py-2 w-full nunito-regular" placeholder="Descripción del evento"
                         :class="formEventoLista._touched && formEventoLista._touched.descripcion && (formEventoLista.descripcion_calendario === '' || formEventoLista.descripcion_calendario.length >= 200) ? 'border-red-500' : ''" />
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.descripcion && (formEventoLista.descripcion_calendario === '' || formEventoLista.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido. Máximo 200 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.descripcion && (formEventoLista.descripcion_calendario === '' || formEventoLista.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido.
+                        Máximo 200 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Observaciones</label>
-                    <textarea x-model="formEventoLista.observaciones_calendario" maxlength="500" required @input="formEventoLista._touched.observaciones = true" @blur="formEventoLista._touched.observaciones = true"
+                    <textarea x-model="formEventoLista.observaciones_calendario" maxlength="500" required
+                        @input="formEventoLista._touched.observaciones = true"
+                        @blur="formEventoLista._touched.observaciones = true"
                         class="border rounded px-3 py-2 w-full nunito-regular" placeholder="Notas u observaciones"
                         :class="formEventoLista._touched && formEventoLista._touched.observaciones && (formEventoLista.observaciones_calendario === '' || formEventoLista.observaciones_calendario.length >= 500) ? 'border-red-500' : ''"></textarea>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.observaciones && (formEventoLista.observaciones_calendario === '' || formEventoLista.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.observaciones && (formEventoLista.observaciones_calendario === '' || formEventoLista.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido.
+                        Máximo 500 caracteres.</small>
                 </div>
             </div>
             <div
@@ -1186,7 +1196,8 @@
                 x-init="$watch('selectedEventLista', (ev) => { if(!ev) return; formEventoLista = { fecha: (ev.raw?.fecha||'').replace(' ','T').slice(0,16), descripcion_calendario: ev.raw?.descripcion_calendario||'', observaciones_calendario: ev.raw?.observaciones_calendario||'', id_estado_calendario_fk: ev.raw?.id_estado_calendario_fk||'', id_agencias_fk: ev.raw?.id_agencias_fk||'', id_orden_servicio_fk: ev.raw?.id_orden_servicio_fk||'', id_tipo_mantenimiento_fk: ev.raw?.id_tipo_mantenimiento_fk||'', id_cliente_fk: ev.raw?.id_cliente_fk||'', _touched: {} }; })">
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
-                    <select x-model.number="formEventoLista.id_agencias_fk" required @change="formEventoLista._touched.agencia = true"
+                    <select x-model.number="formEventoLista.id_agencias_fk" required
+                        @change="formEventoLista._touched.agencia = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.agencia && !formEventoLista.id_agencias_fk ? 'border-red-500' : ''">
                         <option value="" disabled>Seleccione...</option>
@@ -1194,32 +1205,31 @@
                             <option :value="a.id_agencias_pk" x-text="a.nombre_agencia"></option>
                         </template>
                     </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.agencia && !formEventoLista.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.agencia && !formEventoLista.id_agencias_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Cliente</label>
                     <select x-model.number="formEventoLista.id_cliente_fk" required
-                        :disabled="!formEventoLista.id_agencias_fk"
-                        class="border rounded px-3 py-2 w-full nunito-regular">
+                        @change="formEventoLista._touched.cliente = true" :disabled="!formEventoLista.id_agencias_fk"
+                        class="border rounded px-3 py-2 w-full nunito-regular"
+                        :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'border-red-500' : ''">
                         <option value="" disabled x-show="!formEventoLista.id_agencias_fk">Seleccione una agencia
                             primero</option>
                         <option value="" disabled x-show="formEventoLista.id_agencias_fk">Seleccione...</option>
                         <template
                             x-for="c in (formEventoLista.id_agencias_fk ? (filteredClientes || []) : catalogClientes)"
                             :key="c.id">
-                            <select x-model.number="formEventoLista.id_cliente_fk" required @change="formEventoLista._touched.cliente = true"
-                                class="border rounded px-3 py-2 w-full nunito-regular"
-                                :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'border-red-500' : ''">
-                                <option value="" disabled>Seleccione...</option>
-                                <template x-for="c in catalogClientes" :key="c.id">
-                                    <option :value="c.id" x-text="c.nombre"></option>
-                                </template>
-                            </select>
-                            <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+                            <option :value="c.id" x-text="c.nombre"></option>
+                        </template>
+                    </select>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.cliente && !formEventoLista.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Tipo de mantenimiento</label>
-                    <select x-model.number="formEventoLista.id_tipo_mantenimiento_fk" required @change="formEventoLista._touched.tipo = true"
+                    <select x-model.number="formEventoLista.id_tipo_mantenimiento_fk" required
+                        @change="formEventoLista._touched.tipo = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.tipo && !formEventoLista.id_tipo_mantenimiento_fk ? 'border-red-500' : ''">
                         <option value="" disabled>Seleccione...</option>
@@ -1227,17 +1237,20 @@
                             <option :value="t.id_tipo_mantenimiento_pk" x-text="t.tipo_mantenimiento"></option>
                         </template>
                     </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.tipo && !formEventoLista.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.tipo && !formEventoLista.id_tipo_mantenimiento_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Fecha y hora</label>
-                    <input type="datetime-local" x-model="formEventoLista.fecha" required @input="formEventoLista._touched.fecha = true" @blur="formEventoLista._touched.fecha = true"
+                    <input type="datetime-local" x-model="formEventoLista.fecha" required
+                        @input="formEventoLista._touched.fecha = true" @blur="formEventoLista._touched.fecha = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.fecha && !formEventoLista.fecha ? 'border-red-500' : ''" />
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Estado</label>
-                    <select x-model.number="formEventoLista.id_estado_calendario_fk" required @change="formEventoLista._touched.estado = true"
+                    <select x-model.number="formEventoLista.id_estado_calendario_fk" required
+                        @change="formEventoLista._touched.estado = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.estado && !formEventoLista.id_estado_calendario_fk ? 'border-red-500' : ''">
                         <option value="" disabled>Seleccione...</option>
@@ -1245,7 +1258,8 @@
                             <option :value="e.id_estado_calendario_pk" x-text="e.nombre"></option>
                         </template>
                     </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.estado && !formEventoLista.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.estado && !formEventoLista.id_estado_calendario_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Orden de Servicio</label>
@@ -1277,31 +1291,30 @@
                             Cargando órdenes de servicio...
                         </p>
                     </template>
-                    <select x-model.number="formEventoLista.id_orden_servicio_fk" required @change="formEventoLista._touched.orden = true"
-                        class="border rounded px-3 py-2 w-full nunito-regular"
-                        :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'border-red-500' : ''">
-                        <option value="" disabled>Seleccione una orden...</option>
-                        <template x-for="os in (catalogOrdenesServicio || [])" :key="os.id_orden_servicio_pk">
-                            <option :value="os.id_orden_servicio_pk"
-                                x-text="os.numero_orden_servicio || os.codigo_orden || ('OS-' + os.id_orden_servicio_pk)">
-                            </option>
-                        </template>
-                    </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.orden && !formEventoLista.id_orden_servicio_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Descripción</label>
-                    <input type="text" x-model="formEventoLista.descripcion_calendario" maxlength="200" required @input="formEventoLista._touched.descripcion = true" @blur="formEventoLista._touched.descripcion = true"
+                    <input type="text" x-model="formEventoLista.descripcion_calendario" maxlength="200" required
+                        @input="formEventoLista._touched.descripcion = true"
+                        @blur="formEventoLista._touched.descripcion = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.descripcion && (formEventoLista.descripcion_calendario === '' || formEventoLista.descripcion_calendario.length >= 200) ? 'border-red-500' : ''" />
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.descripcion && (formEventoLista.descripcion_calendario === '' || formEventoLista.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido. Máximo 200 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.descripcion && (formEventoLista.descripcion_calendario === '' || formEventoLista.descripcion_calendario.length >= 200) ? 'text-red-500' : ''">Requerido.
+                        Máximo 200 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Observaciones</label>
-                    <textarea x-model="formEventoLista.observaciones_calendario" maxlength="500" required @input="formEventoLista._touched.observaciones = true" @blur="formEventoLista._touched.observaciones = true"
+                    <textarea x-model="formEventoLista.observaciones_calendario" maxlength="500" required
+                        @input="formEventoLista._touched.observaciones = true"
+                        @blur="formEventoLista._touched.observaciones = true"
                         class="border rounded px-3 py-2 w-full nunito-regular"
                         :class="formEventoLista._touched && formEventoLista._touched.observaciones && (formEventoLista.observaciones_calendario === '' || formEventoLista.observaciones_calendario.length >= 500) ? 'border-red-500' : ''"></textarea>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEventoLista._touched && formEventoLista._touched.observaciones && (formEventoLista.observaciones_calendario === '' || formEventoLista.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido. Máximo 500 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEventoLista._touched && formEventoLista._touched.observaciones && (formEventoLista.observaciones_calendario === '' || formEventoLista.observaciones_calendario.length >= 500) ? 'text-red-500' : ''">Requerido.
+                        Máximo 500 caracteres.</small>
                 </div>
             </div>
             <div
