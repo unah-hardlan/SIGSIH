@@ -1,5 +1,5 @@
 <div x-data="{
-    tab: 'proyectos',
+    tab: localStorage.getItem('proyectos-tab') || 'proyectos',
 
     isProyectoModalOpen: false,
     isProyectoEditModalOpen: false,
@@ -262,10 +262,10 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
     </div>
 
     <ul class="flex border-b border-gray-200 dark:border-gray-700 nunito-bold mb-6">
-        <li @click="tab='proyectos'"
+        <li @click="tab='proyectos'; localStorage.setItem('proyectos-tab', 'proyectos')"
             :class="tab==='proyectos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="mr-6 pb-2 nunito-bold">Proyectos</li>
-        <li @click="tab='movimientos'"
+        <li @click="tab='movimientos'; localStorage.setItem('proyectos-tab', 'movimientos')"
             :class="tab==='movimientos' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer'"
             class="mr-6 pb-2 nunito-bold">Movimientos</li>
     </ul>
