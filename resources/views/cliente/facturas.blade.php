@@ -12,7 +12,6 @@
     </div>
 
     <div class="grid gap-2 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 serif">
-        <!-- Total -->
         <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div class="flex flex-col items-start gap-2 sm:gap-4">
                 <div class="flex-1 w-full">
@@ -83,7 +82,6 @@
         </div>
     </div>
 
-    <!-- Tabla Desktop -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hidden md:block">
         <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
@@ -132,7 +130,6 @@
         </div>
     </div>
 
-    <!-- Cards Mobile/Tablet -->
     <div class="space-y-3 md:hidden">
         <template x-if="filtradas.length === 0">
             <div class="text-center py-8">
@@ -199,91 +196,4 @@
     </div>
 </div>
 
-<script>
-    if (typeof window.facturasCliente === 'undefined') {
-        window.facturasCliente = function() {
-            return {
-                page: 1,
-                pageSize: 8,
-                filtros: {
-                    search: '',
-                    estado: '',
-                    desde: '',
-                    hasta: ''
-                },
-                estados: ['Pagada', 'Pendiente'],
-                datos: [],
-                async init() {
-                    try {
-                        const res = await fetch('/cliente/facturas-data', {
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-                        if (res.ok) {
-                            const payload = await res.json();
-                            this.datos = Array.isArray(payload) ? payload : (payload.data || []);
-                        }
-                    } catch (e) {
-                    }
-                },
-                get filtradas() {
-                    return this.datos.filter(d => {
-                        const s = this.filtros.search.toLowerCase();
-                        const eOk = !this.filtros.estado || d.estado === this.filtros.estado;
-                        const sOk = !s || d.numero.toLowerCase().includes(s);
-                        const dOk = !this.filtros.desde || d.fecha >= this.filtros.desde;
-                        const hOk = !this.filtros.hasta || d.fecha <= this.filtros.hasta;
-                        return eOk && sOk && dOk && hOk;
-                    });
-                },
-                get totalPages() {
-                    return Math.max(1, Math.ceil(this.filtradas.length / this.pageSize));
-                },
-                get paginadas() {
-                    const s = (this.page - 1) * this.pageSize;
-                    return this.filtradas.slice(s, s + this.pageSize);
-                },
-                get inicioPagina() {
-                    return this.filtradas.length === 0 ? 0 : ((this.page - 1) * this.pageSize + 1);
-                },
-                get finPagina() {
-                    return Math.min(this.filtradas.length, this.page * this.pageSize);
-                },
-                prev() {
-                    if (this.page > 1) this.page--;
-                },
-                next() {
-                    if (this.page < this.totalPages) this.page++;
-                },
-                resetFiltros() {
-                    this.filtros = {
-                        search: '',
-                        estado: '',
-                        desde: '',
-                        hasta: ''
-                    };
-                    this.page = 1;
-                },
-                estadoBadge(e) {
-                    return {
-                        'Pagada': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-                        'Pendiente': 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                        'Vencida': 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                        'Anulada': 'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
-                    } [e] || 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
-                },
-                get totalFacturas() {
-                    return this.datos.length;
-                },
-                get pagadasCount() {
-                    return this.datos.filter(d => d.estado === 'Pagada').length;
-                },
-                get pendientesCount() {
-                    return this.datos.filter(d => d.estado === 'Pendiente').length;
-                }
-            }
-        };
-    }
-</script>
 @endsection

@@ -1,6 +1,8 @@
 if (typeof window.solicitudesCliente === "undefined") {
     window.solicitudesCliente = function () {
         return {
+            page: 1,
+            pageSize: 10,
             solicitudes: [],
             filtros: {
                 search: "",
@@ -143,6 +145,31 @@ if (typeof window.solicitudesCliente === "undefined") {
                 });
             },
 
+            get totalPages() {
+                return Math.max(
+                    1,
+                    Math.ceil(this.solicitudesFiltradas.length / this.pageSize)
+                );
+            },
+
+            get paginadas() {
+                const s = (this.page - 1) * this.pageSize;
+                return this.solicitudesFiltradas.slice(s, s + this.pageSize);
+            },
+
+            get inicioPagina() {
+                return this.solicitudesFiltradas.length === 0
+                    ? 0
+                    : (this.page - 1) * this.pageSize + 1;
+            },
+
+            get finPagina() {
+                return Math.min(
+                    this.solicitudesFiltradas.length,
+                    this.page * this.pageSize
+                );
+            },
+
             async init() {
                 try {
                     const res = await fetch("/cliente/solicitudes-data", {
@@ -153,6 +180,31 @@ if (typeof window.solicitudesCliente === "undefined") {
                 } catch (e) {
                     console.error(e);
                 }
+
+                const debounce = (fn, ms = 300) => {
+                    let h;
+                    return (...a) => {
+                        clearTimeout(h);
+                        h = setTimeout(() => fn(...a), ms);
+                    };
+                };
+                this.$watch(
+                    "filtros.search",
+                    debounce(() => {
+                        this.page = 1;
+                    })
+                );
+                this.$watch("filtros.estado", () => {
+                    this.page = 1;
+                });
+            },
+
+            prev() {
+                if (this.page > 1) this.page--;
+            },
+
+            next() {
+                if (this.page < this.totalPages) this.page++;
             },
 
             verDetalle(solicitud) {

@@ -2,6 +2,10 @@ import "./bootstrap";
 import "./toast";
 import "./cliente/perfil";
 import "./cliente/solicitudes";
+import "./cliente/tickets";
+import "./cliente/cotizaciones";
+import "./cliente/ordenes";
+import "./cliente/facturas";
 import DOMPurify from "dompurify";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
@@ -44,6 +48,7 @@ import {
     faTrash,
     faArrowsRotate,
     faDoorClosed,
+    faCheckDouble,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -84,7 +89,8 @@ library.add(
     faTools,
     faTrash,
     faArrowsRotate,
-    faDoorClosed
+    faDoorClosed,
+    faCheckDouble
 );
 
 dom.watch();

@@ -122,7 +122,7 @@
                     </tr>
                 </thead>
             <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-300 dark:divide-gray-700">
-                    <template x-for="solicitud in solicitudesFiltradas" :key="solicitud.id">
+                    <template x-for="solicitud in paginadas" :key="solicitud.id">
                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
                             <td
                                 class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-left text-gray-900 dark:text-gray-100 font-nunito">
@@ -158,10 +158,17 @@
                 </tbody>
             </table>
         </div>
+        <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900/40 gap-3 sm:gap-0" x-show="solicitudesFiltradas.length > pageSize">
+            <div class="text-gray-600 dark:text-gray-400" x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + solicitudesFiltradas.length"></div>
+            <div class="flex items-center gap-1">
+                <button @click="prev()" :disabled="page===1" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Anterior</button>
+                <button @click="next()" :disabled="page===totalPages" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Siguiente</button>
+            </div>
+        </div>
     </div>
 
     <div class="space-y-3 md:hidden">
-        <template x-for="solicitud in solicitudesFiltradas" :key="solicitud.id">
+        <template x-for="solicitud in paginadas" :key="solicitud.id">
             <div class="bg-white dark:bg-gray-800 border border-gray-400/80 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div class="space-y-3">
                     <div class="flex items-start justify-between gap-2">
@@ -199,6 +206,14 @@
         </template>
         <div x-show="solicitudesFiltradas.length === 0" class="text-center py-8">
             <p class="text-sm text-gray-500 dark:text-gray-400">No se encontraron solicitudes.</p>
+        </div>
+        
+        <div class="flex flex-col gap-3 items-center py-4" x-show="solicitudesFiltradas.length > pageSize">
+            <div class="text-xs text-gray-600 dark:text-gray-400" x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + solicitudesFiltradas.length"></div>
+            <div class="flex items-center gap-1">
+                <button @click="prev()" :disabled="page===1" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Anterior</button>
+                <button @click="next()" :disabled="page===totalPages" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Siguiente</button>
+            </div>
         </div>
     </div>
 

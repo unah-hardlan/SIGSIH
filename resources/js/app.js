@@ -336,6 +336,7 @@ import {
     faExclamationCircle,
     faStar,
     faExchangeAlt,
+    faTicket,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -443,7 +444,8 @@ library.add(
     faExclamationCircle,
     faStar,
     faExchangeAlt,
-    faHome
+    faHome,
+    faTicket
 );
 dom.watch();
 
@@ -2878,8 +2880,8 @@ if (typeof window !== "undefined") {
 
             get numbers() {
                 return this.tab === "solicitudes"
-                    ? this.numbersSolicitudes
-                    : this.numbersContactos;
+                    ? this.filteredSolicitudes()
+                    : this.filteredContactos();
             },
             get currentPage() {
                 return this.tab === "solicitudes"
