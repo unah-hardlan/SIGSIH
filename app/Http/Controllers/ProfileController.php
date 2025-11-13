@@ -50,9 +50,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Endpoint Sanctum /api/user consolidado (reemplaza Api\SanctumUserController).
-     */
+
     public function sanctumUser(Request $request)
     {
         return $request->user();

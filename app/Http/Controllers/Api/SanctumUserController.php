@@ -1,14 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+// Archivo movido a `App\Http\Controllers\SanctumUserController`
+// Mantener este stub para compatibilidad temporal. Si todo funciona, puedes eliminar el archivo.
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-class SanctumUserController extends Controller
-{
-    public function show(Request $request)
-    {
-        return $request->user();
-    }
-}
+return;

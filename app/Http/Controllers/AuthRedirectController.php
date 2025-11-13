@@ -6,17 +6,13 @@ use Illuminate\Http\Request;
 
 class AuthRedirectController extends Controller
 {
-    /**
-     * Redirección raíz dinámica según rol autenticado.
-     */
+
     public function home(Request $request)
     {
         return $this->redirectForUser();
     }
 
-    /**
-     * Redirección utilizada luego de login desde el frontend.
-     */
+
     public function postAuth(Request $request)
     {
         return $this->redirectForUser();

@@ -128,9 +128,7 @@ class ProyectoController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * Vista básica de reporte de proyecto (antes Admin\ProyectoReporteController).
-     */
+
     public function reporteBasico(Request $request)
     {
         $fecha = $request->query('fecha', now()->format('d-M-Y'));
@@ -138,17 +136,13 @@ class ProyectoController extends Controller
         return view('admin.reporte-proyecto', compact('fecha', 'modulo'));
     }
 
-    /**
-     * Formato genérico de reporte (antes Admin\ReportFormatController).
-     */
+
     public function formatoReporte()
     {
         return view('admin.formato-reporte');
     }
 
-    /**
-     * Encabezado dinámico de reportes (consolidado desde ReportesHeaderController::index).
-     */
+
     public function reportesHeader(Request $request)
     {
         $modulo = $request->query('modulo', '');

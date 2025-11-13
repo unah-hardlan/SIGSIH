@@ -21,10 +21,7 @@ use App\Helpers\SpaHelper;
 
 class ClienteController extends Controller
 {
-    /**
-     * Viewer HTML de cotización para el portal de cliente con endpoints propios.
-     * Sustituye a Cliente\CotizacionViewerController.
-     */
+
     public function cotizacionViewer(\Illuminate\Http\Request $request)
     {
         $base = [
