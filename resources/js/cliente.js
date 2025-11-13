@@ -41,6 +41,8 @@ import {
     faStar,
     faTools,
     faTrash,
+    faArrowsRotate,
+    faDoorClosed,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -79,7 +81,9 @@ library.add(
     faExclamationCircle,
     faStar,
     faTools,
-    faTrash
+    faTrash,
+    faArrowsRotate,
+    faDoorClosed
 );
 
 dom.watch();

@@ -14,63 +14,63 @@
         cotización de su solicitud.
     </div>
 
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 serif">
-        <div class="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">En espera</p>
-                    <p class="text-3xl font-bold mt-2" x-text="resumen.enEspera"></p>
+    <div class="grid gap-2 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 serif">
+        <div class="bg-gradient-to-r from-amber-600 to-amber-800 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">En espera</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="resumen.enEspera"></p>
                 </div>
-                <div class="bg-white/20 p-3 rounded-full">
-                    <i class="fas fa-clock text-2xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Asignadas</p>
-                    <p class="text-3xl font-bold mt-2" x-text="resumen.asignadas"></p>
-                </div>
-                <div class="bg-white/20 p-3 rounded-full">
-                    <i class="fas fa-user-check text-2xl"></i>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-clock text-base sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">En proceso</p>
-                    <p class="text-3xl font-bold mt-2" x-text="resumen.enProceso"></p>
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Asignadas</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="resumen.asignadas"></p>
                 </div>
-                <div class="bg-white/20 p-3 rounded-full">
-                    <i class="fas fa-spinner text-2xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Rechazadas</p>
-                    <p class="text-3xl font-bold mt-2" x-text="resumen.rechazadas"></p>
-                </div>
-                <div class="bg-white/20 p-3 rounded-full">
-                    <i class="fas fa-times-circle text-2xl"></i>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-user-check text-base sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium opacity-90">Finalizadas</p>
-                    <p class="text-3xl font-bold mt-2" x-text="resumen.finalizadas"></p>
+        <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">En proceso</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="resumen.enProceso"></p>
                 </div>
-                <div class="bg-white/20 p-3 rounded-full">
-                    <i class="fas fa-check-circle text-2xl"></i>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-spinner text-base sm:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Rechazadas</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="resumen.rechazadas"></p>
+                </div>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-times-circle text-base sm:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 col-span-2 sm:col-span-2 md:col-span-1">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Finalizadas</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="resumen.finalizadas"></p>
+                </div>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-check-circle text-base sm:text-2xl"></i>
                 </div>
             </div>
         </div>
@@ -101,41 +101,41 @@
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hidden md:block">
+        <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                 <thead class="bg-gray-200 dark:bg-gray-800">
                     <tr>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
-                            Número de Solicitud</th>
+                            class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            Número</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
-                            Nombre de la Solicitud</th>
+                            class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            Asunto</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
-                            Descripción del Problema</th>
+                            class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            Descripción</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
-                            Estado de la Solicitud</th>
+                            class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            Estado</th>
                     </tr>
                 </thead>
             <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-300 dark:divide-gray-700">
                     <template x-for="solicitud in solicitudesFiltradas" :key="solicitud.id">
                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito">
-                                <span x-text="
+                                class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-left text-gray-900 dark:text-gray-100 font-nunito">
+                                <span class="font-semibold" x-text="
                                     solicitud.numero_solicitud_cliente_fmt ||
                                     (() => { const d = new Date(); const ymd = d.toISOString().slice(0,10).replace(/-/g,''); return 'CLI-' + ymd + '-' + String(solicitud.id ?? solicitud.numero_solicitud_cliente ?? '').toString(); })()
                                 "></span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-3 sm:px-6 py-4 text-xs sm:text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="solicitud.nombre_solicitud"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-3 sm:px-6 py-4 text-xs sm:text-sm text-left text-gray-900 dark:text-gray-100 font-nunito line-clamp-2"
                                 x-text="solicitud.descripcion_problema"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-left font-nunito">
-                                <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-left font-nunito">
+                                <span class="inline-flex items-center justify-center px-2 sm:px-2.5 py-1 sm:py-0.5 rounded-full text-xs font-medium" 
                                     :class="{
                                         'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300': solicitud.estado?.toLowerCase().includes('espera') || solicitud.estado?.toLowerCase().includes('pendiente'),
                                         'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300': solicitud.estado?.toLowerCase().includes('asignada') || solicitud.estado?.toLowerCase().includes('asignado'),
@@ -151,11 +151,53 @@
                     </template>
                     <tr x-show="solicitudesFiltradas.length === 0">
                         <td colspan="4"
-                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center font-nunito">
+                            class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center font-nunito">
                             No se encontraron solicitudes.</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="space-y-3 md:hidden">
+        <template x-for="solicitud in solicitudesFiltradas" :key="solicitud.id">
+            <div class="bg-white dark:bg-gray-800 border border-gray-400/80 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Número</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1" x-text="
+                                solicitud.numero_solicitud_cliente_fmt ||
+                                (() => { const d = new Date(); const ymd = d.toISOString().slice(0,10).replace(/-/g,''); return 'CLI-' + ymd + '-' + String(solicitud.id ?? solicitud.numero_solicitud_cliente ?? '').toString(); })()
+                            "></p>
+                        </div>
+                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0" 
+                            :class="{
+                                'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300': solicitud.estado?.toLowerCase().includes('espera') || solicitud.estado?.toLowerCase().includes('pendiente'),
+                                'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300': solicitud.estado?.toLowerCase().includes('asignada') || solicitud.estado?.toLowerCase().includes('asignado'),
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300': solicitud.estado?.toLowerCase().includes('proceso'),
+                                'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300': solicitud.estado?.toLowerCase().includes('rechazada') || solicitud.estado?.toLowerCase().includes('rechazado'),
+                                'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300': solicitud.estado?.toLowerCase().includes('finalizada') || solicitud.estado?.toLowerCase().includes('finalizado') || solicitud.estado?.toLowerCase().includes('resuelta') || solicitud.estado?.toLowerCase().includes('cerrada'),
+                                'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300': !solicitud.estado
+                            }" 
+                            x-text="solicitud.estado">
+                        </span>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Asunto</p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100 mt-1" x-text="solicitud.nombre_solicitud"></p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descripción</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-3" x-text="solicitud.descripcion_problema"></p>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <div x-show="solicitudesFiltradas.length === 0" class="text-center py-8">
+            <p class="text-sm text-gray-500 dark:text-gray-400">No se encontraron solicitudes.</p>
         </div>
     </div>
 

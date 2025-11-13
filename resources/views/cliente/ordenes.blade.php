@@ -1,7 +1,7 @@
 @extends('cliente.layouts.app')
 @section('title','Órdenes de Servicio - Cliente')
 @section('content')
-<div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="ordenesCliente()">
+<div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="ordenesCliente()" x-init="init()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Órdenes de Servicio</h1>
     </div>
@@ -11,97 +11,99 @@
         Las órdenes de servicio es el trabajo que se esta o estará realizando en su empresa. Desde esta sección puede revisar el estado de sus órdenes de servicio, filtrar por diferentes criterios y calificar el servicio recibido una vez finalizado. Haga clic en el botón "Ver" para abrir los detalles de la orden en una nueva pestaña. 
     </div>
 
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div
-            class="w-full min-h-[96px] bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
-            <div class="flex items-center justify-between h-full">
-                <div>
-                    <p class="text-base font-medium opacity-90">Total Órdenes</p>
-                    <p class="text-2xl md:text-3xl font-bold mt-2" x-text="totalOrdenes"></p>
+    <div class="grid gap-2 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 serif">
+        <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Total Órdenes</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="totalOrdenes"></p>
                 </div>
-                <div class="bg-white/20 p-4 rounded-full w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-clipboard-list text-sm md:text-2xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div
-            class="w-full min-h-[96px] bg-gradient-to-r from-emerald-800 to-green-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
-            <div class="flex items-center justify-between h-full">
-                <div>
-                    <p class="text-base font-medium opacity-90">Abiertas</p>
-                    <p class="text-2xl md:text-3xl font-bold mt-2" x-text="abiertasCount"></p>
-                </div>
-                <div class="bg-white/20 p-4 rounded-full w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-folder-open text-sm md:text-2xl"></i>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-clipboard-list text-base sm:text-2xl"></i>
                 </div>
             </div>
         </div>
 
-        <div
-            class="w-full min-h-[96px] bg-gradient-to-r from-slate-800 to-slate-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-base">
-            <div class="flex items-center justify-between h-full">
-                <div>
-                    <p class="text-base font-medium opacity-90">Cerradas</p>
-                    <p class="text-2xl md:text-3xl font-bold mt-2" x-text="cerradasCount"></p>
+        <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Abiertas</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="abiertasCount"></p>
                 </div>
-                <div class="bg-white/20 p-4 rounded-full w-10 h-10 flex items-center justify-center">
-                    <i class="fas fa-check-circle text-sm md:text-2xl"></i>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-folder-open text-base sm:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 col-span-2 sm:col-span-1">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Cerradas</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="cerradasCount"></p>
+                </div>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-check-circle text-base sm:text-2xl"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
-        <div class="flex flex-col xl:flex-row gap-4">
-            <div class="flex-1 flex items-center gap-2">
-                <div class="relative flex-1">
-                    <input x-model.debounce.400ms="filtros.search" type="text" placeholder="Buscar número o técnico..."
-                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200" />
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div class="flex flex-col gap-3 sm:gap-4">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div class="flex-1 flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <input x-model.debounce.400ms="filtros.search" type="text" placeholder="Buscar número o técnico..."
+                            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-10 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200" />
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm"></i>
+                    </div>
+                    <select x-model="filtros.estado"
+                        class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                        <option value="">Estado</option>
+                        <template x-for="e in estados" :key="e">
+                            <option :value="e" x-text="e"></option>
+                        </template>
+                    </select>
                 </div>
-                <select x-model="filtros.estado"
-                    class="w-40 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200">
-                    <option value="">Estado</option>
-                    <template x-for="e in estados" :key="e">
-                        <option :value="e" x-text="e"></option>
-                    </template>
-                </select>
-            </div>
-            <div class="flex items-center gap-2">
-                <input x-model="filtros.desde" type="date"
-                    class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-                <span class="text-gray-400 text-xs">→</span>
-                <input x-model="filtros.hasta" type="date"
-                    class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                 <button @click="resetFiltros()"
-                    class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Reiniciar</button>
+                    class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap">Reiniciar</button>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-2 items-start sm:items-center">
+                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Desde:</span>
+                <input x-model="filtros.desde" type="date"
+                    class="flex-1 sm:flex-none rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <span class="text-gray-400 text-xs hidden sm:inline">→</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap sm:hidden">Hasta:</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap hidden sm:inline">Hasta:</span>
+                <input x-model="filtros.hasta" type="date"
+                    class="flex-1 sm:flex-none rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
             </div>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div class="overflow-hidden rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hidden md:block">
+        <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                 <thead class="bg-gray-200 dark:bg-gray-800">
                     <tr>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Número</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Fecha Creada</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Estado</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
-                            Fecha Recepción</th>
+                            class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            Recepción</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Técnico</th>
                         <th scope="col"
-                            class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
+                            class="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">
                             Acción</th>
                     </tr>
                 </thead>
@@ -109,36 +111,36 @@
                     <template x-if="filtradas.length === 0">
                         <tr>
                             <td colspan="6"
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center font-nunito">
+                                class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center font-nunito">
                                 No hay órdenes que coincidan.</td>
                         </tr>
                     </template>
                     <template x-for="o in paginadas" :key="o.numero">
                         <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="o.numero"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="o.fecha_creada"></td>
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito">
+                                class="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito">
                                 <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide"
                                     :class="estadoBadge(o.estado)" x-text="o.estado"></span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="o.fecha_recepcion"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito"
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito"
                                 x-text="o.tecnico"></td>
                             <td
-                                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-nunito flex items-center justify-center">
-                                <div class="flex items-center justify-center gap-2">
+                                class="px-4 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito text-center">
+                                <div class="flex items-center justify-center gap-1 flex-wrap">
                                     <a :href="'/cliente/detalle-orden?orden=' + o.id" target="_blank" rel="noopener"
                                         data-no-spa
-                                        class="px-3 py-1.5 rounded-md text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition inline-flex items-center gap-1">
+                                        class="px-2 py-1 rounded-md text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition inline-flex items-center gap-1">
                                         <i class="fas fa-external-link-alt"></i>
                                         <span>Ver</span>
                                     </a>
                                     <button @click="calificarOrden(o)" x-show="isCalificable(o)" x-cloak
-                                        class="px-3 py-1.5 rounded-md text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition inline-flex items-center gap-1">
+                                        class="px-2 py-1 rounded-md text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition inline-flex items-center gap-1">
                                         <i class="fas fa-star"></i>
                                         <span>Calificar</span>
                                     </button>
@@ -149,15 +151,74 @@
                 </tbody>
             </table>
         </div>
-        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900/40"
+        <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900/40 gap-3 sm:gap-0"
             x-show="filtradas.length > pageSize">
             <div class="text-gray-600 dark:text-gray-400"
                 x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + filtradas.length"></div>
             <div class="flex items-center gap-1">
                 <button @click="prev()" :disabled="page===1"
-                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Anterior</button>
+                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Anterior</button>
                 <button @click="next()" :disabled="page===totalPages"
-                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Siguiente</button>
+                    class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-3 md:hidden">
+        <template x-if="filtradas.length === 0">
+            <div class="text-center py-8">
+                <p class="text-sm text-gray-500 dark:text-gray-400">No hay órdenes que coincidan.</p>
+            </div>
+        </template>
+        <template x-for="o in paginadas" :key="o.numero">
+            <div class="bg-white dark:bg-gray-800 border border-gray-400/80 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Número</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1" x-text="o.numero"></p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide flex-shrink-0"
+                            :class="estadoBadge(o.estado)" x-text="o.estado"></span>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fechas</p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                            Creada: <span x-text="o.fecha_creada"></span>
+                        </p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">
+                            Recepción: <span x-text="o.fecha_recepcion"></span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Técnico</p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100 mt-1" x-text="o.tecnico"></p>
+                    </div>
+
+                    <div class="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <a :href="'/cliente/detalle-orden?orden=' + o.id" target="_blank" rel="noopener"
+                            data-no-spa
+                            class="flex-1 px-2 py-2 rounded-md text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition inline-flex items-center justify-center gap-1">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Ver</span>
+                        </a>
+                        <button @click="calificarOrden(o)" x-show="isCalificable(o)" x-cloak
+                            class="flex-1 px-2 py-2 rounded-md text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition inline-flex items-center justify-center gap-1">
+                            <i class="fas fa-star"></i>
+                            <span>Calificar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        
+        <div class="flex flex-col gap-3 items-center py-4" x-show="filtradas.length > pageSize">
+            <div class="text-xs text-gray-600 dark:text-gray-400" x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + filtradas.length"></div>
+            <div class="flex items-center gap-1">
+                <button @click="prev()" :disabled="page===1" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Anterior</button>
+                <button @click="next()" :disabled="page===totalPages" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Siguiente</button>
             </div>
         </div>
     </div>
