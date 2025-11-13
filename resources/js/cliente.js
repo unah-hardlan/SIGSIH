@@ -119,7 +119,6 @@ document.addEventListener("alpine:init", () => {
 });
 
 window.__CLIENTE_BUNDLE_OK__ = true;
-console.debug("[cliente.js] bundle cargado");
 
 Alpine.store("navigation", {
     isTransitioning: false,

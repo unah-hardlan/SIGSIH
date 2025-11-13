@@ -223,8 +223,8 @@
                 <input type="text" id="oc_factura" name="oc_factura" x-model="oc" maxlength="100" @input="formFactura._touched.oc = true" @blur="formFactura._touched.oc = true"
                     placeholder="OC proporcionada por el cliente"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
-                    :class="formFactura._touched && formFactura._touched.oc && (oc === '' || (oc && oc.length >= 100)) ? 'border-red-500' : ''">
-                <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.oc && (oc === '' || (oc && oc.length >= 100)) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                    :class="formFactura._touched && formFactura._touched.oc && (oc && oc.length >= 100) ? 'border-red-500' : ''">
+                <small class="block mt-1 text-sm text-gray-500" :class="formFactura._touched && formFactura._touched.oc && (oc && oc.length >= 100) ? 'text-red-500' : ''">Opcional. Máximo 100 caracteres.</small>
                 <template x-if="errors && errors.oc">
                     <small class="block mt-1 text-xs text-red-600" x-text="errors.oc[0]"></small>
                 </template>
@@ -318,8 +318,8 @@
                 <input type="text" id="edit_oc_factura" name="edit_oc_factura" x-model="itemToEdit.oc" maxlength="100" @input="formEditFactura._touched.oc = true" @blur="formEditFactura._touched.oc = true"
                     placeholder="OC proporcionada por el cliente"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2"
-                    :class="formEditFactura._touched && formEditFactura._touched.oc && (itemToEdit.oc === '' || (itemToEdit.oc && itemToEdit.oc.length >= 100)) ? 'border-red-500' : ''">
-                <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.oc && (itemToEdit.oc === '' || (itemToEdit.oc && itemToEdit.oc.length >= 100)) ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                    :class="formEditFactura._touched && formEditFactura._touched.oc && (itemToEdit.oc && itemToEdit.oc.length >= 100) ? 'border-red-500' : ''">
+                <small class="block mt-1 text-sm text-gray-500" :class="formEditFactura._touched && formEditFactura._touched.oc && (itemToEdit.oc && itemToEdit.oc.length >= 100) ? 'text-red-500' : ''">Opcional. Máximo 100 caracteres.</small>
                 <template x-if="errorsEdit && errorsEdit.oc">
                     <small class="block mt-1 text-xs text-red-600" x-text="errorsEdit.oc[0]"></small>
                 </template>

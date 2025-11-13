@@ -883,7 +883,9 @@
                     </button>
                 </div>
 
-                <div>
+                <form @submit.prevent="submitPasswordModal()">
+                    <input type="email" autocomplete="username" value="{{ auth()->user()->correo_electronico }}" hidden />
+                    
                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-4"
                         x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
 
@@ -891,7 +893,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña
                                 actual</label>
-                            <input type="password"
+                            <input type="password" autocomplete="current-password"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="••••••••" x-model="passwordModal.password"
                                 @keydown.enter.prevent="submitPasswordModal()" autofocus />
@@ -903,7 +905,7 @@
                                 class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 Cancelar
                             </button>
-                            <button type="button" @click="submitPasswordModal()"
+                            <button type="submit"
                                 :disabled="passwordModal.loading || !passwordModal.password.trim()"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 <span x-show="!passwordModal.loading">Confirmar</span>
@@ -911,7 +913,7 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </template>

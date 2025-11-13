@@ -311,20 +311,20 @@
                     'creado' => 'Creado'
                     ]
                     ])
+                    <div class="flex gap-2 ml-auto">
+                        @perm(['Configuración de accesos','Configuracion de accesos','Roles','Gestión de Permisos','Gestion de Permisos'],'insercion')
+                        <button @click="$store.roles.openCreate()" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap"><span class="nunito-regular">Agregar rol</span></button>
+                        @else
+                        <button disabled title="Sin permiso para crear" class="duration-200 ease-in-out bg-green-600 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap opacity-60 cursor-not-allowed"><span class="nunito-regular">Agregar rol</span></button>
+                        @endperm
+                        <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','roles'); if($store.roles.q) p.set('q',$store.roles.q); if($store.roles.sort){ p.set('sort',$store.roles.sort); p.set('direction',$store.roles.direction||'asc'); } const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
+                            <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
+                        </button>
+                    </div>
                     <div class="text-sm text-red-600" x-text="$store.roles.error"></div>
                 </div>
             </x-slot>
             <x-slot name="boton">
-                <div class="w-full flex justify-end gap-2">
-                    @perm(['Configuración de accesos','Configuracion de accesos','Roles','Gestión de Permisos','Gestion de Permisos'],'insercion')
-                    <button @click="$store.roles.openCreate()" class="duration-200 ease-in-out bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap"><span class="nunito-regular">Agregar rol</span></button>
-                    @else
-                    <button disabled title="Sin permiso para crear" class="duration-200 ease-in-out bg-green-600 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap opacity-60 cursor-not-allowed"><span class="nunito-regular">Agregar rol</span></button>
-                    @endperm
-                    <button type="button" @click.prevent="(() => { const p=new URLSearchParams(); p.set('modulo','configuracion-acceso'); p.set('seccion','roles'); if($store.roles.q) p.set('q',$store.roles.q); if($store.roles.sort){ p.set('sort',$store.roles.sort); p.set('direction',$store.roles.direction||'asc'); } const url=`/admin/reportes-header?${p.toString()}`; window.open(url,'_blank'); })()" class="duration-200 ease-in-out bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-bold transition whitespace-nowrap flex items-center gap-2">
-                        <i class="fas fa-file-alt"></i> <span class="nunito-regular text-sm">Generar Reporte</span>
-                    </button>
-                </div>
             </x-slot>
 
             <div class="hidden md:block overflow-x-auto bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">

@@ -353,7 +353,7 @@
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-                <select id="id_cliente" name="id_cliente" x-model="formSolicitud.id_cliente_fk"
+                <select id="id_cliente" name="id_cliente" x-model.number="formSolicitud.id_cliente_fk"
                     @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
                     :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
@@ -400,7 +400,7 @@
             <div>
                 <label for="estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
                     Solicitud</label>
-                <select id="estado_solicitud" name="estado_solicitud" x-model="formSolicitud.id_estado_solicitud_fk"
+                <select id="estado_solicitud" name="estado_solicitud" x-model.number="formSolicitud.id_estado_solicitud_fk"
                     @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_estado_solicitud_fk = true"
                     :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
@@ -416,7 +416,7 @@
             </div>
             <div>
                 <label for="id_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
-                <select id="id_contacto" name="id_contacto" x-model="formSolicitud.id_contacto_fk"
+                <select id="id_contacto" name="id_contacto" x-model.number="formSolicitud.id_contacto_fk"
                     :disabled="!formSolicitud.id_cliente_fk"
                     @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_contacto_fk = true"
                     :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'border-red-500' : ''"
@@ -437,14 +437,13 @@
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Solicitud"
         itemToEdit="solicitudToEdit" formId="solicitud-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
-        <template x-if="solicitudToEdit">
+        <div x-show="solicitudToEdit" x-cloak>
             <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
                 <div>
                     <label for="edit_id_cliente"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-                    <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk"
+                    <select id="edit_id_cliente" name="edit_id_cliente" x-model.number="formSolicitud.id_cliente_fk"
                         @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
-                        x-effect="if (isEditModalOpen && formSolicitud?.id_cliente_fk) { try { onClienteChange() } catch(_) {} }"
                         :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un cliente</option>
@@ -493,7 +492,7 @@
                         la
                         Solicitud</label>
                     <select id="edit_estado_solicitud" name="edit_estado_solicitud"
-                        x-model="formSolicitud.id_estado_solicitud_fk"
+                        x-model.number="formSolicitud.id_estado_solicitud_fk"
                         @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_estado_solicitud_fk = true"
                         :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
@@ -510,9 +509,10 @@
                 <div>
                     <label for="edit_id_contacto"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
-                    <select id="edit_id_contacto" name="edit_id_contacto" x-model="formSolicitud.id_contacto_fk"
+                    <select id="edit_id_contacto" name="edit_id_contacto" x-model.number="formSolicitud.id_contacto_fk"
                         :disabled="!formSolicitud.id_cliente_fk"
                         @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_contacto_fk = true"
+                        x-effect="if (isEditModalOpen && formSolicitud?.id_cliente_fk) { $nextTick(() => { if (formSolicitud.id_contacto_fk && filteredContactosForSelectedCliente().length > 0) { $el.value = formSolicitud.id_contacto_fk } }) }"
                         :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                         <option value="" class="nunito-regular">Seleccione un contacto</option>
@@ -526,7 +526,7 @@
                         :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
             </div>
-        </template>
+        </div>
     </x-admin.edit-modal>
 
     <x-admin.confirmation-modal modal-name="isDeleteModalOpen" title="Eliminar Solicitud"
