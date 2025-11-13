@@ -883,7 +883,7 @@
                     </button>
                 </div>
 
-                <div>
+                <form @submit.prevent="submitPasswordModal()">
                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-4"
                         x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
 
@@ -903,7 +903,7 @@
                                 class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 Cancelar
                             </button>
-                            <button type="button" @click="submitPasswordModal()"
+                            <button type="submit"
                                 :disabled="passwordModal.loading || !passwordModal.password.trim()"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 <span x-show="!passwordModal.loading">Confirmar</span>
@@ -911,7 +911,7 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </template>
