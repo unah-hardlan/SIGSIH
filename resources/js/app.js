@@ -3336,11 +3336,17 @@ if (typeof window !== "undefined") {
                 this.solicitudToEdit = item;
                 this.formSolicitud = {
                     id: item.id,
-                    id_cliente_fk: item.id_cliente_fk ?? "",
+                    id_cliente_fk: item.id_cliente_fk
+                        ? Number(item.id_cliente_fk)
+                        : "",
                     nombre_solicitud: item.nombre_solicitud ?? "",
                     descripcion_problema: item.descripcion_problema ?? "",
-                    id_estado_solicitud_fk: item.id_estado_solicitud_fk ?? "",
-                    id_contacto_fk: item.id_contacto_fk ?? "",
+                    id_estado_solicitud_fk: item.id_estado_solicitud_fk
+                        ? Number(item.id_estado_solicitud_fk)
+                        : "",
+                    id_contacto_fk: item.id_contacto_fk
+                        ? Number(item.id_contacto_fk)
+                        : "",
                 };
                 this.isEditModalOpen = true;
             },
