@@ -1,6 +1,7 @@
 import "./bootstrap";
 import "./toast";
 import "./cliente/perfil";
+import "./cliente/solicitudes";
 import DOMPurify from "dompurify";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
