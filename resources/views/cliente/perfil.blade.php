@@ -891,7 +891,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña
                                 actual</label>
-                            <input type="password"
+                            <input type="password" autocomplete="current-password"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"
                                 placeholder="••••••••" x-model="passwordModal.password"
                                 @keydown.enter.prevent="submitPasswordModal()" autofocus />
