@@ -884,6 +884,8 @@
                 </div>
 
                 <form @submit.prevent="submitPasswordModal()">
+                    <input type="email" autocomplete="username" value="{{ auth()->user()->correo_electronico }}" hidden />
+                    
                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-4"
                         x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
 
