@@ -541,21 +541,13 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                 <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Nombre</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Proyecto</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Fecha</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Monto</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Acciones</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Proyecto</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Categoría</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Fecha</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Monto</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -577,15 +569,12 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                             <template x-for="(ingreso, index) in paginatedIngresos()" :key="ingreso.id_ingresos_pk">
                                 <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                     :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedIngresos().length - 1 }">
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="ingreso.nombre_ingreso"></td>
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="ingreso.proyecto ? ingreso.proyecto.nombre_proyecto : 'N/A'"></td>
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="formatDate(ingreso.fecha_ingreso)"></td>
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(ingreso.monto_ingreso)">
-                                    </td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ingreso.nombre_ingreso"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ingreso.proyecto ? ingreso.proyecto.nombre_proyecto : 'N/A'"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ingreso.categoria ? ingreso.categoria.nombre_categoria : 'N/A'"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="ingreso.descripcion_ingreso || 'N/A'"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="formatDate(ingreso.fecha_ingreso)"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(ingreso.monto_ingreso)"></td>
                                     <td class="py-2 px-4 flex gap-2">
                                         @perm(['Gestión de proyectos','Gestion de proyectos','Proyectos'],
                                         'actualizacion')
@@ -755,21 +744,13 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                 <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse">
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Nombre</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Proyecto</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Fecha</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Monto</th>
-                            <th
-                                class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">
-                                Acciones</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Nombre</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Proyecto</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Categoría</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Descripción</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Fecha</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Monto</th>
+                            <th class="py-2 px-4 text-left border-0 first:rounded-tl-lg last:rounded-tr-lg dark:text-gray-300">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -792,13 +773,11 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                                 <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular"
                                     :class="{ 'border-t-0': index === 0, 'last:border-b-0': index === paginatedGastos().length - 1 }">
                                     <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="gasto.nombre"></td>
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="gasto.proyecto ? gasto.proyecto.nombre_proyecto : 'N/A'"></td>
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="formatDate(gasto.fecha)"></td>
-                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200"
-                                        x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(gasto.monto)">
-                                    </td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="gasto.proyecto ? gasto.proyecto.nombre_proyecto : 'N/A'"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="gasto.categoria ? gasto.categoria.nombre_categoria : 'N/A'"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="gasto.descripcion_gasto || 'N/A'"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="formatDate(gasto.fecha)"></td>
+                                    <td class="py-2 px-4 text-gray-900 dark:text-gray-200" x-text="new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(gasto.monto)"></td>
                                     <td class="py-2 px-4 flex gap-2">
                                         @perm(['Gestión de proyectos','Gestion de proyectos','Proyectos'],
                                         'actualizacion')
