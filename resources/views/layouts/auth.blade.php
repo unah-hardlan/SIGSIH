@@ -656,7 +656,6 @@
             </div>
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Revisa tu correo</h3>
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Te enviamos un enlace para verificar tu cuenta. Esta pestaña se actualizará automáticamente cuando completes la verificación.</p>
-            <!-- Botones de reenviar y cerrar pestaña eliminados -->
         </div>
     </div>
 
