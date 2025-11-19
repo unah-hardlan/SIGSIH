@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" x-data="authPage()" x-init="init()" :class="{ 'dark': isDark }">
+<html lang="es" x-data="authPage()" x-init="init()" class="dark" :class="{ 'dark': true }">
 
 <head>
     <meta charset="UTF-8" />
@@ -15,14 +15,8 @@
     <script>
     (function() {
         try {
-            const saved = localStorage.getItem('theme');
-            const isDark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia(
-                '(prefers-color-scheme: dark)').matches);
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
         } catch (_) {}
     })();
 
@@ -356,15 +350,9 @@
 
 </head>
 
-<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-[#171C25] text-gray-800 dark:text-gray-100">
+<body class="min-h-screen relative transition-colors duration-300 bg-gray-50 dark:bg-[#171C25] text-gray-800 dark:text-gray-100">
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-[#171C25]">
-        <div class="fixed top-4 right-4">
-            <label @click.prevent="toggleTheme()"
-                class="switch cursor-pointer rounded-full border border-gray-400 dark:border-gray-500">
-                <input type="checkbox" class="hidden" :checked="isDark">
-                <span class="slider"></span>
-            </label>
-        </div>
+        <!-- Removed theme switcher -->
 
         <div class="w-full max-w-sm mx-auto">
             <div
@@ -635,6 +623,29 @@
                     Entendido
                 </button>
             </div>
+            <div class="mt-4 text-center text-xs text-blue-700 dark:text-blue-300" id="verify-email-autoreload" style="display:none">
+                Esta página se recargará automáticamente en <span id="verify-email-autoreload-count">10</span> segundos...
+            </div>
+            <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.effect(() => {
+                    if (Alpine.store && typeof $data !== 'undefined' && $data.showVerifyEmailModal) {
+                        let count = 10;
+                        const el = document.getElementById('verify-email-autoreload-count');
+                        const msg = document.getElementById('verify-email-autoreload');
+                        if (msg) msg.style.display = '';
+                        const timer = setInterval(() => {
+                            count--;
+                            if (el) el.textContent = count;
+                            if (count <= 0) {
+                                clearInterval(timer);
+                                location.reload();
+                            }
+                        }, 1000);
+                    }
+                });
+            });
+            </script>
         </div>
     </div>
 
@@ -645,26 +656,7 @@
             </div>
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Revisa tu correo</h3>
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Te enviamos un enlace para verificar tu cuenta. Esta pestaña se actualizará automáticamente cuando completes la verificación.</p>
-            <div class="mt-4 flex items-center gap-2 justify-center">
-                <button type="button" :disabled="resendCooldown>0" @click="resendVerification()"
-                    class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm disabled:opacity-50">
-                    <span x-show="resendCooldown>0">Reenviar (espera <span x-text="resendCooldown"></span>s)</span>
-                    <span x-show="!(resendCooldown>0)">Reenviar</span>
-                </button>
-                <button type="button"
-                    @click="
-                        (function(){
-                            let closed=false;
-                            try{window.close();closed=true;}catch(_){}
-                            if(!closed){try{const w=window.open('','_self');w&&w.close&&w.close();closed=true;}catch(_){}}
-                            if(!closed){try{window.top&&window.top.close&&window.top.close();closed=true;}catch(_){}}
-                            if(!closed){try{window.showToast&&window.showToast('No se puede cerrar automáticamente. Cierra esta pestaña.', 'info', {duration:2500});}catch(_){}}
-                        })()
-                    "
-                    class="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 text-sm">
-                    Cerrar pestaña
-                </button>
-            </div>
+            <!-- Botones de reenviar y cerrar pestaña eliminados -->
         </div>
     </div>
 
@@ -676,21 +668,8 @@
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Correo verificado</h3>
             <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Ya puedes cerrar esta pestaña.</p>
             <div class="mt-4 flex items-center gap-2 justify-center">
-                <button type="button"
-                        @click="
-                            (function(){
-                                let closed=false;
-                                try{window.close();closed=true;}catch(_){}
-                                if(!closed){try{const w=window.open('','_self');w&&w.close&&w.close();closed=true;}catch(_){}}
-                                if(!closed){try{window.top&&window.top.close&&window.top.close();closed=true;}catch(_){}}
-                                if(!closed){try{window.showToast&&window.showToast('No se puede cerrar automáticamente. Cierra esta pestaña.', 'info', {duration:2500});}catch(_){}}
-                            })()
-                        "
-                        class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
-                    Cerrar pestaña
-                </button>
-                <a href="{{ route('login') }}" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm">Ir al login</a>
-            </div>
+    <a href="{{ route('login') }}" class="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">Ir al login</a>
+</div>
         </div>
     </div>
 

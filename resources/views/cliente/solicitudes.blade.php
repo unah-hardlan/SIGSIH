@@ -1,5 +1,4 @@
 @extends('cliente.layouts.app')
-@section('title','Solicitudes - Cliente')
 @section('content')
 <meta name="user-email" content="{{ $correoContacto ?: auth()->user()->correo_electronico }}" />
 <div class="max-w-7xl mx-auto space-y-6 mt-16" x-data="solicitudesCliente()" x-init="init()">

@@ -1,5 +1,4 @@
 @extends('cliente.layouts.app')
-@section('title','Órdenes de Servicio - Cliente')
 @section('content')
 <div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="ordenesCliente()" x-init="init()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -69,16 +68,32 @@
                 <button @click="resetFiltros()"
                     class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap">Reiniciar</button>
             </div>
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-2 items-start sm:items-center">
-                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Desde:</span>
-                <input x-model="filtros.desde" type="date"
-                    class="flex-1 sm:flex-none rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-                <span class="text-gray-400 text-xs hidden sm:inline">→</span>
-                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap sm:hidden">Hasta:</span>
-                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap hidden sm:inline">Hasta:</span>
-                <input x-model="filtros.hasta" type="date"
-                    class="flex-1 sm:flex-none rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-            </div>
+<span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Desde:</span>
+<div class="relative flex-1 sm:flex-none">
+    <input x-model="filtros.desde" type="date"
+        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 pl-2 pr-8 py-2 text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full" />
+        
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+    </div>
+</div>
+
+<span class="text-gray-400 text-xs hidden sm:inline">→</span>
+<span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap sm:hidden">Hasta:</span>
+<span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap hidden sm:inline">Hasta:</span>
+
+<div class="relative flex-1 sm:flex-none">
+    <input x-model="filtros.hasta" type="date"
+        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 pl-2 pr-8 py-2 text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full" />
+        
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+    </div>
+</div>
         </div>
     </div>
 

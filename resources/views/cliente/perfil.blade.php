@@ -1,5 +1,4 @@
 @extends('cliente.layouts.app')
-@section('title','Perfil - Cliente')
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6 mt-16 font-nunito" x-data="perfilData($el)" x-init="init()"
     data-update-url="{{ route('cliente.perfil.update') }}" @if($empresa)
