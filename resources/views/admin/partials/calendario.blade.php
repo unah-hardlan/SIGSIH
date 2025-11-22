@@ -265,15 +265,15 @@
             window.calendarioApiHandlers.onClienteChange(this, val);
         });
     }
-}" @include('partials.persist-tab', ['tabKey'=> 'admin-calendario-tab']) class="container mx-auto px-4 sm:px-8">
+}" @include('partials.persist-tab', ['tabKey'=> 'admin-calendario-tab']) class="container mx-auto px-1 sm:px-8">
     <div class="w-full">
-        <ul class="flex border-b nunito-bold">
+        <ul class="flex border-b nunito-bold overflow-x-auto">
             <li @click="tab='calendario'"
                 :class="tab==='calendario' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 cursor-pointer'"
-                class="mr-6 pb-2 nunito-bold">Calendario</li>
+                class="mr-4 sm:mr-6 pb-2 nunito-bold whitespace-nowrap text-sm sm:text-base">Calendario</li>
             <li @click="tab='eventosLista'"
                 :class="tab==='eventosLista' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 cursor-pointer'"
-                class="mr-6 pb-2 nunito-bold">Lista de Eventos</li>
+                class="mr-4 sm:mr-6 pb-2 nunito-bold whitespace-nowrap text-sm sm:text-base">Lista de Eventos</li>
         </ul>
 
         <div x-show="tab==='calendario'" class="py-8">
@@ -281,93 +281,73 @@
                 <h2 class="text-2xl font-semibold leading-tight nunito-bold mb-3 text-gray-800 dark:text-white">
                     Calendario</h2>
             </div>
-            <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 overflow-x-auto">
-                <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <button
-                            @click="previousMonth(); $nextTick(() => window.calendarioApiHandlers.fetchMonth($data))"
-                            class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
-                            <i class="fas fa-chevron-left text-lg"></i>
-                        </button>
-                        <span
-                            class="text-xl font-semibold text-gray-700 dark:text-white nunito-bold cursor-pointer hover:underline"
-                            @click="isMonthModalOpen = true"
-                            x-text="monthNames[currentMonth] + ' ' + currentYear"></span>
-                        <button @click="nextMonth(); $nextTick(() => window.calendarioApiHandlers.fetchMonth($data))"
-                            class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
-                            <i class="fas fa-chevron-right text-lg"></i>
-                        </button>
-                    </div>
-
-                    <template x-if="formEvento.id_agencias_fk && loadingFilteredClientes">
-                        <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <template
-                                x-if="formEventoLista.id_agencias_fk && !loadingFilteredClientes && (!filteredClientes || filteredClientes.length===0)">
-                                <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
-                                    <i class="fas fa-info-circle"></i>
-                                    No hay clientes disponibles para esta agencia
-                                </p>
-                            </template>
-                            <template x-if="formEventoLista.id_agencias_fk && loadingFilteredClientes">
-                                <p class="mt-1 text-xs text-gray-500 flex items-center gap-1">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    Cargando clientes...
-                                </p>
-                            </template>
-                            Cargando clientes...
-                        </p>
-                    </template>
-                    <div class="flex justify-end mb-2">
+            <div class="mx-0 sm:-mx-8 px-1 sm:px-8 overflow-x-auto">
+                <div class="inline-block min-w-full shadow rounded-2xl overflow-hidden bg-white dark:bg-gray-900 p-2 sm:p-6">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 sm:mb-6">
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <button
+                                @click="previousMonth(); $nextTick(() => window.calendarioApiHandlers.fetchMonth($data))"
+                                class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
+                                <i class="fas fa-chevron-left text-lg"></i>
+                            </button>
+                            <span
+                                class="text-lg sm:text-xl font-semibold text-gray-700 dark:text-white nunito-bold cursor-pointer hover:underline"
+                                @click="isMonthModalOpen = true"
+                                x-text="monthNames[currentMonth] + ' ' + currentYear"></span>
+                            <button @click="nextMonth(); $nextTick(() => window.calendarioApiHandlers.fetchMonth($data))"
+                                class="text-blue-500 hover:text-blue-700 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
+                                <i class="fas fa-chevron-right text-lg"></i>
+                            </button>
+                        </div>
                         <button @click="goToToday(); $nextTick(() => window.calendarioApiHandlers.fetchMonth($data))"
-                            class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular transition-colors shadow">
+                            class="w-full sm:w-auto text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg nunito-regular transition-colors">
                             <i class="fas fa-calendar-day mr-2"></i> Hoy
                         </button>
                     </div>
 
-                    <div class="grid p-4 grid-cols-7 gap-2 rounded-lg text-center dark:bg-gray-800">
+                    <div class="grid p-0.5 sm:p-4 grid-cols-7 gap-0.5 sm:gap-2 rounded-lg text-center dark:bg-gray-800">
                         <template x-for="dayName in dayNames" :key="dayName">
-                            <div class="text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-xl py-3 mx-2"
+                            <div class="text-xs sm:text-base font-bold text-gray-600 dark:text-gray-300 nunito-bold bg-gray-200 dark:bg-gray-700 rounded-sm sm:rounded-xl py-1 sm:py-3 mx-0 sm:mx-2"
                                 x-text="dayName"></div>
                         </template>
 
                         <template x-for="dayData in getCalendarDays()" :key="dayData.dateStr || Math.random()">
-                            <div class="text-base nunito-regular min-h-24 relative" :class="dayData.isEmpty ? '' : [
-                                     isToday(dayData.day) ? 'bg-blue-50 dark:bg-blue-900/40 ring-2 ring-blue-500 dark:ring-blue-400/70' : 'hover:bg-blue-50 dark:hover:bg-blue-800/40',
-                                     'rounded-lg cursor-pointer transition-all px-1 pt-1 pb-2 flex flex-col gap-1 dark:border dark:border-gray-700/40'
+                            <div class="text-xs sm:text-base nunito-regular min-h-10 sm:min-h-24 relative" :class="dayData.isEmpty ? '' : [
+                                     isToday(dayData.day) ? 'bg-blue-50 dark:bg-blue-900/40 ring-1 sm:ring-2 ring-blue-500 dark:ring-blue-400/70' : 'hover:bg-blue-50 dark:hover:bg-blue-800/40',
+                                     'rounded-sm sm:rounded-lg cursor-pointer transition-all px-0.5 sm:px-1 pt-0.5 sm:pt-1 pb-0.5 sm:pb-2 flex flex-col gap-0.5 sm:gap-1 dark:border dark:border-gray-700/40'
                                  ].join(' ')"
                                 @click="if(!dayData.isEmpty){ if(canInsertCal){ calendarioToEdit.fecha = dayData.dateStr; openAdd(dayData.dateStr); } else { window.showToast && window.showToast('Sin permiso para crear', 'warning'); } }">
                                 <template x-if="!dayData.isEmpty">
                                     <div class="flex flex-col h-full">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="font-bold nunito-bold text-gray-700 dark:text-gray-200 text-sm"
+                                        <div class="flex items-center justify-between mb-0.5 sm:mb-1">
+                                            <span class="font-bold nunito-bold text-gray-700 dark:text-gray-200 text-xs sm:text-sm"
                                                 :class="isToday(dayData.day) ? 'text-blue-700 dark:text-blue-300' : ''"
                                                 x-text="dayData.day"></span>
                                         </div>
-                                        <div class="flex flex-col gap-1 overflow-hidden">
+                                        <div class="flex flex-col gap-0.5 sm:gap-1 overflow-hidden">
                                             <template x-for="event in dayData.events" :key="event.id">
                                                 <div @click.stop="openEdit(event)"
-                                                    class="relative group w-full rounded-md pl-3 pr-2 py-1.5 text-[11px] leading-tight flex items-center gap-2 cursor-pointer transition-all backdrop-blur-sm overflow-hidden border shadow-sm dark:shadow-none"
+                                                    class="relative group w-full rounded-sm sm:rounded-md pl-1.5 sm:pl-3 pr-1 sm:pr-2 py-0.5 sm:py-1.5 text-[9px] sm:text-[11px] leading-tight flex items-center gap-1 sm:gap-2 cursor-pointer transition-all backdrop-blur-sm overflow-hidden border shadow-sm dark:shadow-none"
                                                     :class="{
                                                          'bg-indigo-50/90 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-200 border-indigo-200/70 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50': event.estado==='Programado',
                                                          'bg-emerald-50/90 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-200 border-emerald-200/70 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50': event.estado==='Realizado',
                                                          'bg-rose-50/90 dark:bg-rose-950/30 text-rose-700 dark:text-rose-200 border-rose-200/70 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-900/50': event.estado==='Cancelado'
                                                      }">
-                                                    <span class="absolute left-0 top-0 h-full w-1" :class="{
+                                                    <span class="absolute left-0 top-0 h-full w-0.5 sm:w-1" :class="{
                                                              'bg-indigo-500': event.estado==='Programado',
                                                              'bg-emerald-500': event.estado==='Realizado',
                                                              'bg-rose-500': event.estado==='Cancelado'
                                                           }"></span>
-                                                    <span class="w-2 h-2 rounded-full flex-shrink-0" :class="{
+                                                    <span class="w-1 h-1 sm:w-2 sm:h-2 rounded-full flex-shrink-0" :class="{
                                                              'bg-indigo-500': event.estado==='Programado',
                                                              'bg-emerald-500': event.estado==='Realizado',
                                                              'bg-rose-500': event.estado==='Cancelado'
                                                           }"></span>
-                                                    <div class="flex-1 min-w-0 flex items-center gap-1">
-                                                        <span class="truncate font-medium tracking-tight"
+                                                    <div class="flex-1 min-w-0 flex items-center gap-0.5 sm:gap-1">
+                                                        <span class="truncate font-medium tracking-tight text-[9px] sm:text-xs"
                                                             x-text="event.titulo"></span>
                                                         <span
-                                                            class="text-[10px] px-1.5 py-0.5 rounded-md ml-auto font-semibold ring-1 ring-inset"
+                                                            class="text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-sm sm:rounded-md ml-auto font-semibold ring-1 ring-inset"
                                                             :class="{
                                                                  'bg-indigo-100/70 dark:bg-indigo-800/40 text-indigo-700 dark:text-indigo-200 ring-indigo-300/60 dark:ring-indigo-500/40': event.estado==='Programado',
                                                                  'bg-emerald-100/70 dark:bg-emerald-800/40 text-emerald-700 dark:text-emerald-200 ring-emerald-300/60 dark:ring-emerald-500/40': event.estado==='Realizado',
@@ -376,15 +356,15 @@
                                                         @perm(['Gestión de Calendario','Gestion de Calendario'],
                                                         'eliminacion')
                                                         <button @click.stop="openDelete(event)"
-                                                            class="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 flex-shrink-0"
+                                                            class="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 flex-shrink-0 text-[8px]"
                                                             title="Eliminar">
-                                                            <i class="fas fa-trash-alt"></i>
+                                                            <i class="fas fa-trash-alt text-[8px]"></i>
                                                         </button>
                                                         @else
                                                         <span
-                                                            class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 cursor-not-allowed flex-shrink-0"
+                                                            class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 cursor-not-allowed flex-shrink-0 text-[8px]"
                                                             title="Sin permiso para eliminar">
-                                                            <i class="fas fa-trash-alt"></i>
+                                                            <i class="fas fa-trash-alt text-[8px]"></i>
                                                         </span>
                                                         @endperm
                                                     </div>
@@ -441,7 +421,7 @@
                 </div>
             </x-admin.edit-modal>
             <x-admin.form-modal class="nunito-bold" modalName="isAddModalOpen" title="Agregar Evento"
-                submitLabel="Guardar" :formId="'form-add-event'">
+                submitLabel="Guardar" :formId="'form-add-event'" maxWidth="max-w-lg sm:max-w-xl lg:max-w-2xl">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-1 nunito-bold">Agencia</label>
@@ -789,17 +769,17 @@
                 </select>
             </div>
 
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 <template x-for="ev in filteredEvents()" :key="ev.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border-l-4" :class="{
+                    <div class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md p-4 sm:p-6 border-l-4" :class="{
                             'border-blue-500': ev.estado==='Programado',
                             'border-green-500': ev.estado==='Realizado',
                             'border-red-500': ev.estado==='Cancelado'
                          }">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-white nunito-bold" x-text="ev.titulo">
+                        <div class="flex justify-between items-start mb-2 sm:mb-3">
+                            <h3 class="text-base sm:text-lg font-bold text-gray-800 dark:text-white nunito-bold" x-text="ev.titulo">
                             </h3>
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold" :class="{
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold ml-2 flex-shrink-0" :class="{
                                      'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300': ev.estado==='Programado',
                                      'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300': ev.estado==='Realizado',
                                      'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300': ev.estado==='Cancelado'
@@ -807,56 +787,61 @@
                         </div>
                         <div class="space-y-2 text-sm">
                             <div class="flex items-center text-gray-600 dark:text-gray-300">
-                                <i class="fas fa-calendar-alt mr-2"></i>
+                                <i class="fas fa-calendar-alt mr-2 w-4 text-center"></i>
                                 <span x-text="formatDateEs(ev.raw?.fecha)"></span>
                             </div>
                             <div class="flex items-center text-gray-600 dark:text-gray-300">
-                                <i class="fas fa-clock mr-2"></i>
+                                <i class="fas fa-clock mr-2 w-4 text-center"></i>
                                 <span x-text="ev.hora"></span>
                             </div>
                             <div class="flex items-center text-gray-600 dark:text-gray-300" x-show="ev.cliente">
-                                <i class="fas fa-user mr-2"></i>
+                                <i class="fas fa-user mr-2 w-4 text-center"></i>
                                 <span x-text="ev.cliente"></span>
                             </div>
                             <div class="flex items-center text-gray-600 dark:text-gray-300" x-show="ev.agencia">
-                                <i class="fas fa-building mr-2"></i>
+                                <i class="fas fa-building mr-2 w-4 text-center"></i>
                                 <span x-text="ev.agencia"></span>
                             </div>
                             <div class="flex items-center text-gray-600 dark:text-gray-300" x-show="ev.tipo">
-                                <i class="fas fa-wrench mr-2"></i>
+                                <i class="fas fa-wrench mr-2 w-4 text-center"></i>
                                 <span x-text="ev.tipo"></span>
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-t dark:border-gray-600 flex gap-2">
+                        <div class="mt-3 sm:mt-4 pt-3 border-t dark:border-gray-600 flex flex-col sm:flex-row gap-2">
                             <button
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                                class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm flex items-center justify-center gap-2 transition-colors"
                                 @click="selectedEventLista = ev; isDetailListModalOpen = true">
-                                <i class="fas fa-eye"></i> Ver
+                                <i class="fas fa-eye"></i>
+                                <span>Ver</span>
                             </button>
                             @perm(['Gestión de Calendario','Gestion de Calendario'], 'actualizacion')
                             <button
-                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                                class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm flex items-center justify-center gap-2 transition-colors"
                                 @click="openEditList(ev)">
-                                <i class="fas fa-edit"></i> Editar
+                                <i class="fas fa-edit"></i>
+                                <span>Editar</span>
                             </button>
                             @else
                             <button
-                                class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1"
+                                class="flex-1 bg-gray-300 text-gray-600 px-3 py-2 rounded text-sm cursor-not-allowed flex items-center justify-center gap-2"
                                 disabled title="Sin permiso para editar">
-                                <i class="fas fa-edit"></i> Editar
+                                <i class="fas fa-edit"></i>
+                                <span>Editar</span>
                             </button>
                             @endperm
                             @perm(['Gestión de Calendario','Gestion de Calendario'], 'eliminacion')
                             <button
-                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1"
+                                class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm flex items-center justify-center gap-2 transition-colors"
                                 @click="openDeleteList(ev)">
-                                <i class="fas fa-trash"></i> Eliminar
+                                <i class="fas fa-trash"></i>
+                                <span>Eliminar</span>
                             </button>
                             @else
                             <button
-                                class="bg-red-600/50 text-white px-3 py-1 rounded text-xs cursor-not-allowed flex items-center gap-1"
+                                class="flex-1 bg-red-600/50 text-white px-3 py-2 rounded text-sm cursor-not-allowed flex items-center justify-center gap-2"
                                 disabled title="Sin permiso para eliminar">
-                                <i class="fas fa-trash"></i> Eliminar
+                                <i class="fas fa-trash"></i>
+                                <span>Eliminar</span>
                             </button>
                             @endperm
                         </div>

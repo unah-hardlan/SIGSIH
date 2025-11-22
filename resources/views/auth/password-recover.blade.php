@@ -22,10 +22,7 @@
             <div class="bg-gray-900 rounded-xl border border-gray-600 p-6 transition-colors shadow-xl">
                 <div class="text-center mb-5">
                     <div class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-3 bg-white border-2 border-gray-500 transition-colors">
-                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo"
-                            data-fallback="{{ asset('images/logo.png') }}"
-                            onerror="this.onerror=null;this.src=this.dataset.fallback;"
-                            style="--app-logo-max: {{ ($appLogoHeight ?? 110) }}px;">
+                        <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo" class="app-logo" style="--app-logo-max: {{ ($appLogoHeight ?? 110) }}px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-100 serif-boldy">
                         Encuentra tu cuenta

@@ -21,8 +21,6 @@
         <div class="flex items-center gap-2 ml-2 sm:ml-4 md:ml-16 lg:ml-24 sm:gap-3">
             <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
                 class="app-logo ml-2 sm:ml-20 md:ml-16 lg:ml-24"
-                data-fallback="{{ asset('images/logo.png') }}"
-                onerror="this.onerror=null;this.src=this.dataset.fallback;"
                 style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
             {{-- <span class="hidden sm:block text-xl nunito-bold ml-2">{{ $appName ?? '' }}</span> --}}
         </div>

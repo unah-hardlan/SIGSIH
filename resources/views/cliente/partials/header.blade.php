@@ -41,9 +41,7 @@
 
         <div class="logo-container">
             <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
-                class="h-9 sm:h-10 lg:h-10"
-                data-fallback="{{ asset('images/logo.png') }}"
-                onerror="this.onerror=null;this.src=this.dataset.fallback;">
+                class="h-9 sm:h-10 lg:h-10">
         </div>
 
         <div class="absolute right-3 md:static md:ml-auto flex items-center gap-3 md:gap-6 z-30">

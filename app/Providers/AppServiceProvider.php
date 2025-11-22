@@ -50,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
                     if (preg_match('#^(https?://|/)#i', $logoParam)) {
                         return $logoParam;
                     }
-                    return '/' . trim('storage/' . ltrim($logoParam, '/'), '/');
+                    return asset('storage/' . ltrim($logoParam, '/'));
                 }
                 return asset('images/logo.png');
             });

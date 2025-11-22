@@ -13,6 +13,7 @@ class SystemSettingsController extends Controller
 
     public function show(Request $request)
     {
+        // Permiso directo (consolidado desde Web\SystemSettingsWebController)
         $user = auth()->user();
         $perm = app(\App\Services\PermissionService::class);
         if (!$perm->can($user, ['Mantenimiento del Sistema', 'Mantenimiento del sistema', 'Mantenimiento'], 'consultar')) {
@@ -23,11 +24,11 @@ class SystemSettingsController extends Controller
 
         $logoParam = optional(Parametro::where('parametro', 'app.logo_path')->first())->valor;
         if ($logoParam) {
+
             if (preg_match('#^(https?://|/)#i', $logoParam)) {
                 $logoUrl = $logoParam;
             } else {
-                
-                $logoUrl = '/' . trim('storage/' . ltrim($logoParam, '/'), '/');
+                $logoUrl = asset('storage/' . ltrim($logoParam, '/'));
             }
         } else {
             $logoUrl = asset('images/logo.png');

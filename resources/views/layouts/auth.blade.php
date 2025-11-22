@@ -361,9 +361,7 @@
                     <div
                         class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
                         <img src="{{ $appLogoUrl ?? asset('images/logo-hardlan-blue.svg') }}" alt="Logo"
-                            class="app-logo w-20 h-20 object-contain" style="--app-logo-max: 80px;"
-                            data-fallback="{{ asset('images/logo-hardlan-blue.svg') }}"
-                            onerror="this.onerror=null;this.src=this.dataset.fallback;">
+                            class="app-logo w-20 h-20 object-contain" style="--app-logo-max: 80px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-bold">
                         <span x-text="isLogin ? '¡Bienvenido a Hardlan!' : 'Crear cuenta'">¡Bienvenido a Hardlan!</span>

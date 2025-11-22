@@ -23,9 +23,7 @@
 
     <div class="flex flex-row items-center border-b-2 border-blue-900 pb-2 mb-6 w-full">
         <img src="{{ $appLogoUrl ?? asset('images/LOGO.png') }}" alt="Logo"
-                class="mb-2 mr-4 max-h-16 md:max-h-20 lg:max-h-24 w-auto object-contain"
-                 data-fallback="{{ asset('images/LOGO.png') }}"
-                 onerror="this.onerror=null;this.src=this.dataset.fallback;">
+            class="mb-2 mr-4 max-h-16 md:max-h-20 lg:max-h-24 w-auto object-contain">
         <div class="flex-1 flex justify-center">
             <div class="text-xl font-bold text-blue-900 uppercase tracking-wider text-center">Reporte de Servicio
             </div>

@@ -366,8 +366,6 @@
         <header>
             <div class="logo-section">
                 <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="IT SUPPORT HARDLAN Logo" class="app-logo"
-                    data-fallback="{{ asset('images/logo.png') }}"
-                    onerror="this.onerror=null;this.src=this.dataset.fallback;"
                     style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;" />
                 <div class="company-info">
                     <p>
