@@ -254,6 +254,12 @@ function createAuthPage() {
                     });
                     const data = res?.data || {};
 
+                    if (data.success === false) {
+                         this.formError = data.error || data.message || "Credenciales incorrectas.";
+                         this.loading = false;
+                         return;
+                    }
+
                     if (data.status === "2fa_required") {
                         this.totpCode = "";
                         this.totpError = "";
@@ -296,11 +302,6 @@ function createAuthPage() {
                 }
             } catch (err) {
                 try {
-                    console.error(
-                        "Authentication Error:",
-                        err?.response?.status,
-                        err?.response?.data || err?.message || err
-                    );
                 } catch (_) {}
 
                 const resp = err?.response;

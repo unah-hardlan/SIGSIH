@@ -27,12 +27,12 @@ class AuthService
         $usuario = strtoupper(trim($usuario));
         
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $contrasena)) {
-            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+            return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
 
         $secret = config('jwt.secret');
         if (!$secret) {
-            return ['error' => 'JWT_SECRET no está configurado', 'code' => 500];
+            return ['success' => false, 'error' => 'JWT_SECRET no está configurado', 'code' => 500];
         }
 
         
@@ -42,19 +42,19 @@ class AuthService
 
         $user = Usuario::where('usuario', $usuario)->first();
         if (!$user) {
-            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+            return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
         
         $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
         if ($requireVerify && is_null($user->email_verified_at)) {
-            return ['error' => 'Correo no verificado', 'code' => 403];
+            return ['success' => false, 'error' => 'Correo no verificado', 'code' => 200];
         }
 
         
         if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
-            return ['error' => 'Usuario bloqueado por intentos inválidos', 'code' => 423];
+            return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
         }
 
         
@@ -79,7 +79,7 @@ class AuthService
                     report($e);
                 }
                 
-                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 423];
+                return ['success' => false, 'error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 200];
             }
             
             $remaining = max(0, $maxIntentos - $attempts);
@@ -87,7 +87,7 @@ class AuthService
             if ($remaining > 0) {
                 $msg .= ". Quedan {$remaining} intento" . ($remaining === 1 ? '' : 's') . " antes de bloquear la cuenta.";
             }
-            return ['error' => $msg, 'code' => 401];
+            return ['success' => false, 'error' => $msg, 'code' => 200];
         }
 
         
@@ -131,14 +131,14 @@ class AuthService
     {
         $usuario = strtoupper(trim($usuario));
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $contrasena)) {
-            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+            return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
         $user = Usuario::where('usuario', $usuario)->first();
         if (!$user) {
-            return ['error' => 'Usuario/contraseña inválidos', 'code' => 401];
+            return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
         if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
-            return ['error' => 'Usuario bloqueado por intentos inválidos', 'code' => 423];
+            return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
         }
         $cacheKey = 'login_attempts:' . $user->getKey();
         $attempts = cache()->get($cacheKey, 0);
@@ -158,14 +158,14 @@ class AuthService
                 } catch (\Throwable $e) {
                     report($e);
                 }
-                return ['error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 423];
+                return ['success' => false, 'error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 200];
             }
             $remaining = max(0, $maxIntentos - $attempts);
             $msg = 'Usuario/contraseña inválidos';
             if ($remaining > 0) {
                 $msg .= ".                  Quedan {$remaining} intento" . ($remaining === 1 ? '' : 's') . " antes de bloquear la cuenta.";
             }
-            return ['error' => $msg, 'code' => 401];
+            return ['success' => false, 'error' => $msg, 'code' => 200];
         }
         cache()->forget($cacheKey);
         return ['user' => $user];

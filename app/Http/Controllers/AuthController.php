@@ -86,12 +86,12 @@ class AuthController extends Controller
         $usuario = strtoupper(trim($data['usuario']));
         $password = $data['contrasena'];
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $password)) {
-            return response()->json(['error' => 'Usuario/contraseña inválidos'], 401);
+            return response()->json(['success' => false, 'error' => 'Usuario/contraseña inválidos'], 200);
         }
 
         $cred = $this->authService->verifyCredentialsOnly($usuario, $password);
         if (isset($cred['error'])) {
-            return response()->json(['error' => $cred['error']], $cred['code']);
+            return response()->json(['success' => false, 'error' => $cred['error']], 200);
         }
 
         $user = $cred['user'];
@@ -125,7 +125,7 @@ class AuthController extends Controller
 
         $result = $this->authService->attempt($usuario, $password);
         if (isset($result['error'])) {
-            return response()->json(['error' => $result['error']], $result['code']);
+            return response()->json(['success' => false, 'error' => $result['error']], 200);
         }
 
         try {
