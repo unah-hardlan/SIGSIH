@@ -41,15 +41,31 @@ function createAuthPage() {
         verifyEmailAddress: "",
         resendCooldown: 0,
         resendTimerId: null,
+        showCloseTabScreen: false,
+        showAwaitVerificationScreen: false,
 
         init() {
             this.formError = this.formError || "";
             this.fieldErrors = this.fieldErrors || {};
             try {
                 this.initTheme();
+                this.initEmailVerifiedListener();
             } catch (e) {
                 console.warn("Theme initialization failed:", e);
             }
+        },
+
+        initEmailVerifiedListener() {
+            try {
+                window.addEventListener('storage', (e) => {
+                    if (!e) return;
+                    if (e.key === 'email_verified' && e.newValue) {
+                        this.showVerifyEmailModal = false;
+                        this.showAwaitVerificationScreen = false;
+                        this.showCloseTabScreen = true;
+                    }
+                });
+            } catch (_) {}
         },
 
         initTheme() {

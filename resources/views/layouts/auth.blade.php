@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css', 'resources/css/auth.css'])
+    @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css', 'resources/css/auth.css', 'resources/js/auth.js'])
     <title>Iniciar Sesión – Hardlan</title>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -22,7 +22,6 @@
 
     document.addEventListener('alpine:init', () => {
         if (!window.authPage) {
-            console.warn('authPage not loaded, creating fallback');
             window.authPage = () => ({
                 isLogin: true,
                 showPassword: false,
