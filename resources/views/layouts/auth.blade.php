@@ -391,92 +391,23 @@
                     </div>
                 </template>
 
-                <!-- Login Form -->
-                <form @submit.prevent="handleSubmit" x-show="isLogin">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
-                        <input type="text" name="username" x-model="username" required maxlength="50"
-                            autocomplete="username"
-                            @input="clearFieldError('usuario')"
-                            class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                            :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
-                            placeholder="Usuario123" />
-                        <template x-if="fieldErrors.usuario">
-                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular" x-text="fieldErrors.usuario[0]"></p>
-                        </template>
-                        <template x-if="username && !fieldErrors.usuario && usernameIssues(username).length > 0">
-                            <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
-                                <template x-for="issue in usernameIssues(username)" :key="issue">
-                                    <li class="flex items-center gap-1">
-                                        <i class="fas fa-exclamation-circle text-[10px]"></i>
-                                        <span x-text="issue"></span>
-                                    </li>
-                                </template>
-                            </ul>
-                        </template>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
-                        <div class="relative">
-                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
-                                autocomplete="current-password"
-                                @input="clearFieldError('contrasena')"
-                                class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
-                                placeholder="••••••••" />
-                            <button type="button"
-                                class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
-                                @click="showPassword = !showPassword">
-                                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                        <p x-show="password && !validatePassword(password)" class="mt-1 text-xs text-red-600 nunito-regular">
-                            Mínimo 8 caracteres, sin espacios
-                        </p>
-                        <template x-if="fieldErrors.contrasena">
-                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular" x-text="fieldErrors.contrasena[0]"></p>
-                        </template>
-                    </div>
-
-                    <div class="mb-4 text-right">
-                        <a href="{{ route('password.request') }}"
-                            class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none nunito-regular">
-                            Recuperar contraseña o cuenta bloqueada
-                        </a>
-                    </div>
-
-                    <button type="submit"
-                        class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed nunito-regular text-sm"
-                        :disabled="loading || (!username) || (password && !validatePassword(password))">
-                        <span x-show="loading" class="inline-flex items-center">
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2z" />
-                            </svg>
-                            Procesando...
-                        </span>
-                        <span x-show="!loading">Iniciar sesión</span>
-                    </button>
-                </form>
-
-                <!-- Register Form -->
-                <form @submit.prevent="handleSubmit" x-show="!isLogin">
-                    <div class="grid grid-cols-1 gap-y-2">
-                        <!-- Nombre de Usuario -->
+                <form @submit.prevent="handleSubmit" autocomplete="off">
+                    <div x-show="!isLogin" x-cloak class="grid grid-cols-1 gap-y-2">
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre de Usuario</label>
-                            <input type="text" name="nombre_usuario" x-model="nombre_usuario" required
-                                autocomplete="name"
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
+                                de Usuario</label>
+                            <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
                                 @input="clearFieldError('nombre_usuario')"
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (!isLogin && nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
                                 placeholder="Usuario" />
                             <template x-if="fieldErrors.nombre_usuario">
-                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular" x-text="fieldErrors.nombre_usuario[0]"></p>
+                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                    x-text="fieldErrors.nombre_usuario[0]"></p>
                             </template>
-                            <template x-if="nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
+                            <template
+                                x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in nombreUsuarioIssues(nombre_usuario)" :key="issue">
                                         <li class="flex items-center gap-1">
@@ -488,19 +419,21 @@
                             </template>
                         </div>
 
-                        <!-- Email -->
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo electrónico</label>
-                            <input type="email" name="email" x-model="email" required
-                                autocomplete="email"
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo
+                                electrónico</label>
+                            <input type="email" name="email" x-model="email" :required="!isLogin"
                                 @input="clearFieldError('correo_electronico')"
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (email && !validateEmail(email)) }"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (!isLogin && email && !validateEmail(email)) }"
                                 placeholder="correo@ejemplo.com" />
                             <template x-if="fieldErrors.correo_electronico">
-                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular" x-text="fieldErrors.correo_electronico[0]"></p>
+                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                    x-text="fieldErrors.correo_electronico[0]"></p>
                             </template>
-                            <template x-if="email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
+                            <template
+                                x-if="!isLogin && email && !fieldErrors.correo_electronico && emailIssues(email).length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in emailIssues(email)" :key="issue">
                                         <li class="flex items-center gap-1">
@@ -512,16 +445,14 @@
                             </template>
                         </div>
 
-                        <!-- Password (Register) -->
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    required maxlength="100"
-                                    autocomplete="new-password"
-                                    @input="clearFieldError('contrasena')"
+                                    :required="!isLogin" maxlength="100" @input="clearFieldError('contrasena')"
                                     class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (password && !validatePassword(password)) }"
+                                    :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (!isLogin && password && !validatePassword(password)) }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
@@ -530,7 +461,8 @@
                                 </button>
                             </div>
                             <template x-if="password">
-                                <ul x-show="passwordIssues(password).length" class="mt-1 text-xs nunito-regular space-y-1 validation-error">
+                                <ul x-show="passwordIssues(password).length"
+                                    class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in passwordIssues(password)" :key="issue">
                                         <li class="flex items-center gap-1">
                                             <i class="fas fa-exclamation-circle text-[10px]"></i>
@@ -540,27 +472,29 @@
                                 </ul>
                             </template>
                             <template x-if="fieldErrors.contrasena">
-                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular" x-text="fieldErrors.contrasena[0]"></p>
+                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                    x-text="fieldErrors.contrasena[0]"></p>
                             </template>
                         </div>
 
-                        <!-- Confirm Password -->
                         <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar Contraseña</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Confirmar
+                                Contraseña</label>
                             <div class="relative">
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
-                                    x-model="confirmPassword" required maxlength="100"
-                                    autocomplete="new-password"
+                                    x-model="confirmPassword" :required="!isLogin" maxlength="100"
                                     class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                    :class="{ 'border-red-500 focus:border-red-500': confirmPassword && !validateConfirmPassword() }"
+                                    :class="{ 'border-red-500 focus:border-red-500': !isLogin && confirmPassword && !validateConfirmPassword() }"
                                     placeholder="••••••••" />
                                 <button type="button"
                                     class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
                                     @click="showConfirmPassword = !showConfirmPassword">
-                                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
+                                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"
+                                        class="w-4 h-4"></i>
                                 </button>
                             </div>
-                            <template x-if="confirmPassword && confirmPasswordIssues().length > 0">
+                            <template x-if="!isLogin && confirmPassword && confirmPasswordIssues().length > 0">
                                 <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
                                     <template x-for="issue in confirmPasswordIssues()" :key="issue">
                                         <li class="flex items-center gap-1">
@@ -573,17 +507,17 @@
                         </div>
                     </div>
 
-                    <!-- Usuario Input (Duplicated for Register) -->
-                    <div class="mb-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
+                    <div :class="{ 'mb-4': isLogin, 'mb-2': !isLogin }">
+                        <label
+                            class="block text-sm font-medium  text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required maxlength="50"
-                            autocomplete="username"
                             @input="clearFieldError('usuario')"
                             class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
                             placeholder="Usuario123" />
                         <template x-if="fieldErrors.usuario">
-                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular" x-text="fieldErrors.usuario[0]"></p>
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                x-text="fieldErrors.usuario[0]"></p>
                         </template>
                         <template x-if="username && !fieldErrors.usuario && usernameIssues(username).length > 0">
                             <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
@@ -597,35 +531,72 @@
                         </template>
                     </div>
 
+                    <div x-show="isLogin" class="mb-2">
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
+                        <div class="relative">
+                            <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
+                                required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
+                                @input="clearFieldError('contrasena')"
+                                class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
+                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
+                                placeholder="••••••••" />
+                            <button type="button"
+                                class="absolute right-2 top-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 text-xs"
+                                @click="showPassword = !showPassword">
+                                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p x-show="password && !validatePassword(password)"
+                            class="mt-1 text-xs text-red-600 nunito-regular">
+                            Mínimo 8 caracteres, sin espacios
+                        </p>
+                        <template x-if="fieldErrors.contrasena">
+                            <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
+                                x-text="fieldErrors.contrasena[0]"></p>
+                        </template>
+                    </div>
+
+                    <div x-show="isLogin" class="mb-4 text-right">
+                        <a href="{{ route('password.request') }}"
+                            class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none nunito-regular">
+                            Recuperar contraseña o cuenta bloqueada
+                        </a>
+                    </div>
+
                     <button type="submit"
                         class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed nunito-regular text-sm"
-                        :disabled="loading || (!username) || (password && !validatePassword(password)) || (confirmPassword && !validateConfirmPassword())">
+                        :disabled="loading || (!username) || (password && !validatePassword(password)) || (!isLogin && confirmPassword && !validateConfirmPassword())">
                         <span x-show="loading" class="inline-flex items-center">
-                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2z" />
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2z" />
                             </svg>
                             Procesando...
                         </span>
-                        <span x-show="!loading">Crear cuenta</span>
+                        <span x-show="!loading" x-text="isLogin ? 'Iniciar sesión' : 'Crear cuenta'">Iniciar
+                            sesión</span>
                     </button>
+
+                    <div class="my-3 flex items-center">
+                        <hr class="flex-grow border-gray-300 dark:border-gray-600" />
+                        <span class="mx-2 text-xs text-gray-400 dark:text-gray-500 nunito-regular">o</span>
+                        <hr class="flex-grow border-gray-300 dark:border-gray-600" />
+                    </div>
+
+                    <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 nunito-regular">
+                        <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'">¿No tienes una
+                            cuenta?</span>
+                        <button type="button"
+                            class="ml-1 text-emerald-700 dark:text-green-400 hover:text-green-700 bm-2 border-b border-dotted border-emerald-700 dark:border-green-400 focus:outline-none nunito-regular font-medium"
+                            @click="switchMode()">
+                            <span x-text="isLogin ? 'Regístrate' : 'Inicia sesión'">Regístrate</span>
+                        </button>
+                    </p>
                 </form>
-
-                <!-- Footer / Switcher -->
-                <div class="my-3 flex items-center">
-                    <hr class="flex-grow border-gray-300 dark:border-gray-600" />
-                    <span class="mx-2 text-xs text-gray-400 dark:text-gray-500 nunito-regular">o</span>
-                    <hr class="flex-grow border-gray-300 dark:border-gray-600" />
-                </div>
-
-                <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 nunito-regular">
-                    <span x-text="isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes cuenta?'">¿No tienes una cuenta?</span>
-                    <button type="button"
-                        class="ml-1 text-emerald-700 dark:text-green-400 hover:text-green-700 bm-2 border-b border-dotted border-emerald-700 dark:border-green-400 focus:outline-none nunito-regular font-medium"
-                        @click="switchMode()">
-                        <span x-text="isLogin ? 'Regístrate' : 'Inicia sesión'">Regístrate</span>
-                    </button>
-                </p>
             </div>
         </div>
     </div>
