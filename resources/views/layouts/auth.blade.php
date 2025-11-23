@@ -342,6 +342,31 @@
                     alert("Redirigiendo a Google Sign-In…");
                 }
             });
+        } else {
+            // Safety patch: Ensure new properties exist even if auth.js is stale/cached
+            const originalAuthPage = window.authPage;
+            window.authPage = function() {
+                const data = originalAuthPage();
+                if (typeof data.showCloseTabScreen === 'undefined') data.showCloseTabScreen = false;
+                if (typeof data.showAwaitVerificationScreen === 'undefined') data.showAwaitVerificationScreen = false;
+                if (typeof data.initEmailVerifiedListener === 'undefined') {
+                    data.initEmailVerifiedListener = function() {
+                        try {
+                            window.addEventListener('storage', (e) => {
+                                if (!e) return;
+                                if (e.key === 'email_verified' && e.newValue) {
+                                    this.showVerifyEmailModal = false;
+                                    this.showAwaitVerificationScreen = false;
+                                    this.showCloseTabScreen = true;
+                                }
+                            });
+                        } catch (_) {}
+                    };
+                    // Call it since init() might have already run or won't call it
+                    data.initEmailVerifiedListener();
+                }
+                return data;
+            };
         }
 
         Alpine.data('authPage', window.authPage);
