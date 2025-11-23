@@ -392,10 +392,11 @@
                 </template>
 
                 <!-- Login Form -->
-                <form @submit.prevent="handleSubmit" autocomplete="off" x-show="isLogin">
+                <form @submit.prevent="handleSubmit" x-show="isLogin">
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required maxlength="50"
+                            autocomplete="username"
                             @input="clearFieldError('usuario')"
                             class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
@@ -420,6 +421,7 @@
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
                                 required maxlength="100" pattern="^\S{8,100}$" title="Mínimo 8 caracteres, sin espacios"
+                                autocomplete="current-password"
                                 @input="clearFieldError('contrasena')"
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena }"
@@ -460,12 +462,13 @@
                 </form>
 
                 <!-- Register Form -->
-                <form @submit.prevent="handleSubmit" autocomplete="off" x-show="!isLogin">
+                <form @submit.prevent="handleSubmit" x-show="!isLogin">
                     <div class="grid grid-cols-1 gap-y-2">
                         <!-- Nombre de Usuario -->
                         <div class="mb-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre de Usuario</label>
                             <input type="text" name="nombre_usuario" x-model="nombre_usuario" required
+                                autocomplete="name"
                                 @input="clearFieldError('nombre_usuario')"
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
@@ -489,6 +492,7 @@
                         <div class="mb-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo electrónico</label>
                             <input type="email" name="email" x-model="email" required
+                                autocomplete="email"
                                 @input="clearFieldError('correo_electronico')"
                                 class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                 :class="{ 'border-red-500 focus:border-red-500': fieldErrors.correo_electronico || (email && !validateEmail(email)) }"
@@ -513,7 +517,9 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Contraseña</label>
                             <div class="relative">
                                 <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
-                                    required maxlength="100" @input="clearFieldError('contrasena')"
+                                    required maxlength="100"
+                                    autocomplete="new-password"
+                                    @input="clearFieldError('contrasena')"
                                     class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     :class="{ 'border-red-500 focus:border-red-500': fieldErrors.contrasena || (password && !validatePassword(password)) }"
                                     placeholder="••••••••" />
@@ -544,6 +550,7 @@
                             <div class="relative">
                                 <input :type="showConfirmPassword ? 'text' : 'password'" name="confirmPassword"
                                     x-model="confirmPassword" required maxlength="100"
+                                    autocomplete="new-password"
                                     class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                                     :class="{ 'border-red-500 focus:border-red-500': confirmPassword && !validateConfirmPassword() }"
                                     placeholder="••••••••" />
@@ -570,6 +577,7 @@
                     <div class="mb-2">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Usuario</label>
                         <input type="text" name="username" x-model="username" required maxlength="50"
+                            autocomplete="username"
                             @input="clearFieldError('usuario')"
                             class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
                             :class="{ 'border-red-500 focus:border-red-500': fieldErrors.usuario || (username && !validateUsername(username)) }"
