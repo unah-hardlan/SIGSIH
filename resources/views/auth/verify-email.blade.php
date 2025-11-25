@@ -9,7 +9,6 @@
 </head>
 <body class="min-h-screen bg-[#171C25] text-gray-100">
     <script>
-    // Forzar modo oscuro por defecto al cargar la página
     (function() {
         try {
             document.documentElement.classList.add('dark');
@@ -88,14 +87,6 @@
                 })();
                 </script>
                 @endif
-
-                <div class="flex gap-2">
-                    @if(($status ?? '') === 'verified' || ($status ?? '') === 'already_verified')
-                        <a href="{{ route('login') }}" class="flex-1 inline-flex items-center justify-center bg-blue-700 text-white py-2 rounded font-semibold hover:bg-blue-800 text-sm">Ir a iniciar sesión</a>
-                    @else
-                        <a href="{{ route('login') }}" class="flex-1 inline-flex items-center justify-center border border-gray-600 text-gray-200 py-2 rounded font-semibold hover:bg-gray-800 text-sm">Volver al login</a>
-                    @endif
-                </div>
             </div>
         </div>
     </div>
