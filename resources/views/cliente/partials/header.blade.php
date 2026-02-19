@@ -40,7 +40,7 @@
         </div>
 
         <div class="logo-container">
-            <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
+            <img src="{{ asset('images/logo.png') }}" alt="Logo"
                 class="h-9 sm:h-10 lg:h-10">
         </div>
 

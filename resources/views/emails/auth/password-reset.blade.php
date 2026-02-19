@@ -117,12 +117,8 @@
 				<div class="card">
 					<div class="card-header">
 						<div class="brand">
-							@if ($logoUrl)
-								<img src="{{ $logoUrl }}" alt="{{ $appName }}" style="max-height:80px; display:block; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-								<span class="brand-placeholder" style="display:none;">{{ $appName }}</span>
-							@else
-								<span class="brand-placeholder">{{ $appName }}</span>
-							@endif
+							<img src="{{ asset('images/logo.png') }}" alt="{{ $appName }}" style="max-height:80px; display:block; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+							<span class="brand-placeholder" style="display:none;">{{ $appName }}</span>
 						</div>
 					</div>
 					<div class="card-body">

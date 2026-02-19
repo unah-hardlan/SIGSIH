@@ -22,7 +22,7 @@
 <body class="bg-white text-gray-900 font-sans text-[13px] px-4 md:px-8 py-6">
 
     <div class="flex flex-row items-center border-b-2 border-blue-900 pb-2 mb-6 w-full">
-        <img src="{{ $appLogoUrl ?? asset('images/LOGO.png') }}" alt="Logo"
+        <img src="{{ asset('images/logo.png') }}" alt="Logo"
             class="mb-2 mr-4 max-h-16 md:max-h-20 lg:max-h-24 w-auto object-contain">
         <div class="flex-1 flex justify-center">
             <div class="text-xl font-bold text-blue-900 uppercase tracking-wider text-center">Reporte de Servicio

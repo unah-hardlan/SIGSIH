@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<html lang="es"                     <div class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-3 bg-white border-2 border-gray-500">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="app-logo" style="--app-logo-max: 110px;">
-                    </div>ta="passwordResetPage({ token: '{{ $token }}', email: '{{ $email }}' })" class="dark">
+<html lang="es" x-data="passwordResetPage({ token: '{{ $token }}', email: '{{ $email }}' })" class="dark">
 
 <head>
     <meta charset="UTF-8" />
@@ -48,7 +46,7 @@
                     <input type="hidden" name="token" :value="token">
 
                     <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Correo
+                        <label class="block text-sm font-medium text-white mb-1 nunito-regular">Correo
                             electrónico</label>
                         <input type="email" name="email" x-model="email" required readonly aria-readonly="true"
                             @input="clearFieldError('email')"
@@ -71,7 +69,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Nueva
+                        <label class="block text-sm font-medium text-white mb-1 nunito-regular">Nueva
                             contraseña</label>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" name="password" x-model="password"
@@ -102,7 +100,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1 nunito-regular">Confirmar
+                        <label class="block text-sm font-medium text-white mb-1 nunito-regular">Confirmar
                             contraseña</label>
                         <div class="relative">
                             <input :type="showConfirmPassword ? 'text' : 'password'" name="password_confirmation"

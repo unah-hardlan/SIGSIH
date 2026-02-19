@@ -35,13 +35,9 @@
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                         <tr>
                             <td align="center" style="padding:0;">
-                                @if ($logoUrl)
-                                    {{-- Inline styles help ensure rendering in clients that strip CSS --}}
-                                    <img src="{{ $logoUrl }}" alt="{{ $appName }}" style="max-height:80px; display:block; margin:0 auto; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='block';">
-                                    <div id="brand-fallback" style="display:none; font-size:24px; font-weight:700; color:#ffffff;">{{ $appName }}</div>
-                                @else
-                                    <div style="font-size:24px; font-weight:700; color:#ffffff;">{{ $appName }}</div>
-                                @endif
+                                {{-- Inline styles help ensure rendering in clients that strip CSS --}}
+                                <img src="{{ asset('images/logo.png') }}" alt="{{ $appName }}" style="max-height:80px; display:block; margin:0 auto; background:#ffffff; border-radius:20px; padding:20px 30px;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='block';">
+                                <div id="brand-fallback" style="display:none; font-size:24px; font-weight:700; color:#ffffff;">{{ $appName }}</div>
                             </td>
                         </tr>
                     </table>

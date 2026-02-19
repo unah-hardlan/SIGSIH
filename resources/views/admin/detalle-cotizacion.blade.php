@@ -365,8 +365,8 @@
     <div class="container">
         <header>
             <div class="logo-section">
-                <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="IT SUPPORT HARDLAN Logo" class="app-logo"
-                    style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;" />
+                <img src="{{ asset('images/logo.png') }}" alt="IT SUPPORT HARDLAN Logo" class="app-logo"
+                    style="--app-logo-max: 96px;" />
                 <div class="company-info">
                     <p>
                         Col. Centro América Oeste, Zona 4, Bloque G, Casa 17

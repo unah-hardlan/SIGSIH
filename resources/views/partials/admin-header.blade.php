@@ -19,9 +19,9 @@
         </button>
 
         <div class="flex items-center gap-2 ml-2 sm:ml-4 md:ml-16 lg:ml-24 sm:gap-3">
-            <img src="{{ $appLogoUrl ?? asset('images/logo.png') }}" alt="Logo"
+            <img src="{{ asset('images/logo.png') }}" alt="Logo"
                 class="app-logo ml-2 sm:ml-20 md:ml-16 lg:ml-24"
-                style="--app-logo-max: {{ ($appLogoHeight ?? 96) }}px;">
+                style="--app-logo-max: 96px;">
             {{-- <span class="hidden sm:block text-xl nunito-bold ml-2">{{ $appName ?? '' }}</span> --}}
         </div>
 
