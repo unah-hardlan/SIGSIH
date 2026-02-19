@@ -8,6 +8,8 @@
     @vite(['resources/css/theme.css', 'resources/css/global.css', 'resources/css/app.css', 'resources/css/auth.css', 'resources/js/auth.js'])
     <title>Iniciar Sesión – Hardlan</title>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -343,7 +345,6 @@
                 }
             });
         } else {
-            // Safety patch: Ensure new properties exist even if auth.js is stale/cached
             const originalAuthPage = window.authPage;
             window.authPage = function() {
                 const data = originalAuthPage();
@@ -362,7 +363,6 @@
                             });
                         } catch (_) {}
                     };
-                    // Call it since init() might have already run or won't call it
                     data.initEmailVerifiedListener();
                 }
                 return data;
@@ -381,7 +381,6 @@
 
 <body class="min-h-screen relative transition-colors duration-300 bg-gray-50 dark:bg-[#171C25] text-gray-800 dark:text-gray-100">
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-[#171C25]">
-        <!-- Removed theme switcher -->
 
         <div class="w-full max-w-sm mx-auto">
             <div
@@ -389,7 +388,7 @@
                 <div class="text-center mb-4">
                     <div
                         class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-2 bg-gray-100 dark:bg-white border-2 border-white dark:border-gray-500 transition-colors">
-                        <img src="{{ $appLogoUrl ?? asset('images/logo-hardlan-blue.svg') }}" alt="Logo"
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo"
                             class="app-logo w-20 h-20 object-contain" style="--app-logo-max: 80px;">
                     </div>
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 serif-bold">
