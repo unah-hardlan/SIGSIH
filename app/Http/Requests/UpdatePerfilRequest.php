@@ -10,8 +10,8 @@ class UpdatePerfilRequest extends FormRequest
 
     public function rules(): array
     {
-        // Debido a que la forma plural "perfiles" no singulariza bien en inglés, Laravel genera el parámetro "perfile".
-        // Aseguramos capturar cualquier variante.
+        
+        
         $id = $this->route('perfile')
             ?? $this->route('perfil')
             ?? $this->route('id');

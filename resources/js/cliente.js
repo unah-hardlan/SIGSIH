@@ -1,6 +1,12 @@
 import "./bootstrap";
 import "./toast";
 import "./cliente/perfil";
+import "./cliente/solicitudes";
+import "./cliente/tickets";
+import "./cliente/cotizaciones";
+import "./cliente/ordenes";
+import "./cliente/facturas";
+import DOMPurify from "dompurify";
 
 import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -16,6 +22,33 @@ import {
     faHouseChimney,
     faClipboardQuestion,
     faPlus,
+    faTimes,
+    faLayerGroup,
+    faCheckCircle,
+    faHourglassHalf,
+    faSearch,
+    faEye,
+    faList,
+    faHourglass,
+    faCheck,
+    faBan,
+    faFilePen,
+    faTimesCircle,
+    faCalendarTimes,
+    faClock,
+    faUserCheck,
+    faSpinner,
+    faFolderOpen,
+    faHeadset,
+    faTicketAlt,
+    faExternalLinkAlt,
+    faExclamationCircle,
+    faStar,
+    faTools,
+    faTrash,
+    faArrowsRotate,
+    faDoorClosed,
+    faCheckDouble,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -30,7 +63,34 @@ library.add(
     faSun,
     faHouseChimney,
     faClipboardQuestion,
-    faPlus
+    faPlus,
+    faTimes,
+    faLayerGroup,
+    faCheckCircle,
+    faHourglassHalf,
+    faSearch,
+    faEye,
+    faList,
+    faHourglass,
+    faCheck,
+    faBan,
+    faFilePen,
+    faTimesCircle,
+    faCalendarTimes,
+    faClock,
+    faUserCheck,
+    faSpinner,
+    faFolderOpen,
+    faHeadset,
+    faTicketAlt,
+    faExternalLinkAlt,
+    faExclamationCircle,
+    faStar,
+    faTools,
+    faTrash,
+    faArrowsRotate,
+    faDoorClosed,
+    faCheckDouble
 );
 
 dom.watch();
@@ -70,7 +130,6 @@ document.addEventListener("alpine:init", () => {
 });
 
 window.__CLIENTE_BUNDLE_OK__ = true;
-console.debug("[cliente.js] bundle cargado");
 
 Alpine.store("navigation", {
     isTransitioning: false,
@@ -130,7 +189,7 @@ Alpine.store("navigation", {
 
     setContent(html) {
         const mainEl = document.querySelector("main");
-        mainEl.innerHTML = html;
+        mainEl.innerHTML = DOMPurify.sanitize(html);
         try {
             document.dispatchEvent(new CustomEvent("app:view-loaded"));
         } catch (_) {}

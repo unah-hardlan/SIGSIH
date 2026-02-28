@@ -21,6 +21,7 @@ export default defineConfig({
                 "resources/js/tabla-responsive.js",
                 "resources/js/spa-cliente.js",
                 "resources/js/cliente/perfil.js",
+                "resources/js/sidebar-cliente.js",
             ],
             refresh: true,
         }),

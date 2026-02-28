@@ -6,17 +6,13 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ConfigurarPerfilClienteRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    
     public function authorize(): bool
     {
         return auth()->check();
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
+    
     public function rules(): array
     {
         return [
@@ -60,14 +56,21 @@ class ConfigurarPerfilClienteRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,webp',
-                'max:2048' // 2MB máximo
-            ]
+                'max:2048' 
+            ],
+            'email_contacto' => [
+                'required',
+                'email',
+                'max:255',
+            ],
+            'email_verificado' => [
+                'nullable',
+                'in:0,1'
+            ],
         ];
     }
 
-    /**
-     * Get custom validation messages.
-     */
+   
     public function messages(): array
     {
         return [
@@ -96,12 +99,14 @@ class ConfigurarPerfilClienteRequest extends FormRequest
             'avatar.image' => 'El archivo debe ser una imagen.',
             'avatar.mimes' => 'La imagen debe ser de tipo: JPEG, PNG, JPG o WEBP (no se permiten GIF ni videos).',
             'avatar.max' => 'La imagen no puede ser mayor a 2MB.',
+
+            'email_contacto.required' => 'El email de contacto es obligatorio.',
+            'email_contacto.email' => 'El email de contacto no es válido.',
+            'email_contacto.max' => 'El email de contacto no puede exceder 255 caracteres.',
         ];
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     */
+  
     public function attributes(): array
     {
         return [
@@ -112,6 +117,7 @@ class ConfigurarPerfilClienteRequest extends FormRequest
             'dni' => 'DNI/documento',
             'id_genero_fk' => 'género',
             'avatar' => 'foto de perfil',
+            'email_contacto' => 'email de contacto',
         ];
     }
 }

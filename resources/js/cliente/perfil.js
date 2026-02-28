@@ -27,7 +27,9 @@ window.perfilData = function (el) {
         loading: false,
         empresaLoading: false,
         avatarFile: null,
+        avatarPreviewUrl: null,
         empresaAvatarFile: null,
+        empresaAvatarPreviewUrl: null,
         originalData: originalData,
         formData: { ...originalData },
         empresaForm: (function () {
@@ -41,6 +43,11 @@ window.perfilData = function (el) {
                         rtn: data.rtn || "",
                         descripcion_empresa: data.descripcion_empresa || "",
                         horario_atencion: data.horario_atencion || "",
+                        calle: data.calle || "",
+                        numero: data.numero || "",
+                        colonia: data.colonia || "",
+                        codigo_postal: data.codigo_postal || "",
+                        referencia: data.referencia || "",
                     };
                 }
             } catch (_) {}
@@ -50,10 +57,16 @@ window.perfilData = function (el) {
                 rtn: "",
                 descripcion_empresa: "",
                 horario_atencion: "",
+                calle: "",
+                numero: "",
+                colonia: "",
+                codigo_postal: "",
+                referencia: "",
             };
         })(),
 
-        twoFAEnabled: false,
+        twoFAEnabled: null,
+        twoFAReady: false,
         show2FASetup: false,
         twoFASetup: {
             loading: false,
@@ -74,6 +87,14 @@ window.perfilData = function (el) {
             loading: false,
         },
         pendingAction: null,
+
+        actividadData: {
+            facturas: { total: 0, pagadas: 0, pendientes: 0 },
+            cotizaciones: { total: 0, aprobadas: 0, enRevision: 0 },
+            ordenes: { total: 0, completadas: 0, enProceso: 0 },
+            solicitudes: { total: 0, resueltas: 0, enProceso: 0 },
+            tickets: { total: 0, cerrados: 0, abiertos: 0 },
+        },
 
         openEditModal() {
             this.showEditModal = true;
@@ -150,28 +171,47 @@ window.perfilData = function (el) {
             const file = e.target.files[0];
             if (!file) return;
             if (file.size > 2 * 1024 * 1024) {
-                alert("Archivo demasiado grande (máx 2MB)");
+                window.showToast?.(
+                    "Archivo demasiado grande (máx 2MB)",
+                    "error"
+                );
                 return;
             }
             if (!file.type.startsWith("image/")) {
-                alert("Solo imágenes");
+                window.showToast?.("Solo se permiten imágenes", "warning");
                 return;
             }
             this.empresaAvatarFile = file;
+            try {
+                if (this.empresaAvatarPreviewUrl)
+                    URL.revokeObjectURL(this.empresaAvatarPreviewUrl);
+                this.empresaAvatarPreviewUrl = URL.createObjectURL(file);
+            } catch (_) {}
         },
 
         handleAvatarChange(event) {
             const file = event.target.files[0];
             if (file) {
                 if (file.size > 2 * 1024 * 1024) {
-                    alert("El archivo es demasiado grande. Máximo 2MB.");
+                    window.showToast?.(
+                        "El archivo es demasiado grande. Máximo 2MB.",
+                        "error"
+                    );
                     return;
                 }
                 if (!file.type.startsWith("image/")) {
-                    alert("Solo se permiten archivos de imagen.");
+                    window.showToast?.(
+                        "Solo se permiten archivos de imagen.",
+                        "warning"
+                    );
                     return;
                 }
                 this.avatarFile = file;
+                try {
+                    if (this.avatarPreviewUrl)
+                        URL.revokeObjectURL(this.avatarPreviewUrl);
+                    this.avatarPreviewUrl = URL.createObjectURL(file);
+                } catch (_) {}
             }
         },
 
@@ -191,19 +231,25 @@ window.perfilData = function (el) {
 
         async updateProfile() {
             if (!this.formData.primer_nombre?.trim()) {
-                alert("El primer nombre es requerido");
+                window.showToast?.("El primer nombre es requerido", "warning");
                 return;
             }
             if (!this.formData.primer_apellido?.trim()) {
-                alert("El primer apellido es requerido");
+                window.showToast?.(
+                    "El primer apellido es requerido",
+                    "warning"
+                );
                 return;
             }
             if (!this.formData.dni?.trim()) {
-                alert("El DNI es requerido");
+                window.showToast?.("El DNI es requerido", "warning");
                 return;
             }
             if (!updateUrl) {
-                alert("No se encontró la URL de actualización.");
+                window.showToast?.(
+                    "No se encontró la URL de actualización.",
+                    "error"
+                );
                 return;
             }
 
@@ -234,15 +280,53 @@ window.perfilData = function (el) {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert("Perfil actualizado correctamente");
-                    window.location.reload();
+                    window.showToast?.(
+                        "Perfil actualizado correctamente",
+                        "success"
+                    );
+                    try {
+                        const headerName = document.getElementById(
+                            "perfil-header-nombre"
+                        );
+                        if (headerName) {
+                            const nombres = [
+                                this.formData.primer_nombre,
+                                this.formData.segundo_nombre,
+                                this.formData.primer_apellido,
+                                this.formData.segundo_apellido,
+                            ]
+                                .filter(Boolean)
+                                .join(" ");
+                            headerName.textContent =
+                                nombres || headerName.textContent;
+                        }
+
+                        if (this.avatarPreviewUrl) {
+                            const avatarBox = document.getElementById(
+                                "perfil-header-avatar"
+                            );
+                            if (avatarBox) {
+                                avatarBox.innerHTML = `
+                                    <img src="${this.avatarPreviewUrl}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border border-blue-200 dark:border-blue-300" />
+                                `;
+                            }
+                        }
+                    } catch (_) {}
+
+                    this.originalData = { ...this.formData };
+                    this.closeEditModal();
+                    this.avatarFile = null;
                 } else {
-                    alert(result.message || "Error al actualizar el perfil");
+                    window.showToast?.(
+                        result.message || "Error al actualizar el perfil",
+                        "error"
+                    );
                 }
             } catch (e) {
                 console.error("Error:", e);
-                alert(
-                    "Error al actualizar el perfil. Por favor, intenta nuevamente."
+                window.showToast?.(
+                    "Error al actualizar el perfil. Por favor, intenta nuevamente.",
+                    "error"
                 );
             } finally {
                 this.loading = false;
@@ -250,12 +334,12 @@ window.perfilData = function (el) {
         },
         async updateEmpresa() {
             if (!this.empresaForm.nombre_comercial.trim()) {
-                alert("Nombre comercial requerido");
+                window.showToast?.("Nombre comercial requerido", "warning");
                 return;
             }
             const empresaUrl = el?.dataset?.empresaUpdateUrl;
             if (!empresaUrl) {
-                alert("No se encontró URL de empresa");
+                window.showToast?.("No se encontró URL de empresa", "error");
                 return;
             }
             this.empresaLoading = true;
@@ -278,14 +362,23 @@ window.perfilData = function (el) {
                 });
                 const json = await resp.json();
                 if (json.success) {
-                    alert("Empresa actualizada correctamente");
-                    window.location.reload();
+                    window.showToast?.(
+                        "Empresa actualizada correctamente",
+                        "success"
+                    );
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
-                    alert(json.message || "Error al actualizar empresa");
+                    window.showToast?.(
+                        json.message || "Error al actualizar empresa",
+                        "error"
+                    );
                 }
             } catch (err) {
                 console.error(err);
-                alert("Error al actualizar empresa");
+                window.showToast?.("Error al actualizar empresa", "error");
             } finally {
                 this.empresaLoading = false;
             }
@@ -310,6 +403,8 @@ window.perfilData = function (el) {
                 }
             } catch (error) {
                 console.error("Error loading 2FA status:", error);
+            } finally {
+                this.twoFAReady = true;
             }
         },
 
@@ -340,11 +435,9 @@ window.perfilData = function (el) {
                     }),
                 });
                 if (!res.ok) {
-                    const err = await res
-                        .json()
-                        .catch(() => ({
-                            message: "No se pudo iniciar el setup 2FA",
-                        }));
+                    const err = await res.json().catch(() => ({
+                        message: "No se pudo iniciar el setup 2FA",
+                    }));
                     throw new Error(
                         err.message || "No se pudo iniciar el setup 2FA"
                     );
@@ -516,11 +609,9 @@ window.perfilData = function (el) {
                     }),
                 });
                 if (!res.ok) {
-                    const err = await res
-                        .json()
-                        .catch(() => ({
-                            message: "No se pudo desactivar 2FA",
-                        }));
+                    const err = await res.json().catch(() => ({
+                        message: "No se pudo desactivar 2FA",
+                    }));
                     throw new Error(err.message || "No se pudo desactivar 2FA");
                 }
                 this.twoFAEnabled = false;
@@ -603,8 +694,233 @@ window.perfilData = function (el) {
             }
         },
 
+        async loadActividadData() {
+            try {
+                const resFacturas = await fetch("/cliente/facturas-data", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                if (resFacturas.ok) {
+                    const dataFacturas = await resFacturas.json();
+                    const facturas = Array.isArray(dataFacturas.data)
+                        ? dataFacturas.data
+                        : [];
+
+                    this.actividadData.facturas.total = facturas.length;
+                    this.actividadData.facturas.pagadas = facturas.filter(
+                        (f) => {
+                            const estado = String(f.estado || "").toLowerCase();
+                            return [
+                                "pagada",
+                                "pagado",
+                                "pagadas",
+                                "pagados",
+                            ].includes(estado);
+                        }
+                    ).length;
+                    this.actividadData.facturas.pendientes = facturas.filter(
+                        (f) => {
+                            const estado = String(f.estado || "").toLowerCase();
+                            return [
+                                "pendiente",
+                                "pendientes",
+                                "por pagar",
+                            ].includes(estado);
+                        }
+                    ).length;
+                }
+
+                const resCotizaciones = await fetch(
+                    "/cliente/cotizaciones-data",
+                    {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                    }
+                );
+                if (resCotizaciones.ok) {
+                    const dataCotizaciones = await resCotizaciones.json();
+                    const cotizaciones = Array.isArray(dataCotizaciones.data)
+                        ? dataCotizaciones.data
+                        : [];
+
+                    this.actividadData.cotizaciones.total = cotizaciones.length;
+                    this.actividadData.cotizaciones.aprobadas =
+                        cotizaciones.filter((c) => {
+                            const codigo = String(
+                                c.estado_codigo || ""
+                            ).toLowerCase();
+                            const nombre = String(
+                                c.estado_nombre || ""
+                            ).toLowerCase();
+                            return (
+                                codigo === "apb" ||
+                                [
+                                    "aprobada",
+                                    "aprobado",
+                                    "aprobadas",
+                                    "aprobados",
+                                ].includes(nombre)
+                            );
+                        }).length;
+                    this.actividadData.cotizaciones.enRevision =
+                        cotizaciones.filter((c) => {
+                            const codigo = String(
+                                c.estado_codigo || ""
+                            ).toLowerCase();
+                            const nombre = String(
+                                c.estado_nombre || ""
+                            ).toLowerCase();
+                            return (
+                                codigo === "brd" ||
+                                [
+                                    "borrador",
+                                    "pendiente",
+                                    "en revisión",
+                                    "revision",
+                                ].includes(nombre)
+                            );
+                        }).length;
+                }
+
+                const resOrdenes = await fetch("/cliente/ordenes-data", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                if (resOrdenes.ok) {
+                    const dataOrdenes = await resOrdenes.json();
+                    const ordenes = Array.isArray(dataOrdenes.data)
+                        ? dataOrdenes.data
+                        : [];
+
+                    this.actividadData.ordenes.total = ordenes.length;
+                    this.actividadData.ordenes.completadas = ordenes.filter(
+                        (o) => {
+                            const estado = String(o.estado || "").toLowerCase();
+                            return [
+                                "completada",
+                                "completado",
+                                "completadas",
+                                "completados",
+                                "finalizada",
+                                "finalizado",
+                                "finalizadas",
+                                "finalizados",
+                            ].includes(estado);
+                        }
+                    ).length;
+                    this.actividadData.ordenes.enProceso = ordenes.filter(
+                        (o) => {
+                            const estado = String(o.estado || "").toLowerCase();
+                            return [
+                                "en proceso",
+                                "proceso",
+                                "en progreso",
+                                "progreso",
+                                "activa",
+                                "activo",
+                                "activas",
+                                "activos",
+                            ].includes(estado);
+                        }
+                    ).length;
+                }
+
+                const resSolicitudes = await fetch(
+                    "/cliente/solicitudes-data",
+                    {
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                    }
+                );
+                if (resSolicitudes.ok) {
+                    const dataSolicitudes = await resSolicitudes.json();
+                    const solicitudes = Array.isArray(dataSolicitudes.data)
+                        ? dataSolicitudes.data
+                        : [];
+
+                    this.actividadData.solicitudes.total = solicitudes.length;
+                    this.actividadData.solicitudes.resueltas =
+                        solicitudes.filter((s) => {
+                            const estado = String(s.estado || "").toLowerCase();
+                            return [
+                                "finalizada",
+                                "finalizado",
+                                "resuelta",
+                                "resuelto",
+                                "cerrada",
+                                "cerrado",
+                                "finalizadas",
+                                "finalizados",
+                                "resueltas",
+                                "resueltos",
+                                "cerradas",
+                                "cerrados",
+                            ].includes(estado);
+                        }).length;
+                    this.actividadData.solicitudes.enProceso =
+                        solicitudes.filter((s) => {
+                            const estado = String(s.estado || "").toLowerCase();
+                            return [
+                                "asignada",
+                                "asignado",
+                                "asignadas",
+                                "asignados",
+                                "en proceso",
+                                "proceso",
+                            ].includes(estado);
+                        }).length;
+                }
+
+                const resTickets = await fetch("/cliente/tickets-data", {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                });
+                if (resTickets.ok) {
+                    const dataTickets = await resTickets.json();
+                    const tickets = Array.isArray(dataTickets.data)
+                        ? dataTickets.data
+                        : [];
+
+                    this.actividadData.tickets.total = tickets.length;
+                    this.actividadData.tickets.cerrados = tickets.filter(
+                        (t) => {
+                            const estado = String(t.estado || "").toLowerCase();
+                            return [
+                                "cerrado",
+                                "cerrada",
+                                "cerrados",
+                                "cerradas",
+                                "finalizado",
+                                "finalizada",
+                                "finalizados",
+                                "finalizadas",
+                            ].includes(estado);
+                        }
+                    ).length;
+                    this.actividadData.tickets.abiertos = tickets.filter(
+                        (t) => {
+                            const estado = String(t.estado || "").toLowerCase();
+                            return [
+                                "abierto",
+                                "abierta",
+                                "abiertos",
+                                "abiertas",
+                                "pendiente",
+                                "pendientes",
+                                "en proceso",
+                                "proceso",
+                            ].includes(estado);
+                        }
+                    ).length;
+                }
+            } catch (error) {
+                console.error("Error cargando datos de actividad:", error);
+            }
+        },
+
         init() {
             this.load2FAStatus();
+            this.loadActividadData();
         },
     };
 };

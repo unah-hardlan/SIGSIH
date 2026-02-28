@@ -27,8 +27,15 @@ class OrdenServicio extends Model
         'observaciones',
         'diagnostico_tecnico',
         'diagnostico_cliente',
+        'calificacion_servicio',
         'id_estado_orden_servicio_fk',
         'id_cotizacion_fk',
+        'repuestos',
+    ];
+
+    
+    protected $casts = [
+        'repuestos' => 'array',
     ];
 
     protected static function boot()
@@ -56,27 +63,21 @@ class OrdenServicio extends Model
         });
     }
 
-    /**
-     * Relación con el modelo Solicitud
-     */
+    
     public function solicitudServicio()
     {
         return $this->belongsTo(Solicitud::class, 'id_solicitud_servicio_fk', 'id_solicitud_pk');
     }
 
-    /**
-     * Relación con el modelo Persona (técnico)
-     */
+    
     public function tecnico()
     {
         return $this->belongsTo(Persona::class, 'id_tecnico_fk', 'id_persona_pk');
     }
 
-    // Relación CalificacionServicio eliminada: la orden ya no guarda calificación directa
+    
 
-    /**
-     * Relación con el modelo Cotización
-     */
+    
     public function cotizacion()
     {
         return $this->belongsTo(Cotizacion::class, 'id_cotizacion_fk', 'id_cotizacion_pk');
@@ -90,5 +91,11 @@ class OrdenServicio extends Model
     public function estado()
     {
         return $this->belongsTo(EstadoOrdenServicio::class, 'id_estado_orden_servicio_fk', 'id_estado_orden_servicio_pk');
+    }
+
+    
+    public function detallesProducto()
+    {
+        return $this->hasMany(DetalleOrdenProducto::class, 'id_orden_servicio_fk', 'id_orden_servicio_pk');
     }
 }

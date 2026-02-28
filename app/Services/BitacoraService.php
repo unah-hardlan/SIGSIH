@@ -18,7 +18,7 @@ class BitacoraService
         $id = Objeto::where('nombre_objeto', $name)->value('id_objetos_pk')
             ?? Objeto::whereRaw('LOWER(nombre_objeto)=?', [strtolower($name)])->value('id_objetos_pk');
         if (!$id) {
-            // Auto-crear objeto si no existe
+            
             $tipoId = DB::table('tbl_tipo_objetos')
                 ->whereRaw("LOWER(nombre_tipo_objeto) LIKE 'configur%'")
                 ->value('id_tipo_objeto_pk')
@@ -32,7 +32,7 @@ class BitacoraService
                     'fecha_creacion' => now(),
                 ]);
             } catch (\Throwable $e) {
-                // ignore
+                
             }
         }
         if ($id) cache()->put($key, (int) $id, now()->addHours(6));
@@ -49,7 +49,7 @@ class BitacoraService
     {
         $user = Auth::user();
         $userId = $idUsuario ?? ($user->id_usuario_pk ?? null);
-        // Inferir objeto si no fue provisto
+        
         if ($idObjeto === null) {
             try {
                 $route = request()->route();
@@ -91,7 +91,7 @@ class BitacoraService
         if ($idObjeto) $bit->id_objetos_fk = $idObjeto;
         $bit->accion = $accion;
         if ($descripcion) $bit->descripcion = $descripcion;
-        // Nuevos campos de auditoría
+        
         $sanitize = function ($arr) {
             if (!is_array($arr)) return null;
             foreach (['contrasena', 'password', 'two_factor_secret', 'two_factor_recovery_codes'] as $k) {
@@ -106,11 +106,11 @@ class BitacoraService
         $bit->ip = $extra['ip'] ?? request()->ip();
         $bit->user_agent = $extra['user_agent'] ?? request()->userAgent();
 
-        // Auditoría explícita (por si la BD exige NOT NULL)
+        
         $bit->creado_por = $user->usuario ?? 'system';
         $bit->fecha_creacion = now();
         $bit->save();
-        // Señal para evitar duplicados en el middleware y dedupe por unos segundos
+        
         try {
             request()->attributes->set('bitacora_logged', true);
             $path = request()->path();

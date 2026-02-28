@@ -16,11 +16,15 @@ class StoreFacturaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'numero' => 'required|string|max:20|unique:tbl_factura,numero',
+            
+            'numero' => 'nullable|string|max:20|unique:tbl_factura,numero',
             'fecha' => 'required|date',
-            'oc' => 'nullable|string|max:20',
-            'subtotal' => 'required|numeric|min:0',
-            'total' => 'required|numeric|min:0',
+            
+            'oc' => 'nullable|string|max:100',
+            
+            'subtotal' => 'nullable|numeric|min:0',
+            'impuesto' => 'nullable|numeric|min:0',
+            'total' => 'nullable|numeric|min:0',
             'total_letras' => 'nullable|string|max:500',
             'id_estado_factura_fk' => 'required|integer|exists:tbl_estado_factura,id_estado_factura_pk',
             'id_cai_fk' => 'required|integer|exists:tbl_cai,id_cai_pk',
@@ -31,15 +35,13 @@ class StoreFacturaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'numero.required' => 'El número de factura es obligatorio',
             'numero.unique' => 'Ya existe una factura con ese número',
             'numero.max' => 'El número no puede exceder 20 caracteres',
             'fecha.required' => 'La fecha es obligatoria',
             'fecha.date' => 'La fecha debe ser válida',
-            'oc.max' => 'La OC no puede exceder 20 caracteres',
-            'subtotal.required' => 'El subtotal es obligatorio',
+            'oc.max' => 'La OC no puede exceder 100 caracteres',
             'subtotal.numeric' => 'El subtotal debe ser numérico',
-            'total.required' => 'El total es obligatorio',
+            'impuesto.numeric' => 'El impuesto debe ser numérico',
             'total.numeric' => 'El total debe ser numérico',
             'total_letras.max' => 'El total en letras no puede exceder 500 caracteres',
             'id_estado_factura_fk.required' => 'El estado de factura es obligatorio',

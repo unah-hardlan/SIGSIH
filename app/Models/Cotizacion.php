@@ -22,7 +22,9 @@ class Cotizacion extends Model
         'impuesto',
         'total_impuesto',
         'otros_cargos',
+        'impuesto_otros',
         'anticipo_requerido',
+        'id_estado_cotizacion_fk',
         'id_cliente_fk',
         'id_orden_servicio_fk',
     ];
@@ -36,26 +38,43 @@ class Cotizacion extends Model
         'impuesto' => 'float',
         'total_impuesto' => 'float',
         'otros_cargos' => 'float',
+        'impuesto_otros' => 'float',
         'anticipo_requerido' => 'float',
     ];
 
     protected static function boot()
     {
         parent::boot();
-        static::creating(function($model){
-            if(!$model->fecha_cotizacion){
+        static::creating(function ($model) {
+            if (!$model->fecha_cotizacion) {
                 $model->fecha_cotizacion = now();
+            }
+            
+            try {
+                if (!$model->id_estado_cotizacion_fk) {
+                    $estadoId = EstadoCotizacion::where('codigo', 'borrador')->value('id_estado_cotizacion_pk');
+                    if ($estadoId) {
+                        $model->id_estado_cotizacion_fk = $estadoId;
+                    }
+                }
+            } catch (\Throwable $e) {
+                
             }
         });
     }
 
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class,'id_cliente_fk','id_cliente_pk');
+        return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
     public function ordenServicio()
     {
         return $this->belongsTo(OrdenServicio::class, 'id_orden_servicio_fk', 'id_orden_servicio_pk');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(EstadoCotizacion::class, 'id_estado_cotizacion_fk', 'id_estado_cotizacion_pk');
     }
 }

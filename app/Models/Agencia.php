@@ -19,9 +19,15 @@ class Agencia extends Model
         'id_direccion_fk'
     ];
 
-    // Relación con Dirección (la agencia pertenece a una dirección)
+    
     public function direccion()
     {
         return $this->belongsTo(Direccion::class, 'id_direccion_fk', 'id_direccion_pk');
+    }
+
+    
+    public function clientes()
+    {
+        return $this->belongsToMany(\App\Models\Cliente::class, 'tbl_agencia_cliente', 'id_agencia_fk', 'id_cliente_fk', 'id_agencias_pk', 'id_cliente_pk');
     }
 }

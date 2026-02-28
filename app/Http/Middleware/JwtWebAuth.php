@@ -13,13 +13,10 @@ use App\Models\Usuario;
 
 class JwtWebAuth
 {
-    /**
-     * Protege rutas web leyendo el JWT desde la cookie HttpOnly "auth_token"
-     * (o, opcionalmente, desde el header Authorization: Bearer ...).
-     */
+    
     public function handle(Request $request, Closure $next): Response
     {
-        // 1) Leer token desde cookie o header Bearer
+        
         $token = $request->cookie('auth_token') ?: $request->bearerToken();
 
         if (!$token) {
@@ -52,11 +49,7 @@ class JwtWebAuth
         return $next($request);
     }
 
-    /**
-     * Respuesta para no autenticados.
-     * - Si es API o espera JSON => 401 JSON
-     * - Si es Web => redirect a login y (opcional) borrar cookie
-     */
+    
     protected function kick(Request $request, bool $forgetCookie = false): Response
     {
         if ($request->expectsJson() || $request->is('api/*')) {

@@ -38,7 +38,7 @@ class ProyectoActividad extends Model
     {
         parent::boot();
         
-        // Auto-asignar orden si no se especifica
+        
         static::creating(function($model){
             if(!$model->orden) {
                 $maxOrden = static::where('id_proyecto_fk', $model->id_proyecto_fk)->max('orden');
@@ -50,7 +50,7 @@ class ProyectoActividad extends Model
         });
     }
 
-    // Relaciones
+    
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'id_proyecto_fk', 'id_proyecto_pk');
@@ -61,7 +61,7 @@ class ProyectoActividad extends Model
         return $this->belongsTo(Persona::class, 'id_responsable_fk', 'id_persona_pk');
     }
 
-    // Scopes
+    
     public function scopePendientes($query)
     {
         return $query->where('estado_actividad', 'PENDIENTE');
@@ -82,7 +82,7 @@ class ProyectoActividad extends Model
         return $query->orderBy('orden');
     }
 
-    // Métodos de utilidad
+    
     public function marcarCompletada()
     {
         $this->update([

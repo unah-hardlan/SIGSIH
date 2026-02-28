@@ -10,7 +10,6 @@
             class="px-4 py-2 font-semibold focus:outline-none nunito-regular w-full sm:w-auto text-center">Parámetros</button>
     </div>
 
-    <!-- TAB Personalización -->
     <div x-show="tab === 'personalizacion'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
         <h2 class="text-lg font-semibold mb-4 nunito-bold text-gray-800 dark:text-white">Apariencia e Identidad</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -19,12 +18,20 @@
                     sistema</label>
                 <img :src="logoUrl" alt="Logo actual" class="mb-4 max-w-full object-contain"
                     :style="'height:' + logoHeight + 'px; width:auto'">
+                @perm(['Mantenimiento del sistema','Mantenimiento'], 'actualizacion')
                 <input type="file" @change="onLogoSelected($event)" accept="image/*"
                     class="block w-full max-w-full mb-2 nunito-regular text-sm
-                    file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100
-                    dark:file:bg-gray-700 dark:file:text-gray-200 dark:hover:file:bg-gray-600
-                    bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100
+                        dark:file:bg-gray-700 dark:file:text-gray-200 dark:hover:file:bg-gray-600
+                        bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                @else
+                <input type="file" accept="image/*" disabled title="Sin permiso para actualizar"
+                    class="block w-full max-w-full mb-2 nunito-regular text-sm opacity-60 cursor-not-allowed
+                        file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold
+                        file:bg-gray-200 file:text-gray-500
+                        bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3">
+                @endperm
             </div>
             <div>
                 <label class="block font-medium mb-1 nunito-bold text-gray-700 dark:text-gray-300">Altura del logo
@@ -49,14 +56,20 @@
         <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <span x-show="savedMessagePersonalizacion" x-text="savedMessagePersonalizacion"
                 class="text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900 px-3 py-1 rounded mr-3 text-sm"></span>
+            @perm(['Mantenimiento del sistema','Mantenimiento'], 'actualizacion')
             <button @click="guardarPersonalizacion()" type="button"
                 class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 transition-colors nunito-regular text-sm">
                 Guardar
             </button>
+            @else
+            <button type="button" disabled title="Sin permiso para actualizar"
+                class="px-4 py-2 bg-green-600/60 text-white rounded opacity-60 cursor-not-allowed nunito-regular text-sm">
+                Guardar
+            </button>
+            @endperm
         </div>
     </div>
 
-    <!-- TAB Parámetros -->
     <div x-show="tab === 'parametros'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold mb-4 nunito-bold text-gray-800 dark:text-white">Parámetros Generales</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -170,12 +183,17 @@
         <div class="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <span x-show="savedMessageParametros" x-text="savedMessageParametros"
                 class="text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900 px-3 py-1 rounded mr-3 text-sm"></span>
+            @perm(['Mantenimiento del sistema','Mantenimiento'], 'actualizacion')
             <button @click="guardarParametros()" type="button"
                 class="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-800 transition-colors nunito-regular text-sm">
                 Guardar
             </button>
+            @else
+            <button type="button" disabled title="Sin permiso para actualizar"
+                class="px-4 py-2 bg-green-600/60 text-white rounded opacity-60 cursor-not-allowed nunito-regular text-sm">
+                Guardar
+            </button>
+            @endperm
         </div>
     </div>
 </div>
-
-<!-- Inline x-data used (no external script execution dependency) -->

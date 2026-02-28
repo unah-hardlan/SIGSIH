@@ -19,22 +19,31 @@ class CotizacionResource extends JsonResource
             'impuesto' => (float) $this->impuesto,
             'total_impuesto' => (float) $this->total_impuesto,
             'otros_cargos' => $this->otros_cargos !== null ? (float) $this->otros_cargos : null,
+            'impuesto_otros' => $this->impuesto_otros !== null ? (float) $this->impuesto_otros : null,
             'anticipo_requerido' => $this->anticipo_requerido !== null ? (float) $this->anticipo_requerido : null,
+            'id_estado_cotizacion_fk' => $this->id_estado_cotizacion_fk,
             'id_cliente_fk' => $this->id_cliente_fk,
             'cliente_nombre' => $this->whenLoaded('cliente', function () {
                 if (!$this->cliente) return null;
-                // Empresa
+                
                 if ($this->cliente->relationLoaded('empresa') && $this->cliente->empresa) {
                     return $this->cliente->empresa->nombre_comercial
                         ?? $this->cliente->empresa->razon_social
                         ?? null;
                 }
-                // Persona (puede venir por belongsToMany personas)
+                
                 if ($this->cliente->relationLoaded('personas') && $this->cliente->personas && $this->cliente->personas->count()) {
                     $p = $this->cliente->personas->first();
                     return trim(($p->primer_nombre . ' ' . $p->segundo_nombre . ' ' . $p->primer_apellido . ' ' . $p->segundo_apellido));
                 }
                 return null;
+            }),
+            'estado' => $this->whenLoaded('estado', function () {
+                return [
+                    'id_estado_cotizacion_pk' => $this->estado->id_estado_cotizacion_pk,
+                    'nombre_estado' => $this->estado->nombre,
+                    'codigo' => $this->estado->codigo,
+                ];
             }),
             'cliente' => $this->whenLoaded('cliente', function () {
                 return [

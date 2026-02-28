@@ -1,18 +1,28 @@
 import "./bootstrap";
 import "./notifications";
 
+try {
+    if (!window.__ALLOW_CONSOLE__) {
+        const noop = () => {};
+        ["log", "info", "debug", "warn", "error"].forEach((m) => {
+            try {
+                console[m] = noop;
+            } catch (_) {}
+        });
+    }
+} catch (_) {}
+
 if (!window.__FETCH_LIMITER_INSTALLED__) {
     window.__FETCH_LIMITER_INSTALLED__ = true;
 
     (function installFetchLimiter() {
         const origFetch = window.fetch.bind(window);
-        const maxConcurrent = 6; // allow a handful in flight
+        const maxConcurrent = 6;
         let inFlight = 0;
         const queue = [];
 
         let tokenPromise = null;
 
-        // We no longer store or use a JS-accessible token; rely on HttpOnly cookie only
         function getToken() {
             return null;
         }
@@ -21,7 +31,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 if (window.axios && window.axios.defaults?.headers?.common) {
                     delete window.axios.defaults.headers.common[
                         "Authorization"
-                    ]; // ensure cleared
+                    ];
                 }
             } catch (_) {}
             try {
@@ -32,7 +42,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
         }
 
         async function fetchSessionToken(force = false) {
-            // Do not attempt to mint or persist a token in the client; cookie drives auth
             if (!force) return null;
 
             if (!tokenPromise) {
@@ -51,7 +60,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                             return null;
                         }
                         if (!res.ok) return null;
-                        // Ignore body; we don't keep token client-side
+
                         await res.json().catch(() => null);
                         return null;
                     } catch (_) {
@@ -72,7 +81,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
                 setToken,
                 ensureToken: (force = false) => fetchSessionToken(force),
                 headers() {
-                    // No Authorization header; rely on same-origin cookie
                     return { Accept: "application/json" };
                 },
             };
@@ -87,7 +95,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             merged.headers.set("X-Requested-With", "XMLHttpRequest");
             if (!merged.headers.has("Accept"))
                 merged.headers.set("Accept", "application/json");
-            // No Authorization header; rely on auth cookie
+
             return [input, merged];
         }
 
@@ -122,7 +130,6 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
             }
         }
 
-        // 🔹 Se mantiene dentro del IIFE, con acceso a todas las variables
         window.fetch = function limitedFetch(...args) {
             try {
                 const url = (args && args[0] ? args[0].toString() : "") || "";
@@ -138,15 +145,13 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
 
                 return new Promise((resolve, reject) => {
                     const run = async () => {
-                        // No token handling; cookie will be sent automatically
                         let [input, init] = withAuthToApi(args[0], args[1]);
                         let res = await origFetch(input, init);
                         if (res.status === 401) {
-                            // Retry once in case of transient conditions
                             [input, init] = withAuthToApi(args[0], args[1]);
                             res = await origFetch(input, init);
                         }
-                        // Si sigue 401, intentar detectar límite de sesiones para cerrar con mensaje claro
+
                         if (res.status === 401) {
                             try {
                                 const clone = res.clone();
@@ -184,6 +189,7 @@ if (!window.__FETCH_LIMITER_INSTALLED__) {
 }
 
 import "./usuarios";
+import "./gestion-db";
 import "./parametros";
 import "./perfil";
 import "./dashboard";
@@ -324,6 +330,13 @@ import {
     faConciergeBell,
     faFlag,
     faTags,
+    faHeadset,
+    faHome,
+    faExternalLinkAlt,
+    faExclamationCircle,
+    faStar,
+    faExchangeAlt,
+    faTicket,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -425,7 +438,14 @@ library.add(
     faSort,
     faConciergeBell,
     faFlag,
-    faTags
+    faTags,
+    faHeadset,
+    faExternalLinkAlt,
+    faExclamationCircle,
+    faStar,
+    faExchangeAlt,
+    faHome,
+    faTicket
 );
 dom.watch();
 
@@ -567,7 +587,6 @@ document.addEventListener("alpine:init", () => {
                 }
             } catch (_) {}
 
-            // Indicar a Livewire que el DOM ha cambiado para que re-inicialice componentes
             try {
                 if (
                     window.Livewire &&
@@ -628,7 +647,6 @@ document.addEventListener("alpine:init", () => {
         },
 
         updateState(url, viewName) {
-            // Actualizar la URL sin recargar la página
             window.history.pushState({ viewName }, "", url);
             this.currentView = viewName;
             try {
@@ -737,7 +755,6 @@ document.addEventListener("alpine:init", () => {
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-        // Verificar si la página es una SPA page
         const isSpaPage = document.querySelector('meta[name="spa-page"]');
         const spaView = document.querySelector('meta[name="spa-view"]');
 
@@ -760,17 +777,17 @@ if (typeof window !== "undefined" && window.Chart) {
 
 function initializeDashboardCharts() {
     const waitForCanvasReady = (el, cb, attempt = 0) => {
-        const max = 20; // ~3s total (20 * 150ms)
+        const max = 20;
         const delay = 150;
         if (!el) return;
         const rect = el.getBoundingClientRect();
         const ready =
             rect.width > 10 && rect.height > 10 && el.offsetParent !== null;
         if (ready) return cb();
-        if (attempt >= max) return cb(); // last resort: try anyway
+        if (attempt >= max) return cb();
         setTimeout(() => waitForCanvasReady(el, cb, attempt + 1), delay);
     };
-    // Helper reutilizable para fetch con parse seguro
+
     const tryFetch = async (url, headers) => {
         const r = await fetch(url, { headers });
         if (!r.ok) return { ok: false };
@@ -782,7 +799,6 @@ function initializeDashboardCharts() {
     };
     const ordenesEl = document.getElementById("ordenesChart");
     if (ordenesEl) {
-        // Destruir instancia existente si existe
         if (window.ordenesChartInstance) {
             window.ordenesChartInstance.destroy();
         }
@@ -1087,13 +1103,11 @@ function authHeaders() {
     };
 })();
 
-// Global Alpine factory for System Settings (Mantenimiento → General)
-// Registered here so it's available even when the view HTML is injected dynamically (inline <script> won't run on innerHTML)
 if (typeof window !== "undefined") {
     window.settingsState = function () {
         const initial = {
             appLogoUrl: "/images/logo.png",
-            appName: "SIGSIH",
+            appName: "Hardlan",
             appLogoHeight: 96,
         };
         return {
@@ -1316,7 +1330,6 @@ if (typeof window !== "undefined") {
     };
 }
 
-// Alpine component factory for Gestión de Órdenes (available globally for Livewire/SPA)
 if (typeof window !== "undefined") {
     window.gestionOrdenes = function (detalleBaseUrl) {
         return {
@@ -1336,6 +1349,10 @@ if (typeof window !== "undefined") {
             tecnicosOptions: [],
 
             cotizacionesOptions: [],
+
+            numbers: [],
+            currentPage: 1,
+            perPage: 10,
             estadosOrdenOptions: [],
             loadingCatalogos: {
                 solicitudes: false,
@@ -1349,25 +1366,30 @@ if (typeof window !== "undefined") {
             saving: false,
             deleting: false,
             errors: {},
+            validationErrors: {},
             formOrden: {
                 id: null,
                 id_solicitud_servicio_fk: "",
                 id_tecnico_fk: "",
                 id_estado_orden_servicio_fk: "",
-                fecha_recepcion: new Date().toISOString().slice(0, 10),
+                fecha_recepcion: null,
                 fecha_inicio: "",
                 fecha_finalizacion: "",
                 observaciones: "",
                 diagnostico_tecnico: "",
                 diagnostico_cliente: "",
                 id_cotizacion_fk: "",
+                calificacion_servicio: "",
+
+                repuestos: [],
             },
+
+            formOrdenAdd: { _touched: {} },
+            formOrdenEdit: { _touched: {} },
             getToken() {
-                // Cookie-based auth only; no JS-accessible token
                 return null;
             },
             setToken(token) {
-                // No-op in cookie-only mode
                 return null;
             },
             getCsrf() {
@@ -1377,14 +1399,12 @@ if (typeof window !== "undefined") {
                 return m ? m.content : "";
             },
             apiHeaders() {
-                // Do not add Authorization; rely on HttpOnly cookie
                 return {
                     "Content-Type": "application/json",
                     Accept: "application/json",
                 };
             },
             async requireAuth() {
-                // With cookie auth, assume authenticated; 401 will be handled per-request
                 this.authError = false;
                 return true;
             },
@@ -1415,15 +1435,230 @@ if (typeof window !== "undefined") {
                     id_solicitud_servicio_fk: "",
                     id_tecnico_fk: "",
                     id_estado_orden_servicio_fk: "",
-                    fecha_recepcion: new Date().toISOString().slice(0, 10),
+                    fecha_recepcion: this.localDateTimeNow(),
                     fecha_inicio: "",
                     fecha_finalizacion: "",
                     observaciones: "",
                     diagnostico_tecnico: "",
                     diagnostico_cliente: "",
                     id_cotizacion_fk: "",
+                    calificacion_servicio: "",
+                    repuestos: [],
                 };
                 this.errors = {};
+            },
+
+            validateTexto(value, fieldName, maxLength) {
+                const v = value == null ? "" : String(value);
+
+                this.validationErrors = this.validationErrors || {};
+                if (maxLength && v.length > maxLength) {
+                    this.validationErrors[fieldName] = [
+                        `Máximo ${maxLength} caracteres.`,
+                    ];
+                    return v.slice(0, maxLength);
+                }
+
+                if (this.validationErrors && this.validationErrors[fieldName]) {
+                    delete this.validationErrors[fieldName];
+                }
+                return v;
+            },
+            validateNumero(value, fieldName, maxDigits) {
+                if (value === null || value === undefined || value === "") {
+                    if (
+                        this.validationErrors &&
+                        this.validationErrors[fieldName]
+                    ) {
+                        delete this.validationErrors[fieldName];
+                    }
+                    return "";
+                }
+                const s = String(value).replace(/[^0-9]/g, "");
+                const limited = maxDigits ? s.slice(0, maxDigits) : s;
+                this.validationErrors = this.validationErrors || {};
+                if (maxDigits && s.length > maxDigits) {
+                    this.validationErrors[fieldName] = [
+                        `Máximo ${maxDigits} dígitos.`,
+                    ];
+                } else if (
+                    this.validationErrors &&
+                    this.validationErrors[fieldName]
+                ) {
+                    delete this.validationErrors[fieldName];
+                }
+
+                return limited === "" ? "" : Number(limited);
+            },
+
+            isRepuestosModalOpen: false,
+            repuestosModalOrder: null,
+            productsOptions: [],
+            repuestosList: [],
+            repuestosForm: {
+                id_producto_fk: "",
+                cantidad: 1,
+                _touched: {},
+            },
+            async fetchProducts() {
+                if (this.productsOptions && this.productsOptions.length) return;
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "200");
+                    const res = await fetch(
+                        "/api/productos?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al cargar productos");
+                    const json = await res.json();
+                    this.productsOptions = (json.data || []).map((p) => ({
+                        value: String(p.id_producto_pk),
+                        label:
+                            p.nombre_producto ||
+                            p.nombre ||
+                            "#" + p.id_producto_pk,
+                    }));
+                } catch (e) {
+                    console.error(e);
+                    this.showToast(
+                        "No se pudieron cargar los productos",
+                        "error"
+                    );
+                }
+            },
+            async openRepuestosModal(orden) {
+                this.repuestosModalOrder = orden;
+                this.repuestosList = [];
+                this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
+                await this.fetchProducts();
+
+                try {
+                    const params = new URLSearchParams();
+                    params.set("per_page", "200");
+                    params.set("id_orden_servicio_fk", String(orden.id));
+                    const res = await fetch(
+                        "/api/detalles-orden-producto?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al cargar detalles");
+                    const json = await res.json();
+                    const items = (json.data || [])
+                        .filter(
+                            (i) =>
+                                String(i.id_orden_servicio_fk) ===
+                                String(orden.id)
+                        )
+                        .map((i) => ({
+                            id: i.id_detalle_pk || i.id || null,
+                            id_producto_fk: i.id_producto_fk,
+                            producto_nombre:
+                                i.producto?.nombre_producto ||
+                                i.producto?.nombre ||
+                                i.producto_nombre ||
+                                "",
+                            cantidad: i.cantidad || 1,
+                        }));
+                    this.repuestosList = items;
+                } catch (e) {
+                    console.error(e);
+                }
+                this.isRepuestosModalOpen = true;
+            },
+            async addRepuesto() {
+                if (!this.repuestosModalOrder) return;
+                const payload = {
+                    id_orden_servicio_fk: Number(this.repuestosModalOrder.id),
+                    id_producto_fk: Number(this.repuestosForm.id_producto_fk),
+                    cantidad: Number(this.repuestosForm.cantidad) || 1,
+                };
+                try {
+                    const res = await fetch("/api/detalles-orden-producto", {
+                        method: "POST",
+                        headers: this.apiHeaders(),
+                        body: JSON.stringify(payload),
+                    });
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al agregar repuesto");
+                    const json = await res.json();
+                    const item = json.data || json;
+                    this.repuestosList.push({
+                        id: item.id_detalle_pk || item.id || null,
+                        id_producto_fk: item.id_producto_fk,
+                        producto_nombre:
+                            item.producto?.nombre_producto ||
+                            item.producto?.nombre ||
+                            "",
+                        cantidad: item.cantidad,
+                    });
+                    this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
+
+                    this.fetchOrdenes();
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("No se pudo agregar el repuesto", "error");
+                }
+            },
+
+            addRepuestoToForm() {
+                try {
+                    if (!this.repuestosForm.id_producto_fk) {
+                        this.showToast("Seleccione un producto", "error");
+                        return;
+                    }
+                    const prodId = String(this.repuestosForm.id_producto_fk);
+                    const label =
+                        (this.productsOptions || []).find(
+                            (p) => String(p.value) === prodId
+                        )?.label || "#" + prodId;
+                    const item = {
+                        id_producto_fk: Number(prodId),
+                        cantidad: Number(this.repuestosForm.cantidad) || 1,
+                        producto_nombre: label,
+                    };
+                    if (!Array.isArray(this.formOrden.repuestos))
+                        this.formOrden.repuestos = [];
+                    this.formOrden.repuestos.push(item);
+                    this.repuestosForm = { id_producto_fk: "", cantidad: 1 };
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("No se pudo agregar el repuesto", "error");
+                }
+            },
+            removeRepuestoFromForm(idx) {
+                if (!Array.isArray(this.formOrden.repuestos)) return;
+                this.formOrden.repuestos.splice(idx, 1);
+            },
+            async removeRepuesto(item) {
+                if (!item || !item.id) return;
+                try {
+                    const res = await fetch(
+                        "/api/detalles-orden-producto/" + item.id,
+                        { method: "DELETE", headers: this.apiHeaders() }
+                    );
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Error al eliminar repuesto");
+                    this.repuestosList = this.repuestosList.filter(
+                        (r) => r.id !== item.id
+                    );
+                    this.fetchOrdenes();
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("No se pudo eliminar el repuesto", "error");
+                }
             },
             formatDate(value) {
                 if (!value) return "";
@@ -1436,23 +1671,142 @@ if (typeof window !== "undefined") {
                     ? cleaned.split("T")[0]
                     : cleaned.split(" ")[0];
             },
+            localDateTimeNow() {
+                const d = new Date();
+                const pad = (n) => String(n).padStart(2, "0");
+                const yyyy = d.getFullYear();
+                const mm = pad(d.getMonth() + 1);
+                const dd = pad(d.getDate());
+                const hh = pad(d.getHours());
+                const min = pad(d.getMinutes());
+                return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+            },
+            normalizeDateTime(value) {
+                if (!value) return null;
+                const v = String(value).trim();
+                if (!v) return null;
+
+                if (v.includes(" ") && v.split(" ").length >= 2) {
+                    const [d, t] = v.split(" ");
+                    if (!t.includes(":")) return d + " 00:00:00";
+
+                    const parts = t.split(":");
+                    if (parts.length === 2)
+                        return `${d} ${parts[0]}:${parts[1]}:00`;
+                    return `${d} ${t}`;
+                }
+
+                if (v.includes("T")) {
+                    const [d, time] = v.split("T");
+                    if (!time) return `${d} 00:00:00`;
+                    const parts = time.split(":");
+                    if (parts.length === 2)
+                        return `${d} ${parts[0]}:${parts[1]}:00`;
+
+                    return `${d} ${time}`;
+                }
+
+                if (v.match(/^\d{4}-\d{2}-\d{2}$/)) return `${v} 00:00:00`;
+                return v;
+            },
+            toInputDatetime(value) {
+                if (!value) return "";
+                const v = String(value).trim();
+                if (!v) return "";
+
+                if (v.includes("T")) {
+                    const [d, t] = v.split("T");
+                    if (!t) return `${d}T00:00`;
+                    const parts = t.split(":");
+                    if (parts.length >= 2)
+                        return `${d}T${parts[0]}:${parts[1]}`;
+                    return `${d}T00:00`;
+                }
+
+                if (v.includes(" ")) {
+                    const [d, t] = v.split(" ");
+                    if (!t) return `${d}T00:00`;
+                    const parts = t.split(":");
+                    if (parts.length >= 2)
+                        return `${d}T${parts[0]}:${parts[1]}`;
+                    return `${d}T00:00`;
+                }
+
+                if (v.match(/^\d{4}-\d{2}-\d{2}$/)) return `${v}T00:00`;
+
+                const date = new Date(v);
+                if (!isNaN(date.getTime())) {
+                    const pad = (n) => String(n).padStart(2, "0");
+                    const yyyy = date.getFullYear();
+                    const mm = pad(date.getMonth() + 1);
+                    const dd = pad(date.getDate());
+                    const hh = pad(date.getHours());
+                    const min = pad(date.getMinutes());
+                    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+                }
+                return "";
+            },
+
+            formatCotLabel(item) {
+                if (!item) return "";
+
+                if (item.codigo_cotizacion)
+                    return String(item.codigo_cotizacion);
+                if (item.codigo) return String(item.codigo);
+
+                const fechaRaw =
+                    item.fecha_cotizacion ||
+                    item.fecha ||
+                    item.created_at ||
+                    item.fecha_creacion ||
+                    null;
+                let fechaStr = "000000000000";
+                if (fechaRaw) {
+                    try {
+                        const d = new Date(fechaRaw);
+                        if (!isNaN(d.getTime())) {
+                            const pad = (n) => String(n).padStart(2, "0");
+                            fechaStr = `${d.getFullYear()}${pad(
+                                d.getMonth() + 1
+                            )}${pad(d.getDate())}${pad(d.getHours())}${pad(
+                                d.getMinutes()
+                            )}`;
+                        }
+                    } catch (_) {}
+                }
+                const id = String(
+                    item.id_cotizacion_pk || item.id || item.id_cotizacion || ""
+                );
+                const pad4 = id ? id.padStart(4, "0") : "0000";
+                return `COT-${fechaStr}-${pad4}`;
+            },
             mapOrden(orden) {
                 const solicitud = orden.solicitud_servicio || {};
                 const cliente = solicitud.cliente || {};
                 const empresa = cliente.empresa || {};
+                const persona = cliente.persona || {};
                 const contacto = solicitud.contacto || {};
                 const tecnico = orden.tecnico || {};
-                const calificacion = {}; // calificación eliminada
+                const calificacionValor =
+                    orden.calificacion_servicio ??
+                    orden.raw?.calificacion_servicio ??
+                    null;
                 const estado = orden.estado || {};
                 const cotizacion =
                     orden.cotizacion || orden.cotizacion_generada || {};
-                const fechaRecepcion = this.formatDate(orden.fecha_recepcion);
-                const fechaInicio = this.formatDate(orden.fecha_inicio);
-                const fechaFinalizacion = this.formatDate(
-                    orden.fecha_finalizacion
-                );
-                const calificacionValor = calificacion.calificacion ?? null;
-                // Estado: derive name even if relation missing, using FK + options
+                const fechaRecepcion =
+                    orden.fecha_recepcion_formatted ||
+                    orden.fecha_recepcion ||
+                    this.formatDate(orden.fecha_recepcion);
+                const fechaInicio =
+                    orden.fecha_inicio_formatted ||
+                    orden.fecha_inicio ||
+                    this.formatDate(orden.fecha_inicio);
+                const fechaFinalizacion =
+                    orden.fecha_finalizacion_formatted ||
+                    orden.fecha_finalizacion ||
+                    this.formatDate(orden.fecha_finalizacion);
+
                 const estadoIdFromRel =
                     estado.id_estado_orden_servicio_pk ?? null;
                 const estadoIdFromTop =
@@ -1488,7 +1842,17 @@ if (typeof window !== "undefined") {
                     numero_solicitud_cliente:
                         solicitud.numero_solicitud_cliente || null,
                     cliente_nombre:
-                        empresa.nombre_comercial || empresa.razon_social || "",
+                        empresa.nombre_comercial ||
+                        empresa.razon_social ||
+                        [
+                            persona.primer_nombre,
+                            persona.segundo_nombre,
+                            persona.primer_apellido,
+                            persona.segundo_apellido,
+                        ]
+                            .filter(Boolean)
+                            .join(" ") ||
+                        "",
                     contacto_valor: contacto.valor_contacto || "",
                     contacto_tipo: contacto.tipo_contacto || "",
                     id_tecnico: orden.id_tecnico_fk,
@@ -1510,6 +1874,45 @@ if (typeof window !== "undefined") {
                     estado: estadoNombre,
                     estado_id: estadoId ? Number(estadoId) : null,
                     estado_codigo: estado.codigo || "",
+                    calificacion_servicio: calificacionValor || null,
+                    repuestos_count:
+                        orden.repuestos_count !== undefined
+                            ? orden.repuestos_count
+                            : Array.isArray(
+                                  orden.repuestos || orden.raw?.repuestos
+                              )
+                            ? (orden.repuestos || orden.raw?.repuestos).length
+                            : null,
+                    repuestos_summary: (function () {
+                        try {
+                            const arr =
+                                orden.repuestos || orden.raw?.repuestos || null;
+                            if (Array.isArray(arr) && arr.length) {
+                                const names = arr
+                                    .map(
+                                        (r) =>
+                                            r.nombre ||
+                                            r.producto_nombre ||
+                                            r.repuesto ||
+                                            (r.id_producto
+                                                ? "#" + r.id_producto
+                                                : "")
+                                    )
+                                    .filter(Boolean);
+                                if (names.length <= 3) return names.join(", ");
+                                return (
+                                    names.slice(0, 3).join(", ") +
+                                    " +" +
+                                    (names.length - 3)
+                                );
+                            }
+                            if (orden.repuestos_count)
+                                return String(orden.repuestos_count) + " rep.";
+                        } catch (e) {
+                            return null;
+                        }
+                        return null;
+                    })(),
                     raw: orden,
                 };
             },
@@ -1540,16 +1943,30 @@ if (typeof window !== "undefined") {
                 if (!exists) {
                     this[listName].push({
                         value: normalizedValue,
-                        label: label || `ID ${normalizedValue}`,
+                        label: String(label ?? `ID ${normalizedValue}`),
                     });
                     this.sortOptions(listName);
                 }
             },
             sortOptions(listName) {
                 if (!Array.isArray(this[listName])) return;
-                this[listName].sort((a, b) =>
-                    a.label.localeCompare(b.label, "es")
-                );
+                this[listName].sort((a, b) => {
+                    const la =
+                        a && a.label !== undefined && a.label !== null
+                            ? String(a.label)
+                            : "";
+                    const lb =
+                        b && b.label !== undefined && b.label !== null
+                            ? String(b.label)
+                            : "";
+                    try {
+                        return la.localeCompare(lb, "es");
+                    } catch (e) {
+                        if (la < lb) return -1;
+                        if (la > lb) return 1;
+                        return 0;
+                    }
+                });
             },
             ensureOrdenOptions(orden) {
                 if (!orden) return;
@@ -1577,21 +1994,25 @@ if (typeof window !== "undefined") {
                 }
 
                 if (orden.id_cotizacion) {
-                    this.ensureOption(
-                        "cotizacionesOptions",
-                        orden.id_cotizacion,
-                        String(orden.id_cotizacion)
-                    );
+                    const cotId = String(orden.id_cotizacion);
+                    let label = `COT-${cotId.padStart(4, "0")}`;
+                    try {
+                        const found = (this.cotizacionesOptions || []).find(
+                            (o) => String(o.value) === cotId
+                        );
+                        if (found && found.label) label = found.label;
+                    } catch (_) {}
+                    this.ensureOption("cotizacionesOptions", cotId, label);
                 }
             },
             async fetchCatalogos() {
                 if (!(await this.requireAuth())) {
                     return;
                 }
+
                 await Promise.all([
                     this.fetchSolicitudes(),
                     this.fetchTecnicos(),
-                    this.fetchCotizaciones(),
                 ]);
             },
             async fetchSolicitudes() {
@@ -1608,15 +2029,46 @@ if (typeof window !== "undefined") {
                         this.handleUnauthorized();
                         return;
                     }
-                    if (!response.ok)
+
+                    let raw = [];
+                    if (response.ok) {
+                        try {
+                            const parsed = await response
+                                .json()
+                                .catch(() => null);
+                            if (Array.isArray(parsed)) raw = parsed;
+                            else if (Array.isArray(parsed?.data))
+                                raw = parsed.data;
+                            else if (Array.isArray(parsed?.items))
+                                raw = parsed.items;
+                            else raw = [];
+                        } catch (e) {
+                            console.debug(
+                                "fetchSolicitudes: parse error, using empty array",
+                                e
+                            );
+                            raw = [];
+                        }
+                    } else {
                         throw new Error("Error al cargar solicitudes");
-                    const json = await response.json();
-                    const opciones = (json.data || []).map((item) => ({
-                        value: String(item.id_solicitud_pk),
+                    }
+
+                    const opciones = (raw || []).map((item) => ({
+                        value: String(
+                            item.id_solicitud_pk || item.id || item.id_solicitud
+                        ),
+
                         label:
                             item.nombre_solicitud ||
-                            `Solicitud #${item.id_solicitud_pk}`,
+                            item.numero_solicitud_acf ||
+                            item.numero_solicitud_cliente ||
+                            `Solicitud #${
+                                item.id_solicitud_pk ||
+                                item.id ||
+                                item.id_solicitud
+                            }`,
                     }));
+
                     this.solicitudesOptions = opciones;
                     this.sortOptions("solicitudesOptions");
                     this.ordenes.forEach((orden) =>
@@ -1636,7 +2088,6 @@ if (typeof window !== "undefined") {
                 if (this.authError) return;
                 this.loadingCatalogos.tecnicos = true;
                 try {
-                    // Usar el mismo catálogo que Tickets: solo usuarios con rol Técnico (principal o secundario)
                     const response = await fetch("/api/tecnicos", {
                         headers: this.apiHeaders(),
                     });
@@ -1698,8 +2149,12 @@ if (typeof window !== "undefined") {
                         throw new Error("Error al cargar cotizaciones");
                     const json = await response.json();
                     const opciones = (json.data || []).map((item) => ({
-                        value: String(item.id_cotizacion_pk),
-                        label: String(item.id_cotizacion_pk),
+                        value: String(
+                            item.id_cotizacion_pk ||
+                                item.id ||
+                                item.id_cotizacion
+                        ),
+                        label: this.formatCotLabel(item),
                     }));
                     this.cotizacionesOptions = opciones;
                     this.sortOptions("cotizacionesOptions");
@@ -1716,13 +2171,132 @@ if (typeof window !== "undefined") {
                     this.loadingCatalogos.cotizaciones = false;
                 }
             },
+
+            async fetchCotizacionesForCliente(clienteId) {
+                if (this.authError) return;
+                this.loadingCatalogos.cotizaciones = true;
+                try {
+                    if (!clienteId) {
+                        await this.fetchCotizaciones();
+                        return;
+                    }
+                    const params = new URLSearchParams();
+                    params.set("per_page", "100");
+
+                    params.set("id_cliente_fk", String(clienteId));
+                    params.set("sort", "fecha");
+                    params.set("direction", "desc");
+                    let response = await fetch(
+                        "/api/cotizaciones?" + params.toString(),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        const params2 = new URLSearchParams();
+                        params2.set("per_page", "100");
+                        params2.set("cliente_id", String(clienteId));
+                        params2.set("sort", "fecha");
+                        params2.set("direction", "desc");
+                        response = await fetch(
+                            "/api/cotizaciones?" + params2.toString(),
+                            { headers: this.apiHeaders() }
+                        );
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return;
+                        }
+                    }
+                    if (!response.ok)
+                        throw new Error(
+                            "Error al cargar cotizaciones por cliente"
+                        );
+                    const parsed = await response.json().catch(() => null);
+                    const raw = Array.isArray(parsed)
+                        ? parsed
+                        : Array.isArray(parsed?.data)
+                        ? parsed.data
+                        : [];
+                    const opciones = (raw || []).map((item) => ({
+                        value: String(
+                            item.id_cotizacion_pk ||
+                                item.id ||
+                                item.id_cotizacion
+                        ),
+                        label: this.formatCotLabel(item),
+                    }));
+                    this.cotizacionesOptions = opciones;
+                    this.sortOptions("cotizacionesOptions");
+                } catch (e) {
+                    console.error(e);
+
+                    try {
+                        await this.fetchCotizaciones();
+                    } catch (_) {}
+                } finally {
+                    this.loadingCatalogos.cotizaciones = false;
+                }
+            },
+
+            async onSolicitudChange(solicitudId) {
+                if (!solicitudId) {
+                    this.cotizacionesOptions = [];
+                    return;
+                }
+                try {
+                    const response = await fetch(
+                        "/api/solicitudes/" + String(solicitudId),
+                        { headers: this.apiHeaders() }
+                    );
+                    if (response.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+                    if (!response.ok) {
+                        await this.fetchCotizaciones();
+                        return;
+                    }
+                    const json = await response.json().catch(() => null);
+                    const full = json?.data || json || {};
+
+                    const clienteId =
+                        full.id_cliente_fk ||
+                        full.cliente?.id ||
+                        full.cliente?.id_cliente_pk ||
+                        full.cliente_id ||
+                        full.id_cliente ||
+                        null;
+                    if (clienteId) {
+                        await this.fetchCotizacionesForCliente(clienteId);
+                    } else {
+                        await this.fetchCotizaciones();
+                    }
+                } catch (e) {
+                    console.error("onSolicitudChange error", e);
+                    await this.fetchCotizaciones();
+                }
+            },
+            isVerMasModalOpen: false,
+            ordenSeleccionada: null,
+
+            openVerMasModal(orden) {
+                this.ordenSeleccionada = orden;
+                this.isVerMasModalOpen = true;
+            },
+
+            detalleUrl(id) {
+                return detalleUrl.replace("ID_ORDEN", id);
+            },
             async fetchOrdenes() {
                 if (!(await this.requireAuth()) || this.authError) return;
                 this.loadingOrdenes = true;
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "100");
-                    // Server-side filtering params
+
                     if (
                         this.searchOrden &&
                         String(this.searchOrden).trim() !== ""
@@ -1762,6 +2336,7 @@ if (typeof window !== "undefined") {
                     this.ordenes.forEach((orden) =>
                         this.ensureOrdenOptions(orden)
                     );
+                    this.numbers = this.ordenes;
                     this.actualizarTecnicos();
                 } catch (error) {
                     console.error(error);
@@ -1775,12 +2350,17 @@ if (typeof window !== "undefined") {
             },
             openCreateOrden() {
                 this.resetForm();
+
+                this.fetchProducts().catch(() => {});
+
+                this.formOrdenAdd = this.formOrdenAdd || { _touched: {} };
+                this.formOrdenAdd._touched = {};
                 this.isModalOpen = true;
             },
             openEditOrden(orden) {
                 this.errors = {};
                 this.ordenToEdit = orden;
-                // Carga perezosa del registro actualizado desde la API
+
                 (async () => {
                     try {
                         if (!(await this.requireAuth())) return;
@@ -1795,9 +2375,10 @@ if (typeof window !== "undefined") {
                         if (!res.ok)
                             throw new Error("Error al cargar la orden");
                         const json = await res.json();
-                        const full = json.data || json; // Resource envuelve en data
+                        const full = json.data || json;
                         const mapped = this.mapOrden(full);
                         this.ensureOrdenOptions(mapped);
+
                         this.formOrden = {
                             id: mapped.id,
                             id_solicitud_servicio_fk: mapped.id_solicitud ?? "",
@@ -1805,19 +2386,50 @@ if (typeof window !== "undefined") {
                             id_estado_orden_servicio_fk: mapped.estado_id
                                 ? String(mapped.estado_id)
                                 : "",
-                            fecha_recepcion: mapped.fecha_recepcion || "",
-                            fecha_inicio: mapped.fecha_inicio || "",
-                            fecha_finalizacion: mapped.fecha_finalizacion || "",
+                            fecha_recepcion: this.toInputDatetime(
+                                mapped.fecha_recepcion ||
+                                    mapped.fecha_recepcion_formatted ||
+                                    mapped.fecha_recepcion_formatted
+                            ),
+                            fecha_inicio: this.toInputDatetime(
+                                mapped.fecha_inicio ||
+                                    mapped.fecha_inicio_formatted
+                            ),
+                            fecha_finalizacion: this.toInputDatetime(
+                                mapped.fecha_finalizacion ||
+                                    mapped.fecha_finalizacion_formatted
+                            ),
                             observaciones: mapped.observaciones || "",
                             diagnostico_tecnico:
                                 mapped.diagnostico_tecnico || "",
                             diagnostico_cliente:
                                 mapped.diagnostico_cliente || "",
                             id_cotizacion_fk: mapped.id_cotizacion ?? "",
+                            calificacion_servicio:
+                                full.calificacion_servicio ??
+                                mapped.calificacion_servicio ??
+                                "",
+                            repuestos:
+                                full.repuestos && Array.isArray(full.repuestos)
+                                    ? full.repuestos.map((r) => ({
+                                          id_producto_fk:
+                                              r.id_producto_fk ||
+                                              r.id_producto ||
+                                              r.id_producto_fk,
+                                          cantidad: r.cantidad || r.cant || 1,
+                                          producto_nombre:
+                                              r.nombre ||
+                                              r.producto_nombre ||
+                                              r.repuesto ||
+                                              "",
+                                      }))
+                                    : mapped.raw?.repuestos || [],
                         };
+
+                        this.fetchProducts().catch(() => {});
                     } catch (e) {
                         console.error(e);
-                        // Fallback a datos en memoria si falla la carga
+
                         this.formOrden = {
                             id: orden.id,
                             id_solicitud_servicio_fk: orden.id_solicitud ?? "",
@@ -1825,17 +2437,35 @@ if (typeof window !== "undefined") {
                             id_estado_orden_servicio_fk: orden.estado_id
                                 ? String(orden.estado_id)
                                 : "",
-                            fecha_recepcion: orden.fecha_recepcion || "",
-                            fecha_inicio: orden.fecha_inicio || "",
-                            fecha_finalizacion: orden.fecha_finalizacion || "",
+                            fecha_recepcion: this.toInputDatetime(
+                                orden.raw?.fecha_recepcion ||
+                                    orden.fecha_recepcion
+                            ),
+                            fecha_inicio: this.toInputDatetime(
+                                orden.raw?.fecha_inicio || orden.fecha_inicio
+                            ),
+                            fecha_finalizacion: this.toInputDatetime(
+                                orden.raw?.fecha_finalizacion ||
+                                    orden.fecha_finalizacion
+                            ),
                             observaciones: orden.observaciones || "",
                             diagnostico_tecnico:
                                 orden.diagnostico_tecnico || "",
                             diagnostico_cliente:
                                 orden.diagnostico_cliente || "",
                             id_cotizacion_fk: orden.id_cotizacion ?? "",
+                            calificacion_servicio:
+                                orden.raw?.calificacion_servicio ?? "",
+                            repuestos:
+                                orden.raw && orden.raw.repuestos
+                                    ? orden.raw.repuestos
+                                    : [],
                         };
                     } finally {
+                        this.formOrdenEdit = this.formOrdenEdit || {
+                            _touched: {},
+                        };
+                        this.formOrdenEdit._touched = {};
                         this.isEditModalOpen = true;
                     }
                 })();
@@ -1862,10 +2492,15 @@ if (typeof window !== "undefined") {
                         .id_estado_orden_servicio_fk
                         ? Number(this.formOrden.id_estado_orden_servicio_fk)
                         : null,
-                    fecha_recepcion: this.formOrden.fecha_recepcion || null,
-                    fecha_inicio: this.formOrden.fecha_inicio || null,
-                    fecha_finalizacion:
-                        this.formOrden.fecha_finalizacion || null,
+                    fecha_recepcion: this.normalizeDateTime(
+                        this.formOrden.fecha_recepcion
+                    ),
+                    fecha_inicio: this.normalizeDateTime(
+                        this.formOrden.fecha_inicio
+                    ),
+                    fecha_finalizacion: this.normalizeDateTime(
+                        this.formOrden.fecha_finalizacion
+                    ),
                     observaciones: this.formOrden.observaciones || null,
                     diagnostico_tecnico:
                         this.formOrden.diagnostico_tecnico || null,
@@ -1874,6 +2509,18 @@ if (typeof window !== "undefined") {
                     id_cotizacion_fk: this.formOrden.id_cotizacion_fk
                         ? Number(this.formOrden.id_cotizacion_fk)
                         : null,
+                    calificacion_servicio:
+                        this.formOrden.calificacion_servicio || null,
+
+                    repuestos: Array.isArray(this.formOrden.repuestos)
+                        ? this.formOrden.repuestos.map((r) => ({
+                              id_producto_fk:
+                                  Number(
+                                      r.id_producto_fk || r.id_producto || 0
+                                  ) || null,
+                              cantidad: Number(r.cantidad) || 1,
+                          }))
+                        : [],
                 };
             },
             async fetchEstadosOrden() {
@@ -1914,7 +2561,6 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
-                    // Client-side required validation before sending to API
                     if (!this.validateForm()) {
                         this.saving = false;
                         return;
@@ -1960,7 +2606,6 @@ if (typeof window !== "undefined") {
                 this.saving = true;
                 this.errors = {};
                 try {
-                    // Client-side required validation before sending to API
                     if (!this.validateForm()) {
                         this.saving = false;
                         return;
@@ -2046,8 +2691,6 @@ if (typeof window !== "undefined") {
                 else this.createOrden();
             },
             validateForm() {
-                // Minimal required set according to UI: Solicitud, Técnico y Cotización
-                // Estado, fechas y textos se mantienen opcionales a menos que se pida explícitamente
                 const errs = {};
                 const requiredMsg = "Este campo es obligatorio.";
                 if (!this.formOrden.id_solicitud_servicio_fk) {
@@ -2059,6 +2702,26 @@ if (typeof window !== "undefined") {
                 if (!this.formOrden.id_cotizacion_fk) {
                     errs.id_cotizacion_fk = [requiredMsg];
                 }
+
+                if (
+                    this.formOrden.fecha_inicio &&
+                    this.formOrden.fecha_finalizacion
+                ) {
+                    const fechaInicio = new Date(this.formOrden.fecha_inicio);
+                    const fechaFinalizacion = new Date(
+                        this.formOrden.fecha_finalizacion
+                    );
+
+                    if (fechaInicio > fechaFinalizacion) {
+                        errs.fecha_inicio = [
+                            "La fecha de inicio no puede ser mayor que la fecha de finalización.",
+                        ];
+                        errs.fecha_finalizacion = [
+                            "La fecha de finalización no puede ser menor que la fecha de inicio.",
+                        ];
+                    }
+                }
+
                 this.errors = errs;
                 if (Object.keys(errs).length) {
                     this.showToast(
@@ -2131,9 +2794,34 @@ if (typeof window !== "undefined") {
             toggleRow(id) {
                 this.expandedRows[id] = !this.expandedRows[id];
             },
+
+            paginatedOrdenes() {
+                const start = (this.currentPage - 1) * this.perPage;
+                const end = start + this.perPage;
+                return this.filteredOrdenes().slice(start, end);
+            },
+            totalPages() {
+                return Math.ceil(this.filteredOrdenes().length / this.perPage);
+            },
+            nextPage() {
+                if (this.currentPage < this.totalPages()) {
+                    this.currentPage++;
+                }
+            },
+            prevPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                }
+            },
+            goToPage(page) {
+                if (page >= 1 && page <= this.totalPages()) {
+                    this.currentPage = page;
+                }
+            },
+
             async init() {
                 if (!(await this.requireAuth())) return;
-                // Debounce helper (local)
+
                 const debounce = (fn, ms = 350) => {
                     let h;
                     return (...a) => {
@@ -2142,7 +2830,6 @@ if (typeof window !== "undefined") {
                     };
                 };
 
-                // Watch filters and refetch from server (debounced)
                 this.$watch(
                     "searchOrden",
                     debounce(() => {
@@ -2162,6 +2849,15 @@ if (typeof window !== "undefined") {
                     }, 150)
                 );
 
+                this.$watch(
+                    "formOrden.id_solicitud_servicio_fk",
+                    debounce((val) => {
+                        if (!val) return;
+
+                        this.onSolicitudChange(val);
+                    }, 250)
+                );
+
                 await Promise.all([
                     this.fetchCatalogos(),
                     this.fetchEstadosOrden(),
@@ -2172,17 +2868,38 @@ if (typeof window !== "undefined") {
     };
 }
 
-// Alpine component factory for Gestión de Solicitudes (Admin)
 if (typeof window !== "undefined") {
     window.gestionSolicitudes = function () {
         return {
-            // Tabs and filters
             tab: "solicitudes",
             searchSolicitud: "",
             estadoSolicitud: "",
             ordenarPor: "estado_solicitud",
             searchContacto: "",
             ordenarPorContacto: "tipo_contacto",
+
+            get numbers() {
+                return this.tab === "solicitudes"
+                    ? this.filteredSolicitudes()
+                    : this.filteredContactos();
+            },
+            get currentPage() {
+                return this.tab === "solicitudes"
+                    ? this.currentPageSolicitudes
+                    : this.currentPageContactos;
+            },
+            set currentPage(value) {
+                if (this.tab === "solicitudes") {
+                    this.currentPageSolicitudes = value;
+                } else {
+                    this.currentPageContactos = value;
+                }
+            },
+            get perPage() {
+                return this.tab === "solicitudes"
+                    ? this.perPageSolicitudes
+                    : this.perPageContactos;
+            },
             reportUrl() {
                 const params = new URLSearchParams();
                 params.set("modulo", "Solicitudes");
@@ -2206,14 +2923,12 @@ if (typeof window !== "undefined") {
                 return "/admin/reportes-header?" + params.toString();
             },
 
-            // Modals state
             isModalOpen: false,
             isEditModalOpen: false,
             isDeleteModalOpen: false,
             solicitudToEdit: null,
             solicitudToDelete: null,
 
-            // Estados modals (not wired yet; reserved for future use)
             isEstadoModalOpen: false,
             isEditEstadoModalOpen: false,
             estadoToEdit: {
@@ -2227,24 +2942,30 @@ if (typeof window !== "undefined") {
             isDeleteEstadoModalOpen: false,
             estadoToDelete: null,
 
-            // Contactos modals/state
             isContactoModalOpen: false,
             isEditContactoModalOpen: false,
             isDeleteContactoModalOpen: false,
             contactoToEdit: null,
             contactoToDelete: null,
 
-            // Data collections
             solicitudes: [],
             contactos: [],
             clientesOptions: [],
             estadosOptions: [],
-            contactosOptions: [], // full list for selects; filtered per cliente when rendering
+            contactosOptions: [],
 
-            // Forms and flags
+            numbersSolicitudes: [],
+            currentPageSolicitudes: 1,
+            perPageSolicitudes: 10,
+
+            numbersContactos: [],
+            currentPageContactos: 1,
+            perPageContactos: 10,
+
             formSolicitud: {
                 id: null,
                 id_cliente_fk: "",
+                nombre_solicitud: "",
                 descripcion_problema: "",
                 id_estado_solicitud_fk: "",
                 id_contacto_fk: "",
@@ -2266,7 +2987,6 @@ if (typeof window !== "undefined") {
             },
             loadingContactos: false,
 
-            // Auth helpers (same pattern as órdenes)
             getToken() {
                 return null;
             },
@@ -2307,6 +3027,7 @@ if (typeof window !== "undefined") {
                 this.formSolicitud = {
                     id: null,
                     id_cliente_fk: "",
+                    nombre_solicitud: "",
                     descripcion_problema: "",
                     id_estado_solicitud_fk: "",
                     id_contacto_fk: "",
@@ -2323,21 +3044,19 @@ if (typeof window !== "undefined") {
                 this.errors = {};
             },
 
-            // Mapping helpers
             mapSolicitud(item) {
                 const cliente = item.cliente || {};
                 const empresa = cliente.empresa || {};
                 const persona = cliente.persona || {};
                 const estado = item.estado_solicitud || {};
                 const contacto = item.contacto || {};
-                // Build a human-readable client name for both empresa and persona
+
                 let clienteNombre = "";
                 if (
                     cliente.tipo ||
                     empresa.nombre_comercial ||
                     empresa.razon_social
                 ) {
-                    // Try empresa-style fields first
                     clienteNombre =
                         cliente.nombre ||
                         cliente.nombre_comercial ||
@@ -2346,7 +3065,6 @@ if (typeof window !== "undefined") {
                         "";
                 }
                 if (!clienteNombre || !String(clienteNombre).trim()) {
-                    // Try persona fields either at root or nested under cliente.persona
                     const pn =
                         cliente.primer_nombre || persona.primer_nombre || "";
                     const sn =
@@ -2370,6 +3088,7 @@ if (typeof window !== "undefined") {
                     cliente_nombre: clienteNombre,
                     numero_solicitud_acf: item.numero_solicitud_acf,
                     numero_solicitud_cliente: item.numero_solicitud_cliente,
+                    nombre_solicitud: item.nombre_solicitud || "",
                     descripcion_problema: item.descripcion_problema,
                     id_estado_solicitud_fk: item.id_estado_solicitud_fk,
                     estado_nombre: estado.nombre_estado || "",
@@ -2378,11 +3097,9 @@ if (typeof window !== "undefined") {
                 };
             },
 
-            // Catalogs
             async fetchClientes() {
                 this.loadingCatalogos.clientes = true;
                 try {
-                    // Reutilizar el mismo catálogo unificado que usa Calendario
                     const params = new URLSearchParams();
                     params.set("per_page", "500");
                     params.set("all", "1");
@@ -2428,7 +3145,7 @@ if (typeof window !== "undefined") {
                             return { value: String(id), label: nombre };
                         })
                         .filter(Boolean);
-                    // De-duplicar por value
+
                     const uniq = {};
                     for (const it of mapped) {
                         if (!uniq[it.value]) uniq[it.value] = it;
@@ -2451,7 +3168,7 @@ if (typeof window !== "undefined") {
                 try {
                     const params = new URLSearchParams();
                     params.set("per_page", "200");
-                    // Usar endpoint web-auth para permitir cookie HttpOnly
+
                     const res = await fetch(
                         "/api-web/estados-solicitud?" + params.toString(),
                         { headers: this.apiHeaders() }
@@ -2491,7 +3208,7 @@ if (typeof window !== "undefined") {
                     if (!res.ok) throw new Error("Error contactos");
                     const json = await res.json();
                     const items = json.data || [];
-                    // Map contacts with a user-friendly label and keep reference to cliente
+
                     this.contactosOptions = items.map((it) => {
                         const value = String(it.id_contacto_pk || it.id);
                         const base =
@@ -2505,7 +3222,7 @@ if (typeof window !== "undefined") {
                             id_cliente_fk: String(it.id_cliente_fk || ""),
                         };
                     });
-                    // Optional: sort by label for nicer UX
+
                     this.contactosOptions.sort((a, b) =>
                         a.label.localeCompare(b.label, "es")
                     );
@@ -2523,18 +3240,17 @@ if (typeof window !== "undefined") {
                 const idCliente = String(
                     this.formSolicitud.id_cliente_fk || ""
                 );
-                // If no cliente selected, don't show any contacts yet
+
                 if (!idCliente) return [];
                 return this.contactosOptions.filter(
                     (c) => String(c.id_cliente_fk || "") === idCliente
                 );
             },
-            // When cliente changes, clear selected contacto to avoid mismatches
+
             onClienteChange() {
                 this.formSolicitud.id_contacto_fk = "";
             },
 
-            // Lookup helper to get client label from unified catalog by id
             clienteLabelById(id) {
                 if (!id) return "";
                 const sid = String(id);
@@ -2544,7 +3260,6 @@ if (typeof window !== "undefined") {
                 return found ? found.label : "";
             },
 
-            // CRUD Solicitudes
             async fetchSolicitudes() {
                 if (!(await this.requireAuth())) return;
                 this.loadingSolicitudes = true;
@@ -2555,11 +3270,37 @@ if (typeof window !== "undefined") {
                         "/api/solicitudes?" + params.toString(),
                         { headers: this.apiHeaders() }
                     );
-                    if (!res.ok) throw new Error("Error solicitudes");
-                    const json = await res.json();
-                    this.solicitudes = (json.data || []).map((it) =>
+                    if (res.status === 401) {
+                        this.handleUnauthorized();
+                        return;
+                    }
+
+                    let raw = [];
+                    if (res.ok) {
+                        try {
+                            const parsed = await res.json().catch(() => null);
+                            if (Array.isArray(parsed)) raw = parsed;
+                            else if (Array.isArray(parsed?.data))
+                                raw = parsed.data;
+                            else if (Array.isArray(parsed?.items))
+                                raw = parsed.items;
+                            else raw = [];
+                        } catch (e) {
+                            console.debug(
+                                "gestionSolicitudes.fetchSolicitudes: parse error",
+                                e
+                            );
+                            raw = [];
+                        }
+                    } else {
+                        throw new Error("Error solicitudes");
+                    }
+
+                    this.solicitudes = (raw || []).map((it) =>
                         this.mapSolicitud(it)
                     );
+
+                    this.numbersSolicitudes = this.solicitudes;
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -2575,6 +3316,8 @@ if (typeof window !== "undefined") {
                     id_cliente_fk: this.formSolicitud.id_cliente_fk
                         ? Number(this.formSolicitud.id_cliente_fk)
                         : null,
+                    nombre_solicitud:
+                        this.formSolicitud.nombre_solicitud || null,
                     descripcion_problema:
                         this.formSolicitud.descripcion_problema || null,
                     id_estado_solicitud_fk: this.formSolicitud
@@ -2595,10 +3338,17 @@ if (typeof window !== "undefined") {
                 this.solicitudToEdit = item;
                 this.formSolicitud = {
                     id: item.id,
-                    id_cliente_fk: item.id_cliente_fk ?? "",
+                    id_cliente_fk: item.id_cliente_fk
+                        ? Number(item.id_cliente_fk)
+                        : "",
+                    nombre_solicitud: item.nombre_solicitud ?? "",
                     descripcion_problema: item.descripcion_problema ?? "",
-                    id_estado_solicitud_fk: item.id_estado_solicitud_fk ?? "",
-                    id_contacto_fk: item.id_contacto_fk ?? "",
+                    id_estado_solicitud_fk: item.id_estado_solicitud_fk
+                        ? Number(item.id_estado_solicitud_fk)
+                        : "",
+                    id_contacto_fk: item.id_contacto_fk
+                        ? Number(item.id_contacto_fk)
+                        : "",
                 };
                 this.isEditModalOpen = true;
             },
@@ -2633,6 +3383,8 @@ if (typeof window !== "undefined") {
                     const json = await res.json();
                     if (json.data)
                         this.solicitudes.unshift(this.mapSolicitud(json.data));
+
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud creada correctamente");
                     this.isModalOpen = false;
                     this.resetSolicitudForm();
@@ -2681,6 +3433,8 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.solicitudes.splice(idx, 1, mapped);
                     }
+
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud actualizada");
                     this.isEditModalOpen = false;
                     this.solicitudToEdit = null;
@@ -2714,6 +3468,8 @@ if (typeof window !== "undefined") {
                     this.solicitudes = this.solicitudes.filter(
                         (s) => s.id !== this.solicitudToDelete.id
                     );
+
+                    this.numbersSolicitudes = this.solicitudes;
                     this.showToast("Solicitud eliminada");
                 } catch (e) {
                     console.error(e);
@@ -2725,7 +3481,6 @@ if (typeof window !== "undefined") {
                 }
             },
             submitSolicitud() {
-                // quick client-side validation
                 this.errors = {};
                 const errs = {};
                 if (!this.formSolicitud.id_cliente_fk)
@@ -2738,11 +3493,23 @@ if (typeof window !== "undefined") {
                     errs.descripcion_problema = [
                         "La descripción es obligatoria.",
                     ];
+
+                if (
+                    this.formSolicitud.nombre_solicitud &&
+                    String(this.formSolicitud.nombre_solicitud).length > 150
+                ) {
+                    errs.nombre_solicitud = ["Máximo 150 caracteres."];
+                }
                 if (!this.formSolicitud.id_estado_solicitud_fk)
                     errs.id_estado_solicitud_fk = ["Seleccione un estado."];
                 if (!this.formSolicitud.id_contacto_fk)
                     errs.id_contacto_fk = ["Seleccione un contacto."];
                 if (Object.keys(errs).length) {
+                    this.formSolicitud._touched =
+                        this.formSolicitud._touched || {};
+                    Object.keys(errs).forEach((k) => {
+                        this.formSolicitud._touched[k] = true;
+                    });
                     this.errors = errs;
                     this.showToast("Complete los campos requeridos", "warn");
                     return;
@@ -2751,7 +3518,6 @@ if (typeof window !== "undefined") {
                 else this.createSolicitud();
             },
 
-            // Contactos list + CRUD (simple)
             async fetchContactos() {
                 if (!(await this.requireAuth())) return;
                 this.loadingContactos = true;
@@ -2770,6 +3536,8 @@ if (typeof window !== "undefined") {
                         valor_contacto: it.valor_contacto,
                         id_cliente_fk: it.id_cliente_fk,
                     }));
+
+                    this.numbersContactos = this.contactos;
                 } catch (e) {
                     console.error(e);
                     this.showToast(
@@ -2831,6 +3599,8 @@ if (typeof window !== "undefined") {
                             valor_contacto: json.data.valor_contacto,
                             id_cliente_fk: json.data.id_cliente_fk,
                         });
+
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto creado");
                     this.isContactoModalOpen = false;
                     this.resetContactoForm();
@@ -2888,6 +3658,8 @@ if (typeof window !== "undefined") {
                         );
                         if (idx !== -1) this.contactos.splice(idx, 1, updated);
                     }
+
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto actualizado");
                     this.isEditContactoModalOpen = false;
                     this.contactoToEdit = null;
@@ -2920,6 +3692,8 @@ if (typeof window !== "undefined") {
                     this.contactos = this.contactos.filter(
                         (c) => c.id !== this.contactoToDelete.id
                     );
+
+                    this.numbersContactos = this.contactos;
                     this.showToast("Contacto eliminado");
                 } catch (e) {
                     console.error(e);
@@ -2931,11 +3705,39 @@ if (typeof window !== "undefined") {
                 }
             },
             submitContacto() {
+                this.errors = {};
+                const errs = {};
+                if (
+                    !this.formContacto.tipo_contacto ||
+                    String(this.formContacto.tipo_contacto).trim().length === 0
+                ) {
+                    errs.tipo_contacto = ["El tipo de contacto es requerido."];
+                }
+                if (
+                    !this.formContacto.valor_contacto ||
+                    String(this.formContacto.valor_contacto).trim().length === 0
+                ) {
+                    errs.valor_contacto = [
+                        "El valor de contacto es requerido.",
+                    ];
+                }
+                if (!this.formContacto.id_cliente_fk) {
+                    errs.id_cliente_fk = ["Seleccione un cliente."];
+                }
+                if (Object.keys(errs).length) {
+                    this.formContacto._touched =
+                        this.formContacto._touched || {};
+                    Object.keys(errs).forEach(
+                        (k) => (this.formContacto._touched[k] = true)
+                    );
+                    this.errors = errs;
+                    this.showToast("Complete los campos requeridos", "warn");
+                    return;
+                }
                 if (this.formContacto.id) this.updateContacto();
                 else this.createContacto();
             },
 
-            // Derived collections and filters
             filteredContactos() {
                 const term = this.searchContacto.trim().toLowerCase();
                 const list = this.contactos
@@ -3044,7 +3846,6 @@ if (typeof window !== "undefined") {
                                     { numeric: true }
                                 );
                             case "fecha_creacion":
-                                // Campo no disponible: mantener orden estable
                                 return 0;
                             default:
                                 return 0;
@@ -3052,7 +3853,84 @@ if (typeof window !== "undefined") {
                     });
             },
 
-            // Init
+            paginatedSolicitudes() {
+                const filtered = this.filteredSolicitudes();
+                const start =
+                    (this.currentPageSolicitudes - 1) * this.perPageSolicitudes;
+                const end = start + this.perPageSolicitudes;
+                return filtered.slice(start, end);
+            },
+            totalPagesSolicitudes() {
+                return Math.ceil(
+                    this.filteredSolicitudes().length / this.perPageSolicitudes
+                );
+            },
+            nextPageSolicitudes() {
+                if (
+                    this.currentPageSolicitudes < this.totalPagesSolicitudes()
+                ) {
+                    this.currentPageSolicitudes++;
+                }
+            },
+            prevPageSolicitudes() {
+                if (this.currentPageSolicitudes > 1) {
+                    this.currentPageSolicitudes--;
+                }
+            },
+            goToPageSolicitudes(page) {
+                if (page >= 1 && page <= this.totalPagesSolicitudes()) {
+                    this.currentPageSolicitudes = page;
+                }
+            },
+
+            paginatedContactos() {
+                const filtered = this.filteredContactos();
+                const start =
+                    (this.currentPageContactos - 1) * this.perPageContactos;
+                const end = start + this.perPageContactos;
+                return filtered.slice(start, end);
+            },
+            totalPagesContactos() {
+                return Math.ceil(
+                    this.filteredContactos().length / this.perPageContactos
+                );
+            },
+            nextPageContactos() {
+                if (this.currentPageContactos < this.totalPagesContactos()) {
+                    this.currentPageContactos++;
+                }
+            },
+            prevPageContactos() {
+                if (this.currentPageContactos > 1) {
+                    this.currentPageContactos--;
+                }
+            },
+            goToPageContactos(page) {
+                if (page >= 1 && page <= this.totalPagesContactos()) {
+                    this.currentPageContactos = page;
+                }
+            },
+
+            totalPages() {
+                return this.tab === "solicitudes"
+                    ? this.totalPagesSolicitudes()
+                    : this.totalPagesContactos();
+            },
+            nextPage() {
+                if (this.tab === "solicitudes") {
+                    this.nextPageSolicitudes();
+                } else {
+                    this.nextPageContactos();
+                }
+            },
+            prevPage() {
+                if (this.tab === "solicitudes") {
+                    this.prevPageSolicitudes();
+                } else {
+                    this.prevPageContactos();
+                }
+            },
+
             async init() {
                 if (!(await this.requireAuth())) return;
                 await Promise.all([

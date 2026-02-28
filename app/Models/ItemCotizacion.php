@@ -20,6 +20,7 @@ class ItemCotizacion extends Model
         'impuesto',
         'total',
         'id_cotizacion_fk',
+        'id_producto_fk',
     ];
 
     protected $casts = [
@@ -32,23 +33,28 @@ class ItemCotizacion extends Model
     protected static function boot()
     {
         parent::boot();
-        static::saving(function($model){
-            // Sólo recalcula el total si cambian componentes base o si no se envió total manualmente.
+        static::saving(function ($model) {
+            
             $dirty = array_keys($model->getDirty());
-            $componentes = ['precio_unitario','cantidad','impuesto'];
+            $componentes = ['precio_unitario', 'cantidad', 'impuesto'];
             $cambiaronComponentes = count(array_intersect($componentes, $dirty)) > 0;
             $totalManual = in_array('total', $dirty);
             if ($cambiaronComponentes || !$totalManual) {
                 $precio = (float) $model->precio_unitario;
                 $cant = (float) $model->cantidad;
                 $imp = (float) $model->impuesto;
-                $model->total = $precio * $cant + $imp; // Ajustar fórmula si negocio cambia
+                $model->total = $precio * $cant + $imp; 
             }
         });
     }
 
     public function cotizacion()
     {
-        return $this->belongsTo(Cotizacion::class,'id_cotizacion_fk','id_cotizacion_pk');
+        return $this->belongsTo(Cotizacion::class, 'id_cotizacion_fk', 'id_cotizacion_pk');
+    }
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'id_producto_fk', 'id_producto_pk');
     }
 }

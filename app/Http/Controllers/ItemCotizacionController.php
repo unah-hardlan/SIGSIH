@@ -13,9 +13,11 @@ class ItemCotizacionController extends Controller
     public function index(Request $request)
     {
         $query = ItemCotizacion::query()->with('cotizacion');
-        if($cot = $request->input('id_cotizacion_fk')){ $query->where('id_cotizacion_fk',$cot); }
-        if($q = $request->input('q')){
-            $query->where('descripcion','like',"%$q%");
+        if ($cot = $request->input('id_cotizacion_fk')) {
+            $query->where('id_cotizacion_fk', $cot);
+        }
+        if ($q = $request->input('q')) {
+            $query->where('descripcion', 'like', "%$q%");
         }
 
         $sortable = [
@@ -25,27 +27,45 @@ class ItemCotizacionController extends Controller
             'total' => 'total',
         ];
         $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction','asc'))==='desc'?'desc':'asc';
-        $query->orderBy($sortable[$sort] ?? 'id_item_cotizacion_pk',$direction);
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortable[$sort] ?? 'id_item_cotizacion_pk', $direction);
 
-        if($request->boolean('all')){
+        if ($request->boolean('all')) {
             return ItemCotizacionResource::collection($query->get());
         }
-        $perPage = (int)$request->input('per_page',15);
+        $perPage = (int)$request->input('per_page', 15);
         $items = $query->paginate($perPage);
         return ItemCotizacionResource::collection($items)->additional([
-            'meta'=>[
-                'page'=>$items->currentPage(),
-                'per_page'=>$items->perPage(),
-                'total'=>$items->total(),
-                'last_page'=>$items->lastPage(),
+            'meta' => [
+                'page' => $items->currentPage(),
+                'per_page' => $items->perPage(),
+                'total' => $items->total(),
+                'last_page' => $items->lastPage(),
             ]
         ]);
     }
 
     public function store(StoreItemCotizacionRequest $request)
     {
-        $item = ItemCotizacion::create($request->validated());
+        $data = $request->validated();
+        
+        if (!empty($data['id_producto_fk'])) {
+            $producto = \App\Models\Producto::find($data['id_producto_fk']);
+            if ($producto) {
+                $data['descripcion'] = $producto->nombre_producto ?? ($data['descripcion'] ?? '');
+                
+                $data['precio_unitario'] = $data['precio_unitario'] ?? $producto->precio_unitario ?? 0;
+                $data['impuesto'] = $data['impuesto'] ?? $producto->impuesto ?? 0;
+            }
+        }
+        $item = ItemCotizacion::create($data);
+        
+        try {
+            $this->recomputeCotizacionTotals($item->id_cotizacion_fk);
+        } catch (
+            \Throwable $e
+        ) {
+        }
         $item->load('cotizacion');
         return (new ItemCotizacionResource($item))->response()->setStatusCode(201);
     }
@@ -53,15 +73,28 @@ class ItemCotizacionController extends Controller
     public function show($id)
     {
         $item = ItemCotizacion::with('cotizacion')->find($id);
-        if(!$item) return response()->json(['error'=>'Item no encontrado'],404);
+        if (!$item) return response()->json(['error' => 'Item no encontrado'], 404);
         return (new ItemCotizacionResource($item))->response();
     }
 
     public function update(UpdateItemCotizacionRequest $request, $id)
     {
         $item = ItemCotizacion::find($id);
-        if(!$item) return response()->json(['error'=>'Item no encontrado'],404);
-        $item->update($request->validated());
+        if (!$item) return response()->json(['error' => 'Item no encontrado'], 404);
+        $data = $request->validated();
+        if (!empty($data['id_producto_fk'])) {
+            $producto = \App\Models\Producto::find($data['id_producto_fk']);
+            if ($producto) {
+                $data['descripcion'] = $producto->nombre_producto ?? ($data['descripcion'] ?? $item->descripcion);
+                $data['precio_unitario'] = $data['precio_unitario'] ?? $producto->precio_unitario ?? $item->precio_unitario;
+                $data['impuesto'] = $data['impuesto'] ?? $producto->impuesto ?? $item->impuesto;
+            }
+        }
+        $item->update($data);
+        try {
+            $this->recomputeCotizacionTotals($item->id_cotizacion_fk);
+        } catch (\Throwable $e) {
+        }
         $item->load('cotizacion');
         return (new ItemCotizacionResource($item))->response();
     }
@@ -69,8 +102,47 @@ class ItemCotizacionController extends Controller
     public function destroy($id)
     {
         $item = ItemCotizacion::find($id);
-        if(!$item) return response()->json(['error'=>'Item no encontrado'],404);
+        if (!$item) return response()->json(['error' => 'Item no encontrado'], 404);
+        $cotId = $item->id_cotizacion_fk;
         $item->delete();
-        return response()->json(['message'=>'Item eliminado']);
+        try {
+            $this->recomputeCotizacionTotals($cotId);
+        } catch (\Throwable $e) {
+        }
+        return response()->json(['message' => 'Item eliminado']);
+    }
+
+    
+    protected function recomputeCotizacionTotals($cotizacionId)
+    {
+        if (!$cotizacionId) return;
+        $items = ItemCotizacion::where('id_cotizacion_fk', $cotizacionId)->get();
+        $imponible = 0.0;
+        $totalImpuesto = 0.0;
+        foreach ($items as $it) {
+            $pu = (float) ($it->precio_unitario ?? 0);
+            $cant = (float) ($it->cantidad ?? 0);
+            $imponible += $pu * $cant;
+            $totalImpuesto += (float) ($it->impuesto ?? 0);
+        }
+        $cot = \App\Models\Cotizacion::find($cotizacionId);
+        if (!$cot) return;
+        $cot->imponible = $imponible;
+        
+        $cot->subtotal = $imponible;
+        $otros = (float) ($cot->otros_cargos ?? 0);
+        
+        $otrosImp = (float) ($cot->impuesto_otros ?? 0.0);
+        $totalImp = round($totalImpuesto + $otrosImp, 2);
+        $cot->total_impuesto = $totalImp;
+        $cot->impuesto = $totalImp;
+        $cot->total = $imponible + $totalImpuesto + $otros + $otrosImp;
+        
+        try {
+            $cot->anticipo_requerido = round(($cot->total ?? 0) * 0.5, 2);
+        } catch (\Throwable $e) {
+            
+        }
+        $cot->save();
     }
 }

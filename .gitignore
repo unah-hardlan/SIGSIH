@@ -13,6 +13,10 @@ Homestead.json
 /.idea
 /.vscode
 /.phpunit.cache
+#+#+#+#+#+#+#+#+#+#+#+#+############################################################
+# Vite / HMR
+# Generated when running `npm run dev` (do not commit)
+/public/hot
 
 # Docker
 docker-compose.override.yml
@@ -28,5 +32,8 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 
+# Backups
+/public/C/backups/
+*.sql
+
 # Vite
-/public/hot/public/build/

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Persona;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePersonaRequest;
+use Illuminate\Support\Facades\DB;
+use App\Models\Cliente;
 use App\Http\Requests\UpdatePersonaRequest;
 use App\Http\Resources\PersonaResource;
 
@@ -50,8 +52,50 @@ class PersonaController extends Controller
 
     public function store(StorePersonaRequest $request)
     {
-    $persona = Persona::create($request->validated());
-    $persona->load(['genero']);
+    $data = $request->validated();
+    
+    $persona = null;
+    DB::transaction(function () use ($data, &$persona) {
+        $persona = Persona::create($data);
+        
+        $clienteToLink = null;
+        if (!empty($data['id_cliente_fk'])) {
+            
+            $clienteToLink = (int) $data['id_cliente_fk'];
+        } elseif (!empty($data['id_usuario_fk'])) {
+            
+            
+            
+                try {
+                    $cliente = Cliente::firstOrCreate(
+                        ['id_cliente_pk' => (int) $data['id_usuario_fk']],
+                        [
+                            'tipo_cliente' => 'persona',
+                            'estado_cliente' => 'activo',
+                            'fecha_registro' => now(),
+                        ]
+                    );
+                    $clienteToLink = $cliente->id_cliente_pk;
+                } catch (\Throwable $e) {
+                    
+                    $clienteToLink = null;
+                }
+        }
+
+        if ($clienteToLink) {
+            $exists = DB::table('tbl_cliente_persona')
+                ->where('id_cliente_fk', $clienteToLink)
+                ->where('id_persona_fk', $persona->id_persona_pk)
+                ->exists();
+            if (!$exists) {
+                DB::table('tbl_cliente_persona')->insert([
+                    'id_cliente_fk' => $clienteToLink,
+                    'id_persona_fk' => $persona->id_persona_pk,
+                ]);
+            }
+        }
+    });
+    if ($persona) { $persona->load(['genero']); }
         return (new PersonaResource($persona))->response()->setStatusCode(201);
     }
 
@@ -79,14 +123,14 @@ class PersonaController extends Controller
         return response()->json(['message'=>'Persona eliminada']);
     }
 
-    // Reporte de Gestión de Personas (vista)
+    
     public function reporte(Request $request)
     {
         $q = $request->input('q');
         $sort = $request->input('sort','nombre');
         $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
-    $tipo = $request->input('tipo'); // deprecado
-        $genero = $request->input('genero'); // puede ser nombre
+    $tipo = $request->input('tipo'); 
+        $genero = $request->input('genero'); 
 
     $query = Persona::query()->with(['genero','usuario']);
         if($q){
@@ -98,7 +142,7 @@ class PersonaController extends Controller
                         ->orWhere('dni','like',"%$q%");
             });
         }
-        // filtro tipo persona eliminado
+        
         if($genero){
             if(is_numeric($genero)){
                 $query->where('id_genero_fk',(int)$genero);

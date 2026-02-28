@@ -1,11 +1,11 @@
-document.addEventListener('alpine:init', () => {
-    Alpine.data('serviciosCrud', () => ({
+document.addEventListener("alpine:init", () => {
+    Alpine.data("serviciosCrud", () => ({
         isServicioModalOpen: false,
         isEditServicioModalOpen: false,
         isDeleteServicioModalOpen: false,
         itemToEdit: {
             id_servicio_pk: null,
-            nombre_servicio: '',
+            nombre_servicio: "",
             tarifa: 0,
         },
         itemToDelete: null,
@@ -13,25 +13,28 @@ document.addEventListener('alpine:init', () => {
         categorias: [],
         numbers: [],
         loadingServicios: false,
-        nombre_servicio: '',
-        tarifa: '',
-        filtroServicio: '',
-        ordenarPor: 'nombre_servicio',
+        nombre_servicio: "",
+        tarifa: "",
+        filtroServicio: "",
+        ordenarPor: "nombre_servicio",
         currentPage: 1,
         perPage: 10,
 
         async init() {
             await this.fetchServicios();
-            this.$watch('filtroServicio', () => {
+            this.$watch("filtroServicio", () => {
                 this.currentPage = 1;
             });
-            this.$watch('ordenarPor', () => {
+            this.$watch("ordenarPor", () => {
                 this.currentPage = 1;
             });
         },
 
         paginatedServicios() {
-            return this.filteredServicios.slice((this.currentPage - 1) * this.perPage, this.currentPage * this.perPage);
+            return this.filteredServicios.slice(
+                (this.currentPage - 1) * this.perPage,
+                this.currentPage * this.perPage
+            );
         },
 
         totalPages() {
@@ -55,23 +58,30 @@ document.addEventListener('alpine:init', () => {
         },
 
         get filteredServicios() {
-            const term = (this.filtroServicio || '').toString().toLowerCase().trim();
+            const term = (this.filtroServicio || "")
+                .toString()
+                .toLowerCase()
+                .trim();
             let list = this.servicios.filter((s) => {
                 if (!term) return true;
-                const nombre = (s.nombre_servicio || '').toString().toLowerCase();
-                const tarifaStr = (s.tarifa != null ? String(s.tarifa) : '').toLowerCase();
+                const nombre = (s.nombre_servicio || "")
+                    .toString()
+                    .toLowerCase();
+                const tarifaStr = (
+                    s.tarifa != null ? String(s.tarifa) : ""
+                ).toLowerCase();
                 return nombre.includes(term) || tarifaStr.includes(term);
             });
 
-            const key = this.ordenarPor || 'nombre_servicio';
+            const key = this.ordenarPor || "nombre_servicio";
             list = list.sort((a, b) => {
-                if (key === 'tarifa') {
+                if (key === "tarifa") {
                     const an = Number(a.tarifa ?? 0);
                     const bn = Number(b.tarifa ?? 0);
                     return an - bn;
                 }
-                const av = (a[key] ?? '').toString().toLowerCase();
-                const bv = (b[key] ?? '').toString().toLowerCase();
+                const av = (a[key] ?? "").toString().toLowerCase();
+                const bv = (b[key] ?? "").toString().toLowerCase();
                 return av.localeCompare(bv);
             });
 
@@ -87,31 +97,26 @@ document.addEventListener('alpine:init', () => {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
-                // Assuming the API returns data in 'data' key or directly an array
+
                 this.servicios = Array.isArray(data?.data)
                     ? data.data
                     : Array.isArray(data)
-                        ? data
-                        : [];
-                // synchronize aliases for reusable pagination components
+                    ? data
+                    : [];
+
                 this.categorias = this.servicios;
                 this.numbers = this.servicios;
             } catch (error) {
                 console.error("Error fetching servicios:", error);
                 window.showToast &&
-                    window.showToast(
-                        "Error al cargar servicios",
-                        "error"
-                    );
+                    window.showToast("Error al cargar servicios", "error");
             } finally {
                 this.loadingServicios = false;
             }
         },
 
         async submitServicio() {
-            const nombreTrim = String(
-                this.nombre_servicio || ""
-            ).trim();
+            const nombreTrim = String(this.nombre_servicio || "").trim();
             const tarifa = parseFloat(this.tarifa || 0);
 
             if (!nombreTrim) {
@@ -161,10 +166,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw data;
                 window.showToast &&
-                    window.showToast(
-                        "Servicio creado exitosamente",
-                        "success"
-                    );
+                    window.showToast("Servicio creado exitosamente", "success");
                 this.nombre_servicio = "";
                 this.tarifa = "";
                 this.isServicioModalOpen = false;
@@ -175,19 +177,12 @@ document.addEventListener('alpine:init', () => {
             } catch (error) {
                 console.error("Error creating servicio:", error);
                 window.showToast &&
-                    window.showToast(
-                        "Error al crear el servicio",
-                        "error"
-                    );
+                    window.showToast("Error al crear el servicio", "error");
             }
         },
 
         async updateServicio() {
-            if (
-                !this.itemToEdit ||
-                !this.itemToEdit.id_servicio_pk
-            )
-                return;
+            if (!this.itemToEdit || !this.itemToEdit.id_servicio_pk) return;
             const nombreTrim = String(
                 this.itemToEdit.nombre_servicio || ""
             ).trim();
@@ -215,9 +210,8 @@ document.addEventListener('alpine:init', () => {
                 this.servicios.some(
                     (s) =>
                         s.nombre_servicio.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
-                        s.id_servicio_pk !==
-                        this.itemToEdit.id_servicio_pk
+                            nombreTrim.toLowerCase() &&
+                        s.id_servicio_pk !== this.itemToEdit.id_servicio_pk
                 )
             ) {
                 window.showToast &&
@@ -247,7 +241,6 @@ document.addEventListener('alpine:init', () => {
                 );
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    // Mostrar errores de validación si existen
                     if (data && data.errors) {
                         Object.values(data.errors).forEach((errArr) => {
                             if (Array.isArray(errArr)) {
@@ -274,7 +267,7 @@ document.addEventListener('alpine:init', () => {
                 this.isEditServicioModalOpen = false;
                 this.itemToEdit = {
                     id_servicio_pk: null,
-                    nombre_servicio: '',
+                    nombre_servicio: "",
                     tarifa: 0,
                 };
                 await this.fetchServicios();
@@ -286,11 +279,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         async deleteServicio() {
-            if (
-                !this.itemToDelete ||
-                !this.itemToDelete.id_servicio_pk
-            )
-                return;
+            if (!this.itemToDelete || !this.itemToDelete.id_servicio_pk) return;
             try {
                 const response = await fetch(
                     `/api/servicios/${this.itemToDelete.id_servicio_pk}`,
@@ -321,14 +310,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         handleModalSubmit(event) {
-            if (event.detail.formId === 'formServicio') this.submitServicio();
-            if (event.detail.formId === 'formEditServicio') this.updateServicio();
+            if (event.detail.formId === "formServicio") this.submitServicio();
+            if (event.detail.formId === "formEditServicio")
+                this.updateServicio();
         },
 
         handleDelete() {
             if (this.isDeleteServicioModalOpen) {
                 this.deleteServicio();
             }
-        }
+        },
     }));
 });

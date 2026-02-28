@@ -1,5 +1,12 @@
 <div x-data="gestionSolicitudes()" x-init="init()" @include('partials.persist-tab', ['tabKey'=>
     'admin-solicitudes-tab'])
+    x-effect="
+    $watch('searchSolicitud', () => { currentPageSolicitudes = 1; });
+    $watch('estadoSolicitud', () => { currentPageSolicitudes = 1; });
+    $watch('ordenarPor', () => { currentPageSolicitudes = 1; });
+    $watch('searchContacto', () => { currentPageContactos = 1; });
+    $watch('ordenarPorContacto', () => { currentPageContactos = 1; });
+    "
     @modal-submit.window="
     if ($event.detail.formId === 'solicitud-form' || $event.detail.formId === 'solicitud-edit-form') {
     submitSolicitud();
@@ -25,7 +32,6 @@
             class="mr-6 pb-2 nunito-bold">Contactos</li>
     </ul>
 
-    <!-- TAB: Solicitudes -->
     <div x-show="tab==='solicitudes'">
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
@@ -56,10 +62,18 @@
             </x-slot>
             <x-slot name="actions">
                 <div class="flex flex-col sm:flex-row items-center gap-2">
+                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'insercion')
                     <button @click="openCreateSolicitud()"
                         class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-plus"></i> Nueva Solicitud
                     </button>
+                    @else
+                    <button disabled
+                        class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                        title="Sin permiso para crear">
+                        <i class="fas fa-plus"></i> Nueva Solicitud
+                    </button>
+                    @endperm
                     <a :href="reportUrl()" target="_blank"
                         class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-file-alt"></i> Generar Reporte
@@ -71,6 +85,8 @@
                     <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                         <tr>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Cliente</th>
+                            <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">Nombre
+                                Solicitud</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud
                                 ACF</th>
                             <th class="py-2 px-4 text-left text-gray-900 dark:text-gray-200 nunito-bold">N° Solicitud
@@ -95,22 +111,33 @@
                                     solicitudes.</td>
                             </tr>
                         </template>
-                        <template x-for="sol in filteredSolicitudes()" :key="sol.id">
+                        <template x-for="sol in paginatedSolicitudes()" :key="sol.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4"
                                     x-text="sol.cliente_nombre || clienteLabelById(sol.id_cliente_fk) || '—'"></td>
-                                <td class="py-2 px-4" x-text="sol.numero_solicitud_acf || '—'"></td>
-                                <td class="py-2 px-4" x-text="sol.numero_solicitud_cliente || '—'"></td>
+                                <td class="py-2 px-4" x-text="sol.nombre_solicitud || '—'"></td>
+                                <td class="py-2 px-4" x-text="sol.numero_solicitud_acf ? ('ACF-' + String(sol.numero_solicitud_acf).padStart(3,'0')) : '—'"></td>
+                                <td class="py-2 px-4" x-text="(sol.id || sol.numero_solicitud_cliente) ? ('CLI-' + (new Date().toISOString().slice(0,10).replace(/-/g,'')) + '-' + (sol.id || sol.numero_solicitud_cliente)) : '—'"></td>
                                 <td class="py-2 px-4" x-text="sol.descripcion_problema || '—'"></td>
                                 <td class="py-2 px-4" x-text="sol.contacto_valor || '—'"></td>
                                 <td class="py-2 px-4"><span
                                         class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                                         x-text="sol.estado_nombre || '—'"></span></td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                                     <button @click.prevent="openEditSolicitud(sol)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                        class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                                     <button @click.prevent="openDeleteSolicitud(sol)"
-                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                        class="text-red-500 hover:text-red-700" title="Eliminar Solicitud"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -125,43 +152,65 @@
                 <template x-if="!loadingSolicitudes && filteredSolicitudes().length === 0">
                     <div class="p-8 text-center text-gray-500">No se encontraron solicitudes.</div>
                 </template>
-                <template x-for="sol in filteredSolicitudes()" :key="'card-'+sol.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                <template x-for="sol in paginatedSolicitudes()" :key="'card-'+sol.id">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-white"
                                     x-text="sol.cliente_nombre || clienteLabelById(sol.id_cliente_fk) || '—'"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" x-show="sol.nombre_solicitud"><span
+                                        class="nunito-bold">Nombre:</span> <span x-text="sol.nombre_solicitud"></span>
+                                </p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400"><span
                                         class="nunito-bold">ACF:</span> <span
-                                        x-text="sol.numero_solicitud_acf || '—'"></span> • <span
+                                        x-text="sol.numero_solicitud_acf ? ('ACF-' + String(sol.numero_solicitud_acf).padStart(3,'0')) : '—'"></span> • <span
                                         class="nunito-bold">Cliente:</span> <span
-                                        x-text="sol.numero_solicitud_cliente || '—'"></span></p>
+                                        x-text="(sol.id || sol.numero_solicitud_cliente) ? ('CLI-' + (new Date().toISOString().slice(0,10).replace(/-/g,'')) + '-' + (sol.id || sol.numero_solicitud_cliente)) : '—'"></span></p>
                             </div>
                             <span
                                 class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                                 x-text="sol.estado_nombre || '—'"></span>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="nunito-bold">Contacto:</span>
-                            <span x-text="sol.contacto_valor || '—'"></span></p>
+                            <span x-text="sol.contacto_valor || '—'"></span>
+                        </p>
                         <p class="text-sm text-gray-600 dark:text-gray-300" x-text="sol.descripcion_problema || '—'">
                         </p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                             <button @click.prevent="openEditSolicitud(sol)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                             <button @click.prevent="openDeleteSolicitud(sol)"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <x-pagination />
     </div>
 
-    <!-- TAB: Contactos -->
     <div x-show="tab==='contactos'" class="mt-6">
         <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
             <x-slot name="filters">
@@ -178,10 +227,18 @@
             </x-slot>
             <x-slot name="actions">
                 <div class="flex flex-col sm:flex-row items-center gap-2">
+                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'insercion')
                     <button @click="openCreateContacto()"
                         class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-plus"></i> Nuevo Contacto
                     </button>
+                    @else
+                    <button disabled
+                        class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                        title="Sin permiso para crear">
+                        <i class="fas fa-plus"></i> Nuevo Contacto
+                    </button>
+                    @endperm
                 </div>
             </x-slot>
             <x-slot name="table">
@@ -209,16 +266,26 @@
                                     contactos.</td>
                             </tr>
                         </template>
-                        <template x-for="c in filteredContactos()" :key="c.id">
+                        <template x-for="c in paginatedContactos()" :key="c.id">
                             <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
                                 <td class="py-2 px-4" x-text="c.tipo_contacto"></td>
                                 <td class="py-2 px-4" x-text="c.valor_contacto"></td>
                                 <td class="py-2 px-4" x-text="clienteLabelById(c.id_cliente_fk) || '—'"></td>
                                 <td class="py-2 px-4 flex gap-2">
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                                     <button @click.prevent="openEditContacto(c)"
-                                        class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                                        class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                    @endperm
+                                    @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                                     <button @click.prevent="openDeleteContacto(c)"
-                                        class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                        class="text-red-500 hover:text-red-700" title="Eliminar Contacto"><i class="fas fa-trash"></i></button>
+                                    @else
+                                    <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                    @endperm
                                 </td>
                             </tr>
                         </template>
@@ -233,8 +300,9 @@
                 <template x-if="!loadingContactos && filteredContactos().length === 0">
                     <div class="p-8 text-center text-gray-500">No se encontraron contactos.</div>
                 </template>
-                <template x-for="c in filteredContactos()" :key="'card-c-'+c.id">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+                <template x-for="c in paginatedContactos()" :key="'card-c-'+c.id">
+                    <div
+                        class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-semibold text-gray-900 dark:text-white" x-text="c.tipo_contacto"></h3>
@@ -243,32 +311,51 @@
                             </div>
                         </div>
                         <p class="text-sm text-gray-600 dark:text-gray-300"><span class="nunito-bold">Valor:</span>
-                            <span x-text="c.valor_contacto"></span></p>
+                            <span x-text="c.valor_contacto"></span>
+                        </p>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'actualizacion')
                             <button @click.prevent="openEditContacto(c)"
                                 class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para editar">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            @endperm
+                            @perm(['Solicitudes','Gestión de Solicitudes','Gestion de Solicitudes'], 'eliminacion')
                             <button @click.prevent="openDeleteContacto(c)"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            @else
+                            <button disabled
+                                class="px-3 py-1 text-xs bg-gray-300 text-gray-600 rounded cursor-not-allowed flex items-center gap-1"
+                                title="Sin permiso para eliminar">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            @endperm
                         </div>
                     </div>
                 </template>
             </x-slot>
         </x-responsive-table>
+
+        <x-pagination />
     </div>
 
-    <!-- Modal Nueva Solicitud -->
     <x-admin.form-modal class="nunito-bold" modalName="isModalOpen" title="Nueva Solicitud"
         submitLabel="Guardar Solicitud" formId="solicitud-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
         <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
             <div>
                 <label for="id_cliente" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-                <select id="id_cliente" name="id_cliente" x-model="formSolicitud.id_cliente_fk"
-                    @change="onClienteChange()"
+                <select id="id_cliente" name="id_cliente" x-model.number="formSolicitud.id_cliente_fk"
+                    @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
+                    :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
@@ -277,6 +364,21 @@
                 </select>
                 <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk" x-text="errors.id_cliente_fk?.[0]">
                 </p>
+                <small x-show="!errors.id_cliente_fk" class="text-xs text-gray-500 block mt-1"
+                    :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+            </div>
+
+            <div>
+                <label for="nombre_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Nombre de la
+                    Solicitud</label>
+                <input type="text" id="nombre_solicitud" name="nombre_solicitud"
+                    x-model="formSolicitud.nombre_solicitud" maxlength="150"
+                    @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.nombre_solicitud = true"
+                    class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" />
+                <p class="mt-1 text-xs text-red-600" x-show="errors.nombre_solicitud"
+                    x-text="errors.nombre_solicitud?.[0]"></p>
+                <small x-show="!errors.nombre_solicitud" class="text-xs text-gray-500 block mt-1">Opcional. Máximo 150
+                    caracteres.</small>
             </div>
 
             <div class="col-span-2">
@@ -284,15 +386,23 @@
                     class="block text-sm font-medium text-gray-700 nunito-bold">Descripción del
                     Problema</label>
                 <textarea id="descripcion_problema" name="descripcion_problema" rows="2"
-                    x-model="formSolicitud.descripcion_problema"
+                    x-model="formSolicitud.descripcion_problema" maxlength="500"
+                    @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                    @blur="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                    :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                 <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema"
                     x-text="errors.descripcion_problema?.[0]"></p>
+                <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1"
+                    :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'text-red-500' : ''">Requerido.
+                    Máximo 500 caracteres.</small>
             </div>
             <div>
                 <label for="estado_solicitud" class="block text-sm font-medium text-gray-700 nunito-bold">Estado de la
                     Solicitud</label>
-                <select id="estado_solicitud" name="estado_solicitud" x-model="formSolicitud.id_estado_solicitud_fk"
+                <select id="estado_solicitud" name="estado_solicitud" x-model.number="formSolicitud.id_estado_solicitud_fk"
+                    @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_estado_solicitud_fk = true"
+                    :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un estado</option>
                     <template x-for="opt in estadosOptions" :key="opt.value">
@@ -301,11 +411,15 @@
                 </select>
                 <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk"
                     x-text="errors.id_estado_solicitud_fk?.[0]"></p>
+                <small x-show="!errors.id_estado_solicitud_fk" class="text-xs text-gray-500 block mt-1"
+                    :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label for="id_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
-                <select id="id_contacto" name="id_contacto" x-model="formSolicitud.id_contacto_fk"
+                <select id="id_contacto" name="id_contacto" x-model.number="formSolicitud.id_contacto_fk"
                     :disabled="!formSolicitud.id_cliente_fk"
+                    @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_contacto_fk = true"
+                    :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                     <option value="" class="nunito-regular">Seleccione un contacto</option>
                     <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
@@ -314,21 +428,23 @@
                 </select>
                 <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk" x-text="errors.id_contacto_fk?.[0]">
                 </p>
+                <small x-show="!errors.id_contacto_fk" class="text-xs text-gray-500 block mt-1"
+                    :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Solicitud -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpen" title="Editar Solicitud"
         itemToEdit="solicitudToEdit" formId="solicitud-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
-        <template x-if="solicitudToEdit">
+        <div x-show="solicitudToEdit" x-cloak>
             <div class="flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
                 <div>
                     <label for="edit_id_cliente"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
-                    <select id="edit_id_cliente" name="edit_id_cliente" x-model="formSolicitud.id_cliente_fk"
-                        @change="onClienteChange()"
+                    <select id="edit_id_cliente" name="edit_id_cliente" x-model.number="formSolicitud.id_cliente_fk"
+                        @change="onClienteChange(); formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_cliente_fk = true"
+                        :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un cliente</option>
                         <template x-for="opt in clientesOptions" :key="opt.value">
@@ -337,6 +453,21 @@
                     </select>
                     <p class="mt-1 text-xs text-red-600" x-show="errors.id_cliente_fk"
                         x-text="errors.id_cliente_fk?.[0]"></p>
+                    <small x-show="!errors.id_cliente_fk" class="text-xs text-gray-500 block mt-1"
+                        :class="formSolicitud._touched && !formSolicitud.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
+                </div>
+
+                <div>
+                    <label for="edit_nombre_solicitud"
+                        class="block text-sm font-medium text-gray-700 nunito-bold">Nombre de la Solicitud</label>
+                    <input type="text" id="edit_nombre_solicitud" name="edit_nombre_solicitud"
+                        x-model="formSolicitud.nombre_solicitud" maxlength="150"
+                        @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.nombre_solicitud = true"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" />
+                    <p class="mt-1 text-xs text-red-600" x-show="errors.nombre_solicitud"
+                        x-text="errors.nombre_solicitud?.[0]"></p>
+                    <small x-show="!errors.nombre_solicitud" class="text-xs text-gray-500 block mt-1">Opcional. Máximo
+                        150 caracteres.</small>
                 </div>
 
                 <div class="col-span-2">
@@ -344,10 +475,16 @@
                         class="block text-sm font-medium text-gray-700 nunito-bold">Descripción del
                         Problema</label>
                     <textarea id="edit_descripcion_problema" name="edit_descripcion_problema" rows="2"
-                        x-model="formSolicitud.descripcion_problema"
+                        x-model="formSolicitud.descripcion_problema" maxlength="500"
+                        @input="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                        @blur="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.descripcion_problema = true"
+                        :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2"></textarea>
                     <p class="mt-1 text-xs text-red-600" x-show="errors.descripcion_problema"
                         x-text="errors.descripcion_problema?.[0]"></p>
+                    <small x-show="!errors.descripcion_problema" class="text-xs text-gray-500 block mt-1"
+                        :class="formSolicitud._touched && (!formSolicitud.descripcion_problema || formSolicitud.descripcion_problema.length >= 500) ? 'text-red-500' : ''">Requerido.
+                        Máximo 500 caracteres.</small>
                 </div>
                 <div>
                     <label for="edit_estado_solicitud"
@@ -355,7 +492,9 @@
                         la
                         Solicitud</label>
                     <select id="edit_estado_solicitud" name="edit_estado_solicitud"
-                        x-model="formSolicitud.id_estado_solicitud_fk"
+                        x-model.number="formSolicitud.id_estado_solicitud_fk"
+                        @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_estado_solicitud_fk = true"
+                        :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="" class="nunito-regular">Seleccione un estado</option>
                         <template x-for="opt in estadosOptions" :key="opt.value">
@@ -364,12 +503,17 @@
                     </select>
                     <p class="mt-1 text-xs text-red-600" x-show="errors.id_estado_solicitud_fk"
                         x-text="errors.id_estado_solicitud_fk?.[0]"></p>
+                    <small x-show="!errors.id_estado_solicitud_fk" class="text-xs text-gray-500 block mt-1"
+                        :class="formSolicitud._touched && !formSolicitud.id_estado_solicitud_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
                 <div>
                     <label for="edit_id_contacto"
                         class="block text-sm font-medium text-gray-700 nunito-bold">Contacto</label>
-                    <select id="edit_id_contacto" name="edit_id_contacto" x-model="formSolicitud.id_contacto_fk"
+                    <select id="edit_id_contacto" name="edit_id_contacto" x-model.number="formSolicitud.id_contacto_fk"
                         :disabled="!formSolicitud.id_cliente_fk"
+                        @change="formSolicitud._touched = formSolicitud._touched || {}; formSolicitud._touched.id_contacto_fk = true"
+                        x-effect="if (isEditModalOpen && formSolicitud?.id_cliente_fk) { $nextTick(() => { if (formSolicitud.id_contacto_fk && filteredContactosForSelectedCliente().length > 0) { $el.value = formSolicitud.id_contacto_fk } }) }"
+                        :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2 disabled:opacity-60 disabled:cursor-not-allowed">
                         <option value="" class="nunito-regular">Seleccione un contacto</option>
                         <template x-for="opt in filteredContactosForSelectedCliente()" :key="opt.value">
@@ -378,17 +522,17 @@
                     </select>
                     <p class="mt-1 text-xs text-red-600" x-show="errors.id_contacto_fk"
                         x-text="errors.id_contacto_fk?.[0]"></p>
+                    <small x-show="!errors.id_contacto_fk" class="text-xs text-gray-500 block mt-1"
+                        :class="formSolicitud._touched && !formSolicitud.id_contacto_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
             </div>
-        </template>
+        </div>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Solicitud -->
     <x-admin.confirmation-modal modal-name="isDeleteModalOpen" title="Eliminar Solicitud"
         item-to-delete="solicitudToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar la solicitud ID" />
 
-    <!-- Modal Nuevo Estado -->
     <x-admin.form-modal class="nunito-bold" modalName="isEstadoModalOpen" title="Nuevo Estado de Solicitud"
         submitLabel="Guardar Estado" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -408,7 +552,6 @@
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Estado -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditEstadoModalOpen" title="Editar Estado de Solicitud"
         itemToEdit="estadoToEdit" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -433,12 +576,10 @@
         </template>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Estado -->
     <x-admin.confirmation-modal modal-name="isDeleteEstadoModalOpen" title="Eliminar Estado"
         item-to-delete="estadoToDelete" item-name-property="nombre_estado"
         message="¿Estás seguro de que deseas eliminar el estado" />
 
-    <!-- Modal Nuevo Contacto -->
     <x-admin.form-modal class="nunito-bold" modalName="isContactoModalOpen" title="Nuevo Contacto"
         submitLabel="Guardar Contacto" formId="contacto-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -447,28 +588,54 @@
                 <label for="tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de
                     Contacto</label>
                 <input type="text" id="tipo_contacto" name="tipo_contacto" x-model="formContacto.tipo_contacto"
+                    maxlength="100"
+                    @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                    @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                    :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <template x-if="errors.tipo_contacto">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.tipo_contacto[0]"></p>
+                </template>
+                <small x-show="!errors.tipo_contacto" class="text-xs text-gray-500 block mt-1"
+                    :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'text-red-500' : ''">Requerido.
+                    Valores: email, tel, whatsapp.</small>
             </div>
             <div>
                 <label for="valor_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Valor
                     Contacto</label>
                 <input type="text" id="valor_contacto" name="valor_contacto" x-model="formContacto.valor_contacto"
+                    maxlength="100"
+                    @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                    @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                    :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <template x-if="errors.valor_contacto">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.valor_contacto[0]"></p>
+                </template>
+                <small x-show="!errors.valor_contacto" class="text-xs text-gray-500 block mt-1"
+                    :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'text-red-500' : ''">Requerido.
+                    Formato según tipo seleccionado.</small>
             </div>
             <div>
                 <label for="id_cliente_fk" class="block text-sm font-medium text-gray-700 nunito-bold">Cliente</label>
                 <select id="id_cliente_fk" name="id_cliente_fk" x-model="formContacto.id_cliente_fk"
+                    @change="formContacto._touched = formContacto._touched || {}; formContacto._touched.id_cliente_fk = true"
+                    :class="formContacto._touched && !formContacto.id_cliente_fk ? 'border-red-500' : ''"
                     class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="" class="nunito-regular">Seleccione un cliente</option>
                     <template x-for="opt in clientesOptions" :key="opt.value">
                         <option :value="opt.value" x-text="opt.label"></option>
                     </template>
                 </select>
+                <template x-if="errors.id_cliente_fk">
+                    <p class="text-xs text-red-600 mt-1" x-text="errors.id_cliente_fk[0]"></p>
+                </template>
+                <small x-show="!errors.id_cliente_fk" class="text-xs text-gray-500 block mt-1"
+                    :class="formContacto._touched && !formContacto.id_cliente_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Contacto -->
     <x-admin.edit-modal class="nunito-bold" modalName="isEditContactoModalOpen" title="Editar Contacto"
         itemToEdit="contactoToEdit" formId="contacto-edit-form" maxWidth="max-w-lg xl:max-w-2xl 2xl:max-w-3xl"
         minHeight="min-h-[400px] xl:min-h-[600px]">
@@ -478,15 +645,33 @@
                     <label for="edit_tipo_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Tipo de
                         Contacto</label>
                     <input type="text" id="edit_tipo_contacto" name="edit_tipo_contacto"
-                        x-model="formContacto.tipo_contacto"
+                        x-model="formContacto.tipo_contacto" maxlength="100"
+                        @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                        @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.tipo_contacto = true"
+                        :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <template x-if="errors.tipo_contacto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.tipo_contacto[0]"></p>
+                    </template>
+                    <small x-show="!errors.tipo_contacto" class="text-xs text-gray-500 block mt-1"
+                        :class="formContacto._touched && (!formContacto.tipo_contacto || formContacto.tipo_contacto.length >= 100) ? 'text-red-500' : ''">Requerido.
+                        Valores: email, tel, whatsapp.</small>
                 </div>
                 <div>
-                    <label for="edit_valor_contacto" class="block text-sm font-medium text-gray-700 nunito-bold">Valor
+                    <label for="edit_valor_contacto" class="block text-sm font medium text-gray-700 nunito-bold">Valor
                         Contacto</label>
                     <input type="text" id="edit_valor_contacto" name="edit_valor_contacto"
-                        x-model="formContacto.valor_contacto"
+                        x-model="formContacto.valor_contacto" maxlength="100"
+                        @input="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                        @blur="formContacto._touched = formContacto._touched || {}; formContacto._touched.valor_contacto = true"
+                        :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <template x-if="errors.valor_contacto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.valor_contacto[0]"></p>
+                    </template>
+                    <small x-show="!errors.valor_contacto" class="text-xs text-gray-500 block mt-1"
+                        :class="formContacto._touched && (!formContacto.valor_contacto || formContacto.valor_contacto.length >= 100) ? 'text-red-500' : ''">Requerido.
+                        Formato según tipo seleccionado.</small>
                 </div>
                 <div>
                     <label for="edit_id_cliente_fk"
@@ -503,7 +688,6 @@
         </template>
     </x-admin.edit-modal>
 
-    <!-- Modal Confirmar Eliminación Contacto -->
     <x-admin.confirmation-modal modal-name="isDeleteContactoModalOpen" title="Eliminar Contacto"
         item-to-delete="contactoToDelete" item-name-property="id"
         message="¿Estás seguro de que deseas eliminar el contacto ID" />

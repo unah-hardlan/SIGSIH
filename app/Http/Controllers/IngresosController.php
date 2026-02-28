@@ -9,14 +9,12 @@ use Illuminate\Http\Response;
 
 class IngresosController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
         $query = Ingresos::with(['proyecto', 'categoria']);
 
-        // Filtros opcionales
+        
         if ($request->has('id_proyecto_fk')) {
             $query->where('id_proyecto_fk', $request->id_proyecto_fk);
         }
@@ -41,7 +39,7 @@ class IngresosController extends Controller
             $query->where('monto_ingreso', '<=', $request->monto_max);
         }
 
-        // Búsqueda general (q)
+        
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
             $query->where(function($q) use ($searchTerm) {
@@ -56,7 +54,7 @@ class IngresosController extends Controller
             });
         }
 
-        // Ordenamiento
+        
         if ($request->has('sort') && !empty($request->sort)) {
             $sortField = $request->sort;
             switch ($sortField) {
@@ -92,9 +90,7 @@ class IngresosController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -116,9 +112,7 @@ class IngresosController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id)
     {
         $ingreso = Ingresos::with(['proyecto', 'categoria'])->find($id);
@@ -137,9 +131,7 @@ class IngresosController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, $id)
     {
         $ingreso = Ingresos::findOrFail($id);
@@ -163,9 +155,7 @@ class IngresosController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $ingreso = Ingresos::find($id);

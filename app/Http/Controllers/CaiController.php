@@ -97,4 +97,56 @@ class CaiController extends Controller
             ], 500);
         }
     }
+
+    
+    public function reporte(Request $request)
+    {
+        $query = Cai::with(['estadoCai']);
+
+        
+        if ($estado = $request->input('estado')) {
+            $query->whereHas('estadoCai', function($q) use ($estado) {
+                $q->where('codigo', $estado);
+            });
+        }
+
+        
+        if ($q = $request->input('q')) {
+            $query->where('codigo', 'like', "%$q%");
+        }
+
+        
+        if ($desde = $request->input('desde')) {
+            $query->where('fecha_limite', '>=', $desde);
+        }
+
+        if ($hasta = $request->input('hasta')) {
+            $query->where('fecha_limite', '<=', $hasta);
+        }
+
+        
+        $sortable = [
+            'codigo' => 'codigo',
+            'fecha_limite' => 'fecha_limite',
+            'estado' => 'id_estado_cai_fk',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'desc')) === 'desc' ? 'desc' : 'asc';
+        if ($sort && isset($sortable[$sort])) {
+            $query->orderBy($sortable[$sort], $direction);
+        } else {
+            $query->orderBy('fecha_limite', 'desc');
+        }
+
+        $cais = $query->get();
+        $total = $cais->count();
+        $activos = $cais->filter(function($c) { return $c->estadoCai && strtolower($c->estadoCai->codigo) === 'act'; })->count();
+        $agotados = $cais->filter(function($c) { return $c->estadoCai && strtolower($c->estadoCai->codigo) === 'cai-agt'; })->count();
+        $cerrados = $cais->filter(function($c) { return $c->estadoCai && strtolower($c->estadoCai->codigo) === 'cai-cer'; })->count();
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'cai';
+
+        return view('admin.reporte-cai', compact('cais', 'total', 'activos', 'agotados', 'cerrados', 'fecha', 'modulo', 'sort', 'direction'));
+    }
 }

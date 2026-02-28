@@ -15,16 +15,14 @@ class Categoria extends Model
     protected $table = 'tbl_categorias';
     protected $primaryKey = 'id_categoria_pk';
 
-    // Corregido para incluir las columnas correctas
+    
     protected $fillable = [
         'nombre_categoria',
         'descripcion_categoria',
         'tipo_categoria',
     ];
 
-    /**
-     * Relaciones con Ingresos y Gastos.
-     */
+    
     public function ingresos(): HasMany
     {
         return $this->hasMany(Ingresos::class, 'id_categoria_fk', 'id_categoria_pk');

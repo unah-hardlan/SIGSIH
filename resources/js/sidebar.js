@@ -1,4 +1,4 @@
-document.addEventListener("alpine:init", () => {
+if (!window.sidebarDropdown) {
     window.sidebarDropdown = (key, active = false) => ({
         open:
             sessionStorage.getItem(`sidebar-${key}`) !== null
@@ -20,14 +20,15 @@ document.addEventListener("alpine:init", () => {
             });
         },
     });
+}
 
+if (!window.sidebarScrollManager) {
     window.sidebarScrollManager = {
         init() {
             const sidebar = document.querySelector("aside");
             if (!sidebar) return;
 
             this.restoreScrollPosition(sidebar);
-
             this.setupScrollListener(sidebar);
         },
 
@@ -56,7 +57,7 @@ document.addEventListener("alpine:init", () => {
             });
         },
     };
-});
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
@@ -77,16 +78,32 @@ window.initResponsiveSidebar = function (scope) {
         scope.sidebarOpen = true;
     }
 
+    function toggleBodyOverflow(sidebarOpen, isMobile) {
+        if (isMobile && sidebarOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+    }
+
+    scope.$watch("sidebarOpen", (newValue) => {
+        toggleBodyOverflow(newValue, scope.isMobile);
+    });
+
     function checkMobile() {
         var wasMobile = scope.isMobile;
         scope.isMobile = window.innerWidth < 768;
 
         if (wasMobile && !scope.isMobile) {
             scope.sidebarOpen = true;
+            document.body.style.overflow = "";
         } else if (!wasMobile && scope.isMobile) {
             scope.sidebarOpen = false;
+            document.body.style.overflow = "";
         }
     }
 
     window.addEventListener("resize", checkMobile);
+
+    toggleBodyOverflow(scope.sidebarOpen, scope.isMobile);
 };

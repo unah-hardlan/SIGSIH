@@ -1,11 +1,9 @@
 <div x-data="{
-    // Tabla y filtros
     items:[], loading:false, search:'', sort:'id', direction:'asc',
-    // Modales
+    products: [],
     isItemModalOpen:false, isEditItemModalOpen:false, isDeleteItemModalOpen:false,
     itemToEdit:null, itemToDelete:null,
-    // Form
-    formItem:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'' },
+    formItem:{ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null },
     errors:{},
     apiHeaders(){ return { 'Content-Type':'application/json', 'Accept':'application/json' }; },
     showToast(msg,type='ok'){ let d=document.createElement('div'); d.className='fixed top-4 right-4 z-50 px-3 py-2 rounded text-sm shadow '+(type==='error'?'bg-red-600 text-white':'bg-green-600 text-white'); d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); },
@@ -38,13 +36,30 @@
             this.loading=false;
         }
     },
-    openCreate(){ this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'' }; this.errors={}; this.isItemModalOpen=true; },
+    async fetchProducts(){
+        try{
+            const r = await fetch('/api/productos?per_page=100',{ headers:{ 'Accept':'application/json' } });
+            if(!r.ok) throw new Error();
+            const j = await r.json();
+            const data = j.data || j || [];
+            this.products = data.map(p=>({ id_producto_pk:p.id_producto_pk, nombre_producto:p.nombre_producto, precio_unitario:p.precio_unitario, impuesto:p.impuesto }));
+        }catch(e){
+            console.debug('No se pudieron cargar productos para el modal', e);
+        }
+    },
+    openCreate(){ this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null }; this.errors={}; this.isItemModalOpen=true; },
     async submitCreate(){ try{ const payload={ ...this.formItem, total:this.calcTotalObj(this.formItem) }; const r=await fetch('/api/items-cotizacion',{ method:'POST', headers:this.apiHeaders(), body:JSON.stringify(payload) }); if(r.status===422){ this.errors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); this.isItemModalOpen=false; this.fetchItems(); this.showToast('Item creado'); }catch(e){ this.showToast('No se creó','error'); } },
-    openEdit(it){ this.itemToEdit={ ...it }; this.formItem={ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:it.id_cotizacion_fk }; this.isEditItemModalOpen=true; },
+    openEdit(it){ this.itemToEdit={ ...it }; this.formItem={ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:it.id_cotizacion_fk, id_producto_fk:it.id_producto_fk||null }; this.isEditItemModalOpen=true; },
     async submitEdit(){ if(!this.itemToEdit) return; try{ const payload={ ...this.formItem, total:this.calcTotalObj(this.formItem) }; const r=await fetch('/api/items-cotizacion/'+this.itemToEdit.id,{ method:'PUT', headers:this.apiHeaders(), body:JSON.stringify(payload) }); if(r.status===422){ this.errors=await r.json(); throw new Error('valid'); } if(!r.ok) throw new Error(); this.isEditItemModalOpen=false; this.fetchItems(); this.showToast('Item actualizado'); }catch(e){ this.showToast('No se actualizó','error'); } },
     openDelete(it){ this.itemToDelete=it; this.isDeleteItemModalOpen=true; },
     async confirmDelete(){ if(!this.itemToDelete) return; try{ const r=await fetch('/api/items-cotizacion/'+this.itemToDelete.id,{ method:'DELETE', headers:this.apiHeaders() }); if(!r.ok) throw new Error(); this.items=this.items.filter(x=>x.id!==this.itemToDelete.id); this.showToast('Item eliminado'); }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.isDeleteItemModalOpen=false; this.itemToDelete=null; } },
-    init(){ this.fetchItems(); const deb=(fn,ms=400)=>{ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),ms); }; }; this.$watch('search', deb(()=>this.fetchItems())); }
+    init(){
+        this.fetchItems(); this.fetchProducts();
+        const deb=(fn,ms=400)=>{ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),ms); }; };
+        this.$watch('search', deb(()=>this.fetchItems()));
+        this.$watch('isItemModalOpen', val=>{ if(!val){ this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null }; this.errors={}; } });
+        this.$watch('isEditItemModalOpen', val=>{ if(!val){ this.itemToEdit=null; this.formItem={ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, id_cotizacion_fk:'', id_producto_fk:null }; this.errors={}; } });
+    }
 }">
     <x-admin.tabla-crud class="nunito-bold">
         <x-slot name="titulo">
@@ -63,7 +78,9 @@
             ])
         </x-slot>
         <x-slot name="boton">
-            <button @click="openCreate()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo Item</button>
+            <button @click="openCreate()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Nuevo
+                Item</button>
         </x-slot>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
@@ -82,16 +99,20 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="8" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando items...</td>
+                            <td colspan="8" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300"><i
+                                class="fas fa-spinner fa-spin mr-2"></i> Cargando items...
+                            </td>
                         </tr>
                     </template>
                     <template x-if="!loading && items.length===0">
                         <tr>
-                            <td colspan="8" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300">No se encontraron items.</td>
+                            <td colspan="8" class="py-4 px-4 text-center text-gray-600 dark:text-gray-300">No se
+                                encontraron items.</td>
                         </tr>
                     </template>
                     <template x-for="it in items" :key="it.id">
-                        <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
+                        <tr
+                            class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 nunito-regular">
                             <td class="py-2 px-4" x-text="it.id"></td>
                             <td class="py-2 px-4" x-text="it.descripcion"></td>
                             <td class="py-2 px-4 text-right" x-text="fmt(it.precio_unitario)"></td>
@@ -100,8 +121,10 @@
                             <td class="py-2 px-4 text-right" x-text="fmt(it.total)"></td>
                             <td class="py-2 px-4" x-text="it.id_cotizacion_fk"></td>
                             <td class="py-2 px-4 flex gap-2">
-                                <a href="#" @click.prevent="openEdit(it)" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
-                                <a href="#" @click.prevent="openDelete(it)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></a>
+                                <a href="#" @click.prevent="openEdit(it)" class="text-blue-500 hover:text-blue-700"><i
+                                        class="fas fa-edit"></i></a>
+                                <a href="#" @click.prevent="openDelete(it)" class="text-red-500 hover:text-red-700"><i
+                                        class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                     </template>
@@ -110,68 +133,114 @@
         </div>
     </x-admin.tabla-crud>
 
-    <!-- Modal Crear Item -->
-    <x-admin.form-modal class="nunito-bold" modalName="isItemModalOpen" title="Nuevo Item" submitLabel="Guardar" formId="item-form" maxWidth="max-w-2xl"
+    <x-admin.form-modal class="nunito-bold" modalName="isItemModalOpen" title="Nuevo Item" submitLabel="Guardar"
+        formId="item-form" maxWidth="max-w-2xl"
         @modal-submit.window="if($event.detail.formId==='item-form'){ submitCreate(); }">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="mb-2">
             <div>
+                <label class="block text-sm nunito-bold">Producto</label>
+                <select x-model="formItem.id_producto_fk"
+                    @change="(e)=>{ const p = products.find(x=>x.id_producto_pk == formItem.id_producto_fk); if(p){ formItem.descripcion = p.nombre_producto; formItem.precio_unitario = p.precio_unitario || 0; formItem.impuesto = p.impuesto || 0; } }"
+                    class="mt-1 w-full rounded-md border border-gray-400 p-1">
+                    <option value="">-- Seleccionar producto --</option>
+                    <template x-for="p in products" :key="p.id_producto_pk">
+                        <option :value="p.id_producto_pk" x-text="p.nombre_producto + ' — ' + fmt(p.precio_unitario)">
+                        </option>
+                    </template>
+                </select>
+            </div>
+            <div class="mt-3 mb-2">
                 <label class="block text-sm nunito-bold">Descripción</label>
-                <input type="text" x-model="formItem.descripcion" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
+                <textarea x-model="formItem.descripcion" placeholder="Descripción"
+                    @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; }"
+                    class="mt-1 w-full rounded-md border border-gray-400 p-2 text-sm resize-none overflow-hidden"></textarea>
             </div>
-            <div>
-                <label class="block text-sm nunito-bold">ID Cotización</label>
-                <input type="number" x-model="formItem.id_cotizacion_fk" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-sm nunito-bold">ID Cotización</label>
+                    <input type="number" x-model="formItem.id_cotizacion_fk"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1" />
+                </div>
+                <div>
+                    <label class="block text-sm nunito-bold">Total</label>
+                    <input type="text" :value="calcTotalObj(formItem)" disabled
+                        class="mt-1 w-full rounded-md border border-gray-200 bg-gray-100 p-1" />
+                </div>
             </div>
-            <div>
-                <label class="block text-sm nunito-bold">Precio Unitario</label>
-                <input type="number" step="0.01" x-model.number="formItem.precio_unitario" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
-            </div>
-            <div>
-                <label class="block text-sm nunito-bold">Cantidad</label>
-                <input type="number" step="0.01" x-model.number="formItem.cantidad" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
-            </div>
-            <div>
-                <label class="block text-sm nunito-bold">Impuesto</label>
-                <input type="number" step="0.01" x-model.number="formItem.impuesto" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
-            </div>
-            <div>
-                <label class="block text-sm nunito-bold">Total</label>
-                <input type="number" :value="calcTotalObj(formItem)" disabled class="mt-1 w-full rounded-md border border-gray-200 bg-gray-100 p-1" />
+            <div class="grid grid-cols-3 gap-2 mt-2">
+                <div>
+                    <label class="block text-sm nunito-bold">Precio Unitario</label>
+                    <input type="number" step="0.01" x-model.number="formItem.precio_unitario"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1 text-right" />
+                </div>
+                <div>
+                    <label class="block text-sm nunito-bold">Cantidad</label>
+                    <input type="number" step="0.01" x-model.number="formItem.cantidad"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1 text-right" />
+                </div>
+                <div>
+                    <label class="block text-sm nunito-bold">Impuesto</label>
+                    <input type="number" step="0.01" x-model.number="formItem.impuesto"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1 text-right" />
+                </div>
             </div>
         </div>
     </x-admin.form-modal>
 
-    <!-- Modal Editar Item -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditItemModalOpen" title="Editar Item" itemToEdit="itemToEdit" formId="item-edit-form" maxWidth="max-w-2xl"
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditItemModalOpen" title="Editar Item" itemToEdit="itemToEdit"
+        formId="item-edit-form" maxWidth="max-w-2xl"
         @modal-submit.window="if($event.detail.formId==='item-edit-form'){ submitEdit(); }">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="mb-2">
             <div>
+                <label class="block text-sm nunito-bold">Producto</label>
+                <select x-model="formItem.id_producto_fk"
+                    @change="(e)=>{ const p = products.find(x=>x.id_producto_pk == formItem.id_producto_fk); if(p){ formItem.descripcion = p.nombre_producto; formItem.precio_unitario = p.precio_unitario || 0; formItem.impuesto = p.impuesto || 0; } }"
+                    class="mt-1 w-full rounded-md border border-gray-400 p-1">
+                    <option value="">-- Seleccionar producto --</option>
+                    <template x-for="p in products" :key="p.id_producto_pk">
+                        <option :value="p.id_producto_pk" x-text="p.nombre_producto + ' — ' + fmt(p.precio_unitario)">
+                        </option>
+                    </template>
+                </select>
+            </div>
+            <div class="mt-3 mb-2">
                 <label class="block text-sm nunito-bold">Descripción</label>
-                <input type="text" x-model="formItem.descripcion" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
+                <textarea x-model="formItem.descripcion" placeholder="Descripción"
+                    @input="(e)=>{ e.target.style.height='auto'; e.target.style.height = e.target.scrollHeight + 'px'; }"
+                    class="mt-1 w-full rounded-md border border-gray-400 p-2 text-sm resize-none overflow-hidden"></textarea>
             </div>
-            <div>
-                <label class="block text-sm nunito-bold">ID Cotización</label>
-                <input type="number" x-model="formItem.id_cotizacion_fk" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-sm nunito-bold">ID Cotización</label>
+                    <input type="number" x-model="formItem.id_cotizacion_fk"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1" />
+                </div>
+                <div>
+                    <label class="block text-sm nunito-bold">Total</label>
+                    <input type="text" :value="calcTotalObj(formItem)" disabled
+                        class="mt-1 w-full rounded-md border border-gray-200 bg-gray-100 p-1" />
+                </div>
             </div>
-            <div>
-                <label class="block text-sm nunito-bold">Precio Unitario</label>
-                <input type="number" step="0.01" x-model.number="formItem.precio_unitario" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
-            </div>
-            <div>
-                <label class="block text-sm nunito-bold">Cantidad</label>
-                <input type="number" step="0.01" x-model.number="formItem.cantidad" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
-            </div>
-            <div>
-                <label class="block text-sm nunito-bold">Impuesto</label>
-                <input type="number" step="0.01" x-model.number="formItem.impuesto" class="mt-1 w-full rounded-md border border-gray-400 p-1" />
-            </div>
-            <div>
-                <label class="block text-sm nunito-bold">Total</label>
-                <input type="number" :value="calcTotalObj(formItem)" disabled class="mt-1 w-full rounded-md border border-gray-200 bg-gray-100 p-1" />
+            <div class="grid grid-cols-3 gap-2 mt-2">
+                <div>
+                    <label class="block text-sm nunito-bold">Precio Unitario</label>
+                    <input type="number" step="0.01" x-model.number="formItem.precio_unitario"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1 text-right" />
+                </div>
+                <div>
+                    <label class="block text-sm nunito-bold">Cantidad</label>
+                    <input type="number" step="0.01" x-model.number="formItem.cantidad"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1 text-right" />
+                </div>
+                <div>
+                    <label class="block text-sm nunito-bold">Impuesto</label>
+                    <input type="number" step="0.01" x-model.number="formItem.impuesto"
+                        class="mt-1 w-full rounded-md border border-gray-400 p-1 text-right" />
+                </div>
             </div>
         </div>
     </x-admin.edit-modal>
 
-    <!-- Confirmar Eliminación -->
-    <x-admin.confirmation-modal modal-name="isDeleteItemModalOpen" title="Eliminar Item" item-to-delete="itemToDelete" item-name-property="descripcion" message="¿Estás seguro de eliminar el item" />
+    <x-admin.confirmation-modal modal-name="isDeleteItemModalOpen" title="Eliminar Item" item-to-delete="itemToDelete"
+        item-name-property="descripcion" message="¿Estás seguro de eliminar el item" />
 </div>

@@ -27,7 +27,7 @@ class ParametroSystemSeeder extends Seeder
                     'fecha_modificacion' => $now,
                 ]
             );
-            // keep creado_por/fecha_creacion intact on existing rows
+            
         }
     }
 }

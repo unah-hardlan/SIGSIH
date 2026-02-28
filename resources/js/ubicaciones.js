@@ -19,7 +19,7 @@ window.paisesApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.paises = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
@@ -39,7 +39,6 @@ window.paisesApiHandlers = {
      * @param {object} component - The Alpine.js component's `this` context.
      */
     async submitPais(component) {
-        // Use the same model name used in Blade (nombre_pais)
         const nombreTrim = String(component.nombre_pais || "").trim();
         if (!nombreTrim) {
             window.showToast &&
@@ -73,7 +72,7 @@ window.paisesApiHandlers = {
                 window.showToast("País creado exitosamente", "success");
             component.nombre_pais = "";
             component.isPaisModalOpen = false;
-            await this.fetchPaises(component); // Use 'this' to call other methods within the same handler object
+            await this.fetchPaises(component);
         } catch (error) {
             console.error("Error creating pais:", error);
             window.showToast &&
@@ -620,7 +619,7 @@ window.paisesApiHandlers = {
                 window.showToast("Debe seleccionar una ciudad", "error");
             return;
         }
-        // Validación de Código Postal según país (Centroamérica)
+
         const normalize = (s) =>
             (s || "")
                 .toString()
@@ -688,7 +687,7 @@ window.paisesApiHandlers = {
                 );
             return;
         }
-        // TODO: Add duplicate validation if needed
+
         /* if (
             component.direcciones.some(
                 (d) =>
@@ -762,7 +761,7 @@ window.paisesApiHandlers = {
                 window.showToast("Debe seleccionar una ciudad", "error");
             return;
         }
-        // Validación de Código Postal según país (Centroamérica)
+
         const normalize = (s) =>
             (s || "")
                 .toString()
@@ -830,7 +829,7 @@ window.paisesApiHandlers = {
                 );
             return;
         }
-        // TODO: Add duplicate validation if needed
+
         /* if (
             component.direcciones.some(
                 (d) =>
@@ -928,7 +927,7 @@ window.paisesApiHandlers = {
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) throw data;
-            // Assuming the API returns data in 'data' key or directly an array
+
             component.paisesPredefinidos = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)

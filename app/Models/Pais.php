@@ -17,7 +17,7 @@ class Pais extends Model
         'nombre_pais'
     ];
 
-    // Relación con Departamentos
+    
     public function departamentos()
     {
         return $this->hasMany(Departamento::class, 'id_pais_pk', 'id_pais_pk');

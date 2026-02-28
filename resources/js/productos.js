@@ -20,7 +20,7 @@ window.productosApiHandlers = {
             if (component.ordenarPor) {
                 params.set("sort", component.ordenarPor);
             }
-            // Para asegurar que obtenemos todos los resultados filtrados y no solo la primera página
+
             params.set("all", "true");
 
             const response = await fetch(
@@ -361,13 +361,11 @@ window.productosApiHandlers = {
     },
 };
 
-// Este es el handler para el catálogo de 'Tipos de Producto', se mantiene igual.
 window.tipoProductosApiHandlers = window.tipoProductosApiHandlers || {
     async fetchTipoProductos(component) {
         if (component.loadingTipoProductos) return;
         component.loadingTipoProductos = true;
         try {
-            // Se usa ?all=true para asegurar que se obtienen todos los tipos para el select
             const response = await fetch("/api/tipos-producto?all=true");
             const data = await response.json();
             component.tipoProductos = data.data || [];

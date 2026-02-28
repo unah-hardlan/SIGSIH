@@ -1,6 +1,6 @@
 <div class="container mx-auto space-y-6" x-data="VistaProyectosData(@json($initial ?? []))" x-init="init()">
     <div class="flex justify-between items-center">
-        <div class="flex items-center space-x-2">
+        <div class="hidden sm:flex items-center space-x-2">
             <button @click="previousProyecto()" :disabled="proyectos.length === 0 || loading" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left"></i></button>
             <div class="flex items-center space-x-2">
                 <h2 @click="openProjectListModal()" class="text-xl nunito-bold text-gray-800 dark:text-white cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" x-text="loading ? 'Cargando...' : (currentProyecto ? currentProyecto.nombre_proyecto : 'No hay proyectos')"></h2>
@@ -9,12 +9,34 @@
             </div>
             <button @click="nextProyecto()" :disabled="proyectos.length === 0 || loading" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-right"></i></button>
         </div>
-       <div class="bg-transparent items-center justify-center flex">
-        <a href="{{ route('admin.reporte-proyecto') }}" target="_blank" class="flex items-center gap-2 px-6 py-2 border-2 border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors duration-300 w-full min-w-[170px] justify-center">
+
+        <div class="flex sm:hidden items-center justify-between w-full space-x-2">
+            <button @click="previousProyecto()" :disabled="proyectos.length === 0 || loading" class="p-3 rounded-full bg-white/90 dark:bg-gray-800 shadow text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <div class="flex-1 text-center px-2">
+                <h2 @click="openProjectListModal()" class="text-base nunito-bold text-gray-800 dark:text-white cursor-pointer truncate" x-text="loading ? 'Cargando...' : (currentProyecto ? currentProyecto.nombre_proyecto : 'No hay proyectos')"></h2>
+                <div class="text-xs text-gray-500 dark:text-gray-400" x-text="(!loading && proyectos.length > 0) ? '(' + (currentProyectoIndex + 1) + ' de ' + proyectos.length + ')' : ''"></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button @click="nextProyecto()" :disabled="proyectos.length === 0 || loading" class="p-3 rounded-full bg-white/90 dark:bg-gray-800 shadow text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <a :href="'/admin/reportes-header?modulo=proyecto-financiero&id_proyecto=' + (currentProyecto ? currentProyecto.id_proyecto_pk : '')" target="_blank" class="p-2 border border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 bg-white/90 dark:bg-gray-800">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
+            </div>
+        </div>
+
+    <div class="hidden sm:flex bg-transparent items-center justify-center">
+        <a :href="'/admin/reportes-header?modulo=proyecto-financiero&id_proyecto=' + (currentProyecto ? currentProyecto.id_proyecto_pk : '')" target="_blank" class="flex items-center gap-2 px-6 py-2 border-2 border-emerald-500 rounded-md text-emerald-700 dark:text-emerald-400 nunito-bold text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-colors duration-300 w-full min-w-[170px] justify-center">
             <i class="fas fa-file-pdf"></i>
             Generar PDF
         </a>
-</div>
+       </div>
 
     </div>
     <div class="top-4 grid grid-cols-1 sm:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-800 -mx-6 px-6 py-4 rounded-lg" x-show="currentProyecto" x-transition>
@@ -99,7 +121,6 @@
 
                     <template x-if="(ingresosProyecto.length + gastosProyecto.length) > 0">
                         <div class="space-y-4">
-                            <!-- Combine and sort by date descending -->
                             <template x-for="(mov, idx) in combinedMovimientos()" :key="(mov.__tipo || 'mov') + '_' + (mov.id_ingresos_pk || mov.id_gasto_pk || idx)">
                                 <div :class="mov.__tipo === 'ingreso' ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-700' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-700'" class="p-4 rounded-lg border flex items-center justify-between">
                                     <div class="flex items-center gap-4">
@@ -141,7 +162,7 @@
                 </button>
             </div>
             <div class="overflow-y-auto max-h-[calc(80vh-120px)]">
-                <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 space-y-4 z-10">
+                <div class="sm:sticky sm:top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 space-y-4 z-10">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>

@@ -1,48 +1,40 @@
 @extends('cliente.layouts.standalone')
+@section('title', 'Configurar Empresa - Hardlan')
 @section('content')
-<!-- Toggle de tema sticky en esquina superior derecha -->
-<div class="fixed top-4 right-4 z-50">
-    <button 
-        onclick="toggleTheme()" 
-        class="theme-toggle inline-flex items-center justify-center w-12 h-12 rounded-full backdrop-blur-lg shadow-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-        title="Cambiar tema"
-    >
-        <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-        </svg>
-        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-        </svg>
-    </button>
-</div>
+<div id="toast-container" class="fixed top-4 left-4 z-50 space-y-3 max-w-md"></div>
+
+{{-- Script para forzar modo oscuro y evitar parpadeos --}}
+<script>
+    (function() {
+        try {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } catch (_) {}
+    })();
+</script>
 
 <div class="w-full max-w-4xl mx-auto">
-    <!-- Tarjeta principal -->
-    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-200/20 dark:border-gray-700/20 overflow-hidden">
-        <!-- Header de la tarjeta -->
+    <div class="bg-gray-800/80 backdrop-blur-lg shadow-2xl rounded-3xl border border-gray-700/20 overflow-hidden">
         <div class="bg-gradient-to-r from-green-700 to-green-800 p-6 text-center">
             <div class="w-20 h-20 mx-auto mb-3 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <!-- Logo de la empresa -->
                 <div class="w-15 h-15 rounded-full overflow-hidden bg-white flex items-center justify-center p-1">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo SIGSIH" class="w-full h-full object-contain">
                 </div>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Datos de Empresa</h1>
-            <p class="text-green-100">Completa la información corporativa de tu empresa</p>
+            <h1 class="text-2xl font-bold text-white mb-2 font-nunito">Datos de Empresa</h1>
+            <p class="text-base text-green-100 font-nunito">Completa la información corporativa de tu empresa</p>
         </div>
 
-        <!-- Contenido del formulario -->
         <div class="p-6">
             <form action="{{ route('cliente.configurar-empresa.store') }}" method="POST" id="empresa-form" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 
-                <!-- Sección de Logo de Empresa -->
+                {{-- Sección Logo --}}
                 <div class="text-center mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Logo de la Empresa</h3>
+                    <h3 class="text-base font-bold text-white mb-3 font-nunito">Logo de la Empresa</h3>
                     <div class="flex flex-col items-center">
-                        <!-- Preview del logo -->
-                        <div class="relative mb-4">
-                            <div class="w-32 h-32 rounded-full border-4 border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                        <div class="relative mb-3">
+                            <div class="w-24 h-24 rounded-full border-3 border-gray-600 overflow-hidden bg-gray-700">
                                 <img id="logo-preview" class="w-full h-full object-cover hidden" alt="Preview">
                                 <div id="logo-placeholder" class="w-full h-full flex items-center justify-center">
                                     <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,31 +44,28 @@
                             </div>
                         </div>
                         
-                        <!-- Zona de drag and drop -->
-                        <div id="logo-drop-zone" class="w-full max-w-sm border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-green-500 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all duration-300 ease-in-out">
+                        <div id="logo-drop-zone" class="w-full max-w-xs border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-green-400 hover:bg-green-900/10 transition-all duration-300 ease-in-out">
                             <input type="file" id="avatar" name="avatar" data-validate="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" onchange="previewLogo(this)">
                             <label for="avatar" class="cursor-pointer">
-                                <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-6 h-6 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="font-medium text-green-600 dark:text-green-400">Haz clic para subir</span> o arrastra el logo
+                                <p class="text-xs text-gray-400 font-nunito">
+                                    <span class="font-medium text-green-400">Clic para subir</span> o arrastra
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">PNG, JPG, WEBP hasta 2MB</p>
+                                <p class="text-xs text-white font-nunito">PNG, JPG, WEBP (5MB máx)</p>
                             </label>
                         </div>
                         
                         @error('avatar')
-                            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Grid de campos de empresa -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Nombre Comercial -->
                     <div class="space-y-1">
-                        <label for="nombre_comercial" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        <label for="nombre_comercial" class="block text-base font-bold text-gray-300 font-nunito">
                             Nombre Comercial <span class="text-red-500">*</span>
                         </label>
                         <input 
@@ -85,131 +74,422 @@
                             type="text" 
                             required 
                             data-validate="name"
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
                             placeholder="Nombre comercial de la empresa"
                             value="{{ old('nombre_comercial') }}"
                         >
-                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="nombre_comercial"></p>
+                        <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="nombre_comercial"></p>
                         @error('nombre_comercial')
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <p class="text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Razón Social -->
                     <div class="space-y-1">
-                        <label for="razon_social" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Razón Social
+                        <label for="razon_social" class="block text-base font-bold text-gray-300 font-nunito">
+                            Razón Social <span class="text-red-500">*</span>
                         </label>
                         <input 
                             id="razon_social" 
                             name="razon_social" 
                             type="text" 
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                            required
+                            data-validate="name"
+                            class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
                             placeholder="Razón social legal"
                             value="{{ old('razon_social') }}"
                         >
+                        <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="razon_social"></p>
                         @error('razon_social')
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <p class="text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- RTN -->
                     <div class="space-y-1">
-                        <label for="rtn" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            RTN
+                        <label for="rtn" class="block text-base font-bold text-gray-300 font-nunito">
+                            Identificación Fiscal (RTN / NIT / RUC) <span class="text-red-500">*</span>
                         </label>
                         <input 
                             id="rtn" 
                             name="rtn" 
                             type="text" 
+                            required
                             data-validate="rtn"
-                            class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
+                            class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
                             placeholder="Registro Tributario Nacional"
                             value="{{ old('rtn') }}"
                         >
-                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 hidden" data-client-error-for="rtn"></p>
+                        <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="rtn"></p>
                         @error('rtn')
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <p class="text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Horario de Atención -->
-                    <div class="space-y-1">
-                        <label for="horario_atencion" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            Horario de Atención
+                    {{-- Sección Horario --}}
+                    <div class="md:col-span-2 space-y-1">
+                        <label class="block text-base font-bold text-gray-300 font-nunito">
+                            Horario de Atención <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative">
-                            <input 
-                                id="horario_atencion" 
-                                name="horario_atencion" 
-                                type="text" 
-                                class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                                placeholder="Ej: L-V 8:00-17:00, S 9:00-12:00"
-                                value="{{ old('horario_atencion') }}"
-                                onblur="validateHorario(this)"
-                                oninput="clearHorarioError()"
-                            >
-                            <div id="horario-validation-icon" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
-                                <!-- Icono de éxito -->
-                                <svg class="w-5 h-5 text-green-500 success-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <!-- Icono de error -->
-                                <svg class="w-5 h-5 text-red-500 error-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
+
+                        <div class="space-y-3 rounded-xl border border-gray-700 bg-gray-800/60 px-4 py-4">
+                            <input type="hidden" name="horario_atencion" id="horario_atencion" value="{{ old('horario_atencion') }}">
+
+                            <div class="space-y-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 font-nunito">Días</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @php
+                                        $dias = [
+                                            ['code' => 'L', 'label' => 'Lun'],
+                                            ['code' => 'M', 'label' => 'Mar'],
+                                            ['code' => 'X', 'label' => 'Mié'],
+                                            ['code' => 'J', 'label' => 'Jue'],
+                                            ['code' => 'V', 'label' => 'Vie'],
+                                            ['code' => 'S', 'label' => 'Sáb'],
+                                            ['code' => 'D', 'label' => 'Dom'],
+                                        ];
+                                    @endphp
+                                    @foreach($dias as $dia)
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" class="hidden peer" data-day-checkbox value="{{ $dia['code'] }}">
+                                            <span class="select-none rounded-lg border-2 border-gray-600 bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-300 transition-all duration-150 hover:border-gray-500 cursor-pointer peer-checked:border-green-400 peer-checked:bg-green-900/40 peer-checked:text-green-300 font-nunito">
+                                                {{ $dia['label'] }}
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-1 text-xs font-medium text-gray-400 transition-all duration-150 hover:border-green-400 hover:bg-green-900/20 hover:text-green-300 focus:outline-none font-nunito" data-preset="weekdays">Lunes a Viernes</button>
+                                    <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-1 text-xs font-medium text-gray-400 transition-all duration-150 hover:border-green-400 hover:bg-green-900/20 hover:text-green-300 focus:outline-none font-nunito" data-preset="weekends">Lunes a Sábado</button>
+                                    <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-1 text-xs font-medium text-gray-400 transition-all duration-150 hover:border-green-400 hover:bg-green-900/20 hover:text-green-300 focus:outline-none font-nunito" data-preset="all">Todos los días</button>
+                                    <button type="button" class="horario-preset inline-flex items-center justify-center rounded-lg border border-gray-600 bg-gray-700/50 px-3 py-1 text-xs font-medium text-gray-400 transition-all duration-150 hover:border-green-400 hover:bg-green-900/20 hover:text-green-300 focus:outline-none font-nunito" data-preset="none">Limpiar</button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 font-nunito">Horario</p>
+                                <div class="flex flex-wrap gap-3 items-center">
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-sm text-gray-400 font-nunito">De:</label>
+                                        <input 
+                                            type="time" 
+                                            id="horario_inicio" 
+                                            class="px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                            value="08:00"
+                                        >
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-sm text-gray-400 font-nunito">A:</label>
+                                        <input 
+                                            type="time" 
+                                            id="horario_fin" 
+                                            class="px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                            value="16:00"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-gray-600">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1 font-nunito">Vista previa:</p>
+                                <p id="horario-preview" class="text-sm text-gray-300 font-medium font-nunito">—</p>
                             </div>
                         </div>
-                        <div id="horario-help" class="text-xs text-gray-500 dark:text-gray-400">
-                            <strong>Formatos válidos:</strong> L-V 8:00-17:00 | L-S 9:00-18:00 | L-V 8:00-12:00, 14:00-18:00
-                        </div>
-                        <div id="horario-error" class="text-sm text-red-600 dark:text-red-400 hidden"></div>
+                        
                         @error('horario_atencion')
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <p class="text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Descripción de la Empresa -->
                 <div class="space-y-1">
-                    <label for="descripcion_empresa" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Descripción de la Empresa
+                    <label for="descripcion_empresa" class="block text-base font-bold text-gray-300 font-nunito">
+                        Descripción de la Empresa <span class="text-red-500">*</span>
                     </label>
                     <textarea 
                         id="descripcion_empresa" 
                         name="descripcion_empresa" 
-                        rows="3"
-                        class="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors duration-200"
-                        placeholder="Describe brevemente tu empresa y sus servicios"
+                        rows="4"
+                        required
+                        maxlength="500"
+                        class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 resize-y min-h-[100px] max-h-[300px] text-sm font-nunito"
+                        placeholder="Describe brevemente tu empresa y sus servicios (máximo 500 caracteres)"
                     >{{ old('descripcion_empresa') }}</textarea>
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="descripcion_empresa"></p>
+                        <p class="text-xs text-gray-400 mt-1 font-nunito">
+                            <span id="descripcion_count">0</span>/500 caracteres
+                        </p>
+                    </div>
                     @error('descripcion_empresa')
-                        <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        <p class="text-sm text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Botones -->
-                <div class="pt-6 flex gap-4">
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold text-white font-nunito">
+                        Ubicación de la Empresa
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1">
+                            <label for="pais_id" class="block text-base font-bold text-gray-300 font-nunito">
+                                País <span class="text-red-500">*</span>
+                            </label>
+                            <select 
+                                id="pais_id" 
+                                name="id_pais_fk" 
+                                required
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                data-old-value="{{ old('id_pais_fk') }}"
+                            >
+                                <option value="">Seleccionar país</option>
+                                @if(isset($paises))
+                                    @foreach($paises as $pais)
+                                        <option value="{{ $pais->id_pais_pk }}" {{ old('id_pais_fk') == $pais->id_pais_pk ? 'selected' : '' }}>
+                                            {{ $pais->nombre_pais }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="id_pais_fk"></p>
+                            @error('id_pais_fk')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="departamento_id" class="block text-base font-bold text-gray-300 font-nunito">
+                                Departamento <span class="text-red-500">*</span>
+                            </label>
+                            <select 
+                                id="departamento_id" 
+                                name="id_departamento_fk" 
+                                required
+                                disabled
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:border-green-400 transition-colors duration-200 disabled:bg-gray-800 disabled:text-gray-400 text-sm font-nunito"
+                                data-old-value="{{ old('id_departamento_fk') }}"
+                            >
+                                <option value="">Seleccionar departamento</option>
+                            </select>
+                            <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="id_departamento_fk"></p>
+                            @error('id_departamento_fk')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="ciudad_id" class="block text-base font-bold text-gray-300 font-nunito">
+                                Ciudad <span class="text-red-500">*</span>
+                            </label>
+                            <select 
+                                id="ciudad_id" 
+                                name="id_ciudad_fk" 
+                                required
+                                disabled
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:border-green-400 transition-colors duration-200 disabled:bg-gray-800 disabled:text-gray-400 text-sm font-nunito"
+                                data-old-value="{{ old('id_ciudad_fk') }}"
+                            >
+                                <option value="">Seleccionar ciudad</option>
+                            </select>
+                            <p class="text-sm text-red-400 mt-1 hidden" data-client-error-for="id_ciudad_fk"></p>
+                            @error('id_ciudad_fk')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold text-white font-nunito">
+                        Dirección
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1 md:col-span-2">
+                            <label for="calle" class="block text-base font-bold text-gray-300 font-nunito">
+                                Calle <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="calle" 
+                                name="calle" 
+                                type="text" 
+                                required
+                                maxlength="100"
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                placeholder="Ej. Avenida Principal, Blvd. Morazán"
+                                value="{{ old('calle') }}"
+                            >
+                            @error('calle')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="numero" class="block text-base font-bold text-gray-300 font-nunito">
+                                Número <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="numero" 
+                                name="numero" 
+                                type="text" 
+                                required
+                                maxlength="20"
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                placeholder="Ej. Casa 24, #125B"
+                                value="{{ old('numero') }}"
+                            >
+                            @error('numero')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1 md:col-span-2">
+                            <label for="colonia" class="block text-base font-bold text-gray-300 font-nunito">
+                                Colonia / Barrio <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="colonia" 
+                                name="colonia" 
+                                type="text" 
+                                required
+                                maxlength="100"
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                placeholder="Ej. Bosques del Alba"
+                                value="{{ old('colonia') }}"
+                            >
+                            @error('colonia')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="codigo_postal" class="block text-base font-bold text-gray-300 font-nunito">
+                                Código Postal <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="codigo_postal" 
+                                name="codigo_postal" 
+                                type="text" 
+                                required
+                                maxlength="10"
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                placeholder="Ej. 11101"
+                                value="{{ old('codigo_postal') }}"
+                            >
+                            @error('codigo_postal')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1 md:col-span-3">
+                            <label for="referencia" class="block text-base font-bold text-gray-300 font-nunito">
+                                Referencia <span class="text-red-500">*</span>
+                            </label>
+                            <textarea 
+                                id="referencia" 
+                                name="referencia" 
+                                rows="3"
+                                required
+                                class="w-full px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                placeholder="Ej. Frente a la gasolinera X, edificio gris de 2 pisos"
+                            >{{ old('referencia') }}</textarea>
+                            @error('referencia')
+                                <p class="text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-base font-bold text-white font-nunito">
+                        Email de Contacto
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <label for="email_contacto" class="block text-base font-bold text-gray-300 font-nunito">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <div class="space-y-2">
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input 
+                                        id="email_contacto" 
+                                        name="email_contacto" 
+                                        type="email" 
+                                        required 
+                                        maxlength="255"
+                                        class="flex-1 px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-sm font-nunito"
+                                        placeholder="ejemplo@empresa.com"
+                                        value="{{ old('email_contacto') }}"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        id="btn-enviar-codigo"
+                                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full font-nunito"
+                                    >
+                                        Enviar Código
+                                    </button>
+                                </div>
+                                @error('email_contacto')
+                                    <p class="text-sm text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div id="verification-section" class="hidden space-y-1">
+                            <label for="codigo_verificacion" class="block text-base font-bold text-gray-300 font-nunito">
+                                Código de Verificación <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input 
+                                    id="codigo_verificacion" 
+                                    name="codigo_verificacion" 
+                                    type="text" 
+                                    maxlength="6"
+                                    class="flex-1 px-3 py-2 border-2 border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition-colors duration-200 text-center text-sm tracking-widest font-nunito"
+                                    placeholder="000000"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="btn-verificar-codigo"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed font-nunito"
+                                >
+                                    Verificar
+                                </button>
+                            </div>
+                            <p id="verification-error" class="text-sm text-red-400 mt-1 hidden"></p>
+                        </div>
+                        
+                        <div id="verification-success" class="hidden items-center gap-2 p-3 bg-green-900/20 border border-green-800 rounded-lg">
+                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-green-200 font-nunito">Email verificado correctamente</span>
+                        </div>
+                        
+                        <input type="hidden" id="email_verificado" name="email_verificado" value="0">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3 md:gap-4">
                     <a href="{{ route('cliente.configurar-perfil') }}" 
-                       class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-3 px-6 rounded-lg text-center hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200">
+                       class="flex-1 bg-gray-600 text-gray-200 font-semibold py-2 px-4 md:py-3 md:px-6 rounded-lg text-center hover:bg-gray-500 transition-colors duration-200 font-nunito text-sm md:text-base flex items-center justify-center">
                         Volver
                     </a>
                     <button 
                         type="submit" 
-                        class="flex-1 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        class="flex-1 bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white font-semibold py-2 px-4 md:py-3 md:px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm md:text-base"
                         id="submit-btn"
                     >
-                        <span class="flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="flex items-center justify-center font-nunito">
+                            <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Guardar Datos de Empresa
+                            Guardar Datos
                         </span>
                     </button>
                 </div>
 
-                <!-- Mensaje de error global -->
                 @if(session('error'))
-                    <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                    <div class="rounded-lg bg-red-900/20 border border-red-800 p-4">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,10 +497,10 @@
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                                <h3 class="text-sm font-bold text-red-200 font-nunito">
                                     Error al guardar los datos de empresa
                                 </h3>
-                                <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                                <div class="mt-2 text-sm text-red-300 font-nunito">
                                     <p>{{ session('error') }}</p>
                                 </div>
                             </div>
@@ -231,338 +511,15 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="text-center mt-8">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-            ¿Necesitas ayuda? <a href="#" class="text-green-600 dark:text-green-400 hover:underline">Contacta soporte</a>
+        <p class="text-sm text-white font-nunito">
+            ¿Necesitas ayuda? <a href="mailto:edw.lagos@gmail.com" class="text-green-400 hover:underline">Contacta soporte</a>
         </p>
     </div>
 </div>
 
-<script>
-function previewLogo(input) {
-    const preview = document.getElementById('logo-preview');
-    const placeholder = document.getElementById('logo-placeholder');
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-        };
-        reader.readAsDataURL(input.files[0]);
-    } else {
-        preview.src = '';
-        preview.classList.add('hidden');
-        placeholder.classList.remove('hidden');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('empresa-form');
-    const submitBtn = document.getElementById('submit-btn');
-    
-    // Validation setup
-    const validators = {
-        name: value => value.trim().length >= 2 || 'Debe tener al menos 2 caracteres',
-        rtn: value => value.trim() === '' || /^[0-9-]{6,20}$/.test(value.trim()) || 'RTN inválido (solo números y guiones, 6-20 caracteres)',
-        avatar: file => {
-            if (!file) return true;
-            const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
-            if (!allowed.includes(file.type)) return 'Formato no permitido';
-            if (file.size > 2 * 1024 * 1024) return 'La imagen debe ser menor a 2MB';
-            return true;
-        }
-    };
-
-    const touched = {};
-    let triedSubmit = false;
-
-    function showError(input, message) {
-        const el = document.querySelector(`[data-client-error-for="${input.id}"]`);
-        if (el) {
-            el.textContent = message;
-            el.classList.remove('hidden');
-        }
-        input.classList.add('border-red-500');
-        input.classList.remove('border-gray-300');
-    }
-
-    function clearError(input) {
-        const el = document.querySelector(`[data-client-error-for="${input.id}"]`);
-        if (el) {
-            el.textContent = '';
-            el.classList.add('hidden');
-        }
-        input.classList.remove('border-red-500');
-        input.classList.add('border-gray-300');
-    }
-
-    function validateInput(input) {
-        const rule = input.dataset.validate;
-        if (!rule) return true;
-        let value;
-        if (input.type === 'file') value = input.files[0] || null;
-        else value = input.value || '';
-
-        const res = validators[rule](value);
-        if (res === true) {
-            clearError(input);
-            return true;
-        } else {
-            if (touched[input.id] || triedSubmit) showError(input, res);
-            else clearError(input);
-            return false;
-        }
-    }
-
-    function validateAll() {
-        const inputs = form.querySelectorAll('[data-validate]');
-        let ok = true;
-        inputs.forEach(i => {
-            const v = validateInput(i);
-            if (!v) ok = false;
-        });
-        submitBtn.disabled = !ok;
-        return ok;
-    }
-
-    // attach listeners to data-validate fields
-    form.querySelectorAll('[data-validate]').forEach(input => {
-        touched[input.id] = false;
-        const ev = input.type === 'file' ? 'change' : 'input';
-        input.addEventListener(ev, () => {
-            touched[input.id] = true;
-            validateInput(input);
-            validateAll();
-        });
-        input.addEventListener('blur', () => {
-            touched[input.id] = true;
-            validateInput(input);
-            validateAll();
-        });
-    });
-
-    form.addEventListener('submit', function(e) {
-        triedSubmit = true;
-        if (!validateAll()) {
-            e.preventDefault();
-            const firstInvalid = form.querySelector('[data-validate].border-red-500') || form.querySelector('[data-validate]');
-            if (firstInvalid) firstInvalid.focus();
-            return;
-        }
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <span class="flex items-center justify-center">
-                <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-                Guardando datos...
-            </span>
-        `;
-    });
-
-    // Configurar drag & drop para el logo
-    setupLogoDragAndDrop();
-});
-
-// Función para configurar drag & drop del logo
-function setupLogoDragAndDrop() {
-    const dropZone = document.getElementById('logo-drop-zone');
-    const fileInput = document.getElementById('avatar');
-
-    // Prevenir comportamiento por defecto
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-    });
-
-    // Highlight de la zona de drop
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, unhighlight, false);
-    });
-
-    // Manejar el drop
-    dropZone.addEventListener('drop', handleLogoDrop, false);
-
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    function highlight(e) {
-        dropZone.classList.add('border-green-500', 'bg-green-50');
-        dropZone.classList.remove('border-gray-300');
-    }
-
-    function unhighlight(e) {
-        dropZone.classList.remove('border-green-500', 'bg-green-50');
-        dropZone.classList.add('border-gray-300');
-    }
-
-    function handleLogoDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-
-        if (files.length > 0) {
-            const file = files[0];
-            
-            // Validar tipo de archivo
-            if (!file.type.match('image.*')) {
-                alert('Por favor selecciona solo archivos de imagen.');
-                return;
-            }
-
-            // Validar tamaño (2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                alert('El archivo es muy grande. Máximo 2MB.');
-                return;
-            }
-
-            // Asignar archivo al input
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-
-            // Mostrar preview
-            previewLogo(fileInput);
-        }
-    }
-}
-
-// Función para mostrar preview del logo
-function previewLogo(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const preview = document.getElementById('logo-preview');
-            const placeholder = document.getElementById('logo-placeholder');
-            
-            preview.src = e.target.result;
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-        };
-        
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-// Función para validar formato de horario
-function validateHorario(input) {
-    const value = input.value.trim();
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const successIcon = iconContainer.querySelector('.success-icon');
-    const errorIcon = iconContainer.querySelector('.error-icon');
-    
-    // Si está vacío, no mostrar error (campo opcional)
-    if (!value) {
-        hideHorarioValidation();
-        return true;
-    }
-    
-    // Patrones de validación para horarios
-    const patterns = [
-        // L-V 8:00-17:00
-        /^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-        // L-V 8:00-12:00, 14:00-18:00 (con pausa)
-        /^[LMXJVSD]-[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2},\s*\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-        // L 8:00-17:00 (día individual)
-        /^[LMXJVSD]\s+\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-        // 24 horas
-        /^24\s*horas?$/i,
-        // Cerrado
-        /^cerrado$/i
-    ];
-    
-    const isValid = patterns.some(pattern => pattern.test(value));
-    
-    if (isValid) {
-        showHorarioSuccess();
-        return true;
-    } else {
-        showHorarioError('Formato de horario inválido. Ejemplos: "L-V 8:00-17:00", "L-S 9:00-18:00", "24 horas"');
-        return false;
-    }
-}
-
-function showHorarioSuccess() {
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const successIcon = iconContainer.querySelector('.success-icon');
-    const errorIcon = iconContainer.querySelector('.error-icon');
-    const input = document.getElementById('horario_atencion');
-    
-    errorDiv.classList.add('hidden');
-    iconContainer.classList.remove('hidden');
-    successIcon.classList.remove('hidden');
-    errorIcon.classList.add('hidden');
-    
-    input.classList.remove('border-red-500');
-    input.classList.add('border-green-500');
-}
-
-function showHorarioError(message) {
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const successIcon = iconContainer.querySelector('.success-icon');
-    const errorIcon = iconContainer.querySelector('.error-icon');
-    const input = document.getElementById('horario_atencion');
-    
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
-    iconContainer.classList.remove('hidden');
-    successIcon.classList.add('hidden');
-    errorIcon.classList.remove('hidden');
-    
-    input.classList.remove('border-green-500');
-    input.classList.add('border-red-500');
-}
-
-function hideHorarioValidation() {
-    const errorDiv = document.getElementById('horario-error');
-    const iconContainer = document.getElementById('horario-validation-icon');
-    const input = document.getElementById('horario_atencion');
-    
-    errorDiv.classList.add('hidden');
-    iconContainer.classList.add('hidden');
-    input.classList.remove('border-green-500', 'border-red-500');
-}
-
-function clearHorarioError() {
-    const input = document.getElementById('horario_atencion');
-    if (input.classList.contains('border-red-500')) {
-        hideHorarioValidation();
-    }
-}
-
-// Función para toggle del tema con animación suave
-function toggleTheme() {
-    const html = document.documentElement;
-    const button = document.querySelector('.theme-toggle');
-    const isDark = html.classList.contains('dark');
-    
-    // Animación del botón
-    button.style.transform = 'scale(0.9)';
-    
-    setTimeout(() => {
-        if (isDark) {
-            html.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        } else {
-            html.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        }
-        
-        // Restaurar escala del botón
-        button.style.transform = 'scale(1)';
-    }, 100);
-}
-</script>
+<script src="{{ asset('js/location-selector-static.js') }}" defer></script>
+<script src="{{ asset('js/email-verification.js') }}" defer></script>
+<script src="{{ asset('js/theme-toggle.js') }}" defer></script>
+<script src="{{ asset('js/configurar-empresa.js') }}" defer></script>
 @endsection

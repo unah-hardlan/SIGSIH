@@ -8,17 +8,11 @@ use App\Models\Usuario;
 
 class PermissionService
 {
-    /**
-     * Check if the given user can perform an action on any of the provided objeto names.
-     *
-     * @param mixed $user Authenticated user model (expects App\Models\Usuario)
-     * @param string|array $objetoKeys One or more objeto names to try (case-insensitive)
-     * @param string $accion One of consultar|insercion|actualizacion|eliminacion
-     */
+    
     public function can($user, $objetoKeys, string $accion): bool
     {
         if (!$user instanceof Usuario) return false;
-        // Roles: considerar rol principal + roles del pivote (si existen)
+        
         $roleIds = [];
         if ($user->id_rol_fk) $roleIds[] = (int) $user->id_rol_fk;
         try {
@@ -42,6 +36,7 @@ class PermissionService
             'insercion' => 'permiso_insercion',
             'actualizacion' => 'permiso_actualizar',
             'eliminacion' => 'permiso_eliminacion',
+            'ver' => 'permiso_ver',
         ];
         $col = $map[$accion] ?? null;
         if (!$col) return false;
@@ -54,13 +49,15 @@ class PermissionService
                 ->whereIn('id_rol_fk', $roleIds)
                 ->where($col, true)
                 ->exists();
+            
+            
             if ($ok) return true;
         }
 
         return false;
     }
 
-    /** Convenience wrapper to check by a single objeto name. */
+    
     public function canKey($user, string $clave, string $accion = 'consultar'): bool
     {
         return $this->can($user, [$clave], $accion);

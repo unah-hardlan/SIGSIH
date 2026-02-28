@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class CalendarioResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -25,7 +21,7 @@ class CalendarioResource extends JsonResource
             'id_tipo_mantenimiento_fk' => $this->id_tipo_mantenimiento_fk,
             'id_cliente_fk' => $this->id_cliente_fk,
 
-            // Relaciones
+            
             'estado' => $this->whenLoaded('estado'),
             'agencia' => $this->whenLoaded('agencia'),
             'orden_servicio' => $this->whenLoaded('ordenServicio'),
@@ -34,12 +30,12 @@ class CalendarioResource extends JsonResource
             'cliente_nombre' => $this->whenLoaded('cliente', function () {
                 $c = $this->cliente;
                 if (!$c) return null;
-                // Empresa preferred display
+                
                 if ($c->relationLoaded('empresa') || method_exists($c, 'empresa')) {
                     $e = $c->empresa;
                     if ($e) return $e->nombre_comercial ?: ($e->razon_social ?: null);
                 }
-                // Persona fallback: first linked persona
+                
                 if ($c->relationLoaded('personas') || method_exists($c, 'personas')) {
                     $p = $c->personas->first();
                     if ($p) {

@@ -13,7 +13,7 @@ class BlockClientFromAdmin
         $user = auth()->user();
         if ($user) {
             $rolNombre = strtolower($user->rol->rol ?? '');
-            // Si es cliente y viene a /admin/* lo redirigimos a su portal
+            
             if (in_array($rolNombre, ['cliente','client','usuario','user'])) {
                 return redirect()->route('cliente.perfil');
             }

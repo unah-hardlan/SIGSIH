@@ -1,5 +1,4 @@
 (function () {
-    // Catálogo de subdivisiones por país (Centroamérica)
     const DATA = {
         Honduras: [
             "Atlántida",
@@ -117,7 +116,6 @@
         ],
     };
 
-    // Catálogo completo de ciudades por País -> Departamento/Provincia -> Ciudades
     const CITIES = {
         Honduras: {
             Atlántida: [

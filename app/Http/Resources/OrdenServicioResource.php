@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrdenServicioResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -22,20 +18,31 @@ class OrdenServicioResource extends JsonResource
             'id_estado_orden_servicio_fk' => $this->id_estado_orden_servicio_fk,
             'fecha_creada' => $this->fecha_creada,
             'fecha_asignada' => $this->fecha_asignada,
-            'fecha_recepcion' => $this->fecha_recepcion,
-            'fecha_inicio' => $this->fecha_inicio,
-            'fecha_finalizacion' => $this->fecha_finalizacion,
+
+
+            'fecha_recepcion' => $this->fecha_recepcion
+                ? \Carbon\Carbon::parse($this->fecha_recepcion)->format('Y-m-d H:i')
+                : null,
+            'calificacion_servicio' => $this->calificacion_servicio,
+            'fecha_inicio' => $this->fecha_inicio
+                ? \Carbon\Carbon::parse($this->fecha_inicio)->format('Y-m-d H:i')
+                : null,
+            'fecha_finalizacion' => $this->fecha_finalizacion
+                ? \Carbon\Carbon::parse($this->fecha_finalizacion)->format('Y-m-d H:i')
+                : null,
+
             'observaciones' => $this->observaciones,
             'diagnostico_tecnico' => $this->diagnostico_tecnico,
             'diagnostico_cliente' => $this->diagnostico_cliente,
             'id_cotizacion_fk' => $this->id_cotizacion_fk,
-            // Human-friendly identifiers for frontend selects
-            'numero_orden_servicio' => $this->numero_orden_servicio ?? null,
-            // Provide a short code and a display name used by the frontend
             'codigo_orden' => $this->numero_orden_servicio ?? null,
             'nombre_orden' => ($this->numero_orden_servicio ?? '') . ($this->solicitudServicio ? ' - ' . substr($this->solicitudServicio->descripcion_problema, 0, 50) : ''),
+
             
-            // Relaciones
+            'repuestos' => $this->repuestos ?? null,
+            'repuestos_count' => is_array($this->repuestos) ? count($this->repuestos) : null,
+
+            
             'solicitud_servicio' => $this->whenLoaded('solicitudServicio', function () {
                 return array_filter([
                     'id_solicitud_pk' => $this->solicitudServicio->id_solicitud_pk,
@@ -54,6 +61,16 @@ class OrdenServicioResource extends JsonResource
                                     'rtn' => $this->solicitudServicio->cliente->empresa->rtn,
                                 ]
                                 : null,
+                            
+                            'persona' => $this->solicitudServicio->cliente->relationLoaded('personas') && $this->solicitudServicio->cliente->personas && $this->solicitudServicio->cliente->personas->count() > 0
+                                ? [
+                                    'id_persona_pk' => $this->solicitudServicio->cliente->personas->first()->id_persona_pk ?? null,
+                                    'primer_nombre' => $this->solicitudServicio->cliente->personas->first()->primer_nombre ?? null,
+                                    'segundo_nombre' => $this->solicitudServicio->cliente->personas->first()->segundo_nombre ?? null,
+                                    'primer_apellido' => $this->solicitudServicio->cliente->personas->first()->primer_apellido ?? null,
+                                    'segundo_apellido' => $this->solicitudServicio->cliente->personas->first()->segundo_apellido ?? null,
+                                ]
+                                : null,
                         ]
                         : null,
                     'contacto' => $this->solicitudServicio->relationLoaded('contacto') && $this->solicitudServicio->contacto
@@ -63,7 +80,7 @@ class OrdenServicioResource extends JsonResource
                             'valor_contacto' => $this->solicitudServicio->contacto->valor_contacto,
                         ]
                         : null,
-                ], fn ($value) => $value !== null);
+                ], fn($value) => $value !== null);
             }),
             'tecnico' => $this->whenLoaded('tecnico', function () {
                 return [
@@ -76,7 +93,6 @@ class OrdenServicioResource extends JsonResource
             'estado' => $this->whenLoaded('estado', function () {
                 return [
                     'id_estado_orden_servicio_pk' => $this->estado->id_estado_orden_servicio_pk,
-                    // DB column is 'nombre'; keep API key 'nombre_estado' for frontend compatibility
                     'nombre_estado' => $this->estado->nombre,
                     'codigo' => $this->estado->codigo,
                 ];

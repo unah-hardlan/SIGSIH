@@ -12,14 +12,14 @@ class KardexController extends Controller
 {
     public function index(Request $request)
     {
-        // Esta línea es crucial: carga todas las relaciones necesarias
+        
         $query = Kardex::query()->with(['producto', 'tipoMovimiento', 'origen']);
 
-        // Obtener parámetros de ordenamiento
+        
         $ordenarPor = $request->input('ordenarPor', 'fecha_movimiento');
         $ordenarDirection = $request->input('ordenarDirection', 'desc');
 
-        // Validar columna y dirección
+        
         $allowedColumns = ['fecha_movimiento', 'cantidad'];
         $allowedDirections = ['asc', 'desc'];
         if (!in_array($ordenarPor, $allowedColumns)) {
@@ -60,5 +60,61 @@ class KardexController extends Controller
     {
         $kardex->delete();
         return response()->json(null, 204);
+    }
+
+    public function reporte(Request $request)
+    {
+        $query = Kardex::with(['producto', 'tipoMovimiento', 'origen']);
+
+        
+        if ($producto = $request->input('id_producto_fk')) {
+            $query->where('id_producto_fk', $producto);
+        }
+
+        
+        if ($tipo_movimiento = $request->input('id_tipo_movimiento_fk')) {
+            $query->where('id_tipo_movimiento_fk', $tipo_movimiento);
+        }
+
+        
+        if ($origen = $request->input('id_origen_fk')) {
+            $query->where('id_origen_fk', $origen);
+        }
+
+        
+        if ($fecha_desde = $request->input('fecha_desde')) {
+            $query->where('fecha_movimiento', '>=', $fecha_desde);
+        }
+
+        if ($fecha_hasta = $request->input('fecha_hasta')) {
+            $query->where('fecha_movimiento', '<=', $fecha_hasta);
+        }
+
+        
+        if ($q = $request->input('q')) {
+            $query->where('motivo', 'like', "%$q%");
+        }
+
+        
+        $sortable = [
+            'fecha_movimiento' => 'fecha_movimiento',
+            'cantidad' => 'cantidad',
+            'id_kardex_pk' => 'id_kardex_pk',
+        ];
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'desc')) === 'desc' ? 'desc' : 'asc';
+        if ($sort && isset($sortable[$sort])) {
+            $query->orderBy($sortable[$sort], $direction);
+        } else {
+            $query->orderBy('fecha_movimiento', 'desc');
+        }
+
+        $kardex = $query->get();
+        $total = $kardex->count();
+
+        $fecha = now()->format('d/m/Y');
+        $modulo = 'kardex';
+
+        return view('admin.reporte-kardex', compact('kardex', 'total', 'fecha', 'modulo', 'sort', 'direction'));
     }
 }

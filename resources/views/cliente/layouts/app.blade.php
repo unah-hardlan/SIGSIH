@@ -5,9 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $appName ?? (config('app.name','SIGSIH').' - Cliente') }}</title>
+    <title>@yield('title', 'Hardlan - Cliente')</title>
 
-    {{-- Meta para navegación SPA opcional (reutilizable) --}}
     @if(request()->header('X-SPA-Page'))
     <meta name="spa-page" content="true">
     <meta name="spa-view" content="{{ request()->header('X-SPA-View') }}">
@@ -22,7 +21,7 @@
     'resources/js/session.js',
     'resources/js/toast.js',
     'resources/js/tabla-responsive.js',
-    'resources/js/spa-cliente.js'
+    'resources/js/spa-cliente.js',
     ])
 
     <script>
@@ -67,22 +66,41 @@
 
     @livewireStyles
     @stack('styles')
+    <style>
+    .client-sidebar { z-index: 9999; }
+    .modal-underlay { z-index: 10000; }
+    body.sidebar-on-top .modal-underlay { z-index: 9998 !important; }
+    body.sidebar-on-top .client-sidebar { z-index: 10005 !important; }
+
+    .sidebar-backdrop { z-index: 10000; }
+    body.sidebar-on-top .sidebar-backdrop { z-index: 10002 !important; }
+
+    body.sidebar-on-top .client-sidebar { background-color: rgba(243,244,246,0.98); }
+    html.dark body.sidebar-on-top .client-sidebar { background-color: rgba(15,23,42,0.95); }
+
+    .client-sidebar { transition: background-color 160ms ease, filter 160ms ease; }
+
+    body.sidebar-on-top .site-main { filter: blur(6px); -webkit-filter: blur(6px); }
+    body.sidebar-on-top .client-sidebar { border-radius: 0 !important; }
+    </style>
 </head>
 
-<body class="font-sans bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col"
+<div id="spa-loading-overlay" class="modal-underlay hidden fixed inset-0 z-[9999] items-center justify-center bg-gray-200/60 dark:bg-gray-900/60 backdrop-blur-sm">
+    <div class="w-16 h-16 border-4 border-gray-300 dark:border-gray-600 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin"></div>
+</div>
+<body :class="(isMobile && sidebarOpen) ? 'sidebar-on-top overflow-hidden' : ''" class="font-sans bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col"
     x-data="{sidebarOpen:false,isMobile:window.innerWidth<768}"
     x-init="initResponsiveSidebar && initResponsiveSidebar($data); sidebarOpen=!isMobile"
     @closemobilesidebar.window="if(isMobile){sidebarOpen=false}">
-    <div class="flex min-h-screen relative bg-gray-50 dark:bg-gray-900">
-        <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" @click="sidebarOpen=false" class="fixed inset-0 bg-black bg-opacity-50"
-            style="z-index:9990"></div>
+        <div class="flex min-h-screen relative bg-gray-50 dark:bg-gray-900">
+        <div x-show="sidebarOpen && isMobile"
+            @click="sidebarOpen = false"
+            class="sidebar-backdrop fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden"
+            x-cloak></div>
 
         @include('cliente.partials.sidebar')
 
-        <main class="flex-1 min-h-screen p-3 sm:p-6 text-gray-900 dark:text-white dark:bg-gray-900">
+        <main class="site-main flex-1 min-h-screen p-3 sm:p-6 text-gray-900 dark:text-white dark:bg-gray-900">
             @include('cliente.partials.header')
             @hasSection('page-header')
             <div class="bg-white dark:bg-gray-900 p-4 rounded mb-6">

@@ -13,18 +13,18 @@ class EstadoCaiController extends Controller
     public function index(Request $request)
     {
         try {
-            // Agregar headers anti-caché para datos siempre frescos
+            
             $headers = [
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
                 'Pragma' => 'no-cache',
                 'Expires' => '0'
             ];
             
-            $estados = EstadoCai::all(); // Usar all() en lugar de paginate() para simplificar
+            $estados = EstadoCai::all(); 
             return response()->json([
                 'success' => true,
                 'data' => EstadoCaiResource::collection($estados),
-                'timestamp' => now()->toISOString() // Para debugging
+                'timestamp' => now()->toISOString() 
             ], 200, $headers);
         } catch (\Exception $e) {
             return response()->json([
@@ -89,7 +89,7 @@ class EstadoCaiController extends Controller
             }
             
             $estadoCai->update($updateData);
-            $estadoCai->refresh(); // Recargar el modelo desde la BD
+            $estadoCai->refresh(); 
             
             return response()->json([
                 'success' => true,

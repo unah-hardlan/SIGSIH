@@ -1,149 +1,216 @@
 @extends('cliente.layouts.app')
-@section('title','Facturación - Cliente')
 @section('content')
-<div class="max-w-7xl mx-auto space-y-8 mt-12" x-data="facturasCliente()">
+<div class="max-w-7xl mx-auto space-y-8 mt-16" x-data="facturasCliente()" x-init="init()">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Facturación</h1>
-        <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span class="px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">Portal Cliente</span>
-            <span>/</span>
-            <span class="text-gray-600 dark:text-gray-300">Facturas</span>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 serif">Facturación</h1>
+    </div>
+
+    <div
+        class="text-gray-700 dark:text-gray-300 dark:bg-gray-800 mb-4 serif border border-gray-400 p-4 bg-indigo-200 rounded-md">
+        En esta sección puede revisar todas sus facturas emitidas por nuestros servicios. Puede filtrar las facturas por estado, fecha o número de factura, así como buscar facturas específicas utilizando el campo de búsqueda. Haga clic en el botón "Ver factura" para abrir la factura en una nueva pestaña y revisarla en detalle. <i>(Las facturas mostradas corresponden a pagos ya confirmados y procesados presencialmente, ya sea en efectivo o con tarjeta de crédito/débito).</i>
+    </div>
+
+    <div class="grid gap-2 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 serif">
+        <div class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Total</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="totalFacturas"></p>
+                </div>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-file-invoice text-base sm:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Pagadas</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="pagadasCount"></p>
+                </div>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-check-circle text-base sm:text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-lg p-3 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 col-span-2 sm:col-span-1">
+            <div class="flex flex-col items-start gap-2 sm:gap-4">
+                <div class="flex-1 w-full">
+                    <p class="text-xs sm:text-sm font-medium opacity-90 truncate">Pendientes</p>
+                    <p class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="pendientesCount"></p>
+                </div>
+                <div class="bg-white/20 p-1.5 sm:p-3 rounded-full ml-auto">
+                    <i class="fas fa-hourglass-half text-base sm:text-2xl"></i>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Resumen -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <template x-for="card in resumen" :key="card.key">
-            <div class="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400" x-text="card.label"></p>
-                        <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100" x-text="card.valor"></p>
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div class="flex flex-col gap-3 sm:gap-4">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div class="flex-1 flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <input x-model.debounce.400ms="filtros.search" type="text" placeholder="Buscar # factura..."
+                            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-10 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200" />
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm"></i>
                     </div>
-                    <div class="text-blue-500/30 dark:text-blue-400/30">
-                        <i :class="card.icon + ' text-3xl'"></i>
+                    <select x-model="filtros.estado"
+                        class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-2 sm:px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                        <option value="">Estado</option>
+                        <template x-for="e in estados" :key="e">
+                            <option :value="e" x-text="e"></option>
+                        </template>
+                    </select>
+                </div>
+                <button @click="resetFiltros()"
+                    class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap">Reiniciar</button>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-2 items-start sm:items-center">
+                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Desde:</span>
+                <div class="relative flex-1 sm:flex-none">
+                    <input x-model="filtros.desde" type="date"
+                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 pl-2 pr-8 py-2 text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full" />
+                        
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <span class="text-gray-400 text-xs hidden sm:inline">→</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap sm:hidden">Hasta:</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap hidden sm:inline">Hasta:</span>
+
+                <div class="relative flex-1 sm:flex-none">
+                    <input x-model="filtros.hasta" type="date"
+                        class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 pl-2 pr-8 py-2 text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full" />
+                        
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                     </div>
                 </div>
             </div>
-        </template>
-    </div>
-
-    <!-- Filtros -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
-        <div class="flex flex-col xl:flex-row gap-4">
-            <div class="flex-1 flex items-center gap-2">
-                <div class="relative flex-1">
-                    <input x-model.debounce.400ms="filtros.search" type="text" placeholder="Buscar # factura..." class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200" />
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                 </div>
-                <select x-model="filtros.estado" class="w-40 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-700 dark:text-gray-200">
-                    <option value="">Estado</option>
-                    <template x-for="e in estados" :key="e"><option :value="e" x-text="e"></option></template>
-                </select>
             </div>
-            <div class="flex items-center gap-2">
-                <input x-model="filtros.desde" type="date" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-                <span class="text-gray-400 text-xs">→</span>
-                <input x-model="filtros.hasta" type="date" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/60 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-                <button @click="resetFiltros()" class="text-xs px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition">Reset</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Tabla -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div class="overflow-x-auto scrollbar-thin">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 text-[11px] uppercase tracking-wide">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hidden md:block">
+        <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-300 dark:border-gray-700">
+            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                <thead class="bg-gray-200 dark:bg-gray-800">
                     <tr>
-                        <th class="px-4 py-2 text-left font-semibold">Factura</th>
-                        <th class="px-4 py-2 text-left font-semibold">Fecha</th>
-                        <th class="px-4 py-2 text-left font-semibold">Estado</th>
-                        <th class="px-4 py-2 text-right font-semibold">Monto</th>
-                        <th class="px-4 py-2 text-center font-semibold">Acción</th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Factura</th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Fecha</th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">OC</th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Total</th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Estado</th>
+                        <th scope="col" class="px-3 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider font-serif">Acción</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-300 dark:divide-gray-700">
                     <template x-if="filtradas.length === 0">
-                        <tr><td colspan="5" class="px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">No hay facturas.</td></tr>
+                        <tr>
+                            <td colspan="6" class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center font-nunito">No hay facturas.</td>
+                        </tr>
                     </template>
                     <template x-for="f in paginadas" :key="f.numero">
-                        <tr class="border-t border-gray-100 dark:border-gray-700/60 hover:bg-blue-50 dark:hover:bg-gray-700/60 transition">
-                            <td class="px-4 py-2 font-mono text-xs" x-text="f.numero"></td>
-                            <td class="px-4 py-2" x-text="f.fecha"></td>
-                            <td class="px-4 py-2"><span class="px-2 py-1 rounded text-[10px] font-semibold" :class="estadoBadge(f.estado)" x-text="f.estado"></span></td>
-                            <td class="px-4 py-2 text-right font-semibold" x-text="'$' + f.monto.toLocaleString()"></td>
-                            <td class="px-4 py-2 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button class="px-2.5 py-1.5 rounded-md text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-medium transition flex items-center gap-1"><i class="fas fa-eye"></i><span>Ver</span></button>
-                                    <button class="px-2.5 py-1.5 rounded-md text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition flex items-center gap-1"><i class="fas fa-file-download"></i><span>PDF</span></button>
-                                </div>
+                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="f.numero"></td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="f.fecha"></td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito" x-text="f.oc"></td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito font-semibold" x-text="'L. ' + f.total.toLocaleString()"></td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito">
+                                <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide" :class="estadoBadge(f.estado)" x-text="f.estado"></span>
+                            </td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-nunito text-center">
+                                <a :href="`/cliente/formato-factura/${f.id}`" target="_blank" rel="noopener" data-no-spa
+                                    class="px-2 py-1 rounded-md text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition inline-flex items-center gap-1">
+                                    <i class="fas fa-file-invoice"></i><span>Ver</span>
+                                </a>
                             </td>
                         </tr>
                     </template>
                 </tbody>
             </table>
         </div>
-        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900/40" x-show="filtradas.length > pageSize">
+        <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900/40 gap-3 sm:gap-0" x-show="filtradas.length > pageSize">
             <div class="text-gray-600 dark:text-gray-400" x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + filtradas.length"></div>
             <div class="flex items-center gap-1">
-                <button @click="prev()" :disabled="page===1" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Prev</button>
-                <button @click="next()" :disabled="page===totalPages" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700">Next</button>
+                <button @click="prev()" :disabled="page===1" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Anterior</button>
+                <button @click="next()" :disabled="page===totalPages" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-3 md:hidden">
+        <template x-if="filtradas.length === 0">
+            <div class="text-center py-8">
+                <p class="text-sm text-gray-500 dark:text-gray-400">No hay facturas.</p>
+            </div>
+        </template>
+        <template x-for="f in paginadas" :key="f.numero">
+            <div class="bg-white dark:bg-gray-800 border border-gray-400/80 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Factura</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1" x-text="f.numero"></p>
+                        </div>
+                        <span class="px-2 py-1 rounded text-[10px] font-semibold tracking-wide flex-shrink-0" :class="estadoBadge(f.estado)" x-text="f.estado"></span>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fechas e Info</p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">Fecha: <span x-text="f.fecha"></span></p>
+                        <p class="text-sm text-gray-900 dark:text-gray-100 mt-1">OC: <span x-text="f.oc"></span></p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-900/30 rounded p-2">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Montos</p>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400">Subtotal</p>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="'L. ' + f.subtotal.toLocaleString()"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400">Impuesto</p>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="'L. ' + f.impuesto.toLocaleString()"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400">Descuento</p>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100" x-text="'L. ' + f.descuento.toLocaleString()"></p>
+                            </div>
+                            <div class="col-span-2 border-t border-gray-300 dark:border-gray-600 pt-2 mt-1">
+                                <p class="text-gray-500 dark:text-gray-400">Total</p>
+                                <p class="text-base font-bold text-emerald-600 dark:text-emerald-400" x-text="'L. ' + f.total.toLocaleString()"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <a :href="`/cliente/formato-factura/${f.id}`" target="_blank" rel="noopener" data-no-spa
+                            class="w-full px-2 py-2 rounded-md text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition inline-flex items-center justify-center gap-1">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>Ver factura</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </template>
+        
+        <div class="flex flex-col gap-3 items-center py-4" x-show="filtradas.length > pageSize">
+            <div class="text-xs text-gray-600 dark:text-gray-400" x-text="'Mostrando ' + inicioPagina + '-' + finPagina + ' de ' + filtradas.length"></div>
+            <div class="flex items-center gap-1">
+                <button @click="prev()" :disabled="page===1" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Anterior</button>
+                <button @click="next()" :disabled="page===totalPages" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs">Siguiente</button>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-// Definir la función globalmente para que pueda ser usada por Alpine.js en navegación SPA
-if (typeof window.facturasCliente === 'undefined') {
-    window.facturasCliente = function() {
-        return {
-            page:1,pageSize:8,
-            filtros:{search:'',estado:'',desde:'',hasta:''},
-            estados:['Pagada','Pendiente','Vencida','Anulada'],
-            datos: Array.from({length:25}).map((_,i)=>({
-                numero:'FAC-'+(500+i),
-                fecha:new Date(Date.now() - (i*43200000)).toISOString().substring(0,10),
-                estado:['Pagada','Pendiente','Vencida'][i%3],
-                monto:Math.round(200 + Math.random()*8000)
-            })),
-            get filtradas(){
-                return this.datos.filter(d=>{
-                    const s=this.filtros.search.toLowerCase();
-                    const eOk=!this.filtros.estado||d.estado===this.filtros.estado;
-                    const sOk=!s||d.numero.toLowerCase().includes(s);
-                    const dOk=!this.filtros.desde||d.fecha>=this.filtros.desde;
-                    const hOk=!this.filtros.hasta||d.fecha<=this.filtros.hasta;
-                    return eOk&&sOk&&dOk&&hOk;
-                });
-            },
-            get totalPages(){return Math.max(1,Math.ceil(this.filtradas.length/this.pageSize));},
-            get paginadas(){const s=(this.page-1)*this.pageSize;return this.filtradas.slice(s,s+this.pageSize);},
-            get inicioPagina(){return this.filtradas.length===0?0:((this.page-1)*this.pageSize+1);},
-            get finPagina(){return Math.min(this.filtradas.length,this.page*this.pageSize);},
-            prev(){if(this.page>1)this.page--;},next(){if(this.page<this.totalPages)this.page++;},
-            resetFiltros(){this.filtros={search:'',estado:'',desde:'',hasta:''};this.page=1;},
-            estadoBadge(e){return {
-                'Pagada':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-                'Pendiente':'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                'Vencida':'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                'Anulada':'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
-            }[e]||'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200';},
-            get resumen(){
-                const total=this.datos.length;
-                const pagadas=this.datos.filter(d=>d.estado==='Pagada').length;
-                const pendiente=this.datos.filter(d=>d.estado==='Pendiente').length;
-                const monto='$'+this.datos.reduce((a,b)=>a+b.monto,0).toLocaleString();
-                return [
-                    {key:'tot',label:'Total',valor:total,icon:'fas fa-file-invoice'},
-                    {key:'pag',label:'Pagadas',valor:pagadas,icon:'fas fa-check-circle'},
-                    {key:'pen',label:'Pendientes',valor:pendiente,icon:'fas fa-hourglass-half'},
-                    {key:'mon',label:'Importe Total',valor:monto,icon:'fas fa-hand-holding-usd'}
-                ];
-            }
-        }
-    };
-}
-</script>
 @endsection

@@ -6,13 +6,8 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-5xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="PARÁMETROS" :logoSize="96" />
-            
-            <!-- Título del reporte -->
             <h2 class="text-xl nunito-bold text-gray-800 mb-6 text-center">Listado de Parámetros del Sistema</h2>
-            
-            <!-- Tabla de datos -->
             <div class="overflow-x-auto">
                 <table class="min-w-full border-collapse border border-gray-300">
                     <thead class="bg-gray-100">
@@ -46,14 +41,12 @@
                 </table>
             </div>
             
-            <!-- Resumen simple -->
             <div class="mt-6 p-4 bg-gray-50 rounded text-center text-sm">
                 <span class="nunito-bold text-gray-700">Total parámetros: </span>
                 <span class="nunito-regular">{{ $total ?? (is_countable($parametros ?? []) ? count($parametros ?? []) : 0) }}</span>
             </div>
             
-            <!-- Botones de acción -->
-            <div class="mt-6 flex justify-center gap-4 no-print">
+            <div class="report-print-controls no-print">
                 <button onclick="window.print()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
                     <i class="fas fa-print mr-2"></i>Imprimir

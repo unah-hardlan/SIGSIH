@@ -12,10 +12,10 @@ class UpdateTipoProductoRequest extends FormRequest
 
     public function rules(): array
     {
-        // Try several ways to determine the current resource ID from route parameters.
+        
         $id = null;
 
-        // First try the most common parameter names
+        
         $routeParam = $this->route('tipo_producto') ?? $this->route('tipo') ?? $this->route('tipo_producto_id') ?? $this->route('id');
         if ($routeParam) {
             if (is_object($routeParam)) {
@@ -27,14 +27,14 @@ class UpdateTipoProductoRequest extends FormRequest
                     $id = $routeParam->id;
                 }
             } else {
-                // numeric string or int
+                
                 if (is_numeric($routeParam) || ctype_digit((string)$routeParam)) {
                     $id = (int)$routeParam;
                 }
             }
         }
 
-        // If not found yet, scan all route parameters for a numeric ID or model instance
+        
         if (empty($id)) {
             foreach ($this->route()->parameters() as $p) {
                 if (is_null($p)) continue;
@@ -63,7 +63,7 @@ class UpdateTipoProductoRequest extends FormRequest
             }
         }
 
-        // Use the fluent Rule API to ignore the current record's primary key when validating uniqueness
+        
         $uniqueRule = Rule::unique('tbl_tipo_producto', 'nombre_tipo_producto');
         if (!empty($id)) {
             $uniqueRule = $uniqueRule->ignore($id, 'id_tipo_producto_pk');

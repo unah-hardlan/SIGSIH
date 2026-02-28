@@ -8,19 +8,13 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateHistorialContrasenaRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+    
     public function rules(): array
     {
         return [
@@ -29,7 +23,7 @@ class UpdateHistorialContrasenaRequest extends FormRequest
                 'required',
                 'string',
                 'min:8',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/', // Contraseña segura
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/', 
             ],
             'id_usuario_fk' => 'sometimes|required|integer|exists:tbl_ms_usuario,id_usuario_pk',
             'creado_por' => 'sometimes|required|string|max:50',
@@ -39,11 +33,7 @@ class UpdateHistorialContrasenaRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom error messages for validator errors.
-     *
-     * @return array<string, string>
-     */
+    
     public function messages(): array
     {
         return [
@@ -62,9 +52,7 @@ class UpdateHistorialContrasenaRequest extends FormRequest
         ];
     }
 
-    /**
-     * Handle a failed validation attempt.
-     */
+    
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([

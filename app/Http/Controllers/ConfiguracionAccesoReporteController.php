@@ -11,28 +11,27 @@ use Illuminate\Support\Str;
 
 class ConfiguracionAccesoReporteController extends Controller
 {
-    /**
-     * Renderiza el reporte dinámico por sección del módulo Configuración de Acceso.
-     */
+
     public function reporte(Request $request)
     {
-        $seccion = $request->input('seccion'); // gestion | roles | objetos | asignar
+        $seccion = $request->input('seccion');
         $fecha = $request->input('fecha', now()->format('d-M-Y'));
         $modulo = 'configuracion-acceso';
 
-        // Parámetros comunes
+
         $q = $request->input('q');
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        // Datasets por sección
+
         $roles = collect();
         $objetos = collect();
         $usuarios = collect();
         $matriz = collect();
-        // Alinear columnas con la UI (Ver, Crear, Editar, Eliminar)
+
         $permColumns = [
-            ['field' => 'permiso_consultar', 'label' => 'Ver'],
+            ['field' => 'permiso_ver', 'label' => 'Ver'],
+            ['field' => 'permiso_consultar', 'label' => 'Leer'],
             ['field' => 'permiso_insercion', 'label' => 'Crear'],
             ['field' => 'permiso_actualizar', 'label' => 'Editar'],
             ['field' => 'permiso_eliminacion', 'label' => 'Eliminar'],
@@ -45,7 +44,7 @@ class ConfiguracionAccesoReporteController extends Controller
             'objetosTotal' => Objeto::count(),
             'usuariosConRolFiltered' => 0,
             'usuariosConRolTotal' => Usuario::whereNotNull('id_rol_fk')->count(),
-            // Solo para gestión
+
             'permResumen' => [
                 'insercion' => 0,
                 'consultar' => 0,
@@ -131,7 +130,7 @@ class ConfiguracionAccesoReporteController extends Controller
             $stats['objetosFiltered'] = $stats['objetosTotal'];
             $stats['usuariosConRolFiltered'] = (clone $usuariosQ)->count();
         } elseif ($seccion === 'gestion') {
-            // Matriz de permisos para un rol específico (agrupada y ordenada por módulos del sidebar)
+
             $rolId = (int)($request->input('rol_id') ?? $request->input('id_rol_fk'));
             if ($rolId) {
                 $rol = Rol::find($rolId);
@@ -140,26 +139,46 @@ class ConfiguracionAccesoReporteController extends Controller
                 $rol = Rol::where('rol', $rolName)->first();
             }
             if ($rol) {
-                // Configuración para ordenar/agrupar como el sidebar
+
                 $SIDEBAR_ORDER = [
-                    ['title' => 'Seguridad', 'items' => ['Usuarios','Parámetros','Parametros','Configuración de accesos','Configuracion de accesos']],
-                    ['title' => 'Clientes', 'items' => ['Empresas','Cotizaciones','Solicitudes','Órdenes de Servicios','Ordenes de Servicios']],
-                    ['title' => 'Proyectos', 'items' => ['Proyectos','Gestión de proyectos','Gestion de proyectos','Vista de proyectos']],
-                    ['title' => 'Tickets', 'items' => ['Gestión de tickets','Gestion de tickets','Tickets']],
-                    ['title' => 'Calendario', 'items' => ['Agencias','Calendario','Gestión de Calendario','Gestion de Calendario']],
-                    ['title' => 'Facturación', 'items' => ['Facturas','CAI','Facturacion']],
-                    ['title' => 'Reportes', 'items' => ['Gestión de Reportes','Gestion de Reportes','Reportes']],
-                    ['title' => 'Inventario', 'items' => ['Productos','Kardex']],
-                    ['title' => 'Administración', 'items' => ['Gestión de personas','Gestion de personas','Mi perfil','Perfil','Profile','Bitácora','Bitacora','Gestión de base de datos','Gestion de base de datos','Administracion']],
-                    ['title' => 'Mantenimiento', 'items' => ['Mantenimiento del Sistema','Mantenimiento del sistema']],
+                    ['title' => 'Seguridad', 'items' => ['Usuarios', 'Parámetros', 'Parametros', 'Configuración de accesos', 'Configuracion de accesos']],
+                    ['title' => 'Clientes', 'items' => ['Empresas', 'Cotizaciones', 'Solicitudes', 'Órdenes de Servicios', 'Ordenes de Servicios']],
+                    ['title' => 'Proyectos', 'items' => ['Proyectos', 'Gestión de proyectos', 'Gestion de proyectos', 'Vista de proyectos']],
+                    ['title' => 'Tickets', 'items' => ['Gestión de tickets', 'Gestion de tickets', 'Tickets']],
+                    ['title' => 'Calendario', 'items' => ['Agencias', 'Calendario', 'Gestión de Calendario', 'Gestion de Calendario']],
+                    ['title' => 'Facturación', 'items' => ['Facturas', 'CAI', 'Facturacion']],
+                    ['title' => 'Reportes', 'items' => ['Gestión de Reportes', 'Gestion de Reportes', 'Reportes']],
+                    ['title' => 'Inventario', 'items' => ['Productos', 'Kardex']],
+                    ['title' => 'Administración', 'items' => ['Gestión de personas', 'Gestion de personas', 'Mi perfil', 'Perfil', 'Profile', 'Bitácora', 'Bitacora', 'Gestión de base de datos', 'Gestion de base de datos', 'Administracion']],
+                    ['title' => 'Mantenimiento', 'items' => ['Mantenimiento del Sistema', 'Mantenimiento del sistema']],
                     ['title' => 'Catalogo', 'items' => [
-                        'Acciones Realizadas','Administración de Facturas','Administracion de Facturas','Categorias de Ingresos y Gastos','Categorías de Ingresos y Gastos',
-                        'Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del Calendario','Género','Genero','Perfiles',
-                        'Servicio Factura','Servicios Realizados','Tipo de Movimiento','Tipo de Objeto','Tipo de Personas','Tipo de Producto','Tipo de Visita','Ubicaciones'
+                        'Acciones Realizadas',
+                        'Administración de Facturas',
+                        'Administracion de Facturas',
+                        'Categorias de Ingresos y Gastos',
+                        'Categorías de Ingresos y Gastos',
+                        'Estados CAI',
+                        'Estados de Proyecto',
+                        'Estados de Solicitud',
+                        'Estados de Tickets',
+                        'Estados del Calendario',
+                        'Género',
+                        'Genero',
+                        'Perfiles',
+                        'Servicio Factura',
+                        'Servicios Realizados',
+                        'Tipo de Movimiento',
+                        'Tipo de Objeto',
+                        'Tipo de Personas',
+                        'Tipo de Producto',
+                        'Tipo de Visita',
+                        'Ubicaciones'
                     ]],
                 ];
-                $HIDDEN_FALLBACK_GROUPS = collect(['configuracion','modulo']);
-                $norm = function ($s) { return Str::of($s ?? '')->lower()->ascii()->trim()->value(); };
+                $HIDDEN_FALLBACK_GROUPS = collect(['configuracion', 'modulo']);
+                $norm = function ($s) {
+                    return Str::of($s ?? '')->lower()->ascii()->trim()->value();
+                };
 
                 $objs = Objeto::with('tipoObjeto:id_tipo_objeto_pk,nombre_tipo_objeto')
                     ->orderBy('nombre_objeto', 'asc')
@@ -170,6 +189,7 @@ class ConfiguracionAccesoReporteController extends Controller
                     $p = $perms->get($o->id_objetos_pk);
                     return [
                         'objeto' => $o->nombre_objeto,
+                        'permiso_ver' => (bool)optional($p)->permiso_ver,
                         'permiso_insercion' => (bool)optional($p)->permiso_insercion,
                         'permiso_consultar' => (bool)optional($p)->permiso_consultar,
                         'permiso_actualizar' => (bool)optional($p)->permiso_actualizar,
@@ -193,7 +213,7 @@ class ConfiguracionAccesoReporteController extends Controller
                         if ($assigned->has($o->id_objetos_pk)) continue;
                         $n = $norm($o->nombre_objeto);
                         if ($labelOrder->contains($n)) {
-                            // Evitar incluir el objeto del MÓDULO como submódulo
+
                             if ($moduleObj && $o->id_objetos_pk === $moduleObj->id_objetos_pk) continue;
                             $rows->push($buildRow($o));
                             $assigned->put($o->id_objetos_pk, true);
@@ -201,14 +221,18 @@ class ConfiguracionAccesoReporteController extends Controller
                     }
                     if ($rows->isNotEmpty()) {
                         $mat->push(['is_header' => true, 'title' => Str::upper($moduleTitle)]);
-                        foreach ($rows as $r) { $mat->push($r); }
+                        foreach ($rows as $r) {
+                            $mat->push($r);
+                        }
                     }
                 }
 
-                // Fallback: agrupar el resto por tipo
+
                 $rest = $objs->reject(fn($o) => $assigned->has($o->id_objetos_pk));
                 if ($rest->isNotEmpty()) {
-                    $byTipo = $rest->groupBy(function ($o) { return optional($o->tipoObjeto)->nombre_tipo_objeto ?? 'Otros'; });
+                    $byTipo = $rest->groupBy(function ($o) {
+                        return optional($o->tipoObjeto)->nombre_tipo_objeto ?? 'Otros';
+                    });
                     foreach ($byTipo as $tname => $arr) {
                         if ($HIDDEN_FALLBACK_GROUPS->contains($norm($tname))) continue;
                         $mat->push(['is_header' => true, 'title' => Str::upper($tname ?: 'Otros')]);
@@ -219,7 +243,7 @@ class ConfiguracionAccesoReporteController extends Controller
                 }
 
                 $matriz = $mat;
-                // Resumen de permisos
+
                 $stats['permResumen']['insercion'] = $matriz->where('permiso_insercion', true)->count();
                 $stats['permResumen']['consultar'] = $matriz->where('permiso_consultar', true)->count();
                 $stats['permResumen']['actualizar'] = $matriz->where('permiso_actualizar', true)->count();
@@ -231,17 +255,49 @@ class ConfiguracionAccesoReporteController extends Controller
                     return !empty($row['objeto']) && !$row['permiso_insercion'] && !$row['permiso_consultar'] && !$row['permiso_actualizar'] && !$row['permiso_eliminacion'];
                 })->count();
             } else {
-                // Sin rol elegido, devolver vacío
+
                 $matriz = collect();
             }
-            // Cajas muestran totales del sistema
+
             $stats['rolesFiltered'] = $stats['rolesTotal'];
             $stats['objetosFiltered'] = $stats['objetosTotal'];
             $stats['usuariosConRolFiltered'] = $stats['usuariosConRolTotal'];
         }
 
+        $section = $seccion ?? '';
+        $theme = [
+            'roles' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'num' => 'text-blue-700', 'label' => 'text-blue-600', 'labelText' => 'ROLES', 'value' => $stats['rolesFiltered'] ?? 0],
+            'objetos' => ['bg' => 'bg-green-50', 'border' => 'border-green-200', 'num' => 'text-green-700', 'label' => 'text-green-600', 'labelText' => 'OBJETOS DEL SISTEMA', 'value' => $stats['objetosFiltered'] ?? 0],
+            'asignar' => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'num' => 'text-orange-700', 'label' => 'text-orange-600', 'labelText' => 'USUARIOS CON ROLES', 'value' => $stats['usuariosConRolFiltered'] ?? 0],
+            'gestion' => ['bg' => 'bg-indigo-50', 'border' => 'border-indigo-200', 'num' => 'text-indigo-700', 'label' => 'text-indigo-600', 'labelText' => 'OBJETOS CON PERMISOS ASIGNADOS', 'value' => isset($matriz) ? max(($matriz->count() - ($stats['permResumen']['ninguno'] ?? 0)), 0) : 0],
+        ][$section] ?? ['bg' => 'bg-slate-50', 'border' => 'border-slate-200', 'num' => 'text-slate-700', 'label' => 'text-slate-600', 'labelText' => 'RESUMEN', 'value' => 0];
+
+        if (($seccion ?? '') === 'gestion' && isset($matriz)) {
+            $theme['value'] = collect($matriz)->filter(function ($r) {
+                return !empty($r['objeto']) && (
+                    !empty($r['permiso_insercion']) || !empty($r['permiso_consultar']) || !empty($r['permiso_actualizar']) || !empty($r['permiso_eliminacion'])
+                );
+            })->count();
+        }
+
+        $cols = 1 + count($permColumns ?? []);
+
         return view('admin.reporte-configuracion-accesos', compact(
-            'fecha', 'modulo', 'seccion', 'roles', 'objetos', 'usuarios', 'matriz', 'permColumns', 'rol', 'sort', 'direction', 'q', 'stats'
+            'fecha',
+            'modulo',
+            'seccion',
+            'roles',
+            'objetos',
+            'usuarios',
+            'matriz',
+            'permColumns',
+            'rol',
+            'sort',
+            'direction',
+            'q',
+            'stats',
+            'theme',
+            'cols'
         ));
     }
 }

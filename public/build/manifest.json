@@ -1,6 +1,6 @@
 {
-  "_index-BYJawPu-.js": {
-    "file": "assets/index-BYJawPu-.js",
+  "_index-10ZcEK_X.js": {
+    "file": "assets/index-10ZcEK_X.js",
     "name": "index",
     "dynamicImports": [
       "node_modules/laravel-echo/dist/echo.js",
@@ -19,7 +19,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-BJZ1LaWQ.css",
+    "file": "assets/app-BrYLOKJ-.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -39,31 +39,31 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Ct7UKE6Q.js",
+    "file": "assets/app-DgE-T4xH.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-BYJawPu-.js"
+      "_index-10ZcEK_X.js"
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-BbfYrrlr.js",
+    "file": "assets/auth-A_NoVaoC.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-BTZasvyJ.js",
+    "file": "assets/cliente-CJFz439Y.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-BYJawPu-.js"
+      "_index-10ZcEK_X.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
-    "file": "assets/perfil-Dy571C-Q.js",
+    "file": "assets/perfil-DGWHTdiw.js",
     "name": "perfil",
     "src": "resources/js/cliente/perfil.js",
     "isEntry": true
@@ -81,19 +81,25 @@
     "isEntry": true
   },
   "resources/js/session.js": {
-    "file": "assets/session-CyVSMNKV.js",
+    "file": "assets/session-D_0fWzlu.js",
     "name": "session",
     "src": "resources/js/session.js",
     "isEntry": true
   },
+  "resources/js/sidebar-cliente.js": {
+    "file": "assets/sidebar-cliente-BUoTryqK.js",
+    "name": "sidebar-cliente",
+    "src": "resources/js/sidebar-cliente.js",
+    "isEntry": true
+  },
   "resources/js/sidebar.js": {
-    "file": "assets/sidebar-BXqXU_a-.js",
+    "file": "assets/sidebar-CWUb3n0U.js",
     "name": "sidebar",
     "src": "resources/js/sidebar.js",
     "isEntry": true
   },
   "resources/js/spa-cliente.js": {
-    "file": "assets/spa-cliente-BJqpOB4b.js",
+    "file": "assets/spa-cliente-CfcoxmFw.js",
     "name": "spa-cliente",
     "src": "resources/js/spa-cliente.js",
     "isEntry": true

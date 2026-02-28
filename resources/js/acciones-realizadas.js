@@ -35,14 +35,16 @@ window.accionesRealizadasApiHandlers = {
         }
     },
 
-    // Crear nueva acción realizada
     async submitAccionRealizada(component) {
         const nombreTrim = String(component.nombre || "").trim();
         const descripcionTrim = String(component.descripcion || "").trim();
 
         if (!nombreTrim) {
             window.showToast &&
-                window.showToast("El nombre de la acción es obligatorio", "error");
+                window.showToast(
+                    "El nombre de la acción es obligatorio",
+                    "error"
+                );
             return;
         }
 
@@ -103,7 +105,6 @@ window.accionesRealizadasApiHandlers = {
         }
     },
 
-    // Actualizar acción realizada
     async updateAccionRealizada(component) {
         if (
             !component.itemToEdit ||
@@ -112,11 +113,16 @@ window.accionesRealizadasApiHandlers = {
             return;
 
         const nombreTrim = String(component.itemToEdit.nombre || "").trim();
-        const descripcionTrim = String(component.itemToEdit.descripcion || "").trim();
+        const descripcionTrim = String(
+            component.itemToEdit.descripcion || ""
+        ).trim();
 
         if (!nombreTrim) {
             window.showToast &&
-                window.showToast("El nombre de la acción es obligatorio", "error");
+                window.showToast(
+                    "El nombre de la acción es obligatorio",
+                    "error"
+                );
             return;
         }
 
@@ -129,7 +135,10 @@ window.accionesRealizadasApiHandlers = {
             )
         ) {
             window.showToast &&
-                window.showToast("Ya existe otra acción con ese nombre", "error");
+                window.showToast(
+                    "Ya existe otra acción con ese nombre",
+                    "error"
+                );
             return;
         }
 
@@ -165,7 +174,10 @@ window.accionesRealizadasApiHandlers = {
                     });
                 } else {
                     window.showToast &&
-                        window.showToast("Error al actualizar la acción", "error");
+                        window.showToast(
+                            "Error al actualizar la acción",
+                            "error"
+                        );
                 }
                 throw data;
             }
@@ -181,7 +193,6 @@ window.accionesRealizadasApiHandlers = {
         }
     },
 
-    // Eliminar acción realizada
     async deleteAccionRealizada(component) {
         if (
             !component.itemToDelete ||

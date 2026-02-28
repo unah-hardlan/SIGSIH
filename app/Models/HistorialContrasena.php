@@ -31,12 +31,12 @@ class HistorialContrasena extends Model
         'fecha_modificacion' => 'datetime'
     ];
 
-    // Relación con Usuario
+    
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'id_usuario_fk', 'id_usuario_pk');
     }
 
-    // Nota: Los campos creado_por y modificado_por son VARCHAR(50) que almacenan nombres,
-    // no IDs, por lo que no se pueden crear relaciones directas con la tabla de usuarios
+    
+    
 }

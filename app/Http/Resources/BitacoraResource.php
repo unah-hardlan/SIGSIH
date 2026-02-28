@@ -7,18 +7,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class BitacoraResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array<string, mixed>
-     */
+    
     public function toArray($request)
     {
         $usuario = $this->whenLoaded('usuario');
         $objeto = $this->whenLoaded('objeto');
 
-        // Fallbacks: creado_por y fecha_creacion no siempre existen en la tabla de bitácora.
+        
         $creadoPor = $this->creado_por ?? ($usuario->usuario ?? null);
         $fechaCreacion = $this->fecha_creacion ?? $this->fecha_evento ?? null;
 
@@ -42,7 +37,7 @@ class BitacoraResource extends JsonResource
                 'nombre_objeto' => $objeto->nombre_objeto ?? null,
             ] : null,
 
-            // Auditoría (opcionales, con fallback razonable)
+            
             'creado_por' => $creadoPor,
             'fecha_creacion' => $fechaCreacion,
             'fecha_creacion_formatted' => DateHelper::format($fechaCreacion),

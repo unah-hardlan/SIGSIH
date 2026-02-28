@@ -10,7 +10,6 @@
 
 </head>
 
-
 <style>
     @media print {
         .no-print {
@@ -101,14 +100,15 @@
                 <tbody>
                     <tr>
                         <td>ABIERTA</td>
-                        <td class="checkbox-cell"><input id="estado-abierta" type="checkbox"></td>
+                        <td class="checkbox-cell"><input id="estado-abierta" type="checkbox" disabled></td>
                         <td>CERRADA</td>
-                        <td class="checkbox-cell"><input id="estado-cerrada" type="checkbox"></td>
+                        <td class="checkbox-cell"><input id="estado-cerrada" type="checkbox" disabled></td>
                     </tr>
                 </tbody>
             </table>
 
         </div>
+
 
         <table style="width: 100%; border-collapse: collapse;">
             <tbody>
@@ -116,40 +116,40 @@
                     <td colspan="2"
                         style="padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-right: none;">
                         <div class="field-header">CLIENTE:</div>
-                        <div id="cliente-nombre" style="height: 25px;">—</div>
+                        <div id="cliente-nombre" style="height: 25px;">{{ $clienteNombre }}</div>
                     </td>
                     <td colspan="2" style="padding: 0; vertical-align: top; border: 1px solid var(--border-color);">
                         <div class="field-header">CONTACTO</div>
-                        <div id="contacto-nombre" style="height: 25px;">—</div>
+                        <div id="contacto-nombre" style="height: 25px;">{{ $contactoNombre }}</div>
                     </td>
                 </tr>
                 <tr>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none; border-right: none;">
                         <div class="field-header">CIUDAD</div>
-                        <div id="cliente-ciudad" style="height: 25px;">—</div>
+                        <div id="cliente-ciudad" style="height: 25px;">{{ $ciudadVal }}</div>
                     </td>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none; border-right: none;">
                         <div class="field-header">OFICINA</div>
-                        <div id="cliente-oficina" style="height: 25px;">—</div>
+                        <div id="cliente-oficina" style="height: 25px;">{{ $oficinaVal }}</div>
                     </td>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none; border-right: none;">
                         <div class="field-header">TELEFONOS</div>
-                        <div id="cliente-telefonos" style="height: 25px;">—</div>
+                        <div id="cliente-telefonos" style="height: 25px;">{{ $telefonosVal }}</div>
                     </td>
                     <td
                         style="width: 25%; padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none;">
                         <div class="field-header">CORREO ELECTRONICO</div>
-                        <div id="cliente-correo" style="height: 25px;">—</div>
+                        <div id="cliente-correo" style="height: 25px;">{{ $correoVal }}</div>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="4"
                         style="padding: 0; vertical-align: top; border: 1px solid var(--border-color); border-top: none;">
                         <div class="field-header">DIRECCION</div>
-                        <div id="cliente-direccion" style="height: 25px;">—</div>
+                        <div id="cliente-direccion" style="height: 25px;">{{ $direccionVal }}</div>
                     </td>
                 </tr>
             </tbody>
@@ -184,9 +184,14 @@
             <tr>
                 <th style="width: 30%;">SE INSTALO ALGUN REPUESTO:</th>
                 <td>
-                    <span class="checkbox-label">SI <input id="repuesto-si" type="checkbox" style="vertical-align: middle;"></span>
-                    <span class="checkbox-label">NO <input id="repuesto-no" type="checkbox" style="vertical-align: middle;"></span>
-                    <span>CUAL: <span id="repuesto-cual" style="display: inline-block; width: 70%;">—</span></span>
+                    <span class="checkbox-label">SI <input id="repuesto-si" type="checkbox"
+                            style="vertical-align: middle;" @if(!empty($repuestosList) && count($repuestosList)> 0)
+                        checked="checked" @endif disabled></span>
+                    <span class="checkbox-label">NO <input id="repuesto-no" type="checkbox"
+                            style="vertical-align: middle;" @if(empty($repuestosList) || count($repuestosList)===0)
+                            checked="checked" @endif disabled></span>
+                    <span>CUAL: <span id="repuesto-cual"
+                            style="display: inline-block; width: 70%;">{{ count($repuestosList) ? implode(', ', $repuestosList) : '—' }}</span></span>
                 </td>
             </tr>
         </table>
@@ -197,18 +202,27 @@
             <tr>
                 <th style="width: 30%;">CALIFICACION DEL SERVICIO</th>
                 <td>
-                    <span class="checkbox-label">EXCELENTE <input type="checkbox" style="vertical-align: middle;"
-                            checked></span>
-                    <span class="checkbox-label">BUENO <input type="checkbox" style="vertical-align: middle;"></span>
-                    <span class="checkbox-label">REGULAR <input type="checkbox" style="vertical-align: middle;"></span>
-                    <span class="checkbox-label">DEFICIENTE <input type="checkbox"
-                            style="vertical-align: middle;"></span>
+                    <label class="checkbox-label">EXCELENTE <input id="calificacion-excelente"
+                            name="calificacion_servicio" value="excelente" type="checkbox"
+                            style="vertical-align: middle;" @if(!empty($calificacionServicio) &&
+                            strtolower($calificacionServicio)==='excelente' ) checked @endif disabled></label>
+                    <label class="checkbox-label">BUENO <input id="calificacion-bueno" name="calificacion_servicio"
+                            value="bueno" type="checkbox" style="vertical-align: middle;"
+                            @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='bueno' ) checked
+                            @endif disabled></label>
+                    <label class="checkbox-label">REGULAR <input id="calificacion-regular" name="calificacion_servicio"
+                            value="regular" type="checkbox" style="vertical-align: middle;"
+                            @if(!empty($calificacionServicio) && strtolower($calificacionServicio)==='regular' ) checked
+                            @endif disabled></label>
+                    <label class="checkbox-label">DEFICIENTE <input id="calificacion-deficiente"
+                            name="calificacion_servicio" value="deficiente" type="checkbox"
+                            style="vertical-align: middle;" @if(!empty($calificacionServicio) &&
+                            strtolower($calificacionServicio)==='deficiente' ) checked @endif disabled></label>
                 </td>
             </tr>
         </table>
 
         <div style="display: flex; justify-content: space-between; gap: 25px; margin-top: 15px; margin-bottom: 15px;">
-            <!-- Firma Cliente -->
             <table class="firma-table" style="width: 48%;">
                 <tr>
                     <th>CLIENTE:</th>
@@ -216,10 +230,10 @@
                 <tr>
                     <td style="padding: 0;">
                         <div class="firma-label">NOMBRE Y APELLIDO</div>
-                        <div id="firma-cliente-nombre" class="firma-space">—</div>
+                        <div id="firma-cliente-nombre" class="firma-space">{{ $firmaNombre }}</div>
                         <div class="firma-label">C.I.</div>
-                        <div id="firma-cliente-ci" class="firma-space">—</div>
-                        
+                        <div id="firma-cliente-ci" class="firma-space">{{ $firmaCi }}</div>
+
                         <div class="firma-space">Gerente de Operaciones</div>
                         <div class="firma-label">FIRMA</div>
                         <div class="firma-space-larger"></div>
@@ -234,10 +248,31 @@
                 <tr>
                     <td style="padding: 0;">
                         <div class="firma-label">NOMBRE Y APELLIDO</div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                try {
+                                    var cualEl = document.getElementById('repuesto-cual');
+                                    var siEl = document.getElementById('repuesto-si');
+                                    var noEl = document.getElementById('repuesto-no');
+                                    if (!cualEl || !siEl || !noEl) return;
+                                    var text = (cualEl.textContent || '').trim();
+                                    if (text && text !== '—') {
+                                        siEl.checked = true;
+                                        noEl.checked = false;
+                                    } else {
+                                        siEl.checked = false;
+                                        noEl.checked = true;
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                }
+                            });
+                        </script>
                         <div id="firma-tecnico-nombre" class="firma-space">—</div>
                         <div class="firma-label">C.I.</div>
                         <div id="firma-tecnico-ci" class="firma-space">—</div>
-                        
+
                         <div class="firma-space">Técnico ACF</div>
                         <div class="firma-label">FIRMA</div>
                         <div class="firma-space-larger"></div>
@@ -248,10 +283,16 @@
 
     </div>
 
-    <!-- Botón Generar PDF (solo Tailwind, no sale al imprimir) -->
-    <div class="no-print my-10 flex justify-center">
-        <button onclick="window.print()"
-            class="bg-blue-900 text-white px-8 py-3 rounded-xl shadow-lg hover:bg-blue-700 text-lg font-bold transition">
+    <div class="no-print" style="text-align: center; margin: 20px 0;">
+        <button onclick="window.print()" style="
+                background-color: #1e40af;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                font-size: 14px;
+                cursor: pointer;
+            ">
             Generar PDF
         </button>
     </div>
@@ -259,7 +300,7 @@
     </div>
 
     <script>
-        (function () {
+        (function() {
             const qs = new URLSearchParams(location.search);
             const id = qs.get('orden');
             if (!id) {
@@ -267,26 +308,45 @@
                 return;
             }
             const $ = (id) => document.getElementById(id);
-            const setText = (id, value) => {
+
+            const setText = (id, value, options = {}) => {
                 const el = $(id);
                 if (!el) return;
+                const skipEmpty = options.skipEmpty || false;
+                if (skipEmpty) {
+                    if (value === undefined || value === null) return;
+                    if (typeof value === 'string' && value.trim() === '') return;
+                }
                 const v = (value ?? '—');
                 el.textContent = (typeof v === 'string') ? v.trim() || '—' : v;
             };
             const parseDate = (val) => {
-                if (!val) return { d: '—', t: '—' };
+                if (!val) return {
+                    d: '—',
+                    t: '—'
+                };
                 try {
                     const dt = new Date(val);
                     if (!isNaN(dt.getTime())) {
                         const d = dt.toISOString().slice(0, 10);
-                        const t = dt.toTimeString().slice(0,5);
-                        return { d, t };
+                        const t = dt.toTimeString().slice(0, 5);
+                        return {
+                            d,
+                            t
+                        };
                     }
-                    // Fallback "YYYY-MM-DD HH:MM:SS"
                     const [d, rest] = String(val).split(' ');
-                    const t = (rest || '').slice(0,5) || '—';
-                    return { d: d || '—', t };
-                } catch (_) { return { d: '—', t: '—' }; }
+                    const t = (rest || '').slice(0, 5) || '—';
+                    return {
+                        d: d || '—',
+                        t
+                    };
+                } catch (_) {
+                    return {
+                        d: '—',
+                        t: '—'
+                    };
+                }
             };
             const nombresPersona = (p) => {
                 if (!p) return '';
@@ -294,79 +354,128 @@
                     .filter(Boolean).join(' ').trim();
             };
 
-            fetch('/api/ordenes-servicio/' + encodeURIComponent(id), { headers: { 'Accept': 'application/json' } })
+            const isCliente = (location.pathname || '').indexOf('/cliente/') === 0;
+            const endpoint = isCliente ?
+                ('/cliente/ordenes/' + encodeURIComponent(id) + '/data') :
+                ('/api/ordenes-servicio/' + encodeURIComponent(id));
+            fetch(endpoint, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
                 .then(async (res) => {
                     if (res.status === 401) throw new Error('No autorizado');
                     if (!res.ok) throw new Error('Error al cargar la orden');
                     const json = await res.json();
                     const data = json.data || json;
 
-                    // Encabezado números de solicitud
                     const sol = data.solicitud_servicio || data.solicitud || {};
                     setText('num-solicitud-acf', sol.numero_solicitud_acf || '—');
                     setText('num-solicitud-cliente', sol.numero_solicitud_cliente || '—');
 
-                    // Fechas
                     const fr = parseDate(data.fecha_recepcion);
                     const fi = parseDate(data.fecha_inicio);
                     const ff = parseDate(data.fecha_finalizacion);
-                    setText('fecha-recepcion', fr.d); setText('hora-recepcion', fr.t);
-                    setText('fecha-inicio', fi.d); setText('hora-inicio', fi.t);
-                    setText('fecha-fin', ff.d); setText('hora-fin', ff.t);
+                    setText('fecha-recepcion', fr.d);
+                    setText('hora-recepcion', fr.t);
+                    setText('fecha-inicio', fi.d);
+                    setText('hora-inicio', fi.t);
+                    setText('fecha-fin', ff.d);
+                    setText('hora-fin', ff.t);
 
-                    // Estado
                     const estado = data.estado || {};
                     const codigo = (estado.codigo || estado.nombre || '').toString().toLowerCase();
                     const cerrada = codigo.includes('cerr') || !!data.fecha_finalizacion;
                     const abierta = !cerrada;
-                    const chkA = $('estado-abierta'); const chkC = $('estado-cerrada');
+                    const chkA = $('estado-abierta');
+                    const chkC = $('estado-cerrada');
                     if (chkA) chkA.checked = abierta;
                     if (chkC) chkC.checked = cerrada;
 
-                    // Cliente y contacto
                     const cliente = (sol.cliente || {});
                     const empresa = cliente.empresa || {};
-                    const clienteNombre = empresa.nombre_comercial || empresa.razon_social || cliente.nombre || '';
-                    setText('cliente-nombre', clienteNombre || '—');
+                    const clienteNombre = empresa.nombre_comercial || empresa.razon_social || cliente.nombre ||
+                        '';
+                    if (clienteNombre && String(clienteNombre).trim() !== '') {
+                        setText('cliente-nombre', clienteNombre, {
+                            skipEmpty: true
+                        });
+                    }
                     const contacto = sol.contacto || {};
-                    // Nombre de contacto: si viene junto al cliente.persona o no disponible
                     const contactoNombre = contacto.nombre || '';
-                    setText('contacto-nombre', contactoNombre || '—');
-                    // Tel/Correo a partir del contacto si su tipo lo indica
+                    if (contactoNombre && String(contactoNombre).trim() !== '') {
+                        setText('contacto-nombre', contactoNombre, {
+                            skipEmpty: true
+                        });
+                    }
                     const tipo = (contacto.tipo_contacto || '').toLowerCase();
-                    if (tipo.includes('mail')) setText('cliente-correo', contacto.valor_contacto);
-                    if (tipo.includes('tel')) setText('cliente-telefonos', contacto.valor_contacto);
+                    if (tipo.includes('mail')) setText('cliente-correo', contacto.valor_contacto, {
+                        skipEmpty: true
+                    });
+                    if (tipo.includes('tel')) setText('cliente-telefonos', contacto.valor_contacto, {
+                        skipEmpty: true
+                    });
 
-                    // Dirección / Ciudad / Oficina (si están disponibles)
-                    setText('cliente-direccion', empresa.direccion || cliente.direccion || '');
-                    setText('cliente-ciudad', empresa.ciudad || cliente.ciudad || '');
-                    setText('cliente-oficina', empresa.oficina || '');
+                    setText('cliente-direccion', empresa.direccion || cliente.direccion || '', {
+                        skipEmpty: true
+                    });
+                    setText('cliente-ciudad', empresa.ciudad || cliente.ciudad || '', {
+                        skipEmpty: true
+                    });
+                    setText('cliente-oficina', empresa.oficina || '', {
+                        skipEmpty: true
+                    });
 
-                    // Descripciones
-                    // Preferir lo que el cliente declaró en la orden; si no, caer a la solicitud
-                    setText('desc-cliente', (data.diagnostico_cliente && data.diagnostico_cliente.trim()) ? data.diagnostico_cliente : (sol.descripcion_problema || ''));
+                    setText('desc-cliente', (data.diagnostico_cliente && data.diagnostico_cliente.trim()) ? data
+                        .diagnostico_cliente : (sol.descripcion_problema || ''));
                     setText('desc-acf', data.diagnostico_tecnico || '');
                     setText('actividad', data.observaciones || '');
 
-                    // Firmas
-                    // Cliente: intentar con empresa/persona
-                    setText('firma-cliente-nombre', clienteNombre || '');
-                    setText('firma-cliente-ci', empresa.rtn || '');
-                    // Técnico
+
+                    setText('firma-cliente-nombre', clienteNombre || '', {
+                        skipEmpty: true
+                    });
+                    setText('firma-cliente-ci', empresa.rtn || '', {
+                        skipEmpty: true
+                    });
                     const tecnico = data.tecnico || {};
                     setText('firma-tecnico-nombre', nombresPersona(tecnico) || '');
                     setText('firma-tecnico-ci', tecnico.dni || '');
 
-                    // Repuestos (si se expone un array detalles_orden_producto)
                     const detalles = data.detalles_producto || data.detalle_orden_producto || [];
+                    const si = $('repuesto-si');
+                    const no = $('repuesto-no');
+                    const cualEl = $('repuesto-cual');
                     if (Array.isArray(detalles) && detalles.length) {
-                        const si = $('repuesto-si'); const no = $('repuesto-no');
-                        if (si) si.checked = true; if (no) no.checked = false;
-                        const nombres = detalles.map(d => d.producto_nombre || d.nombre || d.repuesto || '').filter(Boolean);
+                        if (si) si.checked = true;
+                        if (no) no.checked = false;
+                        const nombres = detalles.map(d => d.producto_nombre || d.nombre || d.repuesto || '')
+                            .filter(Boolean);
                         setText('repuesto-cual', nombres.join(', '));
                     } else {
-                        const si = $('repuesto-si'); const no = $('repuesto-no');
-                        if (si) si.checked = false; if (no) no.checked = true;
+                        try {
+                            const current = (cualEl && (cualEl.textContent || '') || '').trim();
+                            if (!current || current === '—') {
+                                if (si) si.checked = false;
+                                if (no) no.checked = true;
+                            } else {}
+                        } catch (e) {
+                            if (si) si.checked = false;
+                            if (no) no.checked = true;
+                        }
+                    }
+
+                    const calFromApi = (data.calificacion_servicio || data.calificacionServicio || data
+                        .calificacion || '').toString().toLowerCase();
+                    if (calFromApi && calFromApi.trim() !== '') {
+                        const cel = $('calificacion-excelente');
+                        const cbu = $('calificacion-bueno');
+                        const cre = $('calificacion-regular');
+                        const cde = $('calificacion-deficiente');
+                        if (cel) cel.checked = (calFromApi === 'excelente');
+                        if (cbu) cbu.checked = (calFromApi === 'bueno');
+                        if (cre) cre.checked = (calFromApi === 'regular');
+                        if (cde) cde.checked = (calFromApi === 'deficiente');
                     }
                 })
                 .catch((e) => {

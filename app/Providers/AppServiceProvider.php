@@ -12,22 +12,18 @@ use App\Models\Persona;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
+    
     public function register(): void
     {
-        //
+        
     }
 
-    /**
-     * Bootstrap any application services.
-     */
+    
     public function boot(): void
     {
-        // Cargar el helper SpaHelper
+        
         require_once app_path('Helpers/SpaHelper.php');
-        // Helper de fechas (para la directiva Blade)
+        
         require_once app_path('Helpers/DateHelper.php');
 
         if (!file_exists(public_path('storage'))) {
@@ -37,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        // Compartir nombre del sistema y logo dinámicos en todas las vistas
+        
         View::composer('*', function ($view) {
             $appName = Cache::remember('appName', 300, function () {
                 $v = optional(Parametro::where('parametro', 'APP.NOMBRE')->first())->valor;
@@ -89,12 +85,28 @@ class AppServiceProvider extends ServiceProvider
                 ->with('appTimezone', $timezone);
         });
 
-        // Directiva Blade para formatear fechas: @fecha($value) o @fecha($value, 'd/m/Y')
+        
         Blade::directive('fecha', function ($expression) {
             return "<?php echo \\App\\Helpers\\DateHelper::format(...([$expression])); ?>";
         });
 
-        // Compartir datos del usuario autenticado y su persona para hidratar el header sin fetch ni localStorage
+        
+        
+        Blade::if('perm', function ($objects, string $action) {
+            try {
+                $user = auth()->user();
+                $candidates = is_array($objects) ? $objects : [$objects];
+                return app(\App\Services\PermissionService::class)->can($user, $candidates, $action);
+            } catch (\Throwable $e) {
+                return false;
+            }
+        });
+
+        
+        View::composer('cliente.partials.header', \App\Http\View\Composers\ClienteHeaderComposer::class);
+        View::composer('cliente.partials.sidebar', \App\Http\View\Composers\ClienteSidebarComposer::class);
+
+        
         View::composer('*', function ($view) {
             try {
                 $user = Auth::user();

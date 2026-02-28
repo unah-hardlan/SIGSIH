@@ -2,48 +2,125 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\AvisoOrdenServicioPorIniciar;
-use App\Jobs\EnviarRecordatorioVisita;
-use App\Models\Calendario;
 use Illuminate\Console\Command;
+use App\Models\Calendario;
+use App\Models\Usuario;
+use App\Models\Rol;
+use App\Models\Proyecto;
+use App\Notifications\SystemNotification;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ProgramarRecordatoriosCalendario extends Command
 {
-    protected $signature = 'calendario:programar-recordatorios';
-    protected $description = 'Programa recordatorios 24–48h antes de visitas y avisos de OS por iniciar';
+    
+    protected $signature = 'calendario:programar-recordatorios {--days=2 : Number of days ahead to notify}';
 
-    public function handle(): int
+    
+    protected $description = 'Enviar notificaciones para eventos de calendario con fecha cercana';
+
+    public function handle()
     {
-        // Recordatorios de visitas 24-48 horas antes
-        $now = now();
-        $en48h = $now->copy()->addHours(48);
-        $en24h = $now->copy()->addHours(24);
+        $days = (int) $this->option('days');
+        $start = Carbon::now();
+        $end = Carbon::now()->addDays($days)->endOfDay();
 
-        // Selecciona eventos entre 24 y 48h
-        Calendario::whereBetween('fecha', [$en24h, $en48h])
-            ->whereNotNull('id_usuario_fk')
-            ->get()
-            ->each(function ($evento) use ($now) {
-                // Programa job a ejecutarse 24h antes si falta >24h, o inmediato si está en la ventana
-                $delay = $evento->fecha->copy()->subHours(24)->diffInSeconds($now, false);
-                if ($delay > 0) {
-                    // Ya estamos dentro de la ventana, ejecutar ahora
-                    EnviarRecordatorioVisita::dispatch($evento->id_calendario_pk);
-                } else {
-                    EnviarRecordatorioVisita::dispatch($evento->id_calendario_pk)->delay($evento->fecha->copy()->subHours(24));
+        $this->info("Buscando eventos entre {$start} y {$end}...");
+
+        $events = Calendario::with(['estado', 'cliente'])
+            ->whereBetween('fecha', [$start->toDateTimeString(), $end->toDateTimeString()])
+            ->get();
+
+        if ($events->isEmpty()) {
+            $this->info('No hay eventos próximos.');
+            return 0;
+        }
+
+        
+        $rols = Rol::where('rol', 'like', '%tecn%')->get();
+        $roleIds = $rols->pluck('id_rol_pk')->all();
+        $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+            ->whereIn('id_rol_fk', $roleIds)
+            ->pluck('id_usuario_fk')
+            ->all();
+
+        $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+
+        if (empty($userIds)) {
+            $this->warn('No se encontraron usuarios técnicos para notificar.');
+            return 0;
+        }
+
+        $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+
+        foreach ($events as $ev) {
+            
+            try {
+                $fechaStr = Carbon::parse($ev->fecha)->format('d/m/Y H:i');
+            } catch (\Throwable $t) {
+                $fechaStr = (string)$ev->fecha;
+            }
+
+            $clienteNombre = $ev->cliente->nombre ?? ($ev->cliente->nombre_comercial ?? 'Cliente');
+
+            $payload = [
+                'title' => 'Evento próximo',
+                'body' => "Evento: {$ev->descripcion_calendario} — Fecha: {$fechaStr} — Cliente: {$clienteNombre}",
+                'url' => '/admin/calendario',
+                'icon' => 'fa-calendar',
+                'severity' => 'info',
+                'module' => 'calendario',
+                'meta' => ['id_calendario_pk' => $ev->getKey(), 'fecha' => $ev->fecha]
+            ];
+
+            foreach ($users as $u) {
+                try {
+                    $u->notify(new SystemNotification($payload));
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to notify user ' . $u->id_usuario_pk . ' for upcoming event ' . $ev->getKey() . ': ' . $e->getMessage());
                 }
-            });
+            }
+            $this->info('Notificaciones enviadas para evento ' . $ev->getKey());
+        }
 
-        // Aviso OS por iniciar: si la OS asociada comienza en <=24h (usamos fecha_asignada o fecha_creada como proxy)
-        Calendario::whereNotNull('id_orden_servicio_fk')
-            ->where('fecha', '<=', $en24h)
-            ->where('fecha', '>=', $now)
-            ->get()
-            ->each(function ($evento) use ($now) {
-                AvisoOrdenServicioPorIniciar::dispatch($evento->id_orden_servicio_fk);
-            });
+        
+        $this->info('Buscando proyectos con fecha de inicio entre {$start} y {$end}...');
+        $projects = Proyecto::whereBetween('fecha_inicio_proyecto', [$start->toDateString(), $end->toDateString()])
+            ->get();
 
-        $this->info('Recordatorios programados.');
-        return self::SUCCESS;
+        if ($projects->isEmpty()) {
+            $this->info('No hay proyectos con inicio próximo.');
+            return 0;
+        }
+
+        foreach ($projects as $p) {
+            try {
+                $fechaStr = Carbon::parse($p->fecha_inicio_proyecto)->format('d/m/Y');
+            } catch (\Throwable $t) {
+                $fechaStr = (string)$p->fecha_inicio_proyecto;
+            }
+
+            $payload = [
+                'title' => 'Inicio de proyecto próximo',
+                'body' => "Proyecto: {$p->nombre_proyecto} — Inicio: {$fechaStr}",
+                'url' => '/admin/proyectos',
+                'icon' => 'fa-briefcase',
+                'severity' => 'info',
+                'module' => 'proyectos',
+                'meta' => ['id_proyecto_pk' => $p->getKey(), 'fecha_inicio_proyecto' => $p->fecha_inicio_proyecto]
+            ];
+
+            foreach ($users as $u) {
+                try {
+                    $u->notify(new SystemNotification($payload));
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to notify user ' . $u->id_usuario_pk . ' for upcoming project ' . $p->getKey() . ': ' . $e->getMessage());
+                }
+            }
+            $this->info('Notificaciones enviadas para proyecto ' . $p->getKey());
+        }
+
+        return 0;
     }
 }

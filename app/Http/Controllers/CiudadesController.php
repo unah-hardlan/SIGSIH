@@ -9,19 +9,17 @@ use Illuminate\Http\JsonResponse;
 
 class CiudadesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $query = Ciudad::with(['departamento.pais']);
 
-        // Filtro por departamento
+        
         if ($request->has('id_departamento_fk')) {
             $query->where('id_departamento_fk', $request->id_departamento_fk);
         }
 
-        // Filtro de búsqueda
+        
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('nombre_ciudad', 'LIKE', "%{$search}%");
@@ -44,9 +42,7 @@ class CiudadesController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -64,9 +60,7 @@ class CiudadesController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id): JsonResponse
     {
         $ciudad = Ciudad::with(['departamento.pais'])->find($id);
@@ -84,9 +78,7 @@ class CiudadesController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id): JsonResponse
     {
         $ciudad = Ciudad::find($id);
@@ -113,9 +105,7 @@ class CiudadesController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id): JsonResponse
     {
         $ciudad = Ciudad::find($id);
@@ -127,7 +117,7 @@ class CiudadesController extends Controller
             ], 404);
         }
 
-        // Verificar si la ciudad tiene direcciones asociadas
+        
         if ($ciudad->direcciones()->exists()) {
             return response()->json([
                 'success' => false,

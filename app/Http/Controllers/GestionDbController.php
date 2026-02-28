@@ -6,31 +6,27 @@ use Illuminate\Http\Request;
 
 class GestionDbController extends Controller
 {
-    /**
-     * Garantiza que el texto sea UTF-8 válido para respuestas JSON.
-     */
+    
     private function ensureUtf8(?string $text): string
     {
         if ($text === null) return '';
-        // Si ya es UTF-8 válido, devolver tal cual
+        
         if (function_exists('mb_detect_encoding') && @mb_detect_encoding($text, 'UTF-8', true)) {
             return $text;
         }
-        // Intentar convertir automáticamente
+        
         if (function_exists('mb_convert_encoding')) {
             $conv = @mb_convert_encoding($text, 'UTF-8', 'auto');
             if ($conv !== false) return $conv;
         }
-        // Fallback común en Windows (CP1252)
+        
         $conv = @iconv('CP1252', 'UTF-8//IGNORE', $text);
         if ($conv !== false) return $conv;
-        // Último recurso: filtrar bytes no válidos
+        
         return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text) ?? '';
     }
 
-    /**
-     * Elimina comillas envolventes ("..." o '...') de rutas provenientes del .env.
-     */
+    
     private function unquote(?string $value): ?string
     {
         if ($value === null) return null;
@@ -46,25 +42,25 @@ class GestionDbController extends Controller
         $driver = config('database.default');
         $path = $request->input('path');
         if (!$path) {
-            // Para MySQL permitimos omitir path y generamos en storage/app/backups
+            
             if ($driver !== 'mysql') {
                 return response()->json(['error' => 'Debe proporcionar la ruta de destino (path).'], 422);
             }
         }
 
-        // Verificación de seguridad: solicitar la contraseña de la BD definida en .env
+        
         $expected = '';
         if ($driver === 'mysql') {
             $expected = (string) (config('database.connections.mysql.password') ?? '');
         }
         $provided = $request->has('confirm_password') ? (string)$request->input('confirm_password') : null;
         if ($expected === '') {
-            // Si la BD no tiene contraseña en .env, permitir confirmación vacía o no enviada
+            
             if ($provided === null) {
                 $provided = '';
             }
         } else {
-            // Si hay contraseña configurada, exigir que el usuario la envíe (respuesta suave para evitar 422 en consola)
+            
             if ($provided === null || $provided === '') {
                 return response()->json([
                     'ok' => false,
@@ -74,9 +70,9 @@ class GestionDbController extends Controller
                 ], 200);
             }
         }
-        // Comparación segura
+        
         if (!hash_equals($expected, (string)$provided)) {
-            // Evitar ruido en consola (422): devolvemos 200 con error estructurado para manejo en UI
+            
             return response()->json([
                 'ok' => false,
                 'code' => 'INVALID_CONFIRM_PASSWORD',
@@ -93,7 +89,7 @@ class GestionDbController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error realizando respaldo',
-                'message' => $this->ensureUtf8($e->getMessage()),
+                'message' => config('app.debug') ? $this->safeMessage($e) : 'No se pudo completar el respaldo.',
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
@@ -111,7 +107,7 @@ class GestionDbController extends Controller
             return response()->json(['error' => 'Base de datos no configurada.'], 500);
         }
 
-        // Siempre generamos el dump en storage/app/backups para poder descargarlo por HTTP
+        
         $storageDir = storage_path('app/backups');
         if (!is_dir($storageDir)) {
             if (!@mkdir($storageDir, 0775, true) && !is_dir($storageDir)) {
@@ -122,7 +118,7 @@ class GestionDbController extends Controller
         $filename = sprintf('%s-%s.sql', $db ?: 'backup', $timestamp);
         $storagePath = $storageDir . DIRECTORY_SEPARATOR . $filename;
 
-        // Resolver ruta de mysqldump: env override o detección común en Windows
+        
         $envDump = $this->unquote(env('MYSQLDUMP_PATH'));
         if ($envDump && is_string($envDump)) {
             $mysqldump = $envDump;
@@ -142,18 +138,18 @@ class GestionDbController extends Controller
                         break;
                     }
                 } else {
-                    // En Linux/Mac confiar en PATH o rutas absolutas si las hubiera
+                    
                 }
             }
         }
 
-        // Aconsejar extensión .sql si es .bak
-        // No obligatorio: se permite cualquier extensión
+        
+        
 
-        // Detectar plugin-dir si se requiere (Windows + MySQL 8: caching_sha2_password.dll)
+        
         $pluginDir = $this->unquote(env('MYSQL_PLUGIN_DIR'));
         if (!$pluginDir && stripos(PHP_OS, 'WIN') === 0) {
-            // Si mysqldump está en ...\bin\mysqldump.exe intentar ..\lib\plugin
+            
             $binDir = @dirname($mysqldump);
             if ($binDir && preg_match('/\\\\bin$/i', $binDir)) {
                 $candidate = preg_replace('/\\\\bin$/i', '\\\\lib\\\\plugin', $binDir);
@@ -161,7 +157,7 @@ class GestionDbController extends Controller
                     $pluginDir = $candidate;
                 }
             }
-            // XAMPP estructura típica: C:\xampp\mysql\bin -> C:\xampp\mysql\lib\plugin
+            
             if (!$pluginDir && $binDir) {
                 $cand = str_replace('\\\\bin', '\\\\lib\\\\plugin', $binDir);
                 if ($cand && @is_dir($cand)) {
@@ -170,7 +166,7 @@ class GestionDbController extends Controller
             }
         }
 
-        // Ejecutar mysqldump escribiendo directamente al archivo (--result-file) para evitar usar memoria PHP
+        
         $args = [];
         $args[] = $mysqldump;
         $args[] = "--host={$host}";
@@ -190,10 +186,10 @@ class GestionDbController extends Controller
         $args[] = "--result-file={$storagePath}";
         $args[] = $db;
 
-        // Construir comando seguro (sin redirección; capturamos stdout)
+        
         $cmd = '';
         foreach ($args as $a) {
-            // Escapar con comillas dobles para Windows; password ya va inline por flag
+            
             if (preg_match('/\s/', $a)) {
                 $cmd .= ' "' . $a . '"';
             } else {
@@ -216,7 +212,7 @@ class GestionDbController extends Controller
 
         if ($exit !== 0) {
             $msg = trim($stderr) ?: trim($stdout) ?: 'mysqldump falló';
-            // Mensaje común de Windows cuando no está en PATH
+            
             if (stripos($msg, 'no se reconoce') !== false || stripos($msg, 'not recognized') !== false) {
                 $msg .= '. Configure MYSQLDUMP_PATH en .env (e.g. C:\\xampp\\mysql\\bin\\mysqldump.exe) y ejecute php artisan config:clear.';
             }
@@ -225,12 +221,12 @@ class GestionDbController extends Controller
                 'message' => $this->ensureUtf8($msg),
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
-        // Validar que el archivo se haya creado
+        
         if (!@file_exists($storagePath)) {
             return response()->json(['error' => 'El archivo de respaldo no fue creado. Verifique permisos o la ruta.'], 500);
         }
 
-        // Si el usuario proporcionó un path destino, intentar copiar como conveniencia
+        
         $copied = false;
         $copyError = null;
         $finalPath = $storagePath;
@@ -260,7 +256,7 @@ class GestionDbController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
-    // SQL Server soporte removido para simplificar a MySQL únicamente.
+    
 
     public function download(Request $request)
     {
@@ -276,5 +272,23 @@ class GestionDbController extends Controller
         return response()->download($full, $file, [
             'Content-Type' => $mime,
         ]);
+    }
+
+    
+    private function safeMessage(\Throwable $e): string
+    {
+        $msg = $this->ensureUtf8($e->getMessage());
+        
+        $msg = preg_replace('/`[^`]+`/', '`?`', $msg) ?? $msg;
+        
+        $patterns = [
+            '/\b(table|column|constraint|index)\s+[`\"\[]?[a-z0-9_\.]+[`\"\]]?/i',
+            '/\bfor\s+key\s+[`\"\[]?[a-z0-9_\.]+[`\"\]]?/i',
+            '/\bforeign\s+key\s*\([^)]+\)/i',
+        ];
+        foreach ($patterns as $p) {
+            $msg = preg_replace($p, '$1 ?', $msg) ?? $msg;
+        }
+        return $msg;
     }
 }

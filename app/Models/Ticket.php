@@ -25,25 +25,19 @@ class Ticket extends Model
         'fecha_creacion' => 'datetime'
     ];
 
-    /**
-     * Relación con el estado del ticket
-     */
+    
     public function estado()
     {
         return $this->belongsTo(EstadoTicket::class, 'id_estado_ticket_fk', 'id_estado_ticket_pk');
     }
 
-    /**
-     * Relación con el técnico asignado
-     */
+    
     public function tecnico()
     {
         return $this->belongsTo(Persona::class, 'id_tecnico_fk', 'id_persona_pk');
     }
 
-    /**
-     * Relación con el cliente (FK hacia tbl_cliente)
-     */
+    
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');

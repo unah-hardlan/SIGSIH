@@ -20,13 +20,13 @@ class Contacto extends Model
         'id_cliente_fk',
     ];
 
-    // Relaciones
+    
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'id_cliente_fk', 'id_cliente_pk');
     }
 
-    // Simple format validation helper (call from services/requests)
+    
     public static function isValidValor(string $tipo, string $valor): bool
     {
         $tipo = strtolower(trim($tipo));

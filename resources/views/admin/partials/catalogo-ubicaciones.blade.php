@@ -3,22 +3,18 @@
     isDepartamentoModalOpen: false,
     isCiudadModalOpen: false,
     isDireccionModalOpen: false,
-    // Removed generic isEditModalOpen and isDeleteModalOpen,
-    // as we now have specific ones for each entity (e.g., isPaisEditModalOpen)
     itemToEdit: null,
     itemToDelete: null,
     isCiudadEditModalOpen: false,
     isCiudadDeleteModalOpen: false,
     isDireccionEditModalOpen: false,
     isDireccionDeleteModalOpen: false,
-    isPaisEditModalOpen: false,
     isPaisDeleteModalOpen: false,
     isDepartamentoEditModalOpen: false,
     isDepartamentoDeleteModalOpen: false,
     paises: [],
     loadingPaises: false,
     nombre_pais: '',
-    // Filtro global para las cuatro tablas
     filtroUbicaciones: '',
     normalize(str) { return (str || '').toString().trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, ''); },
     caCatalog: ['Belice','Costa Rica','El Salvador','Guatemala','Honduras','Nicaragua','Panamá'],
@@ -38,6 +34,13 @@
         const p = this.paises.find(pp => String(pp.id_pais_pk) === String(id));
         return p ? p.nombre_pais : '';
     },
+        formPais: { _touched: {} },
+        formDepartamento: { _touched: {} },
+        formEditDepartamento: { _touched: {} },
+        formCiudad: { _touched: {} },
+        formEditCiudad: { _touched: {} },
+        formDireccion: { _touched: {} },
+        formEditDireccion: { _touched: {} },
     refreshDepartamentoSuggestions() {
         try {
             const nombrePais = this.selectedPaisNombre;
@@ -105,7 +108,6 @@
         return dep || null;
     },
     getDepartamentoNombreByDireccion(dir) {
-        // Usa el objeto anidado si viene del API, si no, resuelve por listas cargadas
         const depObj = (dir?.ciudad && dir.ciudad.departamento) || this.getDepartamentoByCiudadId(dir?.id_ciudad_fk);
         return depObj?.nombre_departamento || '';
     },
@@ -116,10 +118,8 @@
             const p = (this.paises || []).find(pp => String(pp.id_pais_pk) === String(paisId));
             return p ? p.nombre_pais : '';
         }
-        // Fallback si el backend incluye pais anidado
         return dir?.ciudad?.departamento?.pais?.nombre_pais || '';
     },
-    // Colecciones filtradas por el término global
     get filteredPaises() {
         const term = String(this.filtroUbicaciones || '').toLowerCase().trim();
         if (!term) return this.paises || [];
@@ -140,7 +140,6 @@
         return (this.ciudades || []).filter(c => {
             const nombre = String(c?.nombre_ciudad || '').toLowerCase();
             const depNombre = String(c?.departamento?.nombre_departamento || this.getDepartamentoNombreById(c?.id_departamento_fk) || '').toLowerCase();
-            // Obtener nombre de país vía departamento
             let paisNombre = '';
             const dep = c?.departamento || this.getDepartamentoByCiudadId(c?.id_ciudad_pk);
             if (dep?.id_pais_pk) {
@@ -173,12 +172,10 @@
             const depNombre = this.getDepartamentoNombreById(this.departamento_ciudad);
             const list = (window.subdivisionHelper && window.subdivisionHelper.getCitiesByPaisDep(paisNombre, depNombre)) || [];
             this.suggestedCiudades = list.map(n => ({ nombre: n }));
-            // Reset city name if not among suggestions
             if (this.suggestedCiudades.length > 0) {
                 const exists = this.suggestedCiudades.some(o => o.nombre === this.nombre_ciudad);
                 if (!exists) this.nombre_ciudad = '';
             }
-            // Ensure departamento belongs to selected country
             if (this.pais_ciudad) {
                 const ok = this.departamentosFiltradosCiudad.some(d => String(d.id_departamento_pk) === String(this.departamento_ciudad));
                 if (!ok) this.departamento_ciudad = '';
@@ -197,7 +194,6 @@
                 const exists = this.editSuggestedCiudades.some(o => o.nombre === this.itemToEdit.nombre);
                 if (!exists) this.itemToEdit.nombre = '';
             }
-            // Ensure departamento belongs to selected country
             if (this.edit_pais_ciudad && this.itemToEdit) {
                 const ok = this.departamentosFiltradosCiudadEdit.some(d => String(d.id_departamento_pk) === String(this.itemToEdit.departamento));
                 if (!ok) this.itemToEdit.departamento = '';
@@ -220,9 +216,6 @@
     },
     async submitPais() {
         await window.paisesApiHandlers.submitPais(this);
-    },
-    async updatePais() {
-        await window.paisesApiHandlers.updatePais(this);
     },
     async deletePais() {
         await window.paisesApiHandlers.deletePais(this);
@@ -265,7 +258,6 @@
     },
     handleModalSubmit(event) {
         if(event.detail.formId === 'formPais') this.submitPais();
-        if(event.detail.formId === 'formEditPais') this.updatePais();
         if(event.detail.formId === 'formDepartamento') this.submitDepartamento();
         if(event.detail.formId === 'formEditDepartamento') this.updateDepartamento();
         if(event.detail.formId === 'formCiudad') this.submitCiudad();
@@ -294,7 +286,6 @@
     isDepartamentoModalOpen = false;
     isCiudadModalOpen = false;
     isDireccionModalOpen = false;
-    isPaisEditModalOpen = false;
     isPaisDeleteModalOpen = false;
     isDepartamentoEditModalOpen = false;
     isDepartamentoDeleteModalOpen = false;
@@ -309,13 +300,12 @@
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Ubicaciones de Agencias</h1>
         <div class="flex flex-wrap gap-2 items-center mb-6">
             @include('partials.filtros-generales', [
-                'searchModel' => 'filtroUbicaciones'
+            'searchModel' => 'filtroUbicaciones'
             ])
         </div>
     </div>
 
     <div class="flex flex-col gap-8">
-        <!-- Card Direcciones -->
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
             <div class="bg-gradient-to-r from-orange-700 to-orange-900 px-6 py-4">
                 <div class="flex items-center justify-between">
@@ -328,11 +318,19 @@
                             <p class="text-orange-100 text-sm nunito-regular">Gestiona las direcciones por ciudad</p>
                         </div>
                     </div>
-                    <button @click="isDireccionModalOpen = true"
+                    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
+                    <button @click="formDireccion = { _touched: {} }; direccion = ''; numero = ''; colonia = ''; codigo_postal = ''; referencia = ''; ciudad_direccion = ''; isDireccionModalOpen = true"
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                         <i class="fas fa-plus text-sm"></i>
                         <span class="text-sm">Nuevo</span>
                     </button>
+                    @else
+                    <button type="button" disabled title="Sin permiso para crear"
+                        class="bg-white/20 text-white px-4 py-2 rounded-lg nunito-bold opacity-60 cursor-not-allowed transition flex items-center space-x-2">
+                        <i class="fas fa-plus text-sm"></i>
+                        <span class="text-sm">Nuevo</span>
+                    </button>
+                    @endperm
                 </div>
             </div>
             <div class="p-6">
@@ -376,12 +374,24 @@
                                             <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="getPaisNombreByDireccion(direccion) || 'N/A'"></td>
                                             <td class="px-4 py-3">
                                                 <div class="flex justify-center gap-2">
-                                                    <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
+                                                    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
+                                                    <button @click="formEditDireccion = { _touched: {} }; isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                         <i class="fas fa-edit text-sm"></i>
                                                     </button>
+                                                    @else
+                                                    <button type="button" disabled title="Sin permiso para editar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                        <i class="fas fa-edit text-sm"></i>
+                                                    </button>
+                                                    @endperm
+                                                    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                                     <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa}`}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                         <i class="fas fa-trash text-sm"></i>
                                                     </button>
+                                                    @else
+                                                    <button type="button" disabled title="Sin permiso para eliminar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                        <i class="fas fa-trash text-sm"></i>
+                                                    </button>
+                                                    @endperm
                                                 </div>
                                             </td>
                                         </tr>
@@ -425,12 +435,24 @@
                                         <span class="nunito-regular" x-text="direccion.referencia"></span>
                                     </div>
                                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                        <button @click="isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                                        @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
+                                        <button @click="formEditDireccion = { _touched: {} }; isDireccionEditModalOpen = true; itemToEdit = {id: direccion.id_direccion_pk, calle: direccion.calle, numero: direccion.numero, colonia: direccion.colonia, codigo_postal: direccion.codigo_postal, referencia: direccion.referencia, ciudad: direccion.id_ciudad_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
+                                        @else
+                                        <button type="button" disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        @endperm
+                                        @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                         <button @click="isDireccionDeleteModalOpen = true; itemToDelete = {id: direccion.id_direccion_pk, nombre: `${direccion.direccion_completa}`}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                             <i class="fas fa-trash"></i> Eliminar
                                         </button>
+                                        @else
+                                        <button type="button" disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                        @endperm
                                     </div>
                                 </div>
                             </template>
@@ -441,7 +463,6 @@
         </div>
 
         <div class="flex flex-col gap-8">
-            <!-- Países y Departamentos lado a lado -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
                     <div class="bg-gradient-to-r from-blue-600 to-blue-900 px-6 py-4">
@@ -455,11 +476,19 @@
                                     <p class="text-blue-100 text-sm nunito-regular">Gestiona los países disponibles</p>
                                 </div>
                             </div>
-                            <button @click="isPaisModalOpen = true"
+                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
+                            <button @click="formPais = { _touched: {} }; nombre_pais = ''; isPaisModalOpen = true"
                                 class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                                 <i class="fas fa-plus text-sm"></i>
                                 <span class="text-sm">Nuevo</span>
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para crear"
+                                class="bg-white/20 text-white px-4 py-2 rounded-lg nunito-bold opacity-60 cursor-not-allowed transition flex items-center space-x-2">
+                                <i class="fas fa-plus text-sm"></i>
+                                <span class="text-sm">Nuevo</span>
+                            </button>
+                            @endperm
                         </div>
                     </div>
                     <div class="p-6">
@@ -489,12 +518,15 @@
                                                     <td class="px-4 py-3 text-gray-900 dark:text-white" x-text="pais.nombre_pais"></td>
                                                     <td class="px-4 py-3">
                                                         <div class="flex justify-center gap-2">
-                                                            <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-blue-500 hover:text-blue-700 p-1 rounded">
-                                                                <i class="fas fa-edit text-sm"></i>
-                                                            </button>
+                                                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                                             <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                                 <i class="fas fa-trash text-sm"></i>
                                                             </button>
+                                                            @else
+                                                            <button type="button" disabled title="Sin permiso para eliminar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                                <i class="fas fa-trash text-sm"></i>
+                                                            </button>
+                                                            @endperm
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -520,12 +552,15 @@
                                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-3">
                                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white nunito-bold" x-text="pais.nombre_pais"></h3>
                                             <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                                <button @click="isPaisEditModalOpen = true; itemToEdit = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
-                                                    <i class="fas fa-edit"></i> Editar
-                                                </button>
+                                                @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                                 <button @click="isPaisDeleteModalOpen = true; itemToDelete = {id: pais.id_pais_pk, nombre: pais.nombre_pais}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                                     <i class="fas fa-trash"></i> Eliminar
                                                 </button>
+                                                @else
+                                                <button type="button" disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                                @endperm
                                             </div>
                                         </div>
                                     </template>
@@ -535,7 +570,6 @@
                     </div>
                 </div>
 
-                <!-- Card Departamentos -->
                 <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden">
                     <div class="bg-gradient-to-r from-green-700 to-green-900 px-6 py-4">
                         <div class="flex items-center justify-between">
@@ -548,11 +582,19 @@
                                     <p class="text-green-100 text-sm nunito-regular">Gestiona los departamentos por país</p>
                                 </div>
                             </div>
-                            <button @click="isDepartamentoModalOpen = true; refreshDepartamentoSuggestions()"
+                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
+                            <button @click="formDepartamento = { _touched: {} }; pais_departamento = ''; nombre_departamento = ''; isDepartamentoModalOpen = true; refreshDepartamentoSuggestions()"
                                 class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                                 <i class="fas fa-plus text-sm"></i>
                                 <span class="text-sm">Nuevo</span>
                             </button>
+                            @else
+                            <button type="button" disabled title="Sin permiso para crear"
+                                class="bg-white/20 text-white px-4 py-2 rounded-lg nunito-bold opacity-60 cursor-not-allowed transition flex items-center space-x-2">
+                                <i class="fas fa-plus text-sm"></i>
+                                <span class="text-sm">Nuevo</span>
+                            </button>
+                            @endperm
                         </div>
                     </div>
                     <div class="p-6">
@@ -584,12 +626,24 @@
                                                     <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="departamento.pais?.nombre_pais || 'N/A'"></td>
                                                     <td class="px-4 py-3">
                                                         <div class="flex justify-center gap-2">
+                                                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
                                                             <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}; refreshEditDepartamentoSuggestions()" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                                 <i class="fas fa-edit text-sm"></i>
                                                             </button>
+                                                            @else
+                                                            <button type="button" disabled title="Sin permiso para editar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                                <i class="fas fa-edit text-sm"></i>
+                                                            </button>
+                                                            @endperm
+                                                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                                             <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                                 <i class="fas fa-trash text-sm"></i>
                                                             </button>
+                                                            @else
+                                                            <button type="button" disabled title="Sin permiso para eliminar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                                <i class="fas fa-trash text-sm"></i>
+                                                            </button>
+                                                            @endperm
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -618,12 +672,24 @@
                                                 <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="departamento.pais?.nombre_pais || 'N/A'"></p>
                                             </div>
                                             <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
                                                 <button @click="isDepartamentoEditModalOpen = true; itemToEdit = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento, pais: departamento.id_pais_pk}; refreshEditDepartamentoSuggestions()" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                                     <i class="fas fa-edit"></i> Editar
                                                 </button>
+                                                @else
+                                                <button type="button" disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                                @endperm
+                                                @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                                 <button @click="isDepartamentoDeleteModalOpen = true; itemToDelete = {id: departamento.id_departamento_pk, nombre: departamento.nombre_departamento}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                                     <i class="fas fa-trash"></i> Eliminar
                                                 </button>
+                                                @else
+                                                <button type="button" disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                                @endperm
                                             </div>
                                         </div>
                                     </template>
@@ -634,7 +700,6 @@
                 </div>
             </div>
 
-            <!-- Card Ciudades -->
             <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-400 dark:border-gray-700 overflow-hidden w-full">
                 <div class="bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-4">
                     <div class="flex items-center justify-between">
@@ -647,11 +712,19 @@
                                 <p class="text-purple-100 text-sm nunito-regular">Gestiona las ciudades por departamento</p>
                             </div>
                         </div>
-                        <button @click="isCiudadModalOpen = true; pais_ciudad=''; departamento_ciudad=''; nombre_ciudad=''; suggestedCiudades=[]"
+                        @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
+                        <button @click="formCiudad = { _touched: {} }; pais_ciudad=''; departamento_ciudad=''; nombre_ciudad=''; suggestedCiudades=[]; isCiudadModalOpen = true"
                             class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg nunito-bold transition flex items-center space-x-2">
                             <i class="fas fa-plus text-sm"></i>
                             <span class="text-sm">Nuevo</span>
                         </button>
+                        @else
+                        <button type="button" disabled title="Sin permiso para crear"
+                            class="bg-white/20 text-white px-4 py-2 rounded-lg nunito-bold opacity-60 cursor-not-allowed transition flex items-center space-x-2">
+                            <i class="fas fa-plus text-sm"></i>
+                            <span class="text-sm">Nuevo</span>
+                        </button>
+                        @endperm
                     </div>
                 </div>
                 <div class="p-6">
@@ -683,12 +756,24 @@
                                                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></td>
                                                 <td class="px-4 py-3">
                                                     <div class="flex justify-center gap-2">
+                                                        @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
                                                         <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}; edit_pais_ciudad = (departamentos.find(d => String(d.id_departamento_pk) === String(ciudad.id_departamento_fk))?.id_pais_pk || ''); refreshEditCiudadSuggestions()" class="text-blue-500 hover:text-blue-700 p-1 rounded">
                                                             <i class="fas fa-edit text-sm"></i>
                                                         </button>
+                                                        @else
+                                                        <button type="button" disabled title="Sin permiso para editar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                            <i class="fas fa-edit text-sm"></i>
+                                                        </button>
+                                                        @endperm
+                                                        @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                                         <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="text-red-500 hover:text-red-700 p-1 rounded">
                                                             <i class="fas fa-trash text-sm"></i>
                                                         </button>
+                                                        @else
+                                                        <button type="button" disabled title="Sin permiso para eliminar" class="text-gray-400 p-1 rounded cursor-not-allowed">
+                                                            <i class="fas fa-trash text-sm"></i>
+                                                        </button>
+                                                        @endperm
                                                     </div>
                                                 </td>
                                             </tr>
@@ -717,12 +802,24 @@
                                             <p class="text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="ciudad.departamento?.nombre_departamento || 'N/A'"></p>
                                         </div>
                                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
                                             <button @click="isCiudadEditModalOpen = true; itemToEdit = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad, departamento: ciudad.id_departamento_fk}" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
                                                 <i class="fas fa-edit"></i> Editar
                                             </button>
+                                            @else
+                                            <button type="button" disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </button>
+                                            @endperm
+                                            @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
                                             <button @click="isCiudadDeleteModalOpen = true; itemToDelete = {id: ciudad.id_ciudad_pk, nombre: ciudad.nombre_ciudad}" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 nunito-regular">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </button>
+                                            @else
+                                            <button type="button" disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                            @endperm
                                         </div>
                                     </div>
                                 </template>
@@ -734,7 +831,7 @@
         </div>
     </div>
 
-    <!-- Modal Nuevo País -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isPaisModalOpen"
         title="Nuevo País"
@@ -745,12 +842,16 @@
             <div>
                 <label for="nombre_pais" class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
                 <template x-if="caOptionsDisponibles.length > 0">
-                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="nombre_pais_select" name="nombre_pais_select" x-model="nombre_pais"
+                        @change="formPais = formPais || { _touched: {} }; formPais._touched.nombre_pais = true"
+                        :class="formPais && formPais._touched && formPais._touched.nombre_pais && nombre_pais === '' ? 'border-red-500' : ''"
+                        class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un país</option>
                         <template x-for="n in caOptionsDisponibles" :key="n">
                             <option :value="n" x-text="n"></option>
                         </template>
                     </select>
+                    <small :class="formPais && formPais._touched && formPais._touched.nombre_pais && nombre_pais === '' ? 'text-red-500' : ''">Selecciona un país.</small>
                 </template>
                 <template x-if="caOptionsDisponibles.length === 0">
                     <input type="text" id="nombre_pais" name="nombre_pais" x-model="nombre_pais" placeholder="Todos los países de CA ya están registrados" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border bg-gray-100 text-gray-600 nunito-regular px-2" disabled>
@@ -759,8 +860,9 @@
             </div>
         </div>
     </x-admin.form-modal>
+    @endperm
 
-    <!-- Modal Nuevo Departamento -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isDepartamentoModalOpen"
         title="Nuevo Departamento"
@@ -770,33 +872,36 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="refreshDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="pais_departamento" name="pais_departamento" x-model="pais_departamento" @change="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.pais = true; refreshDepartamentoSuggestions()" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.pais && pais_departamento === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                     </template>
                 </select>
+                <small :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.pais && pais_departamento === '' ? 'text-red-500' : ''">Selecciona un país.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Departamento</label>
-                <!-- If we have suggestions for the selected country, show a select; otherwise show a text input -->
                 <template x-if="suggestedDepartamentos.length > 0">
-                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="nombre_departamento_select" name="nombre_departamento_select" x-model="nombre_departamento" @change="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.nombre = true" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && nombre_departamento === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona un departamento</option>
                         <template x-for="opt in suggestedDepartamentos" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
                         </template>
                     </select>
+                    <small :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && nombre_departamento === '' ? 'text-red-500' : ''">Selecciona o escribe un departamento.</small>
                 </template>
                 <template x-if="suggestedDepartamentos.length === 0">
-                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" />
+                    <input type="text" id="nombre_departamento" name="nombre_departamento" x-model="nombre_departamento" placeholder="Escribe el nombre del departamento" maxlength="150" @input="formDepartamento = formDepartamento || { _touched: {} }; formDepartamento._touched.nombre = true" @blur="formDepartamento._touched.nombre = true" :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && (nombre_departamento === '' || nombre_departamento.length > 150) ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off" />
+                    <small :class="formDepartamento && formDepartamento._touched && formDepartamento._touched.nombre && (nombre_departamento === '' || nombre_departamento.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedDepartamentos.length === 0">No hay catálogo para el país seleccionado. Puedes escribirlo manualmente.</p>
             </div>
         </div>
     </x-admin.form-modal>
+    @endperm
 
-    <!-- Modal Nueva Ciudad -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isCiudadModalOpen"
         title="Nueva Ciudad"
@@ -806,41 +911,46 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">País</label>
-                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="departamento_ciudad = ''; refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="pais_ciudad" name="pais_ciudad" x-model="pais_ciudad" @change="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.pais = true; departamento_ciudad = ''; refreshCiudadSuggestions()" :class="formCiudad && formCiudad._touched && formCiudad._touched.pais && pais_ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un país</option>
                     <template x-for="pais in paises" :key="pais.id_pais_pk">
                         <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                     </template>
                 </select>
+                <small :class="formCiudad && formCiudad._touched && formCiudad._touched.pais && pais_ciudad === '' ? 'text-red-500' : ''">Selecciona un país.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Departamento</label>
-                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="refreshCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="departamento_ciudad" name="departamento_ciudad" x-model="departamento_ciudad" @change="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.departamento = true; refreshCiudadSuggestions()" :class="formCiudad && formCiudad._touched && formCiudad._touched.departamento && departamento_ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona un departamento</option>
                     <template x-for="departamento in departamentosFiltradosCiudad" :key="'dep-' + pais_ciudad + '-' + departamento.id_departamento_pk">
                         <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
                     </template>
                 </select>
+                <small :class="formCiudad && formCiudad._touched && formCiudad._touched.departamento && departamento_ciudad === '' ? 'text-red-500' : ''">Selecciona un departamento.</small>
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 nunito-bold">Nombre Ciudad</label>
                 <template x-if="suggestedCiudades.length > 0">
-                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <select id="nombre_ciudad_select" name="nombre_ciudad_select" x-model="nombre_ciudad" @change="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.nombre = true" :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && nombre_ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                         <option value="">Selecciona una ciudad</option>
                         <template x-for="opt in suggestedCiudades" :key="opt.nombre">
                             <option :value="opt.nombre" x-text="opt.nombre"></option>
                         </template>
                     </select>
+                    <small :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && nombre_ciudad === '' ? 'text-red-500' : ''">Selecciona una ciudad.</small>
                 </template>
                 <template x-if="suggestedCiudades.length === 0">
-                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                    <input type="text" id="nombre_ciudad" name="nombre_ciudad" x-model="nombre_ciudad" maxlength="150" @input="formCiudad = formCiudad || { _touched: {} }; formCiudad._touched.nombre = true" @blur="formCiudad._touched.nombre = true" :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && (nombre_ciudad === '' || nombre_ciudad.length > 150) ? 'border-red-500' : ''" placeholder="Escribe el nombre de la ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                    <small :class="formCiudad && formCiudad._touched && formCiudad._touched.nombre && (nombre_ciudad === '' || nombre_ciudad.length > 150) ? 'text-red-500' : ''">Requerido. Máximo 150 caracteres.</small>
                 </template>
                 <p class="text-xs text-gray-500 mt-1 nunito-regular" x-show="suggestedCiudades.length === 0">No hay catálogo para el país/departamento seleccionado. Puedes escribirlo manualmente.</p>
             </div>
         </div>
     </x-admin.form-modal>
+    @endperm
 
-    <!-- Modal Nueva Dirección -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'insercion')
     <x-admin.form-modal class="nunito-bold"
         modalName="isDireccionModalOpen"
         title="Nueva Dirección"
@@ -850,194 +960,179 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label for="direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Calle</label>
-                <input type="text" id="direccion" name="direccion" x-model="direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="direccion" name="direccion" x-model="direccion" maxlength="100" @input="formDireccion._touched.direccion = true" @blur="formDireccion._touched.direccion = true" :class="formDireccion._touched.direccion && direccion === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.direccion && direccion === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="numero" class="block text-sm font-medium text-gray-700 nunito-bold">Número</label>
-                <input type="text" id="numero" name="numero" x-model="numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="numero" name="numero" x-model="numero" maxlength="100" @input="formDireccion._touched.numero = true" @blur="formDireccion._touched.numero = true" :class="formDireccion._touched.numero && numero === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.numero && numero === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="colonia" class="block text-sm font-medium text-gray-700 nunito-bold">Colonia</label>
-                <input type="text" id="colonia" name="colonia" x-model="colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="colonia" name="colonia" x-model="colonia" maxlength="100" @input="formDireccion._touched.colonia = true" @blur="formDireccion._touched.colonia = true" :class="formDireccion._touched.colonia && colonia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.colonia && colonia === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label for="codigo_postal" class="block text-sm font-medium text-gray-700 nunito-bold">Código Postal</label>
-                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                <input type="text" id="codigo_postal" name="codigo_postal" x-model="codigo_postal" maxlength="255" inputmode="numeric" @input="formDireccion._touched.codigo_postal = true" @blur="formDireccion._touched.codigo_postal = true" :class="formDireccion._touched.codigo_postal && codigo_postal === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)" autocomplete="off">
+                <small :class="formDireccion._touched.codigo_postal && codigo_postal === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
             <div>
                 <label for="referencia" class="block text-sm font-medium text-gray-700 nunito-bold">Referencia</label>
-                <input type="text" id="referencia" name="referencia" x-model="referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <input type="text" id="referencia" name="referencia" x-model="referencia" maxlength="255" @input="formDireccion._touched.referencia = true" @blur="formDireccion._touched.referencia = true" :class="formDireccion._touched.referencia && referencia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2" autocomplete="off">
+                <small :class="formDireccion._touched.referencia && referencia === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
             </div>
-            
+
             <div>
                 <label for="ciudad_direccion" class="block text-sm font-medium text-gray-700 nunito-bold">Ciudad</label>
-                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
+                <select id="ciudad_direccion" name="ciudad_direccion" x-model="ciudad_direccion" @change="formDireccion._touched.ciudad_direccion = true" :class="formDireccion._touched.ciudad_direccion && ciudad_direccion === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500  nunito-regular px-2">
                     <option value="">Selecciona una ciudad</option>
                     <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
                         <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
                     </template>
                 </select>
+                <small :class="formDireccion._touched.ciudad_direccion && ciudad_direccion === '' ? 'text-red-500' : ''">Selecciona una ciudad.</small>
             </div>
         </div>
     </x-admin.form-modal>
+    @endperm
 
-    <!-- Original generic modals (these seem redundant now given specific modals below, consider removing them entirely) -->
-    <!--
-    <x-admin.form-modal modalName="isEditModalOpen" title="Editar País" submitLabel="Guardar Cambios">
-        <div>
-            <label for="nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
-            <input type="text" id="nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-        </div>
-    </x-admin.form-modal>
-
-    <x-admin.form-modal modalName="isDeleteModalOpen" title="Eliminar País" submitLabel="Confirmar Eliminación">
-        <p>¿Estás seguro de que deseas eliminar el país <span x-text="itemToDelete.nombre"></span>?</p>
-    </x-admin.form-modal>
-    -->
-    <!-- Modales Departamentos (redundant generic ones) -->
-    <!--
-    <x-admin.form-modal modalName="isEditModalOpen" title="Editar Departamento" submitLabel="Guardar Cambios">
-        <div>
-            <label for="nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
-            <input type="text" id="nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-        </div>
-    </x-admin.form-modal>
-
-    <x-admin.form-modal modalName="isDeleteModalOpen" title="Eliminar Departamento" submitLabel="Confirmar Eliminación">
-        <p>¿Estás seguro de que deseas eliminar el departamento <span x-text="itemToDelete.nombre"></span>?</p>
-    </x-admin.form-modal>
-    -->
-
-    <!-- Modales Países (Specific) -->
-    <x-admin.edit-modal class="nunito-bold" modalName="isPaisEditModalOpen" title="Editar País" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditPais">
-        <template x-if="itemToEdit">
-        <div>
-            <label for="edit_nombre_pais" class="block text-sm font-medium text-gray-700">Nombre País</label>
-            <input type="text" id="edit_nombre_pais" name="edit_nombre_pais" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-        </div>
-        </template>
-    </x-admin.edit-modal>
-
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
     <x-admin.confirmation-modal class="nunito-regular" modalName="isPaisDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este país?" />
+    @endperm
 
-    <!-- Modales Departamentos (Specific) -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
     <x-admin.edit-modal class="nunito-bold" modalName="isDepartamentoEditModalOpen" title="Editar Departamento" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditDepartamento">
         <template x-if="itemToEdit">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
-                <template x-if="editSuggestedDepartamentos.length > 0">
-                    <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                        <option value="">Selecciona un departamento</option>
-                        <template x-for="opt in editSuggestedDepartamentos" :key="opt.nombre">
-                            <option :value="opt.nombre" x-text="opt.nombre"></option>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit_nombre_departamento" class="block text-sm font-medium text-gray-700">Nombre Departamento</label>
+                    <template x-if="editSuggestedDepartamentos.length > 0">
+                        <select id="edit_nombre_departamento_select" name="edit_nombre_departamento_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                            <option value="">Selecciona un departamento</option>
+                            <template x-for="opt in editSuggestedDepartamentos" :key="opt.nombre">
+                                <option :value="opt.nombre" x-text="opt.nombre"></option>
+                            </template>
+                        </select>
+                    </template>
+                    <template x-if="editSuggestedDepartamentos.length === 0">
+                        <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                    </template>
+                </div>
+                <div>
+                    <label for="edit_pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
+                    <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                        <option value="">Selecciona un país</option>
+                        <template x-for="pais in paises" :key="pais.id_pais_pk">
+                            <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                         </template>
                     </select>
-                </template>
-                <template x-if="editSuggestedDepartamentos.length === 0">
-                    <input type="text" id="edit_nombre_departamento" name="edit_nombre_departamento" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                </template>
+                    <script>
+                        document.addEventListener('alpine:init', () => {
+                        });
+                    </script>
+                </div>
             </div>
-            <div>
-                <label for="edit_pais_departamento" class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_departamento" name="edit_pais_departamento" x-model="itemToEdit.pais" @change="refreshEditDepartamentoSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                    <option value="">Selecciona un país</option>
-                    <template x-for="pais in paises" :key="pais.id_pais_pk">
-                        <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
-                    </template>
-                </select>
-                <script>
-                    document.addEventListener('alpine:init', () => {
-                        // when the modal opens, try to refresh suggestions
-                        // This is a no-op if component isn't ready
-                    });
-                </script>
-            </div>
-        </div>
         </template>
     </x-admin.edit-modal>
+    @endperm
 
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDepartamentoDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar este departamento?" />
+    @endperm
 
-    <!-- Modales Ciudades (Specific) -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
     <x-admin.edit-modal class="nunito-bold" modalName="isCiudadEditModalOpen" title="Editar Ciudad" itemToEdit="itemToEdit" maxWidth="max-w-2xl" formId="formEditCiudad">
         <template x-if="itemToEdit">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">País</label>
-                <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                    <option value="">Selecciona un país</option>
-                    <template x-for="pais in paises" :key="pais.id_pais_pk">
-                        <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
-                    </template>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Departamento</label>
-                <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                    <option value="">Selecciona un departamento</option>
-                    <template x-for="departamento in departamentosFiltradosCiudadEdit" :key="departamento.id_departamento_pk">
-                        <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
-                    </template>
-                </select>
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
-                <template x-if="editSuggestedCiudades.length > 0">
-                    <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                        <option value="">Selecciona una ciudad</option>
-                        <template x-for="opt in editSuggestedCiudades" :key="opt.nombre">
-                            <option :value="opt.nombre" x-text="opt.nombre"></option>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">País</label>
+                    <select id="edit_pais_ciudad" name="edit_pais_ciudad" x-model="edit_pais_ciudad" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                        <option value="">Selecciona un país</option>
+                        <template x-for="pais in paises" :key="pais.id_pais_pk">
+                            <option :value="pais.id_pais_pk" x-text="pais.nombre_pais"></option>
                         </template>
                     </select>
-                </template>
-                <template x-if="editSuggestedCiudades.length === 0">
-                    <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                </template>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Departamento</label>
+                    <select id="edit_departamento_ciudad" name="edit_departamento_ciudad" x-model="itemToEdit.departamento" @change="refreshEditCiudadSuggestions()" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                        <option value="">Selecciona un departamento</option>
+                        <template x-for="departamento in departamentosFiltradosCiudadEdit" :key="departamento.id_departamento_pk">
+                            <option :value="departamento.id_departamento_pk" x-text="departamento.nombre_departamento"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Nombre Ciudad</label>
+                    <template x-if="editSuggestedCiudades.length > 0">
+                        <select id="edit_nombre_ciudad_select" name="edit_nombre_ciudad_select" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                            <option value="">Selecciona una ciudad</option>
+                            <template x-for="opt in editSuggestedCiudades" :key="opt.nombre">
+                                <option :value="opt.nombre" x-text="opt.nombre"></option>
+                            </template>
+                        </select>
+                    </template>
+                    <template x-if="editSuggestedCiudades.length === 0">
+                        <input type="text" id="edit_nombre_ciudad" name="edit_nombre_ciudad" x-model="itemToEdit.nombre" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                    </template>
+                </div>
             </div>
-        </div>
         </template>
     </x-admin.edit-modal>
+    @endperm
 
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
     <x-admin.confirmation-modal class="nunito-regular" modalName="isCiudadDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta ciudad?" />
+    @endperm
 
-    <!-- Modales Direcciones (Specific) -->
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'actualizacion')
     <x-admin.edit-modal class="nunito-bold" modalName="isDireccionEditModalOpen" title="Editar Dirección" itemToEdit="itemToEdit" maxWidth="max-w-4xl" formId="formEditDireccion">
         <template x-if="itemToEdit">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-                <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
-                <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label for="edit_direccion" class="block text-sm font-medium text-gray-700">Calle</label>
+                    <input type="text" id="edit_direccion" name="edit_direccion" x-model="itemToEdit.calle" maxlength="100" @input="formEditDireccion._touched.calle = true" @blur="formEditDireccion._touched.calle = true" :class="formEditDireccion._touched.calle && itemToEdit.calle === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                    <small :class="formEditDireccion._touched.calle && itemToEdit.calle === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                </div>
+                <div>
+                    <label for="edit_numero" class="block text-sm font-medium text-gray-700">Número</label>
+                    <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" maxlength="100" @input="formEditDireccion._touched.numero = true" @blur="formEditDireccion._touched.numero = true" :class="formEditDireccion._touched.numero && itemToEdit.numero === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                    <small :class="formEditDireccion._touched.numero && itemToEdit.numero === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                </div>
+                <div>
+                    <label for="edit_colonia" class="block text-sm font-medium text-gray-700">Colonia</label>
+                    <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" maxlength="100" @input="formEditDireccion._touched.colonia = true" @blur="formEditDireccion._touched.colonia = true" :class="formEditDireccion._touched.colonia && itemToEdit.colonia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                    <small :class="formEditDireccion._touched.colonia && itemToEdit.colonia === '' ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                </div>
+                <div>
+                    <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
+                    <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" maxlength="255" inputmode="numeric" @input="formEditDireccion._touched.codigo_postal = true" @blur="formEditDireccion._touched.codigo_postal = true" :class="formEditDireccion._touched.codigo_postal && itemToEdit.codigo_postal === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 " placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
+                    <small :class="formEditDireccion._touched.codigo_postal && itemToEdit.codigo_postal === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
+                </div>
+                <div>
+                    <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
+                    <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" maxlength="255" @input="formEditDireccion._touched.referencia = true" @blur="formEditDireccion._touched.referencia = true" :class="formEditDireccion._touched.referencia && itemToEdit.referencia === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                    <small :class="formEditDireccion._touched.referencia && itemToEdit.referencia === '' ? 'text-red-500' : ''">Requerido. Máximo 255 caracteres.</small>
+                </div>
+
+                <div>
+                    <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                    <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" @change="formEditDireccion._touched.ciudad = true" :class="formEditDireccion._touched.ciudad && itemToEdit.ciudad === '' ? 'border-red-500' : ''" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
+                        <option value="">Selecciona una ciudad</option>
+                        <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
+                            <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
+                        </template>
+                    </select>
+                    <small :class="formEditDireccion._touched.ciudad && itemToEdit.ciudad === '' ? 'text-red-500' : ''">Selecciona una ciudad.</small>
+                </div>
             </div>
-            <div>
-                <label for="edit_numero" class="block text-sm font-medium text-gray-700">Número</label>
-                <input type="text" id="edit_numero" name="edit_numero" x-model="itemToEdit.numero" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-            </div>
-            <div>
-                <label for="edit_colonia" class="block text-sm font-medium text-gray-700">Colonia</label>
-                <input type="text" id="edit_colonia" name="edit_colonia" x-model="itemToEdit.colonia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-            </div>
-            <div>
-                <label for="edit_codigo_postal" class="block text-sm font-medium text-gray-700">Código Postal</label>
-                <input type="text" id="edit_codigo_postal" name="edit_codigo_postal" x-model="itemToEdit.codigo_postal" inputmode="numeric" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 " placeholder="Según país (ej. HN/GT/CR: 5 dígitos; SV: 4; PA: 6)">
-            </div>
-            <div>
-                <label for="edit_referencia" class="block text-sm font-medium text-gray-700">Referencia</label>
-                <input type="text" id="edit_referencia" name="edit_referencia" x-model="itemToEdit.referencia" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-            </div>
-            
-            <div>
-                <label for="edit_ciudad_direccion" class="block text-sm font-medium text-gray-700">Ciudad</label>
-                <select id="edit_ciudad_direccion" name="edit_ciudad_direccion" x-model="itemToEdit.ciudad" class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 ">
-                    <option value="">Selecciona una ciudad</option>
-                    <template x-for="ciudad in ciudades" :key="ciudad.id_ciudad_pk">
-                        <option :value="ciudad.id_ciudad_pk" x-text="ciudad.nombre_ciudad"></option>
-                    </template>
-                </select>
-            </div>
-        </div>
         </template>
     </x-admin.edit-modal>
+    @endperm
 
+    @perm(['Catálogo','Ubicaciones de Agencias','Ubicaciones'], 'eliminacion')
     <x-admin.confirmation-modal class="nunito-regular" modalName="isDireccionDeleteModalOpen" itemToDelete="itemToDelete" message="¿Estás seguro de que quieres eliminar esta dirección?" />
+    @endperm
 </div>

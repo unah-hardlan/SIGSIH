@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $appName ?? 'SIGSIH' }}</title>
+    <title>{{ $appName ?? 'Hardlan' }}</title>
 
     {{-- SPA Meta Tags --}}
     @if(request()->header('X-SPA-Page'))
@@ -35,9 +35,7 @@
         })();
     </script>
 
-    <!-- Theme script inline para evitar problemas de Vite -->
     <script>
-        // Pre-render theme script adicional para admin
         (function() {
             try {
                 const saved = localStorage.getItem('theme');
@@ -86,7 +84,6 @@
                 const el = document.getElementById('auth-bootstrap');
                 if (el && el.textContent) initial = JSON.parse(el.textContent);
             } catch (_) {
-                /* noop */
             }
             Alpine.store('perfil', {
                 firstTime: !!initial.firstTime,
@@ -120,7 +117,6 @@ $canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consulta
       }" x-init="initResponsiveSidebar($data); sidebarOpen = !isMobile;"
     @closemobilesidebar.window="if (isMobile) { sidebarOpen = false }">
     <div class="flex min-h-screen relative">
-        <!-- Overlay para móviles SOLO -->
         <div x-show="sidebarOpen && isMobile" x-cloak x-transition:enter="transition-opacity ease-linear duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
@@ -166,9 +162,7 @@ $canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consulta
             const html = document.documentElement;
 
             function applyThemeFromStorage() {
-                // Leer el estado actual del DOM en lugar de recalcular
                 const isDark = html.classList.contains('dark');
-                // Solo aplicar si hay discrepancia (por seguridad)
                 html.classList.toggle('dark', isDark);
                 const sw = document.getElementById('theme-switch');
                 if (sw) sw.checked = isDark;
@@ -185,7 +179,6 @@ $canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consulta
             function bindSwitch() {
                 const sw = document.getElementById('theme-switch');
                 if (!sw) return;
-                // Evitar múltiples bindings al reinsertar el header
                 if (sw.__themeBound) return;
                 sw.addEventListener('change', onToggle);
                 sw.__themeBound = true;
@@ -197,9 +190,7 @@ $canGestionUsuarios = $permissionService->can($authUser, ['Usuarios'], 'consulta
             }
 
             document.addEventListener('DOMContentLoaded', initTheme);
-            // Re-vincular después de navegación SPA
             document.addEventListener('app:view-loaded', initTheme);
-            // Sincronizar entre pestañas
             window.addEventListener('storage', (e) => {
                 if (e.key === 'theme') applyThemeFromStorage();
             });

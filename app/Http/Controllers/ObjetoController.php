@@ -12,9 +12,7 @@ use App\Services\BitacoraService;
 class ObjetoController extends Controller
 {
     public function __construct(private BitacoraService $bitacora) {}
-    /**
-     * Listado con búsqueda, orden y paginación.
-     */
+    
     public function index(Request $request)
     {
         $query = Objeto::query()->with('tipoObjeto');
@@ -66,7 +64,7 @@ class ObjetoController extends Controller
         ]);
     }
 
-    /** Crear */
+    
     public function store(StoreObjetoRequest $request)
     {
         $data = $request->validated();
@@ -84,7 +82,7 @@ class ObjetoController extends Controller
         return (new ObjetoResource($objeto))->response()->setStatusCode(201);
     }
 
-    /** Detalle */
+    
     public function show($id)
     {
         $objeto = Objeto::find($id);
@@ -92,7 +90,7 @@ class ObjetoController extends Controller
         return (new ObjetoResource($objeto))->response();
     }
 
-    /** Actualizar */
+    
     public function update(UpdateObjetoRequest $request, $id)
     {
         $objeto = Objeto::find($id);
@@ -115,7 +113,7 @@ class ObjetoController extends Controller
         return (new ObjetoResource($objeto))->response();
     }
 
-    /** Eliminar */
+    
     public function destroy($id)
     {
         $objeto = Objeto::find($id);

@@ -17,7 +17,7 @@ class JwtRefresh
 
         $jwtSecret = config('jwt.secret');
         if (!$jwtSecret) {
-            return $response; // no secret => no refresh
+            return $response; 
         }
 
         $token = $request->cookie('auth_token') ?: $request->bearerToken();
@@ -31,7 +31,7 @@ class JwtRefresh
                 return $response;
             }
             $remaining = $decoded->exp - time();
-            // Adaptive threshold: refresh when remaining < min(5 min, 25% of TTL), but >= 60s
+            
             $sessionMinutes = (int) config('session.lifetime', 60);
             $ttlSeconds = max(60, $sessionMinutes * 60);
             $threshold = max(60, min(300, (int) floor($ttlSeconds * 0.25)));
@@ -39,7 +39,7 @@ class JwtRefresh
                 $user = Usuario::find($decoded->sub);
                 if (!$user) return $response;
 
-                // Align new token TTL with session lifetime
+                
                 $newPayload = [
                     'sub'  => $user->id_usuario_pk,
                     'name' => $user->nombre_usuario,
@@ -47,7 +47,7 @@ class JwtRefresh
                     'exp'  => time() + $ttlSeconds,
                 ];
                 $newToken = JWT::encode($newPayload, $jwtSecret, 'HS256');
-                // Migrate concurrent session tracking entry (oldTokenId -> newTokenId)
+                
                 try {
                     $sessionsKey = 'user_sessions:' . $user->getKey();
                     $sessions = cache()->get($sessionsKey, []);
@@ -55,20 +55,20 @@ class JwtRefresh
                         $oldId = substr(hash('sha256', $token), 0, 32);
                         $newId = substr(hash('sha256', $newToken), 0, 32);
                         $now = time();
-                        // Clean expired
+                        
                         $sessions = array_filter($sessions, fn($exp) => (int)$exp > $now);
-                        // Carry forward the latest expiry respecting the new TTL
+                        
                         $sessions[$newId] = $now + $ttlSeconds;
-                        // Remove old mapping
+                        
                         if (isset($sessions[$oldId])) {
                             unset($sessions[$oldId]);
                         }
                         cache()->put($sessionsKey, $sessions, now()->addSeconds($ttlSeconds));
                     }
                 } catch (\Throwable $e) {
-                    // Ignore cache errors to avoid breaking the request
+                    
                 }
-                // set cookie (respect HTTPS and SameSite like login)
+                
                 $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
                 $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
                 $response->headers->setCookie(cookie(
@@ -82,11 +82,11 @@ class JwtRefresh
                     false,
                     $sameSite
                 ));
-                // expose header so frontend could optionally update localStorage
+                
                 $response->headers->set('X-New-JWT', $newToken);
             }
         } catch (\Throwable $e) {
-            // ignore errors
+            
         }
 
         return $response;

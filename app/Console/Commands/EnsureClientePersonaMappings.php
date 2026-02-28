@@ -9,28 +9,18 @@ use App\Models\Persona;
 
 class EnsureClientePersonaMappings extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    
     protected $signature = 'clientes:ensure-mappings {--dry-run : Only show what would change}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
+    
     protected $description = 'Ensure every Cliente has at least one Persona mapped in tbl_cliente_persona (creating a minimal Persona when missing)';
 
-    /**
-     * Execute the console command.
-     */
+    
     public function handle(): int
     {
         $dry = (bool) $this->option('dry-run');
         $generoId = DB::table('tbl_genero')->min('id_genero_pk');
-        // We need a distinct usuario per persona due to unique constraint on tbl_persona.id_usuario_fk
+        
         $usuarioSeq = (int) DB::table('tbl_ms_usuario')->max('id_usuario_pk');
         $createdPersonas = 0;
         $createdPivots = 0;
@@ -40,7 +30,7 @@ class EnsureClientePersonaMappings extends Command
             $hasPivot = DB::table('tbl_cliente_persona')->where('id_cliente_fk', $c->id_cliente_pk)->exists();
             if ($hasPivot) continue;
 
-            // Build minimal persona data
+            
             $tipo = is_string($c->tipo_cliente) ? strtolower($c->tipo_cliente) : $c->tipo_cliente;
             if ($tipo === 'empresa') {
                 $nombre = optional($c->empresa)->nombre_comercial ?: ('Cliente ' . $c->id_cliente_pk);
@@ -57,11 +47,11 @@ class EnsureClientePersonaMappings extends Command
                 ];
             }
             $pData['id_genero_fk'] = $generoId ?: null;
-            // Create a minimal usuario for this persona if none available to ensure uniqueness
+            
             $usuarioSeq++;
             $username = 'CLIENTE_' . $c->id_cliente_pk;
             $email = 'cliente_' . $c->id_cliente_pk . '@example.local';
-            // Create user record
+            
             $roleId = DB::table('tbl_ms_rol')->min('id_rol_pk') ?: 1;
             $userId = DB::table('tbl_ms_usuario')->insertGetId([
                 'usuario' => strtoupper($username),

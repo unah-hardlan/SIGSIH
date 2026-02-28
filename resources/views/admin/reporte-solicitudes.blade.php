@@ -6,7 +6,6 @@
 <div class="min-h-screen bg-white p-6 flex justify-center items-start">
     <div class="w-full max-w-5xl mx-auto">
         <div class="bg-white rounded-lg shadow-sm border p-6">
-            <!-- Header del reporte -->
             <x-admin.reportes-header :fecha="$fecha" :modulo="$modulo" titulo="SOLICITUDES" :logoSize="96" />
 
             <h2 class="text-xl nunito-bold text-gray-800 mb-2 text-center">Listado de Solicitudes</h2>
@@ -49,7 +48,6 @@
                         @php $rows = collect($solicitudes ?? []); @endphp
                         @forelse($rows as $row)
                             @php
-                                // $row puede ser stdClass; convertir a array para acceso seguro
                                 $r = is_array($row) ? $row : (is_object($row) ? get_object_vars($row) : []);
                             @endphp
                             <tr>
@@ -68,7 +66,15 @@
                     </tbody>
                 </table>
             </div>
-            <!-- Sección Contactos eliminada del reporte de Solicitudes por no requerirse -->
+            
+            <div class="report-print-controls no-print">
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    <i class="fas fa-print mr-2"></i>Imprimir
+                </button>
+                <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    <i class="fas fa-times mr-2"></i>Cerrar
+                </button>
+            </div>
         </div>
     </div>
 </div>

@@ -8,23 +8,8 @@ use App\Models\Cliente;
 
 class DebugClientes extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'clientes:debug {--limit=10 : Show up to N sample clientes with persona mapping}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Print diagnostic info about clientes/personas/empresas and their mappings';
-
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         $limit = (int) $this->option('limit');

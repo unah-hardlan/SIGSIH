@@ -7,11 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DireccionResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+    
     public function toArray(Request $request): array
     {
         return [
@@ -24,7 +20,7 @@ class DireccionResource extends JsonResource
             'referencia' => $this->referencia,
             'direccion_completa' => $this->direccion_completa,
             
-            // Relaciones
+            
             'ciudad' => $this->whenLoaded('ciudad'),
             'agencia' => $this->whenLoaded('agencia')
         ];

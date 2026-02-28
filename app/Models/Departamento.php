@@ -18,13 +18,13 @@ class Departamento extends Model
         'id_pais_pk'
     ];
 
-    // Relación con País
+    
     public function pais()
     {
         return $this->belongsTo(Pais::class, 'id_pais_pk', 'id_pais_pk');
     }
 
-    // Relación con Ciudades
+    
     public function ciudades()
     {
         return $this->hasMany(Ciudad::class, 'id_departamento_fk', 'id_departamento_pk');

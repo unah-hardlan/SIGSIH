@@ -5,10 +5,8 @@
 ])
 
 @php
-    // Construir la URL real basada en el viewName
     $realHref = $href === '#' ? route('admin.' . $viewName) : $href;
     
-    // Determinar si este enlace está activo
     $isActive = $active || App\Helpers\SpaHelper::isActive($viewName);
 @endphp
 

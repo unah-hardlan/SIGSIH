@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PermissionService;
 use App\Support\AdminModuleRegistry;
+use Illuminate\Support\Str;
 
 class ViewLoaderController extends Controller
 {
@@ -25,10 +26,10 @@ class ViewLoaderController extends Controller
             return $this->denyAccessResponse($view, __('La vista solicitada no está disponible.'));
         }
 
-        // Enforce permisos for specific admin views (consultar)
+
         $user = Auth::user();
         if ($user) {
-            // Admin bypass
+
             try {
                 if (mb_strtolower($user->rol?->rol ?? '') !== 'administrador') {
                     $candidates = AdminModuleRegistry::permissionCandidates($view);
@@ -40,18 +41,18 @@ class ViewLoaderController extends Controller
                     }
                 }
             } catch (\Throwable $e) {
-                // Si falla relación u otro error, negar por seguridad
+
                 return $this->denyAccessResponse($view);
             }
         }
 
-        // Primero verificar si existe una vista parcial específica
+
         $partialBlade = $viewDefinition['blade'] ?? "admin.partials.{$view}";
         if (($viewDefinition['type'] ?? 'partial') === 'partial' && View::exists($partialBlade)) {
             return $this->renderPartial($partialBlade);
         }
 
-        // Si no existe vista parcial, intentar cargar la vista completa y extraer contenido
+
         $fullView = $viewDefinition['blade'] ?? "admin.{$view}";
         if (!View::exists($fullView)) {
             return response('View not found', 404);
@@ -108,5 +109,47 @@ class ViewLoaderController extends Controller
     private function resolveViewLabel(string $view): string
     {
         return AdminModuleRegistry::labelForView($view);
+    }
+
+    /**
+     * Variante que retorna el layout completo con la partial indicada,
+     * para rutas tipo /admin/<partial>. Sustituye a AdminPartialController.
+     */
+    public function showLayout(Request $request)
+    {
+        $routeName = $request->route()->getName(); // ej: admin.dashboard, admin.gestion-usuarios
+        // Normalizar al key sin el prefijo 'admin.' para coincidir con config('admin_modules.views')
+        $viewKey = Str::startsWith($routeName, 'admin.') ? Str::after($routeName, 'admin.') : $routeName; // ej: dashboard
+
+        $views = AdminModuleRegistry::views();
+        if (!isset($views[$viewKey])) {
+            abort(404);
+        }
+        $definition = $views[$viewKey];
+        if (($definition['type'] ?? 'partial') !== 'partial') {
+            abort(404);
+        }
+
+        $user = auth()->user();
+        $candidates = AdminModuleRegistry::permissionCandidates($viewKey);
+        if (!empty($candidates)) {
+            $perm = app(PermissionService::class);
+            if (!$perm->can($user, $candidates, 'consultar')) {
+                abort(403, 'Permiso denegado');
+            }
+        }
+
+        $partialBlade = $definition['blade'] ?? ('admin.partials.' . $viewKey);
+        return view('layouts.admin')->with('partialView', $partialBlade);
+    }
+
+    /**
+     * Ruta raíz del panel /admin que simplemente redirige al dashboard.
+     * Evitamos usar un closure en la definición de la ruta para cumplir la
+     * convención establecida de "solo declaraciones" en los archivos de rutas.
+     */
+    public function root()
+    {
+        return redirect()->route('admin.dashboard');
     }
 }

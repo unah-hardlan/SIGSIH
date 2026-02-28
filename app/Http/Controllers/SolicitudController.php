@@ -3,21 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Solicitud;
+use App\Models\Usuario;
+use App\Models\Rol;
+use App\Notifications\SystemNotification;
 use Illuminate\Validation\Rule;
 use App\Http\Resources\SolicitudResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class SolicitudController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index(Request $request)
     {
-    $query = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto']);
+        
+        
+        $query = Solicitud::with(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']);
 
-        // Filtros opcionales
+        
         if ($request->filled('id_cliente_fk')) {
             $query->where('id_cliente_fk', $request->id_cliente_fk);
         }
@@ -40,7 +44,7 @@ class SolicitudController extends Controller
                 $sub->where('descripcion_problema', 'like', "%{$search}%")
                     ->orWhereHas('cliente.empresa', function ($empresaQuery) use ($search) {
                         $empresaQuery->where('nombre_comercial', 'like', "%{$search}%")
-                                     ->orWhere('razon_social', 'like', "%{$search}%");
+                            ->orWhere('razon_social', 'like', "%{$search}%");
                     });
             });
         }
@@ -51,13 +55,12 @@ class SolicitudController extends Controller
         return SolicitudResource::collection($solicitudes);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
             'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
+            'nombre_solicitud' => 'nullable|string|max:150',
             'descripcion_problema' => 'required|string|max:500',
             'id_estado_solicitud_fk' => 'required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
             'id_contacto_fk' => [
@@ -69,9 +72,9 @@ class SolicitudController extends Controller
             ],
         ]);
 
-        // Usar transacción para evitar condiciones de carrera al calcular correlativos por cliente
+        
         $solicitud = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
-            // Calcular correlativo global ACF con mínimo 1000, bloqueando la última fila para reducir condiciones de carrera
+            
             $lastAcfRow = \Illuminate\Support\Facades\DB::table('tbl_solicitud')
                 ->select('numero_solicitud_acf')
                 ->orderByDesc('numero_solicitud_acf')
@@ -86,7 +89,7 @@ class SolicitudController extends Controller
                 $nextAcf = $maxAcf < 1000 ? 1000 : ($maxAcf + 1);
             }
 
-            // Bloquear el conjunto de filas de este cliente para calcular el correlativo del cliente de forma segura
+            
             $lockRow = \Illuminate\Support\Facades\DB::table('tbl_solicitud')
                 ->where('id_cliente_fk', $validated['id_cliente_fk'])
                 ->lockForUpdate()
@@ -110,46 +113,135 @@ class SolicitudController extends Controller
             return $sol;
         });
 
-        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
+        
+        
+        try {
+            $solicitud->load(['cliente']);
+            $rols = Rol::where('rol', 'like', '%tecn%')->get();
+            if ($rols->isNotEmpty()) {
+                $roleIds = $rols->pluck('id_rol_pk')->all();
+
+                $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
+                $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+                    ->whereIn('id_rol_fk', $roleIds)
+                    ->pluck('id_usuario_fk')
+                    ->all();
+
+                $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
+                if (!empty($userIds)) {
+                    $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                    $clienteNombre = $solicitud->cliente->nombre ?? ($solicitud->cliente->nombre_comercial ?? 'Cliente');
+                    $payload = [
+                        'title' => 'Nueva solicitud',
+                        'body' => "Nueva solicitud #{$solicitud->numero_solicitud_acf} para {$clienteNombre}",
+                        'url' => '/admin/solicitudes',
+                        'icon' => 'fa-ticket-alt',
+                        'severity' => 'info',
+                        'module' => 'solicitudes',
+                        'meta' => ['id_solicitud_pk' => $solicitud->getKey()]
+                    ];
+
+                    foreach ($users as $u) {
+                        try {
+                            $u->notify(new SystemNotification($payload));
+                        } catch (\Throwable $t) {
+                            
+                            Log::warning('Failed to notify user ' . $u->id_usuario_pk . ' about new solicitud: ' . $t->getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            
+            Log::error('Error sending new-solicitud notifications: ' . $e->getMessage());
+        }
+
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']));
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show($id)
     {
-    $solicitud = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto'])->findOrFail($id);
+        $solicitud = Solicitud::with(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto'])->findOrFail($id);
         return new SolicitudResource($solicitud);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, $id)
     {
-        $solicitud = Solicitud::with(['cliente.empresa', 'estadoSolicitud', 'contacto'])->findOrFail($id);
+        $solicitud = Solicitud::with(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto'])->findOrFail($id);
+        $oldEstadoId = $solicitud->id_estado_solicitud_fk;
 
         $validatedData = $request->validate([
             'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
+            'nombre_solicitud' => 'sometimes|nullable|string|max:150',
             'descripcion_problema' => 'sometimes|required|string|max:500',
             'id_estado_solicitud_fk' => 'sometimes|required|integer|exists:tbl_estado_solicitud,id_estado_solicitud_pk',
             'id_contacto_fk' => [
-                'sometimes', 'required', 'integer',
+                'sometimes',
+                'required',
+                'integer',
                 Rule::exists('tbl_contacto', 'id_contacto_pk')->where(function ($q) use ($request) {
                     $clienteId = $request->input('id_cliente_fk');
-                    if ($clienteId === null) return $q; // if cliente not provided in this update, skip client filter
+                    if ($clienteId === null) return $q; 
                     return $q->where('id_cliente_fk', $clienteId);
                 }),
             ],
         ]);
 
         $solicitud->update($validatedData);
-        return new SolicitudResource($solicitud->load(['cliente.empresa', 'estadoSolicitud', 'contacto']));
+
+        
+        try {
+            if (array_key_exists('id_estado_solicitud_fk', $validatedData)) {
+                $newEstadoId = (int) $validatedData['id_estado_solicitud_fk'];
+                if ((int) $oldEstadoId !== $newEstadoId) {
+                    $oldNombre = optional(\App\Models\EstadoSolicitud::find($oldEstadoId))->nombre ?? 'N/A';
+                    $newNombre = optional(\App\Models\EstadoSolicitud::find($newEstadoId))->nombre ?? 'N/A';
+
+                    
+                    $userIds = \Illuminate\Support\Facades\DB::table('tbl_cliente_persona as cp')
+                        ->join('tbl_persona as p', 'p.id_persona_pk', '=', 'cp.id_persona_fk')
+                        ->join('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'p.id_usuario_fk')
+                        ->where('cp.id_cliente_fk', $solicitud->id_cliente_fk)
+                        ->pluck('u.id_usuario_pk')
+                        ->all();
+
+                    if (!empty($userIds)) {
+                        $users = Usuario::whereIn('id_usuario_pk', $userIds)->get();
+                        $cliFmt = 'CLI-' . now()->format('Ymd') . '-' . $solicitud->getKey();
+                        $payload = [
+                            'title' => 'Cambio de estado de solicitud',
+                            'body' => "Tu solicitud {$cliFmt} cambió de {$oldNombre} a {$newNombre}",
+                            'url' => '/cliente/solicitudes',
+                            'icon' => 'fa-ticket-alt',
+                            'severity' => 'info',
+                            'module' => 'solicitudes',
+                            'meta' => [
+                                'id_solicitud_pk' => $solicitud->getKey(),
+                                'old_estado' => $oldNombre,
+                                'new_estado' => $newNombre,
+                            ],
+                        ];
+
+                        foreach ($users as $u) {
+                            try {
+                                $u->notify(new SystemNotification($payload));
+                            } catch (\Throwable $t) {
+                                \Illuminate\Support\Facades\Log::warning('Failed to notify client user ' . $u->id_usuario_pk . ' about solicitud status change: ' . $t->getMessage());
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error notifying client on solicitud status change: ' . $e->getMessage());
+        }
+
+        return new SolicitudResource($solicitud->load(['cliente.empresa', 'cliente.personas', 'estadoSolicitud', 'contacto']));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $solicitud = Solicitud::findOrFail($id);
