@@ -236,9 +236,10 @@ class AuthService
             }
         }
 
-
-        $ttl = $this->getTokenTtlSeconds();
-        cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
+        // NO se escribe el cache aquí. La escritura ocurre únicamente en
+        // storeSessionToken(), cuando el nuevo token ya está incluido.
+        // Escribir aquí crearía una ventana donde $hasKey=true pero el
+        // nuevo token aún no existe → falso SESSION_REMOVED_LIMIT.
 
         return $sessions;
     }
@@ -254,6 +255,13 @@ class AuthService
             $sessionsKey = 'user_sessions:' . $user->getKey();
             cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
         } catch (\Throwable $e) {
+            // Si el almacenamiento falla, eliminar el cache key completamente.
+            // Esto garantiza que $hasKey=false en JwtMiddleware y el usuario
+            // no recibe SESSION_REMOVED_LIMIT en su próxima petición.
+            try {
+                cache()->forget('user_sessions:' . $user->getKey());
+            } catch (\Throwable $ignored) {
+            }
         }
     }
 }
