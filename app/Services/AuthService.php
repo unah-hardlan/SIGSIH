@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Usuario;
 use App\Models\Parametro;
+use App\Models\SesionUsuario;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -99,7 +100,7 @@ class AuthService
 
 
         $limit = $this->determineSessionLimit($user);
-        $sessions = $this->prepareSessions($user, $limit);
+        $this->prepareSessions($user, $limit);
 
         $ttl = $this->getTokenTtlSeconds();
         $payload = [
@@ -111,8 +112,7 @@ class AuthService
 
         $token = JWT::encode($payload, $secret, 'HS256');
 
-
-        $this->storeSessionToken($user, $sessions, $token);
+        $this->storeSessionToken($user, $token);
 
         return [
             'token' => $token,
@@ -189,8 +189,8 @@ class AuthService
 
         $token = JWT::encode($payload, $secret, 'HS256');
         $limit = $this->determineSessionLimit($user);
-        $sessions = $this->prepareSessions($user, $limit);
-        $this->storeSessionToken($user, $sessions, $token);
+        $this->prepareSessions($user, $limit);
+        $this->storeSessionToken($user, $token);
 
         return [
             'token' => $token,
@@ -214,46 +214,43 @@ class AuthService
         return 1;
     }
 
-    private function prepareSessions(Usuario $user, int $limit): array
+    private function prepareSessions(Usuario $user, int $limit): void
     {
-        $sessionsKey = 'user_sessions:' . $user->getKey();
-        $sessions = cache()->get($sessionsKey, []);
-        if (!is_array($sessions)) {
-            $sessions = [];
-        }
+        // 1. Eliminar sesiones expiradas del usuario.
+        SesionUsuario::where('id_usuario_fk', $user->getKey())
+            ->where('fecha_expiracion', '<', now())
+            ->delete();
 
-        $nowTs = time();
-        $sessions = array_filter($sessions, fn($exp) => (int) $exp > $nowTs);
-
+        // 2. Si se supera el límite, evictar las sesiones más antiguas.
         if ($limit > 0) {
-            while (count($sessions) >= $limit) {
-                asort($sessions);
-                $firstKey = array_key_first($sessions);
-                if ($firstKey === null) {
-                    break;
-                }
-                unset($sessions[$firstKey]);
+            $count = SesionUsuario::where('id_usuario_fk', $user->getKey())->count();
+            if ($count >= $limit) {
+                $toEvict = $count - $limit + 1;
+                $oldest = SesionUsuario::where('id_usuario_fk', $user->getKey())
+                    ->orderBy('fecha_expiracion', 'asc')
+                    ->limit($toEvict)
+                    ->pluck('id_sesion_pk');
+                SesionUsuario::whereIn('id_sesion_pk', $oldest)->delete();
             }
         }
-
-
-        $ttl = $this->getTokenTtlSeconds();
-        cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
-
-        return $sessions;
     }
 
-    private function storeSessionToken(Usuario $user, array $sessions, string $token): void
+    private function storeSessionToken(Usuario $user, string $token): void
     {
         try {
             $tokenId = substr(hash('sha256', $token), 0, 32);
-            $ttl = $this->getTokenTtlSeconds();
-            $sessions[$tokenId] = time() + $ttl;
-            $now = time();
-            $sessions = array_filter($sessions, fn($exp) => $exp > $now);
-            $sessionsKey = 'user_sessions:' . $user->getKey();
-            cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
+            $ttl     = $this->getTokenTtlSeconds();
+            SesionUsuario::create([
+                'id_sesion_pk'    => $tokenId,
+                'id_usuario_fk'   => $user->getKey(),
+                'ip_direccion'    => request()?->ip(),
+                'user_agent'      => substr((string) (request()?->userAgent() ?? ''), 0, 500),
+                'fecha_creacion'  => now(),
+                'fecha_expiracion' => now()->addSeconds($ttl),
+                'activo'          => 1,
+            ]);
         } catch (\Throwable $e) {
+            report($e);
         }
     }
 }
