@@ -2,11 +2,11 @@
 
 return [
 
-    
+
 
     'default' => env('MAIL_MAILER', 'smtp'),
 
-    
+
 
     'mailers' => [
         'smtp' => [
@@ -21,23 +21,27 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
+        'sendgrid' => [
+            'transport' => 'sendgrid',
+            'api_key' => env('SENDGRID_API_KEY'),
+        ],
         'ses' => [
             'transport' => 'ses',
         ],
 
         'postmark' => [
             'transport' => 'postmark',
-            
-            
-            
-            
+
+
+
+
         ],
 
         'mailgun' => [
             'transport' => 'mailgun',
-            
-            
-            
+
+
+
         ],
 
         'sendmail' => [
@@ -71,14 +75,14 @@ return [
         ],
     ],
 
-    
+
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
-    
+
 
     'markdown' => [
         'theme' => 'default',
