@@ -62,6 +62,9 @@ class JwtMiddleware
                 $ttlSeconds = max(60, (int) config('session.lifetime', 60) * 60);
                 $sesion->fecha_expiracion = now()->addSeconds($ttlSeconds);
                 $sesion->save();
+            } catch (\Throwable $e) {
+                // Fallo silencioso: no bloquear el request si la tabla no está disponible.
+            }
 
             $request->setUserResolver(fn() => $user);
             Auth::setUser($user);
