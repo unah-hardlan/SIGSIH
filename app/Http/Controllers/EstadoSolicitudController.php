@@ -83,10 +83,7 @@ class EstadoSolicitudController extends Controller
         return response()->json(null, 204);
     }
 
-    /**
-     * Endpoint web (cookie auth) usado por el SPA cuando el token Bearer está ausente.
-     * Traslada la lógica que estaba en EstadoSolicitudWebController.
-     */
+
     public function webIndex(Request $request)
     {
         $user = auth()->user();

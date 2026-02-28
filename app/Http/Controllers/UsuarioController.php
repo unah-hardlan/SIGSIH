@@ -328,9 +328,7 @@ class UsuarioController extends Controller
         return response()->json(['roles' => $roles, 'rol_principal' => $principal]);
     }
 
-    /**
-     * Catálogo de técnicos (antes CatalogosController::tecnicos).
-     */
+
     public function tecnicosCatalog()
     {
         $roles = \App\Models\Rol::query()->where('rol', 'like', '%tecn%')->get(['id_rol_pk', 'rol']);

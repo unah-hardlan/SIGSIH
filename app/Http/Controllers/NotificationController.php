@@ -7,9 +7,7 @@ use Illuminate\Http\JsonResponse;
 
 class NotificationController extends Controller
 {
-    /**
-     * API (Bearer) index ya existente.
-     */
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -33,9 +31,7 @@ class NotificationController extends Controller
         return response()->json(['data' => $items, 'unread' => $countUnread]);
     }
 
-    /**
-     * Versión cookie-auth usada por /api/notificaciones (antes NotificationWebController@index).
-     */
+
     public function webIndex(Request $request): JsonResponse
     {
         $user = auth()->user();

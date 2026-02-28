@@ -68,9 +68,7 @@ class GeneroController extends Controller
         return response()->json(['message' => 'Género eliminado']);
     }
 
-    /**
-     * Catálogo simplificado para cliente (/api/catalogos/generos)
-     */
+
     public function catalog()
     {
         $items = Genero::select('id_genero_pk as id', 'genero')->orderBy('genero')->get();
