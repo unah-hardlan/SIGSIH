@@ -1,4 +1,4 @@
-document.addEventListener("alpine:init", () => {
+if (!window.sidebarDropdown) {
     window.sidebarDropdown = (key, active = false) => ({
         open:
             sessionStorage.getItem(`sidebar-${key}`) !== null
@@ -20,7 +20,9 @@ document.addEventListener("alpine:init", () => {
             });
         },
     });
+}
 
+if (!window.sidebarScrollManager) {
     window.sidebarScrollManager = {
         init() {
             const sidebar = document.querySelector("aside");
@@ -55,7 +57,7 @@ document.addEventListener("alpine:init", () => {
             });
         },
     };
-});
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {

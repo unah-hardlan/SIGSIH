@@ -13,8 +13,10 @@ Homestead.json
 /.idea
 /.vscode
 /.phpunit.cache
-#file that is generated every time the local server runs
-hot
+#+#+#+#+#+#+#+#+#+#+#+#+############################################################
+# Vite / HMR
+# Generated when running `npm run dev` (do not commit)
+/public/hot
 
 # Docker
 docker-compose.override.yml
@@ -35,4 +37,3 @@ Thumbs.db
 *.sql
 
 # Vite
-/public/hot/public/build/

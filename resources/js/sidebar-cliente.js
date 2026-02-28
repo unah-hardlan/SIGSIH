@@ -1,4 +1,4 @@
-document.addEventListener("alpine:init", () => {
+if (!window.sidebarDropdown) {
     window.sidebarDropdown = (key, active = false) => ({
         open:
             localStorage.getItem(`sidebar-${key}`) !== null
@@ -16,7 +16,9 @@ document.addEventListener("alpine:init", () => {
             });
         },
     });
+}
 
+if (!window.sidebarScrollManager) {
     window.sidebarScrollManager = {
         init() {
             const sidebar = document.querySelector("aside");
@@ -47,7 +49,9 @@ document.addEventListener("alpine:init", () => {
             });
         },
     };
+}
 
+if (!window.initResponsiveSidebar) {
     window.initResponsiveSidebar = function (scope) {
         if (!scope) return;
         scope.isMobile = window.innerWidth < 768;
@@ -63,7 +67,7 @@ document.addEventListener("alpine:init", () => {
         }
         window.addEventListener("resize", checkMobile);
     };
-});
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
@@ -83,7 +87,7 @@ document.addEventListener("spa:loaded", (e) => {
                 try {
                     targetPath = new URL(targetPath, window.location.origin)
                         .pathname;
-                } catch (e) {}
+                } catch (e) { }
 
                 const links = document.querySelectorAll(
                     "aside nav a[data-spa-link]"
@@ -101,7 +105,7 @@ document.addEventListener("spa:loaded", (e) => {
                     let href = link.getAttribute("href") || "";
                     try {
                         href = new URL(href, window.location.origin).pathname;
-                    } catch (e) {}
+                    } catch (e) { }
 
                     const isActive =
                         targetPath.startsWith(href) && href !== "/";
