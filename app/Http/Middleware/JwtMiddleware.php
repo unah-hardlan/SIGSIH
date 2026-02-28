@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Models\Usuario;
+use App\Models\SesionUsuario;
 use Illuminate\Support\Facades\Auth;
 
 class JwtMiddleware
@@ -40,36 +41,27 @@ class JwtMiddleware
 
             try {
                 $tokenId = substr(hash('sha256', $token), 0, 32);
-                $sessionsKey = 'user_sessions:' . $user->getKey();
-                $sessions = cache()->get($sessionsKey, []);
-                $hasKey = cache()->has($sessionsKey);
+                $sesion  = SesionUsuario::find($tokenId);
 
-                if ($hasKey && (!is_array($sessions) || !isset($sessions[$tokenId]))) {
+                if (!$sesion) {
                     return response()->json([
                         'error' => 'Tu sesión fue cerrada porque se superó el límite de sesiones concurrentes. Se mantuvo la más reciente.',
                         'code'  => 'SESSION_REMOVED_LIMIT',
                     ], 401);
                 }
 
-                if (is_array($sessions) && isset($sessions[$tokenId])) {
-                    $expStored = (int) $sessions[$tokenId];
-                    if ($expStored < time()) {
-                        // No se modifica el cache aquí: si se elimina el tokenId y el cliente
-                        // reintenta la petición (fetch interceptor hace retry en 401), el segundo
-                        // intento encontraría $hasKey=true + tokenId ausente → falso SESSION_REMOVED_LIMIT.
-                        // La limpieza de tokens expirados ocurre en prepareSessions() durante el login.
-                        return response()->json([
-                            'error' => 'Sesión expirada',
-                            'code'  => 'SESSION_EXPIRED',
-                        ], 401);
-                    }
-
-                    // Renovar TTL del cache en cada request válido (sliding window).
-                    $ttlSeconds = max(60, (int) config('session.lifetime', 60) * 60);
-                    cache()->put($sessionsKey, $sessions, now()->addSeconds($ttlSeconds));
+                if ($sesion->fecha_expiracion < now()) {
+                    $sesion->delete();
+                    return response()->json([
+                        'error' => 'Sesión expirada',
+                        'code'  => 'SESSION_EXPIRED',
+                    ], 401);
                 }
-            } catch (\Throwable $e) {
-            }
+
+                // Renovar expiración en cada request válido (sliding window).
+                $ttlSeconds = max(60, (int) config('session.lifetime', 60) * 60);
+                $sesion->fecha_expiracion = now()->addSeconds($ttlSeconds);
+                $sesion->save();
 
             $request->setUserResolver(fn() => $user);
             Auth::setUser($user);

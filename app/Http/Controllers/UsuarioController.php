@@ -229,7 +229,7 @@ class UsuarioController extends Controller
         $reauth = false;
         if ($changed) {
             try {
-                cache()->forget('user_sessions:' . $usuario->getKey());
+                \App\Models\SesionUsuario::where('id_usuario_fk', $usuario->getKey())->delete();
                 $this->bitacora->logFor('Usuarios', 'Seguridad', 'Invalidación de sesiones por cambio de rol', $usuario->id_usuario_pk, [
                     'antes' => ['principal' => $beforePrimary, 'pivot' => $beforePivot],
                     'despues' => ['principal' => $afterPrimary, 'pivot' => $afterPivot],
@@ -301,7 +301,7 @@ class UsuarioController extends Controller
         $reauth = false;
         if ($changed) {
             try {
-                cache()->forget('user_sessions:' . $usuario->getKey());
+                \App\Models\SesionUsuario::where('id_usuario_fk', $usuario->getKey())->delete();
                 $this->bitacora->logFor('Usuarios', 'Seguridad', 'Invalidación de sesiones por cambio de roles', $usuario->id_usuario_pk, [
                     'antes' => ['principal' => $beforePrimary, 'pivot' => $beforePivot],
                     'despues' => ['principal' => $afterPrimary, 'pivot' => $afterPivot],
