@@ -12,20 +12,20 @@ use App\Notifications\PasswordResetNotification;
 
 class AuthService
 {
-    
+
     private function getTokenTtlSeconds(): int
     {
         $minutes = (int) config('session.lifetime', 60);
-        
+
         return max(60, $minutes * 60);
     }
 
-    
+
     public function attempt(string $usuario, string $contrasena): array
     {
-        
+
         $usuario = strtoupper(trim($usuario));
-        
+
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $contrasena)) {
             return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
@@ -35,7 +35,7 @@ class AuthService
             return ['success' => false, 'error' => 'JWT_SECRET no está configurado', 'code' => 500];
         }
 
-        
+
         $maxIntentos = (int) (\App\Models\Parametro::where('parametro', 'ADMIN.INTENTOS_INICIO_SESION')->value('valor')
             ?? \App\Models\Parametro::where('parametro', 'ADMIN_INTENTOS_INICIO SESION')->value('valor')
             ?? 3);
@@ -44,7 +44,7 @@ class AuthService
         if (!$user) {
             return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
-        
+
         $requireVerify = (bool) (Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
             ?? false);
@@ -52,36 +52,36 @@ class AuthService
             return ['success' => false, 'error' => 'Correo no verificado', 'code' => 200];
         }
 
-        
+
         if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
             return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
         }
 
-        
+
         $cacheKey = 'login_attempts:' . $user->getKey();
         $attempts = cache()->get($cacheKey, 0);
 
         $valid = Hash::check($contrasena, $user->contrasena);
         if (!$valid) {
             $attempts++;
-            
+
             cache()->put($cacheKey, $attempts, now()->addMinutes(15));
-            
+
             if ($attempts >= $maxIntentos) {
                 $user->estado_usuario = 'BLOQUEADO';
                 $user->save();
-                
+
                 try {
                     $token = Password::createToken($user);
                     $user->notify(new PasswordResetNotification($token, (string)$user->correo_electronico));
                 } catch (\Throwable $e) {
-                    
+
                     report($e);
                 }
-                
+
                 return ['success' => false, 'error' => 'Usuario bloqueado por múltiples intentos inválidos. Desbloquear cuenta: se ha enviado un correo para restablecer la contraseña.', 'code' => 200];
             }
-            
+
             $remaining = max(0, $maxIntentos - $attempts);
             $msg = 'Usuario/contraseña inválidos';
             if ($remaining > 0) {
@@ -90,14 +90,14 @@ class AuthService
             return ['success' => false, 'error' => $msg, 'code' => 200];
         }
 
-        
+
         cache()->forget($cacheKey);
 
-        
-        
-        
-        
-        
+
+
+
+
+
         $limit = $this->determineSessionLimit($user);
         $sessions = $this->prepareSessions($user, $limit);
 
@@ -111,7 +111,7 @@ class AuthService
 
         $token = JWT::encode($payload, $secret, 'HS256');
 
-        
+
         $this->storeSessionToken($user, $sessions, $token);
 
         return [
@@ -126,7 +126,7 @@ class AuthService
         ];
     }
 
-    
+
     public function verifyCredentialsOnly(string $usuario, string $contrasena): array
     {
         $usuario = strtoupper(trim($usuario));
@@ -171,7 +171,7 @@ class AuthService
         return ['user' => $user];
     }
 
-    
+
     public function tokenForUser(Usuario $user): array
     {
         $secret = config('jwt.secret');
@@ -206,31 +206,9 @@ class AuthService
 
     private function determineSessionLimit(Usuario $user): int
     {
-        $rolNombre = strtolower($user->rol->rol ?? '');
-        $limitParamKeys = [];
-        if ($rolNombre !== '') {
-            if (in_array($rolNombre, ['administrador', 'admin'])) {
-                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.ADMIN';
-            } elseif (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
-                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.CLIENTE';
-            } else {
-                $limitParamKeys[] = 'AUTH.LIMITE_SESIONES.' . strtoupper($rolNombre);
-            }
-        }
-        $limitParamKeys[] = 'AUTH.LIMITE_SESIONES';
-        $limitParamKeys[] = 'auth.sessions_limit';
-
-        foreach ($limitParamKeys as $k) {
-            $val = Parametro::where('parametro', $k)->value('valor');
-            if ($val !== null && $val !== '') {
-                if (is_numeric($val)) {
-                    return max(0, (int) $val);
-                }
-                $filtered = filter_var($val, FILTER_SANITIZE_NUMBER_INT);
-                if ($filtered !== '' && is_numeric($filtered)) {
-                    return max(0, (int) $filtered);
-                }
-            }
+        $val = Parametro::where('parametro', 'auth.sessions_limit')->value('valor');
+        if ($val !== null && $val !== '' && is_numeric($val)) {
+            return max(0, (int) $val);
         }
 
         return 1;
@@ -258,7 +236,7 @@ class AuthService
             }
         }
 
-        
+
         $ttl = $this->getTokenTtlSeconds();
         cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
 
@@ -276,7 +254,6 @@ class AuthService
             $sessionsKey = 'user_sessions:' . $user->getKey();
             cache()->put($sessionsKey, $sessions, now()->addSeconds($ttl));
         } catch (\Throwable $e) {
-            
         }
     }
 }
