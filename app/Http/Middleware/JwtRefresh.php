@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Models\Usuario;
+use App\Models\SesionUsuario;
 
 class JwtRefresh
 {
@@ -17,7 +18,7 @@ class JwtRefresh
 
         $jwtSecret = config('jwt.secret');
         if (!$jwtSecret) {
-            return $response; 
+            return $response;
         }
 
         $token = $request->cookie('auth_token') ?: $request->bearerToken();
@@ -31,7 +32,7 @@ class JwtRefresh
                 return $response;
             }
             $remaining = $decoded->exp - time();
-            
+
             $sessionMinutes = (int) config('session.lifetime', 60);
             $ttlSeconds = max(60, $sessionMinutes * 60);
             $threshold = max(60, min(300, (int) floor($ttlSeconds * 0.25)));
@@ -39,7 +40,7 @@ class JwtRefresh
                 $user = Usuario::find($decoded->sub);
                 if (!$user) return $response;
 
-                
+
                 $newPayload = [
                     'sub'  => $user->id_usuario_pk,
                     'name' => $user->nombre_usuario,
@@ -47,28 +48,26 @@ class JwtRefresh
                     'exp'  => time() + $ttlSeconds,
                 ];
                 $newToken = JWT::encode($newPayload, $jwtSecret, 'HS256');
-                
+
                 try {
-                    $sessionsKey = 'user_sessions:' . $user->getKey();
-                    $sessions = cache()->get($sessionsKey, []);
-                    if (is_array($sessions)) {
-                        $oldId = substr(hash('sha256', $token), 0, 32);
-                        $newId = substr(hash('sha256', $newToken), 0, 32);
-                        $now = time();
-                        
-                        $sessions = array_filter($sessions, fn($exp) => (int)$exp > $now);
-                        
-                        $sessions[$newId] = $now + $ttlSeconds;
-                        
-                        if (isset($sessions[$oldId])) {
-                            unset($sessions[$oldId]);
-                        }
-                        cache()->put($sessionsKey, $sessions, now()->addSeconds($ttlSeconds));
+                    $oldId  = substr(hash('sha256', $token), 0, 32);
+                    $newId  = substr(hash('sha256', $newToken), 0, 32);
+                    $oldSesion = SesionUsuario::find($oldId);
+                    if ($oldSesion) {
+                        SesionUsuario::create([
+                            'id_sesion_pk'     => $newId,
+                            'id_usuario_fk'    => $user->getKey(),
+                            'ip_direccion'     => $oldSesion->ip_direccion,
+                            'user_agent'       => $oldSesion->user_agent,
+                            'fecha_creacion'   => now(),
+                            'fecha_expiracion' => now()->addSeconds($ttlSeconds),
+                            'activo'           => 1,
+                        ]);
+                        $oldSesion->delete();
                     }
                 } catch (\Throwable $e) {
-                    
                 }
-                
+
                 $secure = $request->isSecure() || str_starts_with((string) config('app.url'), 'https://');
                 $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
                 $response->headers->setCookie(cookie(
@@ -82,11 +81,10 @@ class JwtRefresh
                     false,
                     $sameSite
                 ));
-                
+
                 $response->headers->set('X-New-JWT', $newToken);
             }
         } catch (\Throwable $e) {
-            
         }
 
         return $response;
