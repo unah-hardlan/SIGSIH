@@ -10,6 +10,7 @@ use App\Models\Rol;
 use App\Models\HistorialContrasena;
 use App\Models\Cliente;
 use App\Models\Parametro;
+use App\Models\SesionUsuario;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -172,28 +173,29 @@ class AuthController extends Controller
 
     public function logout(): \Illuminate\Http\Response|JsonResponse|\Illuminate\Http\RedirectResponse
     {
-
-        $userId = null;
         $tokenId = null;
+        $userId  = null;
         try {
-            $auth = request()->header('Authorization');
+            $req   = request();
+            // Leer token desde header Bearer o desde cookie httpOnly
+            $raw   = null;
+            $auth  = $req->header('Authorization');
             if ($auth && str_starts_with($auth, 'Bearer ')) {
-                $token = substr($auth, 7);
-                $payload = JWT::decode($token, new Key(config('jwt.secret'), 'HS256'));
-                $userId = (int) ($payload->sub ?? null);
-                $tokenId = substr(hash('sha256', $token), 0, 32);
+                $raw = substr($auth, 7);
+            } elseif ($req->cookie('auth_token')) {
+                $raw = $req->cookie('auth_token');
+            }
+            if ($raw) {
+                $payload = JWT::decode($raw, new Key(config('jwt.secret'), 'HS256'));
+                $userId  = (int) ($payload->sub ?? null);
+                $tokenId = substr(hash('sha256', $raw), 0, 32);
             }
         } catch (\Throwable $e) {
         }
 
         try {
-            if ($userId && $tokenId) {
-                $sessionsKey = 'user_sessions:' . $userId;
-                $sessions = cache()->get($sessionsKey, []);
-                if (is_array($sessions) && isset($sessions[$tokenId])) {
-                    unset($sessions[$tokenId]);
-                    cache()->put($sessionsKey, $sessions, now()->addHours(1));
-                }
+            if ($tokenId) {
+                SesionUsuario::where('id_sesion_pk', $tokenId)->delete();
             }
         } catch (\Throwable $e) {
         }

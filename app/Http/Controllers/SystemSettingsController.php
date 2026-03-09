@@ -67,15 +67,8 @@ class SystemSettingsController extends Controller
         $dniFormat = Parametro::where('parametro', 'FORMATO DNI')->value('valor') ?? '0000-0000-00000';
 
 
-        $slLegacy = Parametro::where('parametro', 'AUTH.LIMITE_SESIONES')->value('valor');
-        $slDotted = Parametro::where('parametro', 'auth.sessions_limit')->value('valor');
-        if (is_numeric($slLegacy)) {
-            $sessionsLimit = max(1, (int) $slLegacy);
-        } elseif (is_numeric($slDotted)) {
-            $sessionsLimit = max(1, (int) $slDotted);
-        } else {
-            $sessionsLimit = 1;
-        }
+        $slVal = Parametro::where('parametro', 'auth.sessions_limit')->value('valor');
+        $sessionsLimit = is_numeric($slVal) ? max(1, (int) $slVal) : 1;
 
 
         $adminIntentos = (int) (
@@ -244,10 +237,6 @@ class SystemSettingsController extends Controller
             $sl = (int) $validated['sessions_limit'];
             if ($sl > 0) {
                 $this->persistParametro('auth.sessions_limit', $sl, $user);
-
-                $this->persistParametro('AUTH.LIMITE_SESIONES', $sl, $user);
-                $this->persistParametro('AUTH.LIMITE_SESIONES.ADMIN', $sl, $user);
-                $this->persistParametro('AUTH.LIMITE_SESIONES.CLIENTE', $sl, $user);
                 Cache::forget('authSessionsLimit');
             }
         }

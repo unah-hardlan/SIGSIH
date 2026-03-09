@@ -1,6 +1,6 @@
 {
-  "_index-CIZ4r3fZ.js": {
-    "file": "assets/index-CIZ4r3fZ.js",
+  "_index-10ZcEK_X.js": {
+    "file": "assets/index-10ZcEK_X.js",
     "name": "index",
     "dynamicImports": [
       "node_modules/laravel-echo/dist/echo.js",
@@ -39,27 +39,27 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-D30E1C40.js",
+    "file": "assets/app-BnKCrgy7.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-CIZ4r3fZ.js"
+      "_index-10ZcEK_X.js"
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-BVkvyI-s.js",
+    "file": "assets/auth-BeXyzU8p.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-D3jButDj.js",
+    "file": "assets/cliente-CJFz439Y.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-CIZ4r3fZ.js"
+      "_index-10ZcEK_X.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
@@ -87,13 +87,13 @@
     "isEntry": true
   },
   "resources/js/sidebar-cliente.js": {
-    "file": "assets/sidebar-cliente-DveoX0EM.js",
+    "file": "assets/sidebar-cliente-BUoTryqK.js",
     "name": "sidebar-cliente",
     "src": "resources/js/sidebar-cliente.js",
     "isEntry": true
   },
   "resources/js/sidebar.js": {
-    "file": "assets/sidebar-DVU925jG.js",
+    "file": "assets/sidebar-CWUb3n0U.js",
     "name": "sidebar",
     "src": "resources/js/sidebar.js",
     "isEntry": true

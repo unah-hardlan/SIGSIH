@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class CotizacionController extends Controller
 {
-    /**
-     * Viewer HTML para detalle de cotización (Admin).
-     * Evita usar un controlador dedicado sólo para retornar una vista.
-     */
+
     public function viewer()
     {
         return view('admin.detalle-cotizacion');

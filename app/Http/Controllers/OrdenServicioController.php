@@ -760,9 +760,7 @@ class OrdenServicioController extends Controller
         return $repuestosList;
     }
 
-    /**
-     * Catálogo de estados de orden de servicio (antes CatalogosController::estadosOrdenServicio).
-     */
+
     public function estadosCatalog()
     {
         $items = \App\Models\EstadoOrdenServicio::select('id_estado_orden_servicio_pk as id', 'nombre', 'codigo')
