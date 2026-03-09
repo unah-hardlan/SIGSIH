@@ -105,8 +105,9 @@
                         <select x-model="form.id_genero_fk" @change="onFormChange()"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
-                            <option class="nunito-regular" value="1">Masculino</option>
-                            <option class="nunito-regular" value="2">Femenino</option>
+                            <template x-for="g in generos" :key="g.id_genero_pk || g.id">
+                                <option class="nunito-regular" :value="g.id_genero_pk || g.id" x-text="g.genero"></option>
+                            </template>
                         </select>
                     </div>
                     <div>

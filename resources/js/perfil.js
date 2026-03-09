@@ -27,6 +27,7 @@ function perfilPage() {
             id_genero_fk: "",
         },
 
+        generos: [],
         email: "",
         displayName: "Mi Perfil",
         avatarUrl: "",
@@ -214,8 +215,13 @@ function perfilPage() {
 
         async cargarCatalogos() {
             try {
-            } catch (_) {
-                /* noop */
+                const res = await fetch("/api/catalogos/generos", { credentials: "same-origin" });
+                if (res.ok) {
+                    const data = await res.json();
+                    this.generos = data.data || [];
+                }
+            } catch (e) {
+                console.error("Error al cargar géneros", e);
             }
         },
 
