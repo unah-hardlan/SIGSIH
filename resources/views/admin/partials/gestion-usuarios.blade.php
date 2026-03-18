@@ -216,11 +216,11 @@
                         @focus="$event.target.select()" @mouseup.prevent
                         @blur="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true"
                         @input="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true"
-                        :class="{'border-red-500': (createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50)}"
+                        :class="{'border-red-500': (createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length < 2 || createForm.nombre_usuario.length > 50 || !/^[A-Za-zÀ-ÿ ]+$/.test(createForm.nombre_usuario))}"
                         class="mt-1 w-full border rounded px-2 py-1" required maxlength="50" autocomplete="off">
                     <small
-                        :class="(createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
-                        class="text-xs">Requerido. Máximo 50 caracteres.</small>
+                        :class="(createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length < 2 || createForm.nombre_usuario.length > 50 || !/^[A-Za-zÀ-ÿ ]+$/.test(createForm.nombre_usuario)) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
+                        class="text-xs">Requerido. 2 a 50 letras (sin números, emojis ni símbolos).</small>
                 </div>
                 <div>
                     <label class="block text-sm">Usuario</label>
@@ -309,11 +309,11 @@
                         @focus="$event.target.select()" @mouseup.prevent
                         @blur="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true"
                         @input="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true"
-                        :class="{'border-red-500': (editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50)}"
+                        :class="{'border-red-500': (editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length < 2 || editForm.nombre_usuario.length > 50 || !/^[A-Za-zÀ-ÿ ]+$/.test(editForm.nombre_usuario))}"
                         class="mt-1 w-full border rounded px-2 py-1" required maxlength="50">
                     <small
-                        :class="(editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
-                        class="text-xs">Requerido. Máximo 50 caracteres.</small>
+                        :class="(editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length < 2 || editForm.nombre_usuario.length > 50 || !/^[A-Za-zÀ-ÿ ]+$/.test(editForm.nombre_usuario)) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
+                        class="text-xs">Requerido. 2 a 50 letras (sin números, emojis ni símbolos).</small>
                 </div>
                 <div>
                     <label class="block text-sm">Usuario</label>

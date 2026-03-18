@@ -147,8 +147,9 @@ class StoreUsuarioRequest extends FormRequest
             'nombre_usuario' => [
                 'required',
                 'string',
-                'max:100',
-                'regex:/^[A-Za-z0-9]+$/'
+                'min:2',
+                'max:50',
+                'regex:/^[\p{L} ]+$/u'
             ],
             'correo_electronico' => $emailRule,
             'contrasena' => $passwordRules,
@@ -168,7 +169,8 @@ class StoreUsuarioRequest extends FormRequest
             'usuario.max' => 'El usuario no puede superar 50 caracteres.',
             'usuario.unique' => 'Ese usuario ya está registrado.',
             'correo_electronico.unique' => 'Ese correo electrónico ya está registrado.',
-            'nombre_usuario.regex' => 'El nombre de usuario sólo puede contener letras y números.',
+            'nombre_usuario.min' => 'El nombre debe tener al menos 2 caracteres.',
+            'nombre_usuario.regex' => 'El nombre sólo puede contener letras y espacios.',
             'contrasena.required' => 'La contraseña es obligatoria.',
             'contrasena.min' => 'La contraseña debe tener al menos ' . $this->passwordMinUsed . ' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',

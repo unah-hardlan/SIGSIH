@@ -106,7 +106,7 @@ class UpdateUsuarioRequest extends FormRequest
 
         return [
             'usuario' => ['sometimes', 'string', 'max:50', 'regex:' . $usuarioRegex, "unique:tbl_ms_usuario,usuario,{$id},id_usuario_pk"],
-            'nombre_usuario' => 'sometimes|string|max:100',
+            'nombre_usuario' => ['sometimes', 'string', 'min:2', 'max:50', 'regex:/^[\p{L} ]+$/u'],
             'correo_electronico' => $emailRule,
             'contrasena' => $passwordRules,
             'estado_usuario' => 'sometimes|string|max:20',
@@ -128,6 +128,8 @@ class UpdateUsuarioRequest extends FormRequest
             'contrasena.min' => 'La contraseña debe tener al menos '.$this->passwordMinUsed.' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',
             'contrasena.regex' => 'La contraseña no puede contener espacios.',
+            'nombre_usuario.min' => 'El nombre debe tener al menos 2 caracteres.',
+            'nombre_usuario.regex' => 'El nombre sólo puede contener letras y espacios.',
         ];
     }
 
