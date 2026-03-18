@@ -22,7 +22,6 @@ function createAuthPage() {
         username: "",
         password: "",
         confirmPassword: "",
-        nombre_usuario: "",
         email: "",
         loading: false,
         formError: "",
@@ -156,23 +155,6 @@ function createAuthPage() {
             return this.usernameIssues(username).length === 0;
         },
 
-        nombreUsuarioIssues(nombre) {
-            const value = nombre || "";
-            const issues = [];
-            if (!this.isLogin && value.length === 0) {
-                issues.push("El nombre de usuario es requerido.");
-            } else if (value.length > 0 && !this.isAlphaNumeric(value)) {
-                issues.push(
-                    "Solo se permiten letras y números, sin espacios ni símbolos."
-                );
-            }
-            return issues;
-        },
-
-        validateNombreUsuario(nombre) {
-            return this.nombreUsuarioIssues(nombre).length === 0;
-        },
-
         emailIssues(email) {
             const value = email || "";
             const issues = [];
@@ -232,12 +214,6 @@ function createAuthPage() {
             this.clearFieldError("usuario");
             const issues = this.usernameIssues(this.username);
             if (issues.length > 0) this.setFieldError("usuario", issues[0]);
-        },
-        handleNombreUsuarioInput() {
-            this.clearFieldError("nombre_usuario");
-            const issues = this.nombreUsuarioIssues(this.nombre_usuario);
-            if (issues.length > 0)
-                this.setFieldError("nombre_usuario", issues[0]);
         },
         handleEmailInput() {
             this.clearFieldError("correo_electronico");
@@ -310,7 +286,6 @@ function createAuthPage() {
                 } else {
                     await axios.post("/api/register", {
                         usuario: this.username,
-                        nombre_usuario: this.nombre_usuario,
                         correo_electronico: this.email,
                         contrasena: this.password,
                     });

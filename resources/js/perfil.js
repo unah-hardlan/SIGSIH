@@ -73,11 +73,11 @@ function perfilPage() {
                     if (store?.user) {
                         this.displayName = store.persona?.primer_nombre
                             ? store.persona.primer_nombre +
-                              " " +
-                              (store.persona.primer_apellido || "")
-                            : store.user.nombre_usuario ||
-                              store.user.usuario ||
-                              "Mi Perfil";
+                            " " +
+                            (store.persona.primer_apellido || "")
+                            : store.user.nombre ||
+                            store.user.usuario ||
+                            "Mi Perfil";
                         this.email = store.user.correo_electronico || "";
                     }
                     if (store?.persona) {
@@ -94,8 +94,8 @@ function perfilPage() {
                             ? p.avatar_path.startsWith("http")
                                 ? p.avatar_path
                                 : window.location.origin +
-                                  "/storage/" +
-                                  p.avatar_path
+                                "/storage/" +
+                                p.avatar_path
                             : "";
                     }
                 }
@@ -113,8 +113,8 @@ function perfilPage() {
                 // Buscar parámetro FORMATO DNI (usa api index con filtro q)
                 const res = await fetch(
                     "/api/parametros?q=" +
-                        encodeURIComponent("FORMATO DNI") +
-                        "&per_page=1",
+                    encodeURIComponent("FORMATO DNI") +
+                    "&per_page=1",
                     { credentials: "same-origin" }
                 );
                 if (res.ok) {
@@ -195,14 +195,14 @@ function perfilPage() {
                     if (/^\d+$/.test(this.dniFormat)) {
                         errs.dni = [
                             "El DNI no cumple con el formato. Debe contener al menos " +
-                                this.dniFormat +
-                                " dígitos.",
+                            this.dniFormat +
+                            " dígitos.",
                         ];
                     } else {
                         errs.dni = [
                             "El DNI no cumple con el formato. El formato es: " +
-                                this.dniFormat +
-                                ".",
+                            this.dniFormat +
+                            ".",
                         ];
                     }
                     msgs.push(errs.dni[0]);
@@ -234,9 +234,9 @@ function perfilPage() {
                     const data = await res.json();
                     this.displayName = data?.persona?.primer_nombre
                         ? data.persona.primer_nombre +
-                          " " +
-                          (data.persona.primer_apellido || "")
-                        : data?.usuario?.nombre_usuario || "Mi Perfil";
+                        " " +
+                        (data.persona.primer_apellido || "")
+                        : data?.usuario?.nombre || data?.usuario?.usuario || "Mi Perfil";
                     this.email = data?.usuario?.correo_electronico || "";
                     if (data?.persona) {
                         this.form = {
@@ -252,8 +252,8 @@ function perfilPage() {
                             ? data.persona.avatar_path.startsWith("http")
                                 ? data.persona.avatar_path
                                 : window.location.origin +
-                                  "/storage/" +
-                                  data.persona.avatar_path
+                                "/storage/" +
+                                data.persona.avatar_path
                             : "";
                         this.originalForm = JSON.parse(
                             JSON.stringify(this.form)
@@ -713,7 +713,7 @@ function perfilPage() {
                             if (Array.isArray(first) && first.length)
                                 message = first[0];
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                     this.passwordError = message;
                     alert(message);
                     return;

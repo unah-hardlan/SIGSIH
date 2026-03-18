@@ -43,20 +43,20 @@ class JwtRefresh
 
                 $newPayload = [
                     'sub'  => $user->id_usuario_pk,
-                    'name' => $user->nombre_usuario,
+                    'name' => $user->nombre,
                     'iat'  => time(),
                     'exp'  => time() + $ttlSeconds,
                 ];
                 $newToken = JWT::encode($newPayload, $jwtSecret, 'HS256');
 
                 try {
-                    $oldId  = substr(hash('sha256', $token), 0, 32);
-                    $newId  = substr(hash('sha256', $newToken), 0, 32);
-                    $oldSesion = SesionUsuario::find($oldId);
+                    $oldHash  = hash('sha256', $token);
+                    $newHash  = hash('sha256', $newToken);
+                    $oldSesion = SesionUsuario::where('token_refresh', $oldHash)->first();
                     if ($oldSesion) {
                         SesionUsuario::create([
-                            'id_sesion_pk'     => $newId,
                             'id_usuario_fk'    => $user->getKey(),
+                            'token_refresh'    => $newHash,
                             'ip_direccion'     => $oldSesion->ip_direccion,
                             'user_agent'       => $oldSesion->user_agent,
                             'fecha_creacion'   => now(),

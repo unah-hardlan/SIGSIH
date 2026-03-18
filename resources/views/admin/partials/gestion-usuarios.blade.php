@@ -11,7 +11,7 @@
             'filtrosSelect' => [
             'filtroPerfil' => [ 'label' => 'Estado', 'options' => ['ACTIVO','INACTIVO','BLOQUEADO'] ]
             ],
-            'ordenarOptions' => [ 'nombre_usuario' => 'Nombre', 'usuario' => 'Usuario', 'correo_electronico' =>
+            'ordenarOptions' => [ 'nombre' => 'Nombre', 'usuario' => 'Usuario', 'correo_electronico' =>
             'Correo', 'estado_usuario' => 'Estado']
             ])
         </x-slot>
@@ -63,7 +63,7 @@
                     </template>
                     <template x-for="u in paginatedUsuarios()" :key="u.id">
                         <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                            <td class="py-2 px-4" x-text="u.nombre_usuario"></td>
+                            <td class="py-2 px-4" x-text="userName(u)"></td>
                             <td class="py-2 px-4" x-text="u.usuario"></td>
                             <td class="py-2 px-4" x-text="userRole(u)"></td>
                             <td class="py-2 px-4">
@@ -115,7 +115,7 @@
                     class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="u.nombre_usuario"></h3>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="userName(u)"></h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400" x-text="u.usuario"></p>
                         </div>
                         <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
@@ -211,18 +211,6 @@
             Usuarios'],'insercion')
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm">Nombre</label>
-                    <input type="text" x-model="createForm.nombre_usuario" @click="$event.target.select()"
-                        @focus="$event.target.select()" @mouseup.prevent
-                        @blur="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true"
-                        @input="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true"
-                        :class="{'border-red-500': (createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50)}"
-                        class="mt-1 w-full border rounded px-2 py-1" required maxlength="50" autocomplete="off">
-                    <small
-                        :class="(createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
-                        class="text-xs">Requerido. Máximo 50 caracteres.</small>
-                </div>
-                <div>
                     <label class="block text-sm">Usuario</label>
                     <input type="text" x-model="createForm.usuario" @click="$event.target.select()"
                         @focus="$event.target.select()" @mouseup.prevent
@@ -304,18 +292,6 @@
             Usuarios'],'actualizacion')
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm">Nombre</label>
-                    <input type="text" x-model="editForm.nombre_usuario" @click="$event.target.select()"
-                        @focus="$event.target.select()" @mouseup.prevent
-                        @blur="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true"
-                        @input="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true"
-                        :class="{'border-red-500': (editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50)}"
-                        class="mt-1 w-full border rounded px-2 py-1" required maxlength="50">
-                    <small
-                        :class="(editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
-                        class="text-xs">Requerido. Máximo 50 caracteres.</small>
-                </div>
-                <div>
                     <label class="block text-sm">Usuario</label>
                     <input type="text" x-model="editForm.usuario"
                         class="mt-1 w-full border rounded px-2 py-1 bg-gray-100" disabled>
@@ -390,71 +366,71 @@
         @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de Usuarios','Gestion de
         Usuarios'],'eliminacion')
         <x-admin.confirmation-modal class="nunito-bold" modalName="showDeleteModal" title="Confirmar Inactivación"
-            itemToDelete="userToInactivate" itemNameProperty="nombre_usuario"
+            itemToDelete="userToInactivate" itemNameProperty="nombre"
             message="¿Seguro que deseas inactivar al usuario" />
         @endperm
     </div>
 
 
     <script>
-    window.getAdminPasswordRegex = function() {
-        if (window._adminPasswordRegex) return window._adminPasswordRegex;
+        window.getAdminPasswordRegex = function() {
+            if (window._adminPasswordRegex) return window._adminPasswordRegex;
 
-        function buildRegexFromValue(v) {
-            if (!v) return null;
-            v = v.toString().trim();
-            if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
-                try {
-                    return new RegExp(v.slice(1, -1));
-                } catch (e) {}
-            }
-            if (/[\\^\[\]()+*?.|]/.test(v)) {
-                try {
-                    return new RegExp(v);
-                } catch (e) {}
-            }
-            var lookaheads = [];
-            if (/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
-            if (/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
-            if (/\d/.test(v)) lookaheads.push('(?=.*\\d)');
-            if (/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
-            if (lookaheads.length > 0) {
-                var minLen = Math.max(8, v.length);
-                var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
-                try {
-                    return new RegExp(pattern);
-                } catch (e) {}
-            }
-            return null;
-        }
-
-        try {
-            var el = document.querySelector('input[x-model="adminPassword"]');
-            if (el && el.value) {
-                var r = buildRegexFromValue(el.value);
-                if (r) {
-                    window._adminPasswordRegex = r;
-                    return r;
+            function buildRegexFromValue(v) {
+                if (!v) return null;
+                v = v.toString().trim();
+                if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
+                    try {
+                        return new RegExp(v.slice(1, -1));
+                    } catch (e) {}
                 }
+                if (/[\\^\[\]()+*?.|]/.test(v)) {
+                    try {
+                        return new RegExp(v);
+                    } catch (e) {}
+                }
+                var lookaheads = [];
+                if (/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
+                if (/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
+                if (/\d/.test(v)) lookaheads.push('(?=.*\\d)');
+                if (/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
+                if (lookaheads.length > 0) {
+                    var minLen = Math.max(8, v.length);
+                    var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
+                    try {
+                        return new RegExp(pattern);
+                    } catch (e) {}
+                }
+                return null;
             }
-        } catch (e) {}
 
-        try {
-            fetch('/api-web/system-settings', {
-                credentials: 'same-origin'
-            }).then(function(res) {
-                if (!res.ok) return null;
-                return res.json();
-            }).then(function(data) {
-                if (!data) return;
-                var v = data.adminPassword || data.admin_password || data.admin_password_regex || null;
-                var r = buildRegexFromValue(v);
-                if (r) window._adminPasswordRegex = r;
-            }).catch(function() {});
-        } catch (e) {}
+            try {
+                var el = document.querySelector('input[x-model="adminPassword"]');
+                if (el && el.value) {
+                    var r = buildRegexFromValue(el.value);
+                    if (r) {
+                        window._adminPasswordRegex = r;
+                        return r;
+                    }
+                }
+            } catch (e) {}
 
-        window._adminPasswordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
-        return window._adminPasswordRegex;
-    };
+            try {
+                fetch('/api-web/system-settings', {
+                    credentials: 'same-origin'
+                }).then(function(res) {
+                    if (!res.ok) return null;
+                    return res.json();
+                }).then(function(data) {
+                    if (!data) return;
+                    var v = data.adminPassword || data.admin_password || data.admin_password_regex || null;
+                    var r = buildRegexFromValue(v);
+                    if (r) window._adminPasswordRegex = r;
+                }).catch(function() {});
+            } catch (e) {}
+
+            window._adminPasswordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
+            return window._adminPasswordRegex;
+        };
     </script>
 </div>

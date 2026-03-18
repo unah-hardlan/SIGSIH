@@ -11,16 +11,16 @@ class SessionTokenController extends Controller
 {
     public function __construct(private AuthService $auth) {}
 
-    
+
     public function issue(): JsonResponse
     {
-        
+
         $cookieToken = request()->cookie('auth_token');
         if (!$cookieToken) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        
+
         try {
             $secret = config('jwt.secret');
             if (!$secret) return response()->json(['message' => 'JWT Secret no configurado'], 500);
@@ -30,13 +30,13 @@ class SessionTokenController extends Controller
             $usuarioModel = \App\Models\Usuario::find($userId);
             if (!$usuarioModel) return response()->json(['message' => 'Unauthenticated'], 401);
 
-            
+
             return response()->json([
                 'token' => $cookieToken,
                 'user'  => [
                     'id'      => $usuarioModel->getKey(),
                     'usuario' => $usuarioModel->usuario,
-                    'nombre'  => $usuarioModel->nombre_usuario,
+                    'nombre'  => $usuarioModel->nombre,
                     'correo'  => $usuarioModel->correo_electronico,
                     'rol'     => $usuarioModel->rol->rol ?? null,
                 ],

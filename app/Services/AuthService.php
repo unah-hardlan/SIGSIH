@@ -105,7 +105,7 @@ class AuthService
         $ttl = $this->getTokenTtlSeconds();
         $payload = [
             'sub'  => $user->getKey(),
-            'name' => $user->nombre_usuario,
+            'name' => $user->nombre,
             'iat'  => time(),
             'exp'  => time() + $ttl,
         ];
@@ -119,7 +119,7 @@ class AuthService
             'user'  => [
                 'id'      => $user->getKey(),
                 'usuario' => $user->usuario,
-                'nombre'  => $user->nombre_usuario,
+                'nombre'  => $user->nombre,
                 'correo'  => $user->correo_electronico,
                 'rol'     => $user->rol->rol ?? null,
             ]
@@ -182,7 +182,7 @@ class AuthService
         $ttl = $this->getTokenTtlSeconds();
         $payload = [
             'sub'  => $user->getKey(),
-            'name' => $user->nombre_usuario,
+            'name' => $user->nombre,
             'iat'  => time(),
             'exp'  => time() + $ttl,
         ];
@@ -197,7 +197,7 @@ class AuthService
             'user'  => [
                 'id'      => $user->getKey(),
                 'usuario' => $user->usuario,
-                'nombre'  => $user->nombre_usuario,
+                'nombre'  => $user->nombre,
                 'correo'  => $user->correo_electronico,
                 'rol'     => $user->rol->rol ?? null,
             ]
@@ -206,7 +206,8 @@ class AuthService
 
     private function determineSessionLimit(Usuario $user): int
     {
-        $val = Parametro::where('parametro', 'auth.sessions_limit')->value('valor');
+        $val = Parametro::where('parametro', 'auth.sessions_limit')->value('valor')
+            ?? Parametro::where('parametro', 'SESIONES_SIMULTANEAS')->value('valor');
         if ($val !== null && $val !== '' && is_numeric($val)) {
             return max(0, (int) $val);
         }
@@ -238,11 +239,11 @@ class AuthService
     private function storeSessionToken(Usuario $user, string $token): void
     {
         try {
-            $tokenId = substr(hash('sha256', $token), 0, 32);
+            $tokenHash = hash('sha256', $token);
             $ttl     = $this->getTokenTtlSeconds();
             SesionUsuario::create([
-                'id_sesion_pk'    => $tokenId,
                 'id_usuario_fk'   => $user->getKey(),
+                'token_refresh'   => $tokenHash,
                 'ip_direccion'    => request()?->ip(),
                 'user_agent'      => substr((string) (request()?->userAgent() ?? ''), 0, 500),
                 'fecha_creacion'  => now(),

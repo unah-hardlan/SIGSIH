@@ -44,7 +44,7 @@ class ProfileController extends Controller
             'persona' => $persona,
             'usuario' => [
                 'usuario' => $user->usuario,
-                'nombre_usuario' => $user->nombre_usuario,
+                'nombre' => $user->nombre,
                 'correo_electronico' => $user->correo_electronico,
             ],
         ]);

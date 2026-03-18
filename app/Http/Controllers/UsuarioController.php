@@ -26,9 +26,16 @@ class UsuarioController extends Controller
     }
 
 
-    private function isUserAdmin(?Usuario $user): bool
+    private function isUserAdmin($user): bool
     {
         if (!$user) return false;
+        if (!$user instanceof Usuario) {
+            $userId = method_exists($user, 'getAuthIdentifier')
+                ? $user->getAuthIdentifier()
+                : ($user->id_usuario_pk ?? $user->id ?? null);
+            $user = $userId ? Usuario::find($userId) : null;
+            if (!$user) return false;
+        }
         static $adminRoleId = null;
         if ($adminRoleId === null) {
             $adminRoleId = Rol::whereRaw('LOWER(rol)=?', ['administrador'])->value('id_rol_pk');
@@ -64,7 +71,7 @@ class UsuarioController extends Controller
     }
     public function index()
     {
-        $query = Usuario::with('rol');
+        $query = Usuario::with(['rol', 'persona']);
 
 
         if (!request()->has('estado') && request('all') != 1) {
@@ -75,16 +82,12 @@ class UsuarioController extends Controller
             $query->where('estado_usuario', $estado);
         }
         if ($q = request('q')) {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('usuario', 'like', "%$q%")
-                    ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%");
-            });
+            $query->searchByIdentity($q);
         }
 
 
         $sortable = [
-            'nombre_usuario' => 'nombre_usuario',
+            'nombre' => 'nombre',
             'usuario' => 'usuario',
             'correo_electronico' => 'correo_electronico',
             'estado_usuario' => 'estado_usuario',
@@ -93,7 +96,11 @@ class UsuarioController extends Controller
         $sort = request('sort');
         $direction = strtolower(request('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($sort && isset($sortable[$sort])) {
-            $query->orderBy($sortable[$sort], $direction);
+            if ($sortable[$sort] === 'nombre') {
+                $query->orderByPersonaName($direction);
+            } else {
+                $query->orderBy($sortable[$sort], $direction);
+            }
         } else {
 
             $query->orderBy('id_usuario_pk', 'desc');
@@ -352,7 +359,7 @@ class UsuarioController extends Controller
 
     public function reporte(Request $request)
     {
-        $query = Usuario::query();
+        $query = Usuario::query()->with(['rol', 'persona']);
 
         if (!$request->filled('estado') && $request->input('all') != 1) {
             $query->where('estado_usuario', 'ACTIVO');
@@ -361,15 +368,11 @@ class UsuarioController extends Controller
             $query->where('estado_usuario', $estado);
         }
         if ($q = $request->input('q')) {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('usuario', 'like', "%$q%")
-                    ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%");
-            });
+            $query->searchByIdentity($q);
         }
 
         $sortable = [
-            'nombre_usuario' => 'nombre_usuario',
+            'nombre' => 'nombre',
             'usuario' => 'usuario',
             'correo_electronico' => 'correo_electronico',
             'estado_usuario' => 'estado_usuario',
@@ -378,7 +381,11 @@ class UsuarioController extends Controller
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($sort && isset($sortable[$sort])) {
-            $query->orderBy($sortable[$sort], $direction);
+            if ($sortable[$sort] === 'nombre') {
+                $query->orderByPersonaName($direction);
+            } else {
+                $query->orderBy($sortable[$sort], $direction);
+            }
         } else {
             $query->orderBy('id_usuario_pk', 'desc');
         }
