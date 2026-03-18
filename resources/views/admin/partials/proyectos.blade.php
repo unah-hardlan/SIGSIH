@@ -966,7 +966,7 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                         <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio_proyecto[0]"></p>
                     </template>
                     <small x-show="!errors.fecha_inicio_proyecto" class="text-xs text-gray-500 block mt-1"
-                        :class="formProyecto._touched.fecha_inicio_proyecto && !fecha_inicio_proyecto ? 'text-red-500' : ''">Requerido.</small>
+                        :class="formProyecto._touched.fecha_inicio_proyecto && !fecha_inicio_proyecto ? 'text-red-500' : ''">Requerido. Año entre 1900-2100.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Estimada</label>
@@ -974,14 +974,22 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                         @change="formProyecto._touched.fecha_estimada_fin_proyecto = true"
                         :class="formProyecto._touched.fecha_estimada_fin_proyecto && !fecha_estimada_fin_proyecto ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
-                    <small class="text-xs text-gray-500 block mt-1"
-                        :class="formProyecto._touched.fecha_estimada_fin_proyecto && !fecha_estimada_fin_proyecto ? 'text-red-500' : ''">Requerido.</small>
+                    <template x-if="errors.fecha_estimada_fin_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_estimada_fin_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_estimada_fin_proyecto" class="text-xs text-gray-500 block mt-1"
+                        :class="formProyecto._touched.fecha_estimada_fin_proyecto && !fecha_estimada_fin_proyecto ? 'text-red-500' : ''">Requerido. Debe ser >= Fecha de Inicio.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Real</label>
                     <input type="date" x-model="fecha_finalizacion_proyecto"
                         @change="formProyecto._touched.fecha_finalizacion_proyecto = true"
+                        :class="formProyecto._touched.fecha_finalizacion_proyecto && fecha_finalizacion_proyecto && new Date(fecha_finalizacion_proyecto) < new Date(fecha_inicio_proyecto) ? 'border-red-500' : ''"
                         class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                    <template x-if="errors.fecha_finalizacion_proyecto">
+                        <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion_proyecto[0]"></p>
+                    </template>
+                    <small x-show="!errors.fecha_finalizacion_proyecto" class="text-xs text-gray-500 block mt-1">Opcional. Debe ser >= Fecha de Inicio.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado del Proyecto</label>
@@ -1082,7 +1090,7 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                             <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_inicio_proyecto[0]"></p>
                         </template>
                         <small x-show="!errors.fecha_inicio_proyecto" class="text-xs text-gray-500 block mt-1"
-                            :class="itemToEdit._touched && itemToEdit._touched.fecha_inicio_proyecto && !itemToEdit.fecha_inicio_proyecto ? 'text-red-500' : ''">Requerido.</small>
+                            :class="itemToEdit._touched && itemToEdit._touched.fecha_inicio_proyecto && !itemToEdit.fecha_inicio_proyecto ? 'text-red-500' : ''">Requerido. Año entre 1900-2100.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Estimada</label>
@@ -1090,14 +1098,22 @@ $watch('ordenarPorGasto', () => { fetchGastos(); currentPageGastos = 1; });
                             @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.fecha_estimada_fin_proyecto = true"
                             :class="itemToEdit._touched && itemToEdit._touched.fecha_estimada_fin_proyecto && !itemToEdit.fecha_estimada_fin_proyecto ? 'border-red-500' : ''"
                             class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                        <template x-if="errors.fecha_estimada_fin_proyecto">
+                            <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_estimada_fin_proyecto[0]"></p>
+                        </template>
                         <small class="text-xs text-gray-500 block mt-1"
-                            :class="itemToEdit._touched && itemToEdit._touched.fecha_estimada_fin_proyecto && !itemToEdit.fecha_estimada_fin_proyecto ? 'text-red-500' : ''">Requerido.</small>
+                            :class="itemToEdit._touched && itemToEdit._touched.fecha_estimada_fin_proyecto && !itemToEdit.fecha_estimada_fin_proyecto ? 'text-red-500' : ''">Requerido. Debe ser >= Fecha de Inicio.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha Fin Real</label>
                         <input type="date" x-model="itemToEdit.fecha_finalizacion_proyecto"
                             @change="itemToEdit._touched = itemToEdit._touched || {}; itemToEdit._touched.fecha_finalizacion_proyecto = true"
+                            :class="itemToEdit._touched && itemToEdit._touched.fecha_finalizacion_proyecto && itemToEdit.fecha_finalizacion_proyecto && new Date(itemToEdit.fecha_finalizacion_proyecto) < new Date(itemToEdit.fecha_inicio_proyecto) ? 'border-red-500' : ''"
                             class="mt-1 block w-full rounded-md border-gray-500 shadow-sm border focus:border-gray-500 nunito-regular px-2">
+                        <template x-if="errors.fecha_finalizacion_proyecto">
+                            <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_finalizacion_proyecto[0]"></p>
+                        </template>
+                        <small x-show="!errors.fecha_finalizacion_proyecto" class="text-xs text-gray-500 block mt-1">Opcional. Debe ser >= Fecha de Inicio.</small>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado del Proyecto</label>
