@@ -127,6 +127,8 @@ class UpdateUsuarioRequest extends FormRequest
             'contrasena.min' => 'La contraseña debe tener al menos ' . $this->passwordMinUsed . ' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',
             'contrasena.regex' => 'La contraseña no puede contener espacios.',
+            'nombre_usuario.min' => 'El nombre debe tener al menos 2 caracteres.',
+            'nombre_usuario.regex' => 'El nombre sólo puede contener letras y espacios.',
         ];
     }
 
