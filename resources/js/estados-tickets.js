@@ -1,6 +1,13 @@
 
 window.estadosTicketsApiHandlers = {
 
+    authHeaders() {
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
+    },
+
     async fetchEstadosTickets(component) {
         component.loadingEstadosTickets = true;
         try {

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\EmpresaCliente;
 use App\Http\Resources\EmpresaClienteResource;
+use App\Http\Requests\StoreEmpresaClienteRequest;
+use App\Http\Requests\UpdateEmpresaClienteRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -74,17 +76,9 @@ class EmpresasClienteController extends Controller
     }
 
     
-    public function store(Request $request): JsonResponse
+    public function store(StoreEmpresaClienteRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nombre_comercial' => 'required|string|max:150',
-            'razon_social' => 'nullable|string|max:150',
-            'rtn' => 'nullable|string|max:30',
-            'descripcion_empresa' => 'nullable|string|max:255',
-            'horario_atencion' => 'nullable|string|max:50',
-            'fecha_registro' => 'nullable|date',
-            'estado_cliente' => 'nullable|in:activo,inactivo',
-        ]);
+        $validated = $request->validated();
 
         $fechaRegistro = $validated['fecha_registro'] ?? Carbon::now()->toDateString();
         $estado = $validated['estado_cliente'] ?? 'activo';
@@ -132,7 +126,7 @@ class EmpresasClienteController extends Controller
     }
 
     
-    public function update(Request $request, string $id): JsonResponse
+    public function update(UpdateEmpresaClienteRequest $request, string $id): JsonResponse
     {
         $empresaCliente = EmpresaCliente::with('cliente')->find($id);
 
@@ -143,15 +137,7 @@ class EmpresasClienteController extends Controller
             ], 404);
         }
 
-        $validated = $request->validate([
-            'nombre_comercial' => 'sometimes|required|string|max:150',
-            'razon_social' => 'sometimes|nullable|string|max:150',
-            'rtn' => 'sometimes|nullable|string|max:30',
-            'descripcion_empresa' => 'sometimes|nullable|string|max:255',
-            'horario_atencion' => 'sometimes|nullable|string|max:50',
-            'fecha_registro' => 'sometimes|date',
-            'estado_cliente' => 'sometimes|in:activo,inactivo',
-        ]);
+        $validated = $request->validated();
 
         $empresaCliente->fill(array_intersect_key($validated, array_flip([
             'nombre_comercial',

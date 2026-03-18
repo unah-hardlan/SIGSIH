@@ -20,8 +20,16 @@ class UpdateEmpresaClienteRequest extends FormRequest
             'descripcion_empresa' => 'sometimes|nullable|string|max:500',
             'horario_atencion' => 'sometimes|nullable|string|max:50',
             'avatar' => 'sometimes|nullable|string|max:255',
-            'fecha_registro' => 'sometimes|date',
+            'fecha_registro' => 'sometimes|date|before_or_equal:today',
             'estado_cliente' => 'sometimes|in:activo,inactivo',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'fecha_registro.before_or_equal' => 'No se permiten fechas futuras',
+            'fecha_registro.date' => 'La fecha debe ser válida',
         ];
     }
 }

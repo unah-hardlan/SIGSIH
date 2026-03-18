@@ -20,8 +20,16 @@ class StoreEmpresaClienteRequest extends FormRequest
             'descripcion_empresa' => 'nullable|string|max:500',
             'horario_atencion' => 'nullable|string|max:50',
             'avatar' => 'nullable|string|max:255',
-            'fecha_registro' => 'nullable|date',
+            'fecha_registro' => 'nullable|date|before_or_equal:today',
             'estado_cliente' => 'nullable|in:activo,inactivo',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'fecha_registro.before_or_equal' => 'No se permiten fechas futuras',
+            'fecha_registro.date' => 'La fecha debe ser válida',
         ];
     }
 }

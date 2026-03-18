@@ -1,6 +1,6 @@
 {
-  "_index-10ZcEK_X.js": {
-    "file": "assets/index-10ZcEK_X.js",
+  "_index-CIZ4r3fZ.js": {
+    "file": "assets/index-CIZ4r3fZ.js",
     "name": "index",
     "dynamicImports": [
       "node_modules/laravel-echo/dist/echo.js",
@@ -39,33 +39,39 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-BnKCrgy7.js",
+    "file": "assets/app-C7Rh9I9A.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-10ZcEK_X.js"
+      "_index-CIZ4r3fZ.js"
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-BeXyzU8p.js",
+    "file": "assets/auth-CyBlbVZL.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-CJFz439Y.js",
+    "file": "assets/cliente-D3jButDj.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-10ZcEK_X.js"
+      "_index-CIZ4r3fZ.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
     "file": "assets/perfil-DGWHTdiw.js",
     "name": "perfil",
     "src": "resources/js/cliente/perfil.js",
+    "isEntry": true
+  },
+  "resources/js/estados-tickets.js": {
+    "file": "assets/estados-tickets-Bu9rXo01.js",
+    "name": "estados-tickets",
+    "src": "resources/js/estados-tickets.js",
     "isEntry": true
   },
   "resources/js/idle-logout.js": {
@@ -78,6 +84,12 @@
     "file": "assets/login-guard-DbWA1aMp.js",
     "name": "login-guard",
     "src": "resources/js/login-guard.js",
+    "isEntry": true
+  },
+  "resources/js/perfil.js": {
+    "file": "assets/perfil-4hCeujCu.js",
+    "name": "perfil",
+    "src": "resources/js/perfil.js",
     "isEntry": true
   },
   "resources/js/session.js": {
@@ -110,10 +122,22 @@
     "src": "resources/js/tabla-responsive.js",
     "isEntry": true
   },
+  "resources/js/tickets.js": {
+    "file": "assets/tickets-Bbdzc6Io.js",
+    "name": "tickets",
+    "src": "resources/js/tickets.js",
+    "isEntry": true
+  },
   "resources/js/toast.js": {
     "file": "assets/toast-CRfo3b6F.js",
     "name": "toast",
     "src": "resources/js/toast.js",
+    "isEntry": true
+  },
+  "resources/js/usuarios.js": {
+    "file": "assets/usuarios-DMoM7Bdd.js",
+    "name": "usuarios",
+    "src": "resources/js/usuarios.js",
     "isEntry": true
   }
 }
