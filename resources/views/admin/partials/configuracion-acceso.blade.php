@@ -772,7 +772,7 @@
                         <template x-for="u in $store.assignRoles.items" :key="u.id">
                             <tr class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                                 <td class="py-2 px-4 nunito-regular" x-text="u.usuario"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="u.nombre_usuario"></td>
+                                <td class="py-2 px-4 nunito-regular" x-text="u.nombre || u.usuario"></td>
                                 <td class="py-2 px-4 nunito-regular" x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></td>
                                 <td class="py-2 px-4">
                                     @perm(['Configuración de accesos','Configuracion de accesos','Asignación de Roles','Asignacion de Roles'],'actualizacion')
@@ -795,7 +795,7 @@
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="u.usuario"></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="u.nombre_usuario"></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="u.nombre || u.usuario"></p>
                         </div>
                         <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1 nunito-regular">
                             <div><span class="font-semibold">Rol:</span> <span x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></span></div>

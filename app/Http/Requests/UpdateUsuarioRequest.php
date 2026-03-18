@@ -58,7 +58,7 @@ class UpdateUsuarioRequest extends FormRequest
             $usuarioRegex = $usuarioMuestra;
         }
 
-    $minPass = 8;
+        $minPass = 8;
         $needUpper = $needLower = $needDigit = $needSymbol = false;
         $symbolExamples = [];
         if ($passwordMuestra) {
@@ -73,10 +73,10 @@ class UpdateUsuarioRequest extends FormRequest
             }
         }
         if ($needSymbol && empty($symbolExamples)) {
-            $symbolExamples = ['!','@','#','$','%','&','*','?','.','_','-','+','='];
+            $symbolExamples = ['!', '@', '#', '$', '%', '&', '*', '?', '.', '_', '-', '+', '='];
         }
-    $this->passwordMinUsed = $minPass;
-    $passwordRules = ['sometimes', 'string', 'min:' . $minPass, 'max:100', 'regex:/^\S+$/'];
+        $this->passwordMinUsed = $minPass;
+        $passwordRules = ['sometimes', 'string', 'min:' . $minPass, 'max:100', 'regex:/^\S+$/'];
         $passwordRules[] = function ($attribute, $value, $fail) {
             $usuarioInput = strtoupper($this->input('usuario', ''));
             if ($usuarioInput && strtoupper($value) === $usuarioInput) {
@@ -100,13 +100,12 @@ class UpdateUsuarioRequest extends FormRequest
         };
         if ($needSymbol) $passwordRules[] = function ($a, $v, $f) use ($symbolExamples) {
             if (!preg_match('/[^A-Za-z0-9]/', $v)) {
-                $f('La contraseña debe incluir al menos un símbolo. Puedes usar por ejemplo: '.implode(' ', $symbolExamples));
+                $f('La contraseña debe incluir al menos un símbolo. Puedes usar por ejemplo: ' . implode(' ', $symbolExamples));
             }
         };
 
         return [
             'usuario' => ['sometimes', 'string', 'max:50', 'regex:' . $usuarioRegex, "unique:tbl_ms_usuario,usuario,{$id},id_usuario_pk"],
-            'nombre_usuario' => ['sometimes', 'string', 'min:2', 'max:50', 'regex:/^[\p{L} ]+$/u'],
             'correo_electronico' => $emailRule,
             'contrasena' => $passwordRules,
             'estado_usuario' => 'sometimes|string|max:20',
@@ -125,7 +124,7 @@ class UpdateUsuarioRequest extends FormRequest
                 ? 'El correo debe pertenecer al dominio: ' . $this->correoDominioUsed
                 : 'El correo no cumple el formato requerido.',
             'usuario.regex' => 'El usuario debe tener mínimo ' . $this->usuarioMinUsed . ' caracteres y sólo MAYÚSCULAS, números o _.',
-            'contrasena.min' => 'La contraseña debe tener al menos '.$this->passwordMinUsed.' caracteres.',
+            'contrasena.min' => 'La contraseña debe tener al menos ' . $this->passwordMinUsed . ' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',
             'contrasena.regex' => 'La contraseña no puede contener espacios.',
             'nombre_usuario.min' => 'El nombre debe tener al menos 2 caracteres.',

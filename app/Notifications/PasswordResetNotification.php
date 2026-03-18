@@ -14,8 +14,7 @@ class PasswordResetNotification extends Notification
     public function __construct(
         protected string $token,
         protected ?string $email = null
-    ) {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
@@ -27,7 +26,7 @@ class PasswordResetNotification extends Notification
         $email = $this->email ?? $notifiable->getEmailForPasswordReset();
         $url = $this->resetUrl($email);
         $expire = (int) config('auth.passwords.users.expire', 60);
-        $name = trim((string) ($notifiable->nombre_usuario ?? $notifiable->usuario ?? ''));
+        $name = trim((string) ($notifiable->nombre ?? $notifiable->usuario ?? ''));
 
         $appName = $this->getParametro('APP.NOMBRE')
             ?? $this->getParametro('app.name')

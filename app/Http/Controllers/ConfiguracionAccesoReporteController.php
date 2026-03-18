@@ -104,23 +104,23 @@ class ConfiguracionAccesoReporteController extends Controller
         } elseif ($seccion === 'asignar') {
             $sortable = [
                 'usuario' => 'usuario',
-                'nombre' => 'nombre_usuario',
+                'nombre' => 'nombre',
                 'correo' => 'correo_electronico',
                 'creado' => 'fecha_creacion',
             ];
-            $usuariosQ = Usuario::query()->with('rol:id_rol_pk,rol');
+            $usuariosQ = Usuario::query()->with(['rol:id_rol_pk,rol', 'persona']);
             if ($q) {
-                $usuariosQ->where(function ($sub) use ($q) {
-                    $sub->where('usuario', 'like', "%$q%")
-                        ->orWhere('nombre_usuario', 'like', "%$q%")
-                        ->orWhere('correo_electronico', 'like', "%$q%");
-                });
+                $usuariosQ->searchByIdentity($q);
             }
             if ($request->filled('id_rol_fk')) {
                 $usuariosQ->where('id_rol_fk', (int) $request->input('id_rol_fk'));
             }
             if ($sort && isset($sortable[$sort])) {
-                $usuariosQ->orderBy($sortable[$sort], $direction);
+                if ($sortable[$sort] === 'nombre') {
+                    $usuariosQ->orderByPersonaName($direction);
+                } else {
+                    $usuariosQ->orderBy($sortable[$sort], $direction);
+                }
             } else {
                 $usuariosQ->orderBy('id_usuario_pk', 'asc');
             }

@@ -18,11 +18,8 @@ class StoreUsuarioRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('usuario')) {
-            
+
             $this->merge(['usuario' => trim($this->input('usuario'))]);
-        }
-        if ($this->has('nombre_usuario')) {
-            $this->merge(['nombre_usuario' => trim($this->input('nombre_usuario'))]);
         }
         if ($this->has('correo_electronico')) {
             $this->merge(['correo_electronico' => trim($this->input('correo_electronico'))]);
@@ -31,7 +28,7 @@ class StoreUsuarioRequest extends FormRequest
 
     public function rules(): array
     {
-        
+
         $correoMuestra = Parametro::whereIn('parametro', ['ADMIN.CORREO', 'ADMIN_CORREO'])
             ->orderByRaw("FIELD(parametro,'ADMIN.CORREO','ADMIN_CORREO')")
             ->value('valor');
@@ -42,7 +39,7 @@ class StoreUsuarioRequest extends FormRequest
             ->orderByRaw("FIELD(parametro,'ADMIN.PASSWORD','ADMIN_CPASS')")
             ->value('valor');
 
-        
+
         $emailRule = 'required|email|max:100|unique:tbl_ms_usuario,correo_electronico';
         $correoDominio = null;
         if ($correoMuestra) {
@@ -53,31 +50,31 @@ class StoreUsuarioRequest extends FormRequest
         }
         if ($correoDominio) {
             $correoDominio = strtolower($correoDominio);
-            
+
             $isPlaceholder = str_contains($correoDominio, 'dominio') || str_contains($correoDominio, 'extension');
             if (!$isPlaceholder) {
                 $this->correoDominioUsed = $correoDominio;
                 $emailRule .= '|regex:/^[^@\s]+@' . preg_quote($correoDominio, '/') . '$/i';
             } else {
-                
+
                 $this->correoDominioUsed = null;
             }
         }
 
-        
+
         $usuarioMin = 3;
         if ($usuarioMuestra) {
             $usuarioMin = max(3, strlen($usuarioMuestra));
         }
         $this->usuarioMinUsed = $usuarioMin;
-        
+
         $usuarioRegex = '/^[A-Za-z0-9]{' . $usuarioMin . ',50}$/';
-        
+
         if ($usuarioMuestra && preg_match('/^\^.*\$$/', $usuarioMuestra)) {
             $usuarioRegex = $usuarioMuestra;
         }
 
-        
+
         $minPass = 8;
         $needUpper = $needLower = $needDigit = $needSymbol = false;
         $symbolExamples = [];
@@ -98,14 +95,14 @@ class StoreUsuarioRequest extends FormRequest
 
         $this->passwordMinUsed = $minPass;
         $passwordRules = ['required', 'string', 'min:' . $minPass, 'max:100', 'regex:/^\S+$/'];
-        
+
         $passwordRules[] = function ($attribute, $value, $fail) {
             $usuarioInput = strtoupper($this->input('usuario', ''));
             if ($usuarioInput && strtoupper($value) === $usuarioInput) {
                 $fail('La contraseña no puede ser igual al usuario.');
             }
         };
-        
+
         $passwordRules[] = function ($attribute, $value, $fail) {
             $prohibidas = ['CONTRASENA', 'CONTRASEÑA', 'PASSWORD'];
             if (in_array(strtoupper($value), $prohibidas, true)) {
@@ -144,17 +141,10 @@ class StoreUsuarioRequest extends FormRequest
                 },
                 'unique:tbl_ms_usuario,usuario'
             ],
-            'nombre_usuario' => [
-                'required',
-                'string',
-                'min:2',
-                'max:50',
-                'regex:/^[\p{L} ]+$/u'
-            ],
             'correo_electronico' => $emailRule,
             'contrasena' => $passwordRules,
             'estado_usuario' => 'nullable|string|max:20',
-            
+
             'id_rol_fk' => 'sometimes|integer|exists:tbl_ms_rol,id_rol_pk',
             'primer_ingreso' => 'nullable|boolean',
             'fecha_ultima_conexion' => 'nullable|date',
@@ -169,8 +159,6 @@ class StoreUsuarioRequest extends FormRequest
             'usuario.max' => 'El usuario no puede superar 50 caracteres.',
             'usuario.unique' => 'Ese usuario ya está registrado.',
             'correo_electronico.unique' => 'Ese correo electrónico ya está registrado.',
-            'nombre_usuario.min' => 'El nombre debe tener al menos 2 caracteres.',
-            'nombre_usuario.regex' => 'El nombre sólo puede contener letras y espacios.',
             'contrasena.required' => 'La contraseña es obligatoria.',
             'contrasena.min' => 'La contraseña debe tener al menos ' . $this->passwordMinUsed . ' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',

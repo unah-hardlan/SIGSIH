@@ -274,7 +274,7 @@ class AuthController extends Controller
                         'module' => 'usuarios',
                         'meta'  => [
                             'id_usuario_pk' => $usuario->id_usuario_pk,
-                            'nombre_usuario' => $usuario->nombre_usuario,
+                            'nombre' => $usuario->nombre,
                         ],
                     ];
                     Notification::send($admins, new SystemNotification($payload));

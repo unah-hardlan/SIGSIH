@@ -9,18 +9,18 @@ use App\Models\Persona;
 
 class EnsureClientePersonaMappings extends Command
 {
-    
+
     protected $signature = 'clientes:ensure-mappings {--dry-run : Only show what would change}';
 
-    
+
     protected $description = 'Ensure every Cliente has at least one Persona mapped in tbl_cliente_persona (creating a minimal Persona when missing)';
 
-    
+
     public function handle(): int
     {
         $dry = (bool) $this->option('dry-run');
         $generoId = DB::table('tbl_genero')->min('id_genero_pk');
-        
+
         $usuarioSeq = (int) DB::table('tbl_ms_usuario')->max('id_usuario_pk');
         $createdPersonas = 0;
         $createdPivots = 0;
@@ -30,7 +30,7 @@ class EnsureClientePersonaMappings extends Command
             $hasPivot = DB::table('tbl_cliente_persona')->where('id_cliente_fk', $c->id_cliente_pk)->exists();
             if ($hasPivot) continue;
 
-            
+
             $tipo = is_string($c->tipo_cliente) ? strtolower($c->tipo_cliente) : $c->tipo_cliente;
             if ($tipo === 'empresa') {
                 $nombre = optional($c->empresa)->nombre_comercial ?: ('Cliente ' . $c->id_cliente_pk);
@@ -47,15 +47,14 @@ class EnsureClientePersonaMappings extends Command
                 ];
             }
             $pData['id_genero_fk'] = $generoId ?: null;
-            
+
             $usuarioSeq++;
             $username = 'CLIENTE_' . $c->id_cliente_pk;
             $email = 'cliente_' . $c->id_cliente_pk . '@example.local';
-            
+
             $roleId = DB::table('tbl_ms_rol')->min('id_rol_pk') ?: 1;
             $userId = DB::table('tbl_ms_usuario')->insertGetId([
                 'usuario' => strtoupper($username),
-                'nombre_usuario' => $username,
                 'estado_usuario' => 'ACTIVO',
                 'id_rol_fk' => $roleId,
                 'contrasena' => bcrypt('Temp#' . rand(1000, 9999)),

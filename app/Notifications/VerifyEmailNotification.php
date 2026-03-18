@@ -23,7 +23,7 @@ class VerifyEmailNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         $url = $this->verificationUrl($notifiable);
-        $name = trim((string) ($notifiable->nombre_usuario ?? $notifiable->usuario ?? ''));
+        $name = trim((string) ($notifiable->nombre ?? $notifiable->usuario ?? ''));
 
         $appName = $this->getParametro('APP.NOMBRE')
             ?? $this->getParametro('app.name')
@@ -68,10 +68,10 @@ class VerifyEmailNotification extends Notification
                 'token' => $this->token,
                 'email' => $notifiable->correo_electronico,
             ]);
-            return rtrim($frontendUrl, '/').'/verify-email?'.$query;
+            return rtrim($frontendUrl, '/') . '/verify-email?' . $query;
         }
-        
-        return url('/verificar-correo?token='.$this->token.'&email='.urlencode($notifiable->correo_electronico));
+
+        return url('/verificar-correo?token=' . $this->token . '&email=' . urlencode($notifiable->correo_electronico));
     }
 
     protected function getParametro(string $key): ?string

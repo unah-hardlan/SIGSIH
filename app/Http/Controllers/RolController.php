@@ -13,113 +13,116 @@ use App\Services\BitacoraService;
 class RolController extends Controller
 {
     public function __construct(private BitacoraService $bitacora) {}
-    
+
     public function index(Request $request)
     {
         $query = Rol::query();
-        if($q = $request->input('q')){
-            $query->where(function($sub) use ($q){
-                $sub->where('rol','like',"%$q%")
-                    ->orWhere('descripcion_rol','like',"%$q%");
+        if ($q = $request->input('q')) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('rol', 'like', "%$q%")
+                    ->orWhere('descripcion_rol', 'like', "%$q%");
             });
         }
-        
-        $sortable = ['rol'=>'rol','descripcion'=>'descripcion_rol','creado'=>'fecha_creacion'];
+
+        $sortable = ['rol' => 'rol', 'descripcion' => 'descripcion_rol', 'creado' => 'fecha_creacion'];
         $sort = $request->input('sort');
-        $direction = strtolower($request->input('direction','asc'))==='desc' ? 'desc':'asc';
+        $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortable[$sort] ?? 'id_rol_pk', $direction);
-        $perPage = (int)$request->input('per_page',10);
+        $perPage = (int)$request->input('per_page', 10);
         $roles = $query->paginate($perPage);
         return RolResource::collection($roles)->additional([
-            'meta'=>[
-                'page'=>$roles->currentPage(),
-                'per_page'=>$roles->perPage(),
-                'total'=>$roles->total(),
-                'last_page'=>$roles->lastPage(),
+            'meta' => [
+                'page' => $roles->currentPage(),
+                'per_page' => $roles->perPage(),
+                'total' => $roles->total(),
+                'last_page' => $roles->lastPage(),
             ]
         ]);
     }
 
-    
-    public function create()
-    {
-        
-    }
 
-    
+    public function create() {}
+
+
     public function store(StoreRolRequest $request)
     {
         $data = $request->validated();
         $data['creado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_creacion'] = now();
         $rol = Rol::create($data);
-    try { $this->bitacora->logFor('Roles', 'Insertar', 'Creación de rol '.$rol->rol); } catch (\Throwable $e) {}
+        try {
+            $this->bitacora->logFor('Roles', 'Insertar', 'Creación de rol ' . $rol->rol);
+        } catch (\Throwable $e) {
+        }
         return (new RolResource($rol))->response()->setStatusCode(201);
     }
 
-    
+
     public function show($id)
     {
         $rol = Rol::find($id);
-        if(!$rol) return response()->json(['error'=>'Rol no encontrado'],404);
+        if (!$rol) return response()->json(['error' => 'Rol no encontrado'], 404);
         return (new RolResource($rol))->response();
     }
 
-    
-    public function edit(string $id)
-    {
-        
-    }
 
-    
+    public function edit(string $id) {}
+
+
     public function update(UpdateRolRequest $request, $id)
     {
         $rol = Rol::find($id);
-        if(!$rol) return response()->json(['error'=>'Rol no encontrado'],404);
+        if (!$rol) return response()->json(['error' => 'Rol no encontrado'], 404);
         $data = $request->validated();
         $data['modificado_por'] = auth()->user()->usuario ?? 'system';
         $data['fecha_modificacion'] = now();
         $rol->update($data);
-    try { $this->bitacora->logFor('Roles', 'Actualizar', 'Actualización de rol '.$rol->rol); } catch (\Throwable $e) {}
+        try {
+            $this->bitacora->logFor('Roles', 'Actualizar', 'Actualización de rol ' . $rol->rol);
+        } catch (\Throwable $e) {
+        }
         return (new RolResource($rol))->response();
     }
 
-    
+
     public function destroy($id)
     {
         $rol = Rol::find($id);
-        if(!$rol) return response()->json(['error'=>'Rol no encontrado'],404);
-        $rol->delete(); 
-    try { $this->bitacora->logFor('Roles', 'Eliminar', 'Eliminación de rol '.$rol->rol); } catch (\Throwable $e) {}
-        return response()->json(['message'=>'Rol eliminado']);
+        if (!$rol) return response()->json(['error' => 'Rol no encontrado'], 404);
+        $rol->delete();
+        try {
+            $this->bitacora->logFor('Roles', 'Eliminar', 'Eliminación de rol ' . $rol->rol);
+        } catch (\Throwable $e) {
+        }
+        return response()->json(['message' => 'Rol eliminado']);
     }
 
-    
+
     public function usuarios($id, Request $request)
     {
-    $rol = Rol::find($id);
-    if(!$rol) return response()->json(['error' => 'Rol no encontrado'], 404);
+        $rol = Rol::find($id);
+        if (!$rol) return response()->json(['error' => 'Rol no encontrado'], 404);
 
-    
-    $users = \App\Models\Usuario::where('id_rol_fk', $rol->id_rol_pk);
+
+        $users = \App\Models\Usuario::with('persona')->where('id_rol_fk', $rol->id_rol_pk);
 
         if ($q = $request->input('q')) {
-            $users->where(function ($sub) use ($q) {
-                $sub->where('usuario', 'like', "%$q%")
-                    ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%");
-            });
+            $users->searchByIdentity($q);
         }
 
         $sortable = [
             'usuario' => 'usuario',
-            'nombre' => 'nombre_usuario',
+            'nombre' => 'nombre',
             'correo' => 'correo_electronico',
             'creado' => 'fecha_creacion',
         ];
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
-        $users->orderBy($sortable[$sort] ?? 'id_usuario_pk', $direction);
+        if (($sortable[$sort] ?? null) === 'nombre') {
+            $users->orderByPersonaName($direction);
+        } else {
+            $users->orderBy($sortable[$sort] ?? 'id_usuario_pk', $direction);
+        }
 
         if ($request->boolean('all', false)) {
             $collection = $users->get();

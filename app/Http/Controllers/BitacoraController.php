@@ -9,12 +9,12 @@ use Illuminate\Validation\Rule;
 
 class BitacoraController extends Controller
 {
-    
+
     public function index(Request $request)
     {
-    $q = Bitacora::query()->with(['usuario', 'objeto']);
+        $q = Bitacora::query()->with(['usuario', 'objeto']);
 
-        
+
         if ($request->filled('search')) {
             $search = trim($request->query('search'));
             $q->where(function ($w) use ($search) {
@@ -29,7 +29,12 @@ class BitacoraController extends Controller
             $usuario = strtoupper(trim($request->query('usuario')));
             $q->whereHas('usuario', function ($w) use ($usuario) {
                 $w->where('usuario', 'like', "%$usuario%")
-                  ->orWhere('nombre_usuario', 'like', "%$usuario%");
+                    ->orWhereHas('persona', function ($personaQuery) use ($usuario) {
+                        $personaQuery->where('primer_nombre', 'like', "%$usuario%")
+                            ->orWhere('segundo_nombre', 'like', "%$usuario%")
+                            ->orWhere('primer_apellido', 'like', "%$usuario%")
+                            ->orWhere('segundo_apellido', 'like', "%$usuario%");
+                    });
             });
         }
         if ($request->filled('objeto')) {
@@ -45,40 +50,37 @@ class BitacoraController extends Controller
             $q->whereDate('fecha_evento', '<=', $request->query('hasta'));
         }
 
-                
-                $sort = $request->query('sort', 'fecha_evento');
-                $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
-                $sortable = [
-                        'fecha_evento' => 'tbl_ms_bitacora.fecha_evento',
-                        'accion' => 'tbl_ms_bitacora.accion',
-                        'fecha_creacion' => 'tbl_ms_bitacora.fecha_creacion',
-                        'usuario' => 'u.usuario',
-                        'objeto' => 'o.nombre_objeto',
-                ];
-                
-                if ($sort === 'usuario') {
-                        $q->leftJoin('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'tbl_ms_bitacora.id_usuario_fk')
-                            ->select('tbl_ms_bitacora.*');
-                } elseif ($sort === 'objeto') {
-                        $q->leftJoin('tbl_objetos as o', 'o.id_objetos_pk', '=', 'tbl_ms_bitacora.id_objetos_fk')
-                            ->select('tbl_ms_bitacora.*');
-                }
-                $q->orderBy($sortable[$sort] ?? 'tbl_ms_bitacora.fecha_evento', $direction);
 
-                $pageSize = (int)($request->query('per_page', 10));
+        $sort = $request->query('sort', 'fecha_evento');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $sortable = [
+            'fecha_evento' => 'tbl_ms_bitacora.fecha_evento',
+            'accion' => 'tbl_ms_bitacora.accion',
+            'fecha_creacion' => 'tbl_ms_bitacora.fecha_creacion',
+            'usuario' => 'u.usuario',
+            'objeto' => 'o.nombre_objeto',
+        ];
+
+        if ($sort === 'usuario') {
+            $q->leftJoin('tbl_ms_usuario as u', 'u.id_usuario_pk', '=', 'tbl_ms_bitacora.id_usuario_fk')
+                ->select('tbl_ms_bitacora.*');
+        } elseif ($sort === 'objeto') {
+            $q->leftJoin('tbl_objetos as o', 'o.id_objetos_pk', '=', 'tbl_ms_bitacora.id_objetos_fk')
+                ->select('tbl_ms_bitacora.*');
+        }
+        $q->orderBy($sortable[$sort] ?? 'tbl_ms_bitacora.fecha_evento', $direction);
+
+        $pageSize = (int)($request->query('per_page', 10));
         $pageSize = max(5, min($pageSize, 100));
         $paginator = $q->paginate($pageSize)->appends($request->query());
 
         return BitacoraResource::collection($paginator);
     }
 
-    
-    public function create()
-    {
-        
-    }
 
-    
+    public function create() {}
+
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -100,7 +102,7 @@ class BitacoraController extends Controller
             ->setStatusCode(201);
     }
 
-    
+
     public function show(string $id)
     {
         $bitacora = Bitacora::find($id);
@@ -113,13 +115,10 @@ class BitacoraController extends Controller
             ->setStatusCode(200);
     }
 
-    
-    public function edit(string $id)
-    {
-        
-    }
 
-    
+    public function edit(string $id) {}
+
+
     public function update(Request $request, string $id)
     {
         $bit = Bitacora::find($id);
@@ -134,12 +133,12 @@ class BitacoraController extends Controller
         return new BitacoraResource($bit);
     }
 
-    
+
     public function destroy(string $id)
     {
-    $bit = Bitacora::find($id);
-    if (!$bit) return response()->json(['error' => 'No encontrado'], 404);
-    $bit->delete();
-    return response()->json(['ok' => true]);
+        $bit = Bitacora::find($id);
+        if (!$bit) return response()->json(['error' => 'No encontrado'], 404);
+        $bit->delete();
+        return response()->json(['ok' => true]);
     }
 }

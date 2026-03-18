@@ -31,7 +31,7 @@
 
                 <div class="flex-1 min-w-0">
                     <p class="text-lg sm:text-xl nunito-bold text-gray-800 dark:text-gray-100 truncate"
-                        x-text="p?.persona ? [p.persona.primer_nombre, p.persona.primer_apellido].filter(Boolean).join(' ') : (p?.user?.nombre_usuario || p?.user?.usuario || 'Mi perfil')">
+                        x-text="p?.persona ? [p.persona.primer_nombre, p.persona.primer_apellido].filter(Boolean).join(' ') : (p?.user?.nombre || p?.user?.usuario || 'Mi perfil')">
                     </p>
                     <p class="text-sm nunito-regular text-gray-600 dark:text-gray-300 truncate"
                         x-text="p?.user?.correo_electronico || ''"></p>

@@ -28,7 +28,6 @@ document.addEventListener("alpine:init", () => {
         rolesError: "",
         createForm: {
             usuario: "",
-            nombre_usuario: "",
             correo_electronico: "",
             estado_usuario: "ACTIVO",
             contrasena: "",
@@ -37,7 +36,6 @@ document.addEventListener("alpine:init", () => {
         editForm: {
             id: null,
             usuario: "",
-            nombre_usuario: "",
             correo_electronico: "",
             estado_usuario: "ACTIVO",
             contrasena: "",
@@ -56,9 +54,8 @@ document.addEventListener("alpine:init", () => {
         notify(msg, type = "success") {
             const el = document.createElement("div");
             el.textContent = msg;
-            el.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm text-white ${
-                type === "error" ? "bg-red-600" : "bg-green-600"
-            }`;
+            el.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm text-white ${type === "error" ? "bg-red-600" : "bg-green-600"
+                }`;
             document.body.appendChild(el);
             setTimeout(() => {
                 el.classList.add("opacity-0", "transition");
@@ -226,6 +223,9 @@ document.addEventListener("alpine:init", () => {
         userRole(u) {
             return u && u.rol ? u.rol : "-";
         },
+        userName(u) {
+            return (u && (u.nombre || u.usuario)) || "-";
+        },
         changePage(p) {
             if (p >= 1 && p <= this.pagination.last_page) {
                 this.pagination.page = p;
@@ -236,7 +236,6 @@ document.addEventListener("alpine:init", () => {
             if (!this.canAccess() || this.isSubmitting) return;
             this.createForm = {
                 usuario: "",
-                nombre_usuario: "",
                 correo_electronico: "",
                 estado_usuario: "ACTIVO",
                 contrasena: "",
@@ -287,7 +286,6 @@ document.addEventListener("alpine:init", () => {
             this.editForm = {
                 id: u.id,
                 usuario: u.usuario,
-                nombre_usuario: u.nombre_usuario,
                 correo_electronico: u.correo_electronico,
                 estado_usuario: u.estado_usuario,
                 contrasena: "",
@@ -303,7 +301,6 @@ document.addEventListener("alpine:init", () => {
             this.isSubmitting = true;
             this.formError = "";
             const payload = {
-                nombre_usuario: this.editForm.nombre_usuario,
                 correo_electronico: this.editForm.correo_electronico,
                 estado_usuario: this.editForm.estado_usuario,
             };

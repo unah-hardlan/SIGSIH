@@ -147,7 +147,7 @@
                             @forelse(($usuarios ?? collect()) as $u)
                             <tr>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->usuario }}</td>
-                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->nombre_usuario }}
+                                <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $u->nombre }}
                                 </td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ optional($u->rol)->rol }}
                                 </td>
