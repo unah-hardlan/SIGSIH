@@ -50,9 +50,9 @@ use App\Models\EstadoOrdenServicio;
 
 Route::middleware('auth:sanctum')->get('/user', [ProfileController::class, 'sanctumUser']);
 
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
 Route::post('logout', [AuthController::class, 'logout']);
-Route::post('register', [AuthController::class, 'register']);
+Route::post('register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
 Route::post('email/resend', [AuthController::class, 'resendVerification']);
 Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
@@ -60,6 +60,7 @@ Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 Route::post('email-contacto/enviar-codigo', [\App\Http\Controllers\EmailVerificationController::class, 'enviarCodigo']);
 Route::post('email-contacto/verificar-codigo', [\App\Http\Controllers\EmailVerificationController::class, 'verificarCodigo']);
 Route::post('email-contacto/verificar-estado', [\App\Http\Controllers\EmailVerificationController::class, 'verificarEstado']);
+Route::post('password/email', [AuthController::class, 'sendPasswordResetEmail'])->middleware('throttle:auth-password-recovery');
 
 Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', [\App\Http\Controllers\GeneroController::class, 'catalog']);
 
