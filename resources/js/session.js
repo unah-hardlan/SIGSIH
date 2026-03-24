@@ -1,5 +1,30 @@
 const AppSession = (() => {
-    function applyNewTokenFromHeader(_resp) {}
+    function applyNewTokenFromHeader(_resp) { }
+
+    async function ensureSessionAliveOnHistoryNavigation() {
+        try {
+            const resp = await fetch("/session/token", {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "same-origin",
+                cache: "no-store",
+            });
+
+            if (resp.status === 401) {
+                window.location.replace("/login");
+                return;
+            }
+
+            if (!resp.ok) {
+                window.location.replace("/login");
+            }
+        } catch (_) {
+            window.location.replace("/login");
+        }
+    }
 
     function logout() {
         try {
@@ -9,13 +34,13 @@ const AppSession = (() => {
                 channel.postMessage({ type: "logout" });
                 channel.close();
             }
-        } catch (_) {}
+        } catch (_) { }
         fetch("/api/logout", {
             method: "POST",
             headers: { Accept: "application/json" },
             credentials: "same-origin",
         })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => {
                 document.cookie =
                     "auth_token=; path=/; Max-Age=0; SameSite=Strict; Secure";
@@ -43,6 +68,20 @@ const AppSession = (() => {
             }
         };
     }
+
+    window.addEventListener("pageshow", (event) => {
+        const navEntry =
+            typeof performance !== "undefined" && performance.getEntriesByType
+                ? performance.getEntriesByType("navigation")[0]
+                : null;
+        const fromHistory =
+            event.persisted ||
+            (navEntry && navEntry.type === "back_forward");
+
+        if (fromHistory) {
+            ensureSessionAliveOnHistoryNavigation();
+        }
+    });
 
     return { logout, apiFetch };
 })();

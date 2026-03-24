@@ -86,12 +86,19 @@ class AuthController extends Controller
 
         $usuario = strtoupper(trim($data['usuario']));
         $password = $data['contrasena'];
+        $loginBaseKey = $this->progressiveBaseKey($request, 'login', $usuario);
+        if ($lockedResponse = $this->progressiveLockResponse($loginBaseKey, 'inicio de sesión')) {
+            return $lockedResponse;
+        }
+
         if (preg_match('/\s/', $usuario) || preg_match('/\s/', $password)) {
+            $this->registerProgressiveFailure($loginBaseKey);
             return response()->json(['success' => false, 'error' => 'Usuario/contraseña inválidos'], 200);
         }
 
         $cred = $this->authService->verifyCredentialsOnly($usuario, $password);
         if (isset($cred['error'])) {
+            $this->registerProgressiveFailure($loginBaseKey);
             return response()->json(['success' => false, 'error' => $cred['error']], 200);
         }
 
@@ -126,8 +133,11 @@ class AuthController extends Controller
 
         $result = $this->authService->attempt($usuario, $password);
         if (isset($result['error'])) {
+            $this->registerProgressiveFailure($loginBaseKey);
             return response()->json(['success' => false, 'error' => $result['error']], 200);
         }
+
+        $this->clearProgressiveFailures($loginBaseKey);
 
         try {
             $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null);
@@ -206,11 +216,17 @@ class AuthController extends Controller
         $req = request();
         $secure = ($req && $req->isSecure()) || str_starts_with((string) config('app.url'), 'https://');
         $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
+        $cacheHeaders = [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ];
         if ($req && ($req->expectsJson() || $req->wantsJson())) {
-            return response()->json(['ok' => true, 'redirect' => route('login')])
+            return response()->json(['ok' => true, 'redirect' => route('login')], 200, $cacheHeaders)
                 ->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
         }
         $redirect = redirect()->route('login');
+        $redirect->withHeaders($cacheHeaders);
         $redirect->cookie('auth_token', null, -1, '/', null, $secure, true, false, $sameSite);
         return $redirect;
     }
@@ -219,11 +235,17 @@ class AuthController extends Controller
     public function register(StoreUsuarioRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $registerIdentifier = (string) ($data['correo_electronico'] ?? ($data['usuario'] ?? ''));
+        $registerBaseKey = $this->progressiveBaseKey($request, 'register', $registerIdentifier);
+        if ($lockedResponse = $this->progressiveLockResponse($registerBaseKey, 'registro')) {
+            return $lockedResponse;
+        }
 
         $exists = Usuario::where('usuario', $data['usuario'])
             ->orWhere('correo_electronico', $data['correo_electronico'])
             ->first();
         if ($exists) {
+            $this->registerProgressiveFailure($registerBaseKey);
             return response()->json(['error' => 'El usuario o correo ya existe'], 409);
         }
 
@@ -234,6 +256,7 @@ class AuthController extends Controller
         if ($rolPk) {
             $data['id_rol_fk'] = $rolPk;
         } else {
+            $this->registerProgressiveFailure($registerBaseKey);
             return response()->json([
                 'error' => 'No hay un rol por defecto disponible. Configure al menos un rol.'
             ], 422);
@@ -295,12 +318,14 @@ class AuthController extends Controller
                 $usuario->notify(new VerifyEmailNotification($usuario->email_verification_token));
             } catch (\Throwable $e) {
             }
+            $this->clearProgressiveFailures($registerBaseKey);
             return response()->json(['status' => 'verification_sent'], 201);
         }
 
 
         $tokenResult = $this->authService->tokenForUser($usuario);
         if (isset($tokenResult['error'])) {
+            $this->registerProgressiveFailure($registerBaseKey);
             return response()->json(['error' => $tokenResult['error']], $tokenResult['code']);
         }
         $token = $tokenResult['token'] ?? null;
@@ -313,6 +338,7 @@ class AuthController extends Controller
             $sameSite = app()->environment('production') ? 'Strict' : 'Lax';
             $response->cookie('auth_token', $token, 60, '/', null, $secure, true, false, $sameSite);
         }
+        $this->clearProgressiveFailures($registerBaseKey);
         return $response;
     }
 
@@ -467,14 +493,22 @@ class AuthController extends Controller
     public function sendPasswordResetEmail(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'identifier' => 'nullable|string|max:255',
-            'email' => 'nullable|string|max:255',
+            'identifier' => ['nullable', 'string', 'max:255', 'regex:/^(?!.*\s)[A-Za-z0-9._%+\-\x{00C0}-\x{00FF}@]+$/u'],
+            'email' => ['nullable', 'string', 'max:255', 'regex:/^(?!.*\s)[A-Za-z0-9._%+\-\x{00C0}-\x{00FF}@]+$/u'],
+        ], [
+            'identifier.regex' => 'El identificador no puede contener espacios ni caracteres de alfabetos no latinos (por ejemplo: 名前).',
+            'email.regex' => 'El correo no puede contener espacios ni caracteres de alfabetos no latinos (por ejemplo: 名前).',
         ]);
 
         $rawIdentifier = $data['identifier'] ?? $data['email'] ?? null;
         $identifier = is_string($rawIdentifier) ? trim($rawIdentifier) : '';
+        $recoveryBaseKey = $this->progressiveBaseKey($request, 'password-recovery', $identifier);
+        if ($lockedResponse = $this->progressiveLockResponse($recoveryBaseKey, 'recuperación de contraseña')) {
+            return $lockedResponse;
+        }
 
         if ($identifier === '') {
+            $this->registerProgressiveFailure($recoveryBaseKey);
             return response()->json([
                 'message' => 'Debes ingresar tu correo electrónico o nombre de usuario.'
             ], 422);
@@ -497,12 +531,14 @@ class AuthController extends Controller
         }
 
         if (!$usuario) {
+            $this->registerProgressiveFailure($recoveryBaseKey);
             return response()->json([
                 'message' => 'No encontramos ninguna cuenta que coincida con los datos proporcionados.'
             ], 404);
         }
 
         if (!$normalizedEmail) {
+            $this->registerProgressiveFailure($recoveryBaseKey);
             return response()->json([
                 'message' => 'El usuario no tiene un correo electrónico registrado. Comunícate con el administrador.'
             ], 422);
@@ -569,6 +605,8 @@ class AuthController extends Controller
                 RateLimiter::hit($rateLimiterKey, $rateLimiterTtl);
             }
 
+            $this->clearProgressiveFailures($recoveryBaseKey);
+
             try {
                 $this->bitacora->logFor(
                     'Password Reset',
@@ -589,6 +627,50 @@ class AuthController extends Controller
                 'message' => 'No se pudo enviar el correo de recuperación en este momento. Inténtalo más tarde.'
             ], 500);
         }
+    }
+
+    private function progressiveBaseKey(Request $request, string $action, ?string $identifier = null): string
+    {
+        $normalized = strtolower(trim((string) $identifier));
+        return 'rl:progressive:' . $action . ':' . sha1($request->ip() . '|' . $normalized);
+    }
+
+    private function progressiveLockResponse(string $baseKey, string $actionLabel): ?JsonResponse
+    {
+        $lockKey = $baseKey . ':lock';
+        if (!RateLimiter::tooManyAttempts($lockKey, 1)) {
+            return null;
+        }
+
+        $secondsRemaining = max(1, RateLimiter::availableIn($lockKey));
+        $minutesRemaining = max(1, (int) ceil($secondsRemaining / 60));
+        return response()->json([
+            'message' => "Demasiados intentos de {$actionLabel}. Debes esperar {$minutesRemaining} minuto(s) antes de volver a intentar.",
+            'retry_after_seconds' => $secondsRemaining,
+        ], 429);
+    }
+
+    private function registerProgressiveFailure(string $baseKey): void
+    {
+        $failsKey = $baseKey . ':fails';
+        $lockKey = $baseKey . ':lock';
+
+        $attempts = RateLimiter::attempts($failsKey) + 1;
+        RateLimiter::hit($failsKey, 60 * 60 * 24);
+
+        if ($attempts < 3) {
+            return;
+        }
+
+        $step = min(8, $attempts - 2);
+        $lockSeconds = min(60 * 60 * 24, 30 * (2 ** ($step - 1)));
+        RateLimiter::hit($lockKey, $lockSeconds);
+    }
+
+    private function clearProgressiveFailures(string $baseKey): void
+    {
+        RateLimiter::clear($baseKey . ':fails');
+        RateLimiter::clear($baseKey . ':lock');
     }
 
     public function showPasswordResetForm(Request $request, string $token)
