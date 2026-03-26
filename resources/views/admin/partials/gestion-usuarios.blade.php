@@ -374,35 +374,31 @@
 
     <script>
         window.getAdminPasswordRegex = function() {
-            if (window._adminPasswordRegex) return window._adminPasswordRegex;
+                if (window._adminPasswordRegex) return window._adminPasswordRegex;
 
-            function buildRegexFromValue(v) {
-                if (!v) return null;
-                v = v.toString().trim();
-                if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
-                    try {
-                        return new RegExp(v.slice(1, -1));
-                    } catch (e) {}
-                }
-                if (/[\\^\[\]()+*?.|]/.test(v)) {
-                    try {
-                        return new RegExp(v);
-                    } catch (e) {}
-                }
-                var lookaheads = [];
-                if (/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
-                if (/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
-                if (/\d/.test(v)) lookaheads.push('(?=.*\\d)');
-                if (/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
-                if (lookaheads.length > 0) {
-                    var minLen = Math.max(8, v.length);
-                    var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
-                    try {
-                        return new RegExp(pattern);
-                    } catch (e) {}
-                }
-                return null;
-            }
-        }
-    </script>
-</div>
+                function buildRegexFromValue(v) {
+                    if (!v) return null;
+                    v = v.toString().trim();
+                    if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
+                        try {
+                            return new RegExp(v.slice(1, -1));
+                        } catch (e) {}
+                    }
+                    if (/[\\^\[\]()+*?.|]/.test(v)) {
+                        try {
+                            return new RegExp(v);
+                        } catch (e) {}
+                    }
+                    var lookaheads = [];
+                    if (/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
+                    if (/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
+                    if (/\d/.test(v)) lookaheads.push('(?=.*\\d)');
+                    if (/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
+                    if (lookaheads.length > 0) {
+                        var minLen = Math.max(8, v.length);
+                        var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
+                        try {
+                            return new RegExp(pattern);
+                        } catch (e) {}
+                    }
+                    return null;

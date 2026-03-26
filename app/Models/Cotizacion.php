@@ -27,6 +27,7 @@ class Cotizacion extends Model
         'id_estado_cotizacion_fk',
         'id_cliente_fk',
         'id_orden_servicio_fk',
+        'es_activo',
     ];
 
     protected $casts = [
@@ -40,16 +41,28 @@ class Cotizacion extends Model
         'otros_cargos' => 'float',
         'impuesto_otros' => 'float',
         'anticipo_requerido' => 'float',
+        'es_activo' => 'boolean',
     ];
 
     protected static function boot()
     {
         parent::boot();
         static::creating(function ($model) {
-            if (!$model->fecha_cotizacion) {
-                $model->fecha_cotizacion = now();
+            // Keep valido_hasta optional at form level, but ensure a sensible default
+            // when DB constraints require a non-null value.
+            if (!$model->valido_hasta) {
+                try {
+                    $base = $model->fecha_cotizacion ? \Carbon\Carbon::parse($model->fecha_cotizacion) : now();
+                    $model->valido_hasta = $base->copy()->addDays(30)->toDateString();
+                } catch (\Throwable $e) {
+                    $model->valido_hasta = now()->addDays(30)->toDateString();
+                }
             }
-            
+
+            if ($model->es_activo === null) {
+                $model->es_activo = true;
+            }
+
             try {
                 if (!$model->id_estado_cotizacion_fk) {
                     $estadoId = EstadoCotizacion::where('codigo', 'borrador')->value('id_estado_cotizacion_pk');
@@ -58,7 +71,6 @@ class Cotizacion extends Model
                     }
                 }
             } catch (\Throwable $e) {
-                
             }
         });
     }

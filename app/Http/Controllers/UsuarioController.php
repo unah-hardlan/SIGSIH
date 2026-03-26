@@ -343,8 +343,16 @@ class UsuarioController extends Controller
             return response()->json(['data' => [], 'meta' => ['count' => 0]]);
         }
         $roleIds = $roles->pluck('id_rol_pk')->all();
-        $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
-        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')->whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_fk')->all();
+        // Solo usuarios ACTIVOS con rol técnico en id_rol_fk
+        $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)
+            ->where('estado_usuario', 'ACTIVO')
+            ->pluck('id_usuario_pk')->all();
+        // Solo usuarios ACTIVOS con rol técnico en tbl_usuario_rol
+        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+            ->whereIn('tbl_usuario_rol.id_rol_fk', $roleIds)
+            ->join('tbl_ms_usuario', 'tbl_usuario_rol.id_usuario_fk', '=', 'tbl_ms_usuario.id_usuario_pk')
+            ->where('tbl_ms_usuario.estado_usuario', 'ACTIVO')
+            ->pluck('id_usuario_fk')->all();
         $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
         if (empty($userIds)) {
             return response()->json(['data' => [], 'meta' => ['count' => 0]]);

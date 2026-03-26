@@ -361,6 +361,7 @@ import {
     faStar,
     faExchangeAlt,
     faTicket,
+    faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -469,7 +470,8 @@ library.add(
     faStar,
     faExchangeAlt,
     faHome,
-    faTicket
+    faTicket,
+    faUndo
 );
 dom.watch();
 

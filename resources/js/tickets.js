@@ -1,8 +1,13 @@
 window.ticketsApiHandlers = {
     headers() {
+        let tz = "UTC";
+        try {
+            tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        } catch (_) { }
         return {
             "Content-Type": "application/json",
             Accept: "application/json",
+            "X-Timezone": tz,
         };
     },
     toMysqlDateTime(value) {
@@ -53,23 +58,23 @@ window.ticketsApiHandlers = {
             component.estadosTicket = Array.isArray(estData?.data)
                 ? estData.data
                 : Array.isArray(estData)
-                ? estData
-                : [];
+                    ? estData
+                    : [];
             component.personas = Array.isArray(perData?.data)
                 ? perData.data
                 : Array.isArray(perData)
-                ? perData
-                : [];
+                    ? perData
+                    : [];
             component.clientes = Array.isArray(cliData?.data)
                 ? cliData.data
                 : Array.isArray(cliData)
-                ? cliData
-                : [];
+                    ? cliData
+                    : [];
             component.tecnicos = Array.isArray(tecData?.data)
                 ? tecData.data
                 : Array.isArray(tecData)
-                ? tecData
-                : [];
+                    ? tecData
+                    : [];
 
             if (
                 !Array.isArray(component.tecnicos) ||
@@ -95,8 +100,8 @@ window.ticketsApiHandlers = {
                     const rolesItems = Array.isArray(rolesJson?.data?.data)
                         ? rolesJson.data.data
                         : Array.isArray(rolesJson?.data)
-                        ? rolesJson.data
-                        : [];
+                            ? rolesJson.data
+                            : [];
                     const roleTecnico = (rolesItems || []).find(
                         (r) => plain(r?.rol) === "tecnico"
                     );
@@ -114,13 +119,13 @@ window.ticketsApiHandlers = {
                         const usersItems = Array.isArray(usersJson?.data)
                             ? usersJson.data
                             : Array.isArray(usersJson)
-                            ? usersJson
-                            : [];
+                                ? usersJson
+                                : [];
                         tecnicoUserIds = new Set(
                             (usersItems || []).map((u) => String(u.id))
                         );
                     }
-                } catch (_) {}
+                } catch (_) { }
                 if (tecnicoUserIds.size === 0) {
                     try {
                         const users = await fetch(
@@ -134,16 +139,16 @@ window.ticketsApiHandlers = {
                         const usuarios = Array.isArray(usersData?.data?.data)
                             ? usersData.data.data
                             : Array.isArray(usersData?.data)
-                            ? usersData.data
-                            : Array.isArray(usersData)
-                            ? usersData
-                            : [];
+                                ? usersData.data
+                                : Array.isArray(usersData)
+                                    ? usersData
+                                    : [];
                         tecnicoUserIds = new Set(
                             (usuarios || [])
                                 .filter((u) => plain(u?.rol) === "tecnico")
                                 .map((u) => String(u.id))
                         );
-                    } catch (_) {}
+                    } catch (_) { }
                 }
                 component.tecnicos = (component.personas || []).filter((p) =>
                     tecnicoUserIds.has(String(p.id_usuario_fk))
@@ -189,8 +194,8 @@ window.ticketsApiHandlers = {
             const items = Array.isArray(data?.data?.data)
                 ? data.data.data
                 : Array.isArray(data?.data)
-                ? data.data
-                : [];
+                    ? data.data
+                    : [];
             const estados = component.estadosTicket || [];
             const personas = component.personas || [];
             const tecnicos = component.tecnicos || personas;
@@ -210,10 +215,10 @@ window.ticketsApiHandlers = {
                         tecnicos.find(
                             (per) => String(per.id) === String(t.id_tecnico_fk)
                         ) ||
-                            personas.find(
-                                (per) =>
-                                    String(per.id) === String(t.id_tecnico_fk)
-                            )
+                        personas.find(
+                            (per) =>
+                                String(per.id) === String(t.id_tecnico_fk)
+                        )
                     );
 
                 const clienteNombre =
@@ -260,6 +265,10 @@ window.ticketsApiHandlers = {
         }
     },
     async store(component) {
+        if (component.savingTicket) {
+            return;
+        }
+
         if (
             !component.new_fecha_creacion ||
             !component.new_descripcion_ticket ||
@@ -272,6 +281,29 @@ window.ticketsApiHandlers = {
                 window.showToast("Completa los campos requeridos", "error")
             );
         }
+
+        try {
+            const selected = new Date(component.new_fecha_creacion);
+            if (!Number.isNaN(selected.getTime())) {
+                const selectedDay = new Date(selected);
+                selectedDay.setHours(0, 0, 0, 0);
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDay.getTime() < today.getTime()) {
+                    return (
+                        window.showToast &&
+                        window.showToast(
+                            "No se permiten fechas anteriores al día actual",
+                            "error"
+                        )
+                    );
+                }
+            }
+        } catch (_) { }
+
+        component.savingTicket = true;
         try {
             const payload = {
                 fecha_creacion: this.toMysqlDateTime(
@@ -300,10 +332,12 @@ window.ticketsApiHandlers = {
             await this.fetchTickets(component);
         } catch (e) {
             const msg =
-                e?.message ||
                 Object.values(e?.errors || {})?.[0]?.[0] ||
+                e?.message ||
                 "Error al crear";
             window.showToast && window.showToast(msg, "error");
+        } finally {
+            component.savingTicket = false;
         }
     },
     async update(component) {

@@ -1,7 +1,7 @@
 
 window.estadosTicketsApiHandlers = {
 
-    authHeaders() {
+    requestHeaders() {
         return {
             "Content-Type": "application/json",
             Accept: "application/json",
@@ -100,7 +100,7 @@ window.estadosTicketsApiHandlers = {
 
             const response = await fetch("/api/estados-ticket", {
                 method: "POST",
-                headers: this.authHeaders(),
+                headers: this.requestHeaders(),
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
@@ -134,8 +134,15 @@ window.estadosTicketsApiHandlers = {
             await this.fetchEstadosTickets(component);
         } catch (error) {
             console.error("Error creating estado ticket:", error);
+            const message =
+                error?.message ||
+                error?.error ||
+                (error?.errors
+                    ? Object.values(error.errors).flat().join(" ")
+                    : null) ||
+                "Error al crear el estado de ticket";
             window.showToast &&
-                window.showToast("Error al crear el estado de ticket", "error");
+                window.showToast(message, "error");
         }
     },
 
@@ -210,7 +217,7 @@ window.estadosTicketsApiHandlers = {
                 `/api/estados-ticket/${component.itemToEdit.id_estado_ticket_pk}`,
                 {
                     method: "PUT",
-                    headers: this.authHeaders(),
+                    headers: this.requestHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }

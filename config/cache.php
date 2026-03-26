@@ -4,11 +4,14 @@ use Illuminate\Support\Str;
 
 return [
 
-    
+
 
     'default' => env('CACHE_DRIVER', 'file'),
 
-    
+    // Store used by Illuminate\Support\Facades\RateLimiter.
+    'limiter' => env('CACHE_LIMITER', env('CACHE_DRIVER', 'file')),
+
+
 
     'stores' => [
 
@@ -41,9 +44,7 @@ return [
                 env('MEMCACHED_USERNAME'),
                 env('MEMCACHED_PASSWORD'),
             ],
-            'options' => [
-                
-            ],
+            'options' => [],
             'servers' => [
                 [
                     'host' => env('MEMCACHED_HOST', '127.0.0.1'),
@@ -74,8 +75,8 @@ return [
 
     ],
 
-    
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_cache_'),
 
 ];

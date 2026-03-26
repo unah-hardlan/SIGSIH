@@ -141,6 +141,8 @@ function createAuthPage() {
             const issues = [];
             if (value.length === 0) {
                 issues.push("El usuario es requerido.");
+            } else if (!this.isLogin && value.length < 4) {
+                issues.push("El usuario debe tener al menos 4 caracteres.");
             } else if (!this.isAlphaNumeric(value)) {
                 issues.push(
                     "Solo se permiten letras y números, sin espacios ni símbolos."
@@ -161,9 +163,9 @@ function createAuthPage() {
             if (!this.isLogin && value.length === 0) {
                 issues.push("El correo electrónico es requerido.");
             } else if (value.length > 0) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const emailRegex = /^[A-Za-z0-9._%+\-\u00C0-\u00FF]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/u;
                 if (!emailRegex.test(value)) {
-                    issues.push("Ingresa un correo electrónico válido.");
+                    issues.push("Usa un correo válido con letras latinas (incluye ñ), números y símbolos estándar.");
                 }
             }
             return issues;
@@ -181,6 +183,9 @@ function createAuthPage() {
             }
             if (/\s/.test(value)) {
                 issues.push("No debe contener espacios.");
+            }
+            if (/[^\x21-\x7E\u00A1-\u00FF]/.test(value)) {
+                issues.push("No se permiten caracteres de alfabetos no latinos (por ejemplo: 名前).");
             }
 
             if (!this.isLogin && !/[A-Z]/.test(value)) {
@@ -305,6 +310,14 @@ function createAuthPage() {
                     this.formError =
                         resp.data?.message ||
                         "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
+                } else if (resp?.status === 429) {
+                    const retry = Number(resp?.data?.retry_after_seconds || 0);
+                    this.formError =
+                        resp?.data?.message ||
+                        "Demasiados intentos. Intenta nuevamente más tarde.";
+                    if (Number.isFinite(retry) && retry > 0) {
+                        this.formError += ` (Espera ${Math.ceil(retry / 60)} minuto(s))`;
+                    }
                 } else if (resp?.status === 401) {
                     this.formError =
                         resp.data?.message ||

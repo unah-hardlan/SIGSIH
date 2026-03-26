@@ -7,7 +7,7 @@ use App\Models\Parametro;
 
 class StoreUsuarioRequest extends FormRequest
 {
-    protected int $usuarioMinUsed = 3;
+    protected int $usuarioMinUsed = 4;
     protected ?string $correoDominioUsed = null;
     protected int $passwordMinUsed = 8;
     public function authorize(): bool
@@ -40,7 +40,13 @@ class StoreUsuarioRequest extends FormRequest
             ->value('valor');
 
 
-        $emailRule = 'required|email|max:100|unique:tbl_ms_usuario,correo_electronico';
+        $emailRules = [
+            'required',
+            'email',
+            'max:100',
+            'unique:tbl_ms_usuario,correo_electronico',
+            'regex:/^[A-Za-z0-9._%+\-\x{00C0}-\x{00FF}]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/u',
+        ];
         $correoDominio = null;
         if ($correoMuestra) {
             $correoMuestra = trim($correoMuestra);
@@ -54,7 +60,7 @@ class StoreUsuarioRequest extends FormRequest
             $isPlaceholder = str_contains($correoDominio, 'dominio') || str_contains($correoDominio, 'extension');
             if (!$isPlaceholder) {
                 $this->correoDominioUsed = $correoDominio;
-                $emailRule .= '|regex:/^[^@\s]+@' . preg_quote($correoDominio, '/') . '$/i';
+                $emailRules[] = 'regex:/^[^@\s]+@' . preg_quote($correoDominio, '/') . '$/i';
             } else {
 
                 $this->correoDominioUsed = null;
@@ -62,9 +68,9 @@ class StoreUsuarioRequest extends FormRequest
         }
 
 
-        $usuarioMin = 3;
+        $usuarioMin = 4;
         if ($usuarioMuestra) {
-            $usuarioMin = max(3, strlen($usuarioMuestra));
+            $usuarioMin = max(4, strlen($usuarioMuestra));
         }
         $this->usuarioMinUsed = $usuarioMin;
 
@@ -94,7 +100,7 @@ class StoreUsuarioRequest extends FormRequest
         }
 
         $this->passwordMinUsed = $minPass;
-        $passwordRules = ['required', 'string', 'min:' . $minPass, 'max:100', 'regex:/^\S+$/'];
+        $passwordRules = ['required', 'string', 'min:' . $minPass, 'max:100', 'regex:/^(?!.*\s)[\x21-\x7E\xA1-\xFF]+$/'];
 
         $passwordRules[] = function ($attribute, $value, $fail) {
             $usuarioInput = strtoupper($this->input('usuario', ''));
@@ -141,7 +147,7 @@ class StoreUsuarioRequest extends FormRequest
                 },
                 'unique:tbl_ms_usuario,usuario'
             ],
-            'correo_electronico' => $emailRule,
+            'correo_electronico' => $emailRules,
             'contrasena' => $passwordRules,
             'estado_usuario' => 'nullable|string|max:20',
 
@@ -162,10 +168,10 @@ class StoreUsuarioRequest extends FormRequest
             'contrasena.required' => 'La contraseña es obligatoria.',
             'contrasena.min' => 'La contraseña debe tener al menos ' . $this->passwordMinUsed . ' caracteres.',
             'contrasena.max' => 'La contraseña no puede superar 100 caracteres.',
-            'contrasena.regex' => 'La contraseña no puede contener espacios.',
+            'contrasena.regex' => 'La contraseña no puede contener espacios ni caracteres de alfabetos no latinos (por ejemplo: 名前).',
             'correo_electronico.regex' => $this->correoDominioUsed
                 ? 'El correo debe pertenecer al dominio: ' . $this->correoDominioUsed
-                : 'El correo no cumple el formato requerido.',
+                : 'El correo solo puede usar letras latinas (incluye ñ), números y símbolos estándar.',
         ];
         return $mensajes;
     }
