@@ -15,7 +15,7 @@
         <div class="bg-gray-200 rounded p-3 w-full max-w-xs flex flex-col gap-2">
             <div class="flex items-center justify-between">
                 <span class="nunito-bold text-xs text-gray-700">FECHA</span>
-                <span class="nunito-regular text-xs bg-white rounded px-2 py-1">@fecha($fecha)</span>
+                <span class="nunito-regular text-xs bg-white rounded px-2 py-1">{{ \App\Helpers\DateHelper::format($fecha, 'j/n/Y') }}</span>
             </div>
             <div class="flex items-center justify-between">
                 <span class="nunito-bold text-xs text-gray-700">MÓDULO</span>

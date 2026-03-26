@@ -2934,16 +2934,11 @@ if (typeof window !== "undefined") {
                     params.set("estado_solicitud", this.estadoSolicitud);
                 if (this.ordenarPor) params.set("ordenar_por", this.ordenarPor);
                 const now = new Date();
-                try {
-                    const fechaStr = now.toLocaleDateString("es-HN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    });
-                    params.set("fecha", fechaStr);
-                } catch (_) {
-                    params.set("fecha", now.toISOString().slice(0, 10));
-                }
+                const pad = (n) => String(n).padStart(2, "0");
+                const yyyy = now.getFullYear();
+                const mm = pad(now.getMonth() + 1);
+                const dd = pad(now.getDate());
+                params.set("fecha", `${yyyy}-${mm}-${dd}`);
                 params.set("fecha_generacion", now.toISOString());
                 return "/admin/reportes-header?" + params.toString();
             },

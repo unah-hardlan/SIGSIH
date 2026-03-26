@@ -16,7 +16,7 @@
                 </div>
                 <div><span class="font-semibold">Ordenar por:</span> {{ $ordenLabel }}</div>
                 <div><span class="font-semibold">Generado:</span>
-                    {{ $fechaGeneracion ? e($fechaGeneracion) : now()->toDateTimeString() }}
+                    {{ $fechaGeneracion ? e($fechaGeneracion) : \App\Helpers\DateHelper::now()->toDateTimeString() }}
                 </div>
             </div>
 

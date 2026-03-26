@@ -214,7 +214,7 @@
         class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed">Nuevo
         ticket</button>
       @endperm
-      <a href="/admin/reportes-header?modulo=Tickets&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+      <a href="/admin/reportes-header?modulo=Tickets&fecha={{ \App\Helpers\DateHelper::nowFormatted('d/m/Y') }}" target="_blank"
         class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center gap-2 text-sm">
         <i class="fas fa-file-alt"></i> Generar Reporte
       </a>

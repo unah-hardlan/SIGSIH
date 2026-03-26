@@ -131,7 +131,7 @@ class ProyectoController extends Controller
 
     public function reporteBasico(Request $request)
     {
-        $fecha = $request->query('fecha', now()->format('d-M-Y'));
+        $fecha = $request->query('fecha', \App\Helpers\DateHelper::nowFormatted('d/m/Y'));
         $modulo = $request->query('modulo', 'Proyecto BAC');
         return view('admin.reporte-proyecto', compact('fecha', 'modulo'));
     }
@@ -146,14 +146,13 @@ class ProyectoController extends Controller
     public function reportesHeader(Request $request)
     {
         $modulo = $request->query('modulo', '');
-        $fecha = $request->query('fecha', now()->format('d-M-Y'));
+        $fecha = $request->query('fecha', \App\Helpers\DateHelper::nowFormatted('d/m/Y'));
         $moduloLower = strtolower($modulo);
         $ordenarPor = $request->query('ordenar_por');
         $search = $request->query('search');
         $estadoEmpresa = $request->query('estado_empresa');
         $fechaGeneracion = $request->query('fecha_generacion');
 
-        // Delegaciones a métodos reporte ya existentes
         $delegaciones = [
             'usuarios' => [\App\Http\Controllers\UsuarioController::class, 'reporte'],
             'parametros' => [\App\Http\Controllers\ParametroController::class, 'reporte'],
@@ -193,7 +192,6 @@ class ProyectoController extends Controller
             return app(\App\Http\Controllers\PersonaController::class)->reporte($request);
         }
 
-        // Empesas
         if ($moduloLower === 'empresas') {
             $query = \App\Models\Cliente::query()
                 ->where('tipo_cliente', 'empresa')
@@ -250,7 +248,6 @@ class ProyectoController extends Controller
             return view($view, compact('fecha', 'modulo', 'empresas', 'ordenarPor', 'ordenLabel', 'search', 'estadoEmpresa', 'fechaGeneracion', 'nombresEmpresa', 'oficinasEmpresa'));
         }
 
-        // Proyecto BAC / resumen
         if (in_array($moduloLower, ['proyecto', 'proyecto-bac', 'reporte-proyecto'])) {
             $total_ingresos = $request->query('total_ingresos') ?? 'L. 4,787.00';
             $total_gastos = $request->query('total_gastos') ?? 'L. 0.00';
@@ -263,7 +260,6 @@ class ProyectoController extends Controller
             return view('admin.reporte-proyecto', compact('fecha', 'modulo', 'total_ingresos', 'total_gastos', 'balance', 'cards'));
         }
 
-        // Solicitudes
         if ($moduloLower === 'solicitudes') {
             $ordenarPor = $request->query('ordenar_por');
             $search = $request->query('search');
@@ -323,7 +319,6 @@ class ProyectoController extends Controller
             return view($view, compact('fecha', 'modulo', 'solicitudes', 'ordenarPor', 'search', 'estadoSolicitud', 'fechaGeneracion'));
         }
 
-        // Bitácora
         if ($moduloLower === 'bitacora') {
             $search = $request->query('search');
             $accion = $request->query('accion');
@@ -376,7 +371,6 @@ class ProyectoController extends Controller
             return view($view, compact('fecha', 'modulo', 'items', 'search', 'accion', 'usuario', 'objeto', 'desde', 'hasta', 'sort', 'direction'));
         }
 
-        // Facturas
         if ($moduloLower === 'facturas') {
             $search = $request->query('search');
             $estadoFactura = $request->query('estado_factura');
@@ -454,7 +448,7 @@ class ProyectoController extends Controller
             return $p->estadoProyecto && $p->estadoProyecto->codigo === 'INACTIVO';
         })->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'proyectos';
 
         return view('admin.reporte-proyectos', compact('proyectos', 'total', 'activos', 'finalizados', 'inactivos', 'fecha', 'modulo', 'sort', 'direction'));
@@ -525,7 +519,7 @@ class ProyectoController extends Controller
         $sumaGastos = $gastos->sum('monto_gasto');
         $balance = $sumaIngresos - $sumaGastos;
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'movimientos-proyecto';
 
         return view('admin.reporte-movimientos-proyecto', compact(
@@ -597,7 +591,7 @@ class ProyectoController extends Controller
 
         $movimientos = $movimientos->sortByDesc('fecha');
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'proyecto-financiero';
 
         return view('admin.reporte-proyecto-financiero', compact(

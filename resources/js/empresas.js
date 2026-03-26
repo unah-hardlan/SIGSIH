@@ -66,14 +66,11 @@ if (typeof window !== "undefined") {
                 }
 
                 const now = new Date();
-                params.set(
-                    "fecha",
-                    now.toLocaleDateString("es-HN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    })
-                );
+                const pad = (n) => String(n).padStart(2, "0");
+                const yyyy = now.getFullYear();
+                const mm = pad(now.getMonth() + 1);
+                const dd = pad(now.getDate());
+                params.set("fecha", `${yyyy}-${mm}-${dd}`);
                 params.set("fecha_generacion", now.toISOString());
 
                 return "/admin/reportes-header?" + params.toString();

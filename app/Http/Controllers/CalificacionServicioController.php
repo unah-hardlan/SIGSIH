@@ -125,7 +125,7 @@ class CalificacionServicioController extends Controller
         $calificaciones = $query->get();
         $total = $calificaciones->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'calificaciones-servicio';
 
         return view('admin.reporte-calificaciones-servicio', compact('calificaciones','total','fecha','modulo','sort','direction'));

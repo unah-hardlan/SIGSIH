@@ -144,7 +144,7 @@ class CaiController extends Controller
         $agotados = $cais->filter(function($c) { return $c->estadoCai && strtolower($c->estadoCai->codigo) === 'cai-agt'; })->count();
         $cerrados = $cais->filter(function($c) { return $c->estadoCai && strtolower($c->estadoCai->codigo) === 'cai-cer'; })->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'cai';
 
         return view('admin.reporte-cai', compact('cais', 'total', 'activos', 'agotados', 'cerrados', 'fecha', 'modulo', 'sort', 'direction'));
