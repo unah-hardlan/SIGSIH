@@ -79,7 +79,7 @@
     $catEstadosKeys = ['Estados CAI','Estados de Proyecto','Estados de Solicitud','Estados de Tickets','Estados del
     Calendario'];
     $canCatalogoEstados = $perm->can($u, $catEstadosKeys, 'ver');
-    $catServiciosKeys = ['Servicio Factura','Servicios Realizados'];
+    $catServiciosKeys = ['Servicio Factura','Servicios Factura','Servicios Realizados','Servicio Realizado'];
     $canCatalogoServicios = $perm->can($u, $catServiciosKeys, 'ver');
     $catTiposKeys = ['Tipo de Movimiento','Tipo de Objeto','Tipo de Producto','Tipo de Visita','Tipo de Mantenimiento'];
     $canCatalogoTipos = $perm->can($u, $catTiposKeys, 'ver');
@@ -611,7 +611,7 @@
                             </li>
                             @endif
 
-                            @if($perm->can($u, ['Servicios Realizados'], 'ver'))
+                            @if($perm->can($u, ['Servicios Realizados','Servicio Realizado'], 'ver'))
                             <li>
                                 <x-admin.sidebar-link href="#" :active="false" view-name="catalogo-servicios-realizados"
                                     class="py-1 px-3">

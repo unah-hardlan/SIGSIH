@@ -2,23 +2,39 @@
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreTicketRequest extends FormRequest
 {
-    
+
     public function authorize(): bool
     {
         return true;
     }
 
-    
+
     public function rules(): array
     {
         return [
-            'fecha_creacion' => 'required|date',
+            'fecha_creacion' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $tz = $this->header('X-Timezone') ?: config('app.timezone', 'UTC');
+                    try {
+                        $selectedDate = Carbon::parse($value, $tz)->toDateString();
+                        $todayDate = Carbon::now($tz)->toDateString();
+                        if ($selectedDate < $todayDate) {
+                            $fail('La fecha de creación no puede ser anterior al día actual');
+                        }
+                    } catch (\Throwable $e) {
+                        $fail('La fecha de creación debe ser una fecha válida');
+                    }
+                },
+            ],
             'descripcion_ticket' => 'required|string|max:500',
             'id_estado_ticket_fk' => 'required|integer|exists:tbl_estado_ticket,id_estado_ticket_pk',
             'id_tecnico_fk' => 'required|integer|exists:tbl_persona,id_persona_pk',
@@ -26,7 +42,7 @@ class StoreTicketRequest extends FormRequest
         ];
     }
 
-    
+
     public function messages(): array
     {
         return [
@@ -43,7 +59,7 @@ class StoreTicketRequest extends FormRequest
         ];
     }
 
-    
+
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([

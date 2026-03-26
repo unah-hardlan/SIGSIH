@@ -4,6 +4,7 @@
     isModalOpen: false,
     isEditModalOpen: false,
     isDeleteModalOpen: false,
+    savingTicket: false,
     ticketToEdit: null,
     ticketToDelete: null,
 
@@ -112,6 +113,27 @@
     openDelete(item) {
       this.ticketToDelete = item;
       this.isDeleteModalOpen = true;
+    },
+    minTicketDate() {
+      try {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+      } catch (_) {
+        return '';
+      }
+    },
+    isPastDate(value) {
+      try {
+        if (!value) return false;
+        const selected = new Date(value);
+        selected.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selected.getTime() < today.getTime();
+      } catch (_) {
+        return false;
+      }
     },
         estadoBadge(name) {
             const n = String(name || '').toLowerCase();
@@ -387,8 +409,11 @@
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Fecha</label>
         <input type="datetime-local" x-model="new_fecha_creacion" @input="formTicketAdd._touched.fecha = true"
           @blur="formTicketAdd._touched.fecha = true"
+          :min="minTicketDate()"
           class="mt-1 w-full border border-gray-500 rounded px-3 py-2 nunito-regular dark:bg-gray-800 dark:text-gray-200"
-          :class="formTicketAdd._touched && formTicketAdd._touched.fecha && !new_fecha_creacion ? 'border-red-500' : ''" />
+          :class="formTicketAdd._touched && formTicketAdd._touched.fecha && (!new_fecha_creacion || isPastDate(new_fecha_creacion)) ? 'border-red-500' : ''" />
+        <small class="block mt-1 text-sm text-gray-500"
+          :class="formTicketAdd._touched && formTicketAdd._touched.fecha && (!new_fecha_creacion || isPastDate(new_fecha_creacion)) ? 'text-red-500' : ''">Requerido. No se permiten fechas pasadas.</small>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 nunito-bold">Estado</label>
