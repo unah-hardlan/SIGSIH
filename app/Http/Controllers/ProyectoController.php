@@ -438,15 +438,20 @@ class ProyectoController extends Controller
 
         $proyectos = $query->get();
         $total = $proyectos->count();
-        $activos = $proyectos->filter(function ($p) {
-            return $p->estadoProyecto && $p->estadoProyecto->codigo === 'ACTIVO';
+
+        $normalizeEstado = function ($p): string {
+            $estado = $p->estadoProyecto;
+            $raw = $estado->codigo ?? $estado->nombre ?? $estado->nombre_estado ?? '';
+            return strtoupper(trim((string) $raw));
+        };
+
+        $activos = $proyectos->filter(function ($p) use ($normalizeEstado) {
+            return in_array($normalizeEstado($p), ['AC', 'ACTIVO'], true);
         })->count();
-        $finalizados = $proyectos->filter(function ($p) {
-            return $p->estadoProyecto && $p->estadoProyecto->codigo === 'FINALIZADO';
+        $finalizados = $proyectos->filter(function ($p) use ($normalizeEstado) {
+            return in_array($normalizeEstado($p), ['FIN', 'FINALIZADO'], true);
         })->count();
-        $inactivos = $proyectos->filter(function ($p) {
-            return $p->estadoProyecto && $p->estadoProyecto->codigo === 'INACTIVO';
-        })->count();
+        $inactivos = $total - $activos - $finalizados;
 
         $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'proyectos';
