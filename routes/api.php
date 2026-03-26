@@ -64,6 +64,9 @@ Route::post('password/email', [AuthController::class, 'sendPasswordResetEmail'])
 
 Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', [\App\Http\Controllers\GeneroController::class, 'catalog']);
 
+// Catálogos sin autenticación
+Route::get('tecnicos', [UsuarioController::class, 'tecnicosCatalog']);
+
 Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function () {
     Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
     Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
@@ -98,6 +101,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::apiResource('direcciones', DireccionesController::class);
     Route::apiResource('origenes', \App\Http\Controllers\OrigenController::class);
     Route::apiResource('cotizaciones', \App\Http\Controllers\CotizacionController::class);
+    Route::put('cotizaciones/{id}/restore', [\App\Http\Controllers\CotizacionController::class, 'restore']);
     Route::apiResource('acciones-realizadas', \App\Http\Controllers\AccionRealizadaController::class);
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
     Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
@@ -153,8 +157,6 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::put('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'setRol']);
 
     Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
-
-    Route::get('tecnicos', [UsuarioController::class, 'tecnicosCatalog'])->withoutMiddleware('auto.permiso');
 
     Route::get('dashboard/indicadores', [DashboardController::class, 'indicators']);
     Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);

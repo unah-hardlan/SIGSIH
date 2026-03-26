@@ -25,6 +25,13 @@ class CotizacionController extends Controller
     {
         $query = Cotizacion::query()->with(['cliente.empresa', 'cliente.personas', 'estado']);
 
+        // Soft delete by flag: by default list only active records.
+        if ($request->boolean('only_inactivos')) {
+            $query->where('es_activo', false);
+        } elseif (!$request->boolean('include_inactivos')) {
+            $query->where('es_activo', true);
+        }
+
         if ($cliente = $request->input('id_cliente_fk')) {
             $query->where('id_cliente_fk', $cliente);
         }
@@ -279,7 +286,29 @@ class CotizacionController extends Controller
     {
         $cotizacion = Cotizacion::find($id);
         if (!$cotizacion) return response()->json(['error' => 'Cotizacion no encontrada'], 404);
-        $cotizacion->delete();
-        return response()->json(['message' => 'Cotizacion eliminada']);
+        if (!$cotizacion->es_activo) {
+            return response()->json(['message' => 'Cotizacion ya estaba inactiva']);
+        }
+
+        $cotizacion->es_activo = false;
+        $cotizacion->save();
+
+        return response()->json(['message' => 'Cotizacion inactivada']);
+    }
+
+    public function restore($id)
+    {
+        $cotizacion = Cotizacion::find($id);
+        if (!$cotizacion) {
+            return response()->json(['error' => 'Cotizacion no encontrada'], 404);
+        }
+        if ($cotizacion->es_activo) {
+            return response()->json(['message' => 'Cotizacion ya estaba activa']);
+        }
+
+        $cotizacion->es_activo = true;
+        $cotizacion->save();
+
+        return response()->json(['message' => 'Cotizacion restaurada']);
     }
 }

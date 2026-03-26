@@ -1,4 +1,15 @@
 window.tipoVisitasApiHandlers = {
+    requestHeaders() {
+        let tz = "UTC";
+        try {
+            tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        } catch (_) { }
+        return {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-Timezone": tz,
+        };
+    },
     /**
     
      * @param {object} component 
@@ -18,7 +29,7 @@ window.tipoVisitasApiHandlers = {
             const response = await fetch(
                 `/api/tipos-visita?${params.toString()}`,
                 {
-                    headers: { Accept: "application/json" },
+                    headers: this.requestHeaders(),
                     credentials: "same-origin",
                 }
             );
@@ -28,8 +39,8 @@ window.tipoVisitasApiHandlers = {
             component.tipoVisitas = Array.isArray(data?.data)
                 ? data.data
                 : Array.isArray(data)
-                ? data
-                : [];
+                    ? data
+                    : [];
         } catch (error) {
             console.error("Error fetching tipos visita:", error);
             window.showToast &&
@@ -73,7 +84,7 @@ window.tipoVisitasApiHandlers = {
             };
             const response = await fetch("/api/tipos-visita", {
                 method: "POST",
-                headers: this.authHeaders(),
+                headers: this.requestHeaders(),
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
             });
@@ -90,8 +101,12 @@ window.tipoVisitasApiHandlers = {
             await this.fetchTipoVisitas(component);
         } catch (error) {
             console.error("Error creating tipo visita:", error);
+            const msg =
+                Object.values(error?.errors || {})?.[0]?.[0] ||
+                error?.message ||
+                "Error al crear el tipo de visita";
             window.showToast &&
-                window.showToast("Error al crear el tipo de visita", "error");
+                window.showToast(msg, "error");
         }
     },
 
@@ -121,9 +136,9 @@ window.tipoVisitasApiHandlers = {
             component.tipoVisitas.some(
                 (tv) =>
                     tv.nombre_tipo_visita.toLowerCase() ===
-                        nombreTrim.toLowerCase() &&
+                    nombreTrim.toLowerCase() &&
                     tv.id_tipo_visita_pk !==
-                        component.itemToEdit.id_tipo_visita_pk
+                    component.itemToEdit.id_tipo_visita_pk
             )
         ) {
             window.showToast &&
@@ -142,7 +157,7 @@ window.tipoVisitasApiHandlers = {
                 `/api/tipos-visita/${component.itemToEdit.id_tipo_visita_pk}`,
                 {
                     method: "PUT",
-                    headers: this.authHeaders(),
+                    headers: this.requestHeaders(),
                     credentials: "same-origin",
                     body: JSON.stringify(payload),
                 }
@@ -159,11 +174,12 @@ window.tipoVisitasApiHandlers = {
             await this.fetchTipoVisitas(component);
         } catch (error) {
             console.error("Error updating tipo visita:", error);
+            const msg =
+                Object.values(error?.errors || {})?.[0]?.[0] ||
+                error?.message ||
+                "Error al actualizar el tipo de visita";
             window.showToast &&
-                window.showToast(
-                    "Error al actualizar el tipo de visita",
-                    "error"
-                );
+                window.showToast(msg, "error");
         }
     },
 
@@ -182,7 +198,7 @@ window.tipoVisitasApiHandlers = {
                 `/api/tipos-visita/${component.itemToDelete.id_tipo_visita_pk}`,
                 {
                     method: "DELETE",
-                    headers: { Accept: "application/json" },
+                    headers: this.requestHeaders(),
                     credentials: "same-origin",
                 }
             );
@@ -198,11 +214,12 @@ window.tipoVisitasApiHandlers = {
             await this.fetchTipoVisitas(component);
         } catch (error) {
             console.error("Error deleting tipo visita:", error);
+            const msg =
+                Object.values(error?.errors || {})?.[0]?.[0] ||
+                error?.message ||
+                "Error al eliminar el tipo de visita";
             window.showToast &&
-                window.showToast(
-                    "Error al eliminar el tipo de visita",
-                    "error"
-                );
+                window.showToast(msg, "error");
         }
     },
 };

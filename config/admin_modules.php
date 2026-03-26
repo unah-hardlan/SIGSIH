@@ -75,7 +75,7 @@ return [
             'objects' => [],
         ],
 
-        
+
         'gestion-usuarios' => [
             'label' => 'Gestión de usuarios',
             'module' => 'seguridad',
@@ -98,7 +98,7 @@ return [
             'objects' => ['Configuración de accesos', 'Configuracion de accesos', 'Permisos'],
         ],
 
-        
+
         'gestion-empresas' => [
             'label' => 'Gestión de empresas',
             'module' => 'clientes',
@@ -135,7 +135,7 @@ return [
             'objects' => ['Calificaciones de Servicio', 'Calificaciones Servicio', 'Calificación de Servicio'],
         ],
 
-        
+
         'proyectos' => [
             'label' => 'Gestión de proyectos',
             'module' => 'proyectos',
@@ -151,7 +151,7 @@ return [
             'objects' => ['Vista de proyectos', 'Proyectos (Vista)'],
         ],
 
-        
+
         'tickets' => [
             'label' => 'Gestión de tickets',
             'module' => 'tickets',
@@ -160,7 +160,7 @@ return [
             'objects' => ['Gestión de tickets', 'Gestion de tickets', 'Tickets'],
         ],
 
-        
+
         'agencias' => [
             'label' => 'Gestión de agencias',
             'module' => 'calendario',
@@ -176,7 +176,7 @@ return [
             'objects' => ['Calendario', 'Gestión de Calendario', 'Gestion de Calendario'],
         ],
 
-        
+
         'facturas' => [
             'label' => 'Gestión de facturas',
             'module' => 'facturacion',
@@ -192,7 +192,7 @@ return [
             'objects' => ['CAI'],
         ],
 
-        
+
         'reportes' => [
             'label' => 'Gestión de reportes',
             'module' => 'reportes',
@@ -201,7 +201,7 @@ return [
             'objects' => ['Reportes', 'Gestión de Reportes', 'Gestion de Reportes'],
         ],
 
-        
+
         'productos' => [
             'label' => 'Gestión de productos',
             'module' => 'inventario',
@@ -217,7 +217,7 @@ return [
             'objects' => ['Kardex'],
         ],
 
-        
+
         'gestion-personas' => [
             'label' => 'Gestión de personas',
             'module' => 'administracion',
@@ -247,7 +247,7 @@ return [
             'objects' => ['Gestión de base de datos', 'Gestion de base de datos'],
         ],
 
-        
+
         'mantenimiento-general' => [
             'label' => 'Mantenimiento del sistema',
             'module' => 'mantenimiento',
@@ -256,7 +256,7 @@ return [
             'objects' => ['Mantenimiento del Sistema', 'Mantenimiento del sistema'],
         ],
 
-        
+
         'catalogo-acciones-realizadas' => [
             'label' => 'Acciones realizadas',
             'module' => 'catalogo',
@@ -339,7 +339,7 @@ return [
             'module' => 'catalogo',
             'blade' => 'admin.partials.catalogo-servicios-realizados',
             'type' => 'partial',
-            'objects' => ['Servicios Realizados'],
+            'objects' => ['Servicios Realizados', 'Servicio Realizado'],
         ],
         'catalogo-tipo-movimiento' => [
             'label' => 'Tipo de movimiento',
@@ -398,7 +398,7 @@ return [
             'objects' => ['Ubicaciones'],
         ],
 
-        
+
         'reporte-usuarios' => [
             'label' => 'Reporte de usuarios',
             'module' => 'reportes',

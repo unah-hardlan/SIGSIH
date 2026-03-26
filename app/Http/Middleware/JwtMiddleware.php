@@ -35,7 +35,7 @@ class JwtMiddleware
             $decoded = JWT::decode($token, new Key($secret, 'HS256'));
             $user = Usuario::find($decoded->sub);
             if (!$user) {
-                return response()->json(['error' => 'Usuario no encontrado'], 404);
+                return response()->json(['error' => 'Usuario no encontrado o sesión inválida'], 401);
             }
 
             $tokenHash = hash('sha256', $token);
