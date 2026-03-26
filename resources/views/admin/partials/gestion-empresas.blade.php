@@ -264,12 +264,13 @@
                     x-model="formEmpresa.fecha_registro"
                     @change="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.fecha_registro = true"
                     @blur="formEmpresa._touched = formEmpresa._touched || {}; formEmpresa._touched.fecha_registro = true"
-                    :class="formEmpresa._touched && !formEmpresa.fecha_registro ? 'border-red-500' : ''"
+                    :max="new Date().toISOString().slice(0,10)"
+                    :class="formEmpresa._touched && (!formEmpresa.fecha_registro || (formEmpresa.fecha_registro && new Date(formEmpresa.fecha_registro + 'T00:00:00') > new Date(new Date().setHours(0,0,0,0)))) ? 'border-red-500' : ''"
                     required>
                 <template x-if="errors.fecha_registro">
                     <p class="text-xs text-red-600 mt-1" x-text="errors.fecha_registro[0]"></p>
                 </template>
-                <small x-show="!errors.fecha_registro" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && !formEmpresa.fecha_registro ? 'text-red-500' : ''">Requerido.</small>
+                <small x-show="!errors.fecha_registro" class="text-xs text-gray-500 block mt-1" :class="formEmpresa._touched && !formEmpresa.fecha_registro ? 'text-red-500' : ''">Requerido. No se permiten fechas futuras.</small>
             </div>
             <div>
                 <label for="estado_cliente" class="block text-sm font-medium nunito-bold">Estado <span

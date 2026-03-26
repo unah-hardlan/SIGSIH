@@ -3745,6 +3745,28 @@ if (typeof window !== "undefined") {
                     errs.valor_contacto = [
                         "El valor de contacto es requerido.",
                     ];
+                } else {
+                    const valor = String(this.formContacto.valor_contacto).trim();
+                    // TC-011: Validate minimum 3 characters
+                    if (valor.length < 3) {
+                        errs.valor_contacto = [
+                            "El contacto debe tener al menos 3 caracteres.",
+                        ];
+                    } else {
+                        // TC-012: Check for emojis (Unicode points above U+1F000)
+                        const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{27BF}]|[\u{2300}-\u{23FF}]|[\u{2000}-\u{206F}]|[\u{FE00}-\u{FE0F}]/gu;
+                        if (emojiRegex.test(valor)) {
+                            errs.valor_contacto = [
+                                "El contacto contiene emojis no permitidos.",
+                            ];
+                        }
+                        // TC-012: Check for excessive character repetition (more than 2 consecutive)
+                        else if (/(.)\1{2,}/.test(valor)) {
+                            errs.valor_contacto = [
+                                "El contacto no puede contener caracteres repetidos más de 2 veces consecutivas.",
+                            ];
+                        }
+                    }
                 }
                 if (!this.formContacto.id_cliente_fk) {
                     errs.id_cliente_fk = ["Seleccione un cliente."];

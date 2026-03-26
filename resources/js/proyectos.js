@@ -33,6 +33,38 @@ window.proyectosApiHandlers = {
         }
     },
 
+    _validateYearRange(dateStr) {
+        if (!dateStr) return true;
+        const year = parseInt(dateStr.substring(0, 4), 10);
+        return !isNaN(year) && year >= 1900 && year <= 2100;
+    },
+
+    _validateDateSequence(inicio, estFin, realFin) {
+        const errors = {};
+        if (!inicio) {
+            errors.fecha_inicio_proyecto = ['La fecha de inicio es obligatoria'];
+            return errors;
+        }
+        if (!this._validateYearRange(inicio)) {
+            errors.fecha_inicio_proyecto = ['El año debe estar en el rango permitido (1900-2100)'];
+        }
+        if (estFin) {
+            if (!this._validateYearRange(estFin)) {
+                errors.fecha_estimada_fin_proyecto = ['El año debe estar en el rango permitido (1900-2100)'];
+            } else if (new Date(estFin) < new Date(inicio)) {
+                errors.fecha_estimada_fin_proyecto = ['La fecha fin estimada debe ser posterior o igual a la fecha de inicio'];
+            }
+        }
+        if (realFin) {
+            if (!this._validateYearRange(realFin)) {
+                errors.fecha_finalizacion_proyecto = ['El año debe estar en el rango permitido (1900-2100)'];
+            } else if (new Date(realFin) < new Date(inicio)) {
+                errors.fecha_finalizacion_proyecto = ['La fecha fin real debe ser posterior o igual a la fecha de inicio'];
+            }
+        }
+        return errors;
+    },
+
     async submitProyecto(component) {
         const nombreTrim = String(component.nombre_proyecto || "").trim();
         if (!nombreTrim) {
@@ -43,6 +75,25 @@ window.proyectosApiHandlers = {
                 );
             return;
         }
+
+        // Validar fechas
+        const dateErrors = this._validateDateSequence(
+            component.fecha_inicio_proyecto,
+            component.fecha_estimada_fin_proyecto,
+            component.fecha_finalizacion_proyecto
+        );
+        if (Object.keys(dateErrors).length > 0) {
+            component.errors = dateErrors;
+            Object.values(dateErrors).forEach(msgs => {
+                if (Array.isArray(msgs)) {
+                    msgs.forEach(msg => {
+                        window.showToast && window.showToast(msg, "error");
+                    });
+                }
+            });
+            return;
+        }
+
         try {
             const payload = {
                 nombre_proyecto: nombreTrim,
@@ -67,7 +118,19 @@ window.proyectosApiHandlers = {
                 body: JSON.stringify(payload),
             });
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw data;
+            if (!response.ok) {
+                if (data?.errors) {
+                    component.errors = data.errors;
+                    Object.values(data.errors).forEach(msgs => {
+                        if (Array.isArray(msgs)) {
+                            msgs.forEach(msg => {
+                                window.showToast && window.showToast(msg, "error");
+                            });
+                        }
+                    });
+                }
+                throw data;
+            }
             window.showToast &&
                 window.showToast("Proyecto creado exitosamente", "success");
             component.nombre_proyecto = "";
@@ -78,6 +141,8 @@ window.proyectosApiHandlers = {
             component.id_orden_servicio_fk = "";
             component.id_estado_proyecto_fk = "";
             component.isProyectoModalOpen = false;
+            component.errors = {};
+
             await this.fetchProyectos(component);
             await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {
@@ -101,6 +166,25 @@ window.proyectosApiHandlers = {
                 );
             return;
         }
+
+        // Validar fechas
+        const dateErrors = this._validateDateSequence(
+            component.itemToEdit.fecha_inicio_proyecto,
+            component.itemToEdit.fecha_estimada_fin_proyecto,
+            component.itemToEdit.fecha_finalizacion_proyecto
+        );
+        if (Object.keys(dateErrors).length > 0) {
+            component.errors = dateErrors;
+            Object.values(dateErrors).forEach(msgs => {
+                if (Array.isArray(msgs)) {
+                    msgs.forEach(msg => {
+                        window.showToast && window.showToast(msg, "error");
+                    });
+                }
+            });
+            return;
+        }
+
         try {
             const payload = {
                 nombre_proyecto: nombreTrim,
@@ -133,6 +217,7 @@ window.proyectosApiHandlers = {
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
                 if (data && data.errors) {
+                    component.errors = data.errors;
                     Object.values(data.errors).forEach((errArr) => {
                         if (Array.isArray(errArr)) {
                             errArr.forEach((msg) => {
@@ -157,6 +242,8 @@ window.proyectosApiHandlers = {
                 );
             component.isProyectoEditModalOpen = false;
             component.itemToEdit = null;
+            component.errors = {};
+
             await this.fetchProyectos(component);
             await window.catalogosApiHandlers.fetchProyectos(component);
         } catch (error) {

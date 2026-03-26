@@ -67,8 +67,23 @@ class ContactoController extends Controller
     {
         $validated = $request->validate([
             'tipo_contacto' => 'required|string|max:50',
-            'valor_contacto' => 'required|string|max:255',
+            'valor_contacto' => [
+                'required',
+                'string',
+                'min:3',
+                'max:255',
+                'regex:/^[\p{L}\p{N}\p{P}\p{S}\s]+$/u', // Only letters, numbers, punctuation, symbols, spaces - NO emojis
+                function ($attribute, $value, $fail) {
+                    // Check for excessive repeated characters (more than 2 consecutive)
+                    if (preg_match('/(.)\1{2,}/', $value)) {
+                        $fail('El valor de contacto no puede contener caracteres repetidos más de 2 veces consecutivas.');
+                    }
+                }
+            ],
             'id_cliente_fk' => 'required|integer|exists:tbl_cliente,id_cliente_pk',
+        ], [
+            'valor_contacto.min' => 'El contacto debe tener al menos 3 caracteres.',
+            'valor_contacto.regex' => 'El contacto contiene caracteres no permitidos o emojis.',
         ]);
 
         $contacto = Contacto::create($validated);
@@ -95,8 +110,24 @@ class ContactoController extends Controller
 
         $validated = $request->validate([
             'tipo_contacto' => 'sometimes|required|string|max:50',
-            'valor_contacto' => 'sometimes|required|string|max:255',
+            'valor_contacto' => [
+                'sometimes',
+                'required',
+                'string',
+                'min:3',
+                'max:255',
+                'regex:/^[\p{L}\p{N}\p{P}\p{S}\s]+$/u', // Only letters, numbers, punctuation, symbols, spaces - NO emojis
+                function ($attribute, $value, $fail) {
+                    // Check for excessive repeated characters (more than 2 consecutive)
+                    if (preg_match('/(.)\1{2,}/', $value)) {
+                        $fail('El valor de contacto no puede contener caracteres repetidos más de 2 veces consecutivas.');
+                    }
+                }
+            ],
             'id_cliente_fk' => 'sometimes|required|integer|exists:tbl_cliente,id_cliente_pk',
+        ], [
+            'valor_contacto.min' => 'El contacto debe tener al menos 3 caracteres.',
+            'valor_contacto.regex' => 'El contacto contiene caracteres no permitidos o emojis.',
         ]);
 
         $contacto->update($validated);
