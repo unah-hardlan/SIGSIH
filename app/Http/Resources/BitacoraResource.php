@@ -37,6 +37,13 @@ class BitacoraResource extends JsonResource
                 'nombre_objeto' => $objeto->nombre_objeto ?? null,
             ] : null,
 
+            'tabla' => $this->tabla,
+            'id_registro' => $this->id_registro,
+            'antes' => $this->antes,
+            'despues' => $this->despues,
+            'ip' => $this->ip,
+            'user_agent' => $this->user_agent,
+
 
             'creado_por' => $creadoPor,
             'fecha_creacion' => $fechaCreacion,

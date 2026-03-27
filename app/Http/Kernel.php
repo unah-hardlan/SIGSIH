@@ -6,9 +6,9 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
-    
+
     protected $middleware = [
-        
+
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
@@ -17,7 +17,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
-    
+
     protected $middlewareGroups = [
         'web' => [
             \App\Http\Middleware\EncryptCookies::class,
@@ -26,16 +26,18 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\LogCrudActions::class,
         ],
 
         'api' => [
-            
+
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\LogCrudActions::class,
         ],
     ];
 
-    
+
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
@@ -50,15 +52,15 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        
+
         'jwt.auth' => \App\Http\Middleware\JwtMiddleware::class,
 
-        
+
         'auth.jwt.web' => \App\Http\Middleware\JwtWebAuth::class,
         'jwt.refresh' => \App\Http\Middleware\JwtRefresh::class,
-    'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
-    'auto.permiso' => \App\Http\Middleware\AutoPermissionMiddleware::class,
-    'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
+        'permiso' => \App\Http\Middleware\PermissionMiddleware::class,
+        'auto.permiso' => \App\Http\Middleware\AutoPermissionMiddleware::class,
+        'force.profile' => \App\Http\Middleware\ForceProfileCompletion::class,
         'client.only' => \App\Http\Middleware\ClientOnly::class,
         'block.client' => \App\Http\Middleware\BlockClientFromAdmin::class,
         'admin.only' => \App\Http\Middleware\AdminOnly::class,

@@ -6,8 +6,9 @@
     itemToDelete: null,
     
     personas: [],
-    loading: false,
+    loading: true,
     error: '',
+    personasLoaded: false,
 
     numbersPersonas: [],
     currentPagePersonas: 1,
@@ -161,9 +162,11 @@
             const data = await res.json();
             const items = Array.isArray(data?.data) ? data.data : [];
             this.personas = items.map(p => this.mapPersona(p));
+            this.personasLoaded = true;
             this.numbersPersonas = this.personas; // Sincroniza el alias
         } catch (e) {
             if (e.name !== 'AbortError') this.error = e.message || 'Error';
+            if (e.name !== 'AbortError') this.personasLoaded = true;
         } finally {
             this.loading = false;
         }
@@ -263,7 +266,8 @@
             'filtrosSelect' => [],
             'ordenarOptions' => [ 'nombre' => 'Nombre', 'dni' => 'DNI' ]
             ])
-            <select x-model="filtroGenero" class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+            <select x-model="filtroGenero"
+                class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-56 md:w-64 sm:min-w-[14rem] md:min-w-[16rem] shrink-0 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                 <option value="">Todos los géneros</option>
                 <template x-for="op in catalogoGeneros" :key="'filtro-genero-'+op.id">
                     <option :value="op.genero" x-text="op.genero"></option>
@@ -273,19 +277,26 @@
 
         <x-slot name="actions">
             <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'insercion')
-                <button @click="openAdd()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar Persona</button>
+                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de
+                Personas','Personas'], 'insercion')
+                <button @click="openAdd()"
+                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm">Agregar
+                    Persona</button>
                 @else
-                <button disabled title="Sin permiso para crear" class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed">Agregar Persona</button>
+                <button disabled title="Sin permiso para crear"
+                    class="w-full sm:w-auto bg-gray-300 text-gray-600 px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap text-sm cursor-not-allowed">Agregar
+                    Persona</button>
                 @endperm
-                <a :href="reportUrl()" target="_blank" class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                <a :href="reportUrl()" target="_blank"
+                    class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </a>
             </div>
         </x-slot>
 
         <x-slot name="table">
-            <table class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
+            <table
+                class="min-w-full text-sm bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-collapse table-white-dividers">
                 <thead class="bg-gray-100 dark:bg-gray-700 nunito-bold">
                     <tr>
                         <th class="py-2 px-4 text-left">Primer Nombre</th>
@@ -301,10 +312,11 @@
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
+                            <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular"><i
+                                    class="fas fa-spinner fa-spin mr-2"></i> Cargando…</td>
                         </tr>
                     </template>
-                    <template x-if="!loading && filteredPersonas.length===0">
+                    <template x-if="!loading && personasLoaded && filteredPersonas.length===0">
                         <tr>
                             <td colspan="8" class="py-8 text-center text-gray-500 nunito-regular">No hay personas</td>
                         </tr>
@@ -317,17 +329,24 @@
                             <td class="py-2 px-4" x-text="persona.segundo_apellido || '-' "></td>
                             <td class="py-2 px-4" x-text="persona.dni || '-' "></td>
                             <td class="py-2 px-4" x-text="persona.genero_nombre || '-' "></td>
-                            <td class="py-2 px-4" x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '-' "></td>
+                            <td class="py-2 px-4"
+                                x-text="usuarioNombreById(persona.id_usuario_fk) || persona.usuario || '-' "></td>
                             <td class="py-2 px-4 flex gap-2">
-                                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'actualizacion')
-                                <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700" title="Editar"><i class="fas fa-edit"></i></a>
+                                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de
+                                Personas','Personas'], 'actualizacion')
+                                <a href="#" @click.prevent="openEdit(persona)" class="text-blue-500 hover:text-blue-700"
+                                    title="Editar"><i class="fas fa-edit"></i></a>
                                 @else
-                                <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i class="fas fa-edit"></i></span>
+                                <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para editar"><i
+                                        class="fas fa-edit"></i></span>
                                 @endperm
-                                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'eliminacion')
-                                <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700" title="Eliminar"><i class="fas fa-trash"></i></a>
+                                @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de
+                                Personas','Personas'], 'eliminacion')
+                                <a href="#" @click.prevent="openDelete(persona)" class="text-red-500 hover:text-red-700"
+                                    title="Eliminar"><i class="fas fa-trash"></i></a>
                                 @else
-                                <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i class="fas fa-trash"></i></span>
+                                <span class="text-red-300 cursor-not-allowed" title="Sin permiso para eliminar"><i
+                                        class="fas fa-trash"></i></span>
                                 @endperm
                             </td>
                         </tr>
@@ -338,37 +357,57 @@
 
         <x-slot name="cards">
             <template x-if="loading">
-                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando…</div>
+                <div class="p-8 text-center text-gray-500 nunito-regular"><i class="fas fa-spinner fa-spin mr-2"></i>
+                    Cargando…</div>
             </template>
-            <template x-if="!loading && filteredPersonas.length===0">
+            <template x-if="!loading && personasLoaded && filteredPersonas.length===0">
                 <div class="p-8 text-center text-gray-500 nunito-regular">No hay personas</div>
             </template>
             <template x-for="p in paginatedPersonas()" :key="'card-p-'+p.id">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-800">
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-800">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="[p.primer_nombre,p.segundo_nombre,p.primer_apellido,p.segundo_apellido].filter(Boolean).join(' ')"></h3>
+                            <h3 class="font-semibold text-gray-900 dark:text-white"
+                                x-text="[p.primer_nombre,p.segundo_nombre,p.primer_apellido,p.segundo_apellido].filter(Boolean).join(' ')">
+                            </h3>
                             <p class="text-xs text-gray-500 dark:text-gray-400" x-text="p.dni"></p>
                         </div>
                     </div>
                     <div class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Nombre:</span> <span x-text="p.primer_nombre || '-'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Nombre:</span> <span x-text="p.segundo_nombre || '-'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Apellido:</span> <span x-text="p.primer_apellido || '-'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Apellido:</span> <span x-text="p.segundo_apellido || '-'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span x-text="p.genero_nombre || '-'"></span></div>
-                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Nombre:</span> <span
+                                x-text="p.primer_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Nombre:</span> <span
+                                x-text="p.segundo_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Primer Apellido:</span> <span
+                                x-text="p.primer_apellido || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Segundo Apellido:</span> <span
+                                x-text="p.segundo_apellido || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Género:</span> <span
+                                x-text="p.genero_nombre || '-'"></span></div>
+                        <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Usuario:</span> <span
+                                x-text="usuarioNombreById(p.id_usuario_fk) || p.usuario || '-'"></span></div>
                     </div>
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'actualizacion')
-                        <button @click="openEdit(p)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                        @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de
+                        Personas','Personas'], 'actualizacion')
+                        <button @click="openEdit(p)"
+                            class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1"><i
+                                class="fas fa-edit"></i> Editar</button>
                         @else
-                        <button disabled title="Sin permiso para editar" class="px-3 py-1 text-xs bg-gray-400 text-white rounded cursor-not-allowed flex items-center gap-1"><i class="fas fa-edit"></i> Editar</button>
+                        <button disabled title="Sin permiso para editar"
+                            class="px-3 py-1 text-xs bg-gray-400 text-white rounded cursor-not-allowed flex items-center gap-1"><i
+                                class="fas fa-edit"></i> Editar</button>
                         @endperm
-                        @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de Personas','Personas'], 'eliminacion')
-                        <button @click="openDelete(p)" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                        @perm(['Gestión de personas','Gestion de personas','Gestión de Personas','Gestion de
+                        Personas','Personas'], 'eliminacion')
+                        <button @click="openDelete(p)"
+                            class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1"><i
+                                class="fas fa-trash"></i> Eliminar</button>
                         @else
-                        <button disabled title="Sin permiso para eliminar" class="px-3 py-1 text-xs bg-red-300 text-white rounded cursor-not-allowed flex items-center gap-1"><i class="fas fa-trash"></i> Eliminar</button>
+                        <button disabled title="Sin permiso para eliminar"
+                            class="px-3 py-1 text-xs bg-red-300 text-white rounded cursor-not-allowed flex items-center gap-1"><i
+                                class="fas fa-trash"></i> Eliminar</button>
                         @endperm
                     </div>
                 </div>
@@ -376,19 +415,25 @@
         </x-slot>
     </x-responsive-table>
 
-    <div x-show="filteredPersonas.length > perPagePersonas" class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
+    <div x-show="filteredPersonas.length > perPagePersonas"
+        class="mt-6 flex flex-col items-center w-full text-gray-700 dark:text-gray-200">
         <div class="mb-2">
-            <span class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
+            <span
+                class="inline-block text-sm text-gray-700 dark:text-gray-200 bg-white/90 dark:bg-gray-800/60 px-4 py-1 rounded-full shadow-sm">
                 Mostrando
-                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="(currentPagePersonas - 1) * perPagePersonas + 1"></strong>
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white"
+                    x-text="(currentPagePersonas - 1) * perPagePersonas + 1"></strong>
                 a
-                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="Math.min(currentPagePersonas * perPagePersonas, filteredPersonas.length)"></strong>
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white"
+                    x-text="Math.min(currentPagePersonas * perPagePersonas, filteredPersonas.length)"></strong>
                 de
-                <strong class="font-medium mx-1 text-gray-900 dark:text-white" x-text="filteredPersonas.length"></strong>
+                <strong class="font-medium mx-1 text-gray-900 dark:text-white"
+                    x-text="filteredPersonas.length"></strong>
                 resultados
             </span>
         </div>
-        <div class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
+        <div
+            class="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm dark:bg-gray-900/80 dark:border-gray-800">
             <button @click="prevPagePersonas()" :disabled="currentPagePersonas === 1"
                 class="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:bg-gray-800">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +442,9 @@
                 <span>Anterior</span>
             </button>
             <div class="flex items-center gap-1">
-                <template x-for="page in Array.from({length: totalPagesPersonas()}, (_, i) => i + 1).slice(Math.max(0, currentPagePersonas - 3), currentPagePersonas + 2)" :key="page">
+                <template
+                    x-for="page in Array.from({length: totalPagesPersonas()}, (_, i) => i + 1).slice(Math.max(0, currentPagePersonas - 3), currentPagePersonas + 2)"
+                    :key="page">
                     <button @click="currentPagePersonas = page"
                         class="px-3 py-1 rounded-md text-sm font-medium transition transform text-gray-700 hover:bg-blue-900 hover:text-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                         :class="page === currentPagePersonas ? 'bg-blue-600 text-white' : ''">
@@ -415,64 +462,97 @@
         </div>
     </div>
 
-    <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona" submitLabel="Guardar" maxWidth="max-w-2xl">
+    <x-admin.form-modal class="nunito-bold" modalName="isModalOpenPersonas" title="Agregar Persona"
+        submitLabel="Guardar" maxWidth="max-w-2xl">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
-                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_nombre" placeholder="Ej: Juan" @input="formPersonas._touched.primer_nombre = true" @blur="formPersonas._touched.primer_nombre = true"
-                    :class="formPersonas._touched && formPersonas._touched.primer_nombre && !addForm.primer_nombre ? 'border-red-500' : ''" autocomplete="off" />
-                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.primer_nombre && !addForm.primer_nombre ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.primer_nombre" placeholder="Ej: Juan"
+                    @input="formPersonas._touched.primer_nombre = true"
+                    @blur="formPersonas._touched.primer_nombre = true"
+                    :class="formPersonas._touched && formPersonas._touched.primer_nombre && !addForm.primer_nombre ? 'border-red-500' : ''"
+                    autocomplete="off" />
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formPersonas._touched && formPersonas._touched.primer_nombre && !addForm.primer_nombre ? 'text-red-500' : ''">Requerido.
+                    Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
-                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_nombre" placeholder="Ej: Carlos" @input="formPersonas._touched.segundo_nombre = true" @blur="formPersonas._touched.segundo_nombre = true"
-                    :class="formPersonas._touched && formPersonas._touched.segundo_nombre && (addForm.segundo_nombre && addForm.segundo_nombre.length >= 100) ? 'border-red-500' : ''" autocomplete="off" />
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.segundo_nombre" placeholder="Ej: Carlos"
+                    @input="formPersonas._touched.segundo_nombre = true"
+                    @blur="formPersonas._touched.segundo_nombre = true"
+                    :class="formPersonas._touched && formPersonas._touched.segundo_nombre && (addForm.segundo_nombre && addForm.segundo_nombre.length >= 100) ? 'border-red-500' : ''"
+                    autocomplete="off" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
-                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.primer_apellido" placeholder="Ej: Pérez" @input="formPersonas._touched.primer_apellido = true" @blur="formPersonas._touched.primer_apellido = true"
-                    :class="formPersonas._touched && formPersonas._touched.primer_apellido && !addForm.primer_apellido ? 'border-red-500' : ''" autocomplete="off" />
-                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.primer_apellido && !addForm.primer_apellido ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.primer_apellido" placeholder="Ej: Pérez"
+                    @input="formPersonas._touched.primer_apellido = true"
+                    @blur="formPersonas._touched.primer_apellido = true"
+                    :class="formPersonas._touched && formPersonas._touched.primer_apellido && !addForm.primer_apellido ? 'border-red-500' : ''"
+                    autocomplete="off" />
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formPersonas._touched && formPersonas._touched.primer_apellido && !addForm.primer_apellido ? 'text-red-500' : ''">Requerido.
+                    Máximo 100 caracteres.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
-                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.segundo_apellido" placeholder="Ej: Gómez" @input="formPersonas._touched.segundo_apellido = true" @blur="formPersonas._touched.segundo_apellido = true"
-                    :class="formPersonas._touched && formPersonas._touched.segundo_apellido && (addForm.segundo_apellido && addForm.segundo_apellido.length >= 100) ? 'border-red-500' : ''" autocomplete="off" />
+                <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.segundo_apellido" placeholder="Ej: Gómez"
+                    @input="formPersonas._touched.segundo_apellido = true"
+                    @blur="formPersonas._touched.segundo_apellido = true"
+                    :class="formPersonas._touched && formPersonas._touched.segundo_apellido && (addForm.segundo_apellido && addForm.segundo_apellido.length >= 100) ? 'border-red-500' : ''"
+                    autocomplete="off" />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
-                <input type="text" maxlength="20" class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" @input="formPersonas._touched.dni = true" @blur="formPersonas._touched.dni = true"
-                    :class="formPersonas._touched && formPersonas._touched.dni && !addForm.dni ? 'border-red-500' : ''" autocomplete="off" />
-                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.dni && !addForm.dni ? 'text-red-500' : ''">Requerido. Máximo 20 caracteres.</small>
+                <input type="text" maxlength="20" class="w-full border rounded px-3 py-2 nunito-regular"
+                    x-model="addForm.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000"
+                    @input="formPersonas._touched.dni = true" @blur="formPersonas._touched.dni = true"
+                    :class="formPersonas._touched && formPersonas._touched.dni && !addForm.dni ? 'border-red-500' : ''"
+                    autocomplete="off" />
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formPersonas._touched && formPersonas._touched.dni && !addForm.dni ? 'text-red-500' : ''">Requerido.
+                    Máximo 20 caracteres.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk" @change="formPersonas._touched.genero = true"
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_genero_fk"
+                    @change="formPersonas._touched.genero = true"
                     :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione</option>
                     <template x-for="op in catalogoGeneros" :key="op.id">
                         <option :value="op.id" x-text="op.genero"></option>
                     </template>
                 </select>
-                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formPersonas._touched && formPersonas._touched.genero && !addForm.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1 nunito-bold">Usuario</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk" @change="formPersonas._touched.usuario = true"
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_usuario_fk"
+                    @change="formPersonas._touched.usuario = true"
                     :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'border-red-500' : ''">
                     <option value="">Seleccione</option>
                     <template x-for="u in usuariosSinPersona()" :key="'u-add-'+u.id">
                         <option :value="u.id" x-text="u.usuario"></option>
                     </template>
                 </select>
-                <small class="block mt-1 text-sm text-gray-500" :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'text-red-500' : ''">Requerido.</small>
+                <small class="block mt-1 text-sm text-gray-500"
+                    :class="formPersonas._touched && formPersonas._touched.usuario && !addForm.id_usuario_fk ? 'text-red-500' : ''">Requerido.</small>
             </div>
             <div x-show="isUsuarioCliente(addForm.id_usuario_fk)" class="sm:col-span-2">
-                <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-2" x-model="addForm.as_contacto_empresa"> Asociar esta persona como contacto de la empresa del usuario seleccionado</label>
+                <label class="inline-flex items-center text-sm"><input type="checkbox" class="mr-2"
+                        x-model="addForm.as_contacto_empresa"> Asociar esta persona como contacto de la empresa del
+                    usuario seleccionado</label>
             </div>
             <div x-show="addForm.as_contacto_empresa" class="sm:col-span-2">
                 <label class="block text-sm font-medium mb-1 nunito-bold">Empresa a asociar</label>
-                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_cliente_fk" @change="formPersonas._touched.empresa = true">
+                <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="addForm.id_cliente_fk"
+                    @change="formPersonas._touched.empresa = true">
                     <option value="">Seleccione una empresa</option>
                     <template x-for="e in empresas" :key="'empresa-'+e.id">
                         <option :value="e.id" x-text="e.nombre"></option>
@@ -483,51 +563,71 @@
         </div>
     </x-admin.form-modal>
 
-    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona" itemToEdit="itemToEdit" maxWidth="max-w-2xl">
+    <x-admin.edit-modal class="nunito-bold" modalName="isEditModalOpenPersonas" title="Editar Persona"
+        itemToEdit="itemToEdit" maxWidth="max-w-2xl">
         <template x-if="itemToEdit">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Primer Nombre</label>
-                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_nombre" @input="formEditPersonas._touched.primer_nombre = true" @blur="formEditPersonas._touched.primer_nombre = true"
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                        x-model="itemToEdit.primer_nombre" @input="formEditPersonas._touched.primer_nombre = true"
+                        @blur="formEditPersonas._touched.primer_nombre = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.primer_nombre && !itemToEdit.primer_nombre ? 'border-red-500' : ''" />
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.primer_nombre && !itemToEdit.primer_nombre ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.primer_nombre && !itemToEdit.primer_nombre ? 'text-red-500' : ''">Requerido.
+                        Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Nombre</label>
-                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_nombre" @input="formEditPersonas._touched.segundo_nombre = true" @blur="formEditPersonas._touched.segundo_nombre = true"
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                        x-model="itemToEdit.segundo_nombre" @input="formEditPersonas._touched.segundo_nombre = true"
+                        @blur="formEditPersonas._touched.segundo_nombre = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.segundo_nombre && (itemToEdit.segundo_nombre && itemToEdit.segundo_nombre.length >= 100) ? 'border-red-500' : ''" />
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Primer Apellido</label>
-                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.primer_apellido" @input="formEditPersonas._touched.primer_apellido = true" @blur="formEditPersonas._touched.primer_apellido = true"
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                        x-model="itemToEdit.primer_apellido" @input="formEditPersonas._touched.primer_apellido = true"
+                        @blur="formEditPersonas._touched.primer_apellido = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.primer_apellido && !itemToEdit.primer_apellido ? 'border-red-500' : ''" />
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.primer_apellido && !itemToEdit.primer_apellido ? 'text-red-500' : ''">Requerido. Máximo 100 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.primer_apellido && !itemToEdit.primer_apellido ? 'text-red-500' : ''">Requerido.
+                        Máximo 100 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Segundo Apellido</label>
-                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.segundo_apellido" @input="formEditPersonas._touched.segundo_apellido = true" @blur="formEditPersonas._touched.segundo_apellido = true"
+                    <input type="text" maxlength="100" class="w-full border rounded px-3 py-2 nunito-regular"
+                        x-model="itemToEdit.segundo_apellido" @input="formEditPersonas._touched.segundo_apellido = true"
+                        @blur="formEditPersonas._touched.segundo_apellido = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.segundo_apellido && (itemToEdit.segundo_apellido && itemToEdit.segundo_apellido.length >= 100) ? 'border-red-500' : ''" />
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">DNI</label>
-                    <input type="text" maxlength="20" class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000" @input="formEditPersonas._touched.dni = true" @blur="formEditPersonas._touched.dni = true"
+                    <input type="text" maxlength="20" class="w-full border rounded px-3 py-2 nunito-regular"
+                        x-model="itemToEdit.dni" placeholder="Ej: 0000-0000-00000 o 0000000000000"
+                        @input="formEditPersonas._touched.dni = true" @blur="formEditPersonas._touched.dni = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.dni && !itemToEdit.dni ? 'border-red-500' : ''" />
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.dni && !itemToEdit.dni ? 'text-red-500' : ''">Requerido. Máximo 20 caracteres.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.dni && !itemToEdit.dni ? 'text-red-500' : ''">Requerido.
+                        Máximo 20 caracteres.</small>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 nunito-bold">Género</label>
-                    <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk" @change="formEditPersonas._touched.genero = true"
+                    <select class="w-full border rounded px-3 py-2 nunito-regular" x-model="itemToEdit.id_genero_fk"
+                        @change="formEditPersonas._touched.genero = true"
                         :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'border-red-500' : ''">
                         <option value="">Seleccione</option>
                         <template x-for="op in catalogoGeneros" :key="'edit-genero-'+op.id">
                             <option :value="op.id" x-text="op.genero"></option>
                         </template>
                     </select>
-                    <small class="block mt-1 text-sm text-gray-500" :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
+                    <small class="block mt-1 text-sm text-gray-500"
+                        :class="formEditPersonas._touched && formEditPersonas._touched.genero && !itemToEdit.id_genero_fk ? 'text-red-500' : ''">Requerido.</small>
                 </div>
             </div>
         </template>
     </x-admin.edit-modal>
 
-    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpenPersonas" itemToDelete="itemToDelete" message="¿Estás seguro de que deseas eliminar esta persona?" />
+    <x-admin.confirmation-modal class="nunito-bold" modalName="isDeleteModalOpenPersonas" itemToDelete="itemToDelete"
+        message="¿Estás seguro de que deseas eliminar esta persona?" />
 </div>

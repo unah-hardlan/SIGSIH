@@ -141,4 +141,14 @@ class BitacoraController extends Controller
         $bit->delete();
         return response()->json(['ok' => true]);
     }
+
+    public function destroyAll()
+    {
+        try {
+            Bitacora::query()->delete();
+            return response()->json(['ok' => true, 'message' => 'Todos los registros de bitácora han sido eliminados']);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Error al limpiar la bitácora: ' . $e->getMessage()], 500);
+        }
+    }
 }
