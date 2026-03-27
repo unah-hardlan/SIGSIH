@@ -388,8 +388,8 @@
                         <span class="value" x-text="formatCotId(cotizacion)">-</span>
                     </div>
                     <div class="detail-row">
-                        <span>CLIENTE ID</span>
-                        <span class="value" x-text="cotizacion?.id_cliente_fk ?? '-'">-</span>
+                        <span>CLIENTE</span>
+                        <span class="value" x-text="cotizacion?.cliente_nombre || cotizacion?.cliente?.empresa?.nombre_comercial || cotizacion?.cliente?.empresa?.razon_social || '-'">-</span>
                     </div>
                     <div class="detail-row">
                         <span>VALIDO HASTA</span>
@@ -399,7 +399,7 @@
                         <span>ESTADO</span>
                         <span class="value">
                             <span :class="estadoBadgeClass()"
-                                x-text="(cotizacion?.estado_nombre||cotizacion?.estado_codigo)||'-'"></span>
+                                x-text="(cotizacion?.estado?.nombre_estado || cotizacion?.estado?.codigo) || '-'"></span>
                         </span>
                     </div>
                 </div>
@@ -579,12 +579,13 @@
                 }
             },
             estadoBadgeClass() {
-                const code = (this.cotizacion?.estado_codigo || '').toString().toUpperCase();
-                const name = (this.cotizacion?.estado_nombre || '').toString().toLowerCase();
+                const code = (this.cotizacion?.estado?.codigo || '').toString().toUpperCase();
+                const name = (this.cotizacion?.estado?.nombre_estado || '').toString().toLowerCase();
                 if (code === 'APB' || name.includes('aproba')) return 'status-badge status-green';
-                if (code === 'BRD' || name.includes('pend')) return 'status-badge status-amber';
+                if (code === 'BRD' || code === 'BORRADOR' || name.includes('borrador') || name.includes('pend')) return 'status-badge status-amber';
                 if (code === 'REC' || name.includes('rech')) return 'status-badge status-red';
-                if (name.includes('venc')) return 'status-badge status-blue';
+                if (code === 'VEN' || name.includes('venc')) return 'status-badge status-blue';
+                if (code === 'ENV' || name.includes('envia')) return 'status-badge status-blue';
                 return 'status-badge';
             },
             async cambiarEstado(estado) {
