@@ -13,6 +13,7 @@ class EstadoProyectoResource extends JsonResource
             'id_estado_proyecto_pk' => $this->id_estado_proyecto_pk,
             'codigo' => $this->codigo,
             'nombre' => $this->nombre,
+            'nombre_estado' => $this->nombre,
             'descripcion' => $this->descripcion,
             'es_final' => (bool) $this->es_final,
             'orden' => $this->orden,

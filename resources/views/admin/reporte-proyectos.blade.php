@@ -35,9 +35,16 @@
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->ordenServicio->numero_orden_servicio ?? '—' }}</td>
                                 <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $p->descripcion_proyecto }}</td>
                                 <td class="border border-gray-300 py-2 px-3 text-center">
-                                    @if($p->estadoProyecto && $p->estadoProyecto->codigo === 'ACTIVO')
+                                    @php
+                                        $estadoRaw = $p->estadoProyecto->codigo
+                                            ?? $p->estadoProyecto->nombre
+                                            ?? $p->estadoProyecto->nombre_estado
+                                            ?? '';
+                                        $estadoCode = strtoupper(trim((string) $estadoRaw));
+                                    @endphp
+                                    @if(in_array($estadoCode, ['AC', 'ACTIVO'], true))
                                         <span class="text-green-700 nunito-bold">Activo</span>
-                                    @elseif($p->estadoProyecto && $p->estadoProyecto->codigo === 'FINALIZADO')
+                                    @elseif(in_array($estadoCode, ['FIN', 'FINALIZADO'], true))
                                         <span class="text-blue-700 nunito-bold">Finalizado</span>
                                     @else
                                         <span class="text-red-700 nunito-bold">Inactivo</span>

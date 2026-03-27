@@ -112,7 +112,7 @@ class KardexController extends Controller
         $kardex = $query->get();
         $total = $kardex->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'kardex';
 
         return view('admin.reporte-kardex', compact('kardex', 'total', 'fecha', 'modulo', 'sort', 'direction'));

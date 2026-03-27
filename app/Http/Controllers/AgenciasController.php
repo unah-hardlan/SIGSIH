@@ -262,7 +262,7 @@ class AgenciasController extends Controller
         $agencias = $query->get();
         $total = $agencias->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'agencias';
 
         return view('admin.reporte-agencias', compact('agencias', 'total', 'fecha', 'modulo', 'sort', 'direction'));

@@ -404,7 +404,7 @@ class UsuarioController extends Controller
         $inactivos = $usuarios->where('estado_usuario', 'INACTIVO')->count();
         $bloqueados = $usuarios->where('estado_usuario', 'BLOQUEADO')->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'usuarios';
 
         return view('admin.reporte-usuarios', compact('usuarios', 'total', 'activos', 'inactivos', 'bloqueados', 'fecha', 'modulo', 'sort', 'direction'));

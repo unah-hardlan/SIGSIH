@@ -15,7 +15,7 @@ class ConfiguracionAccesoReporteController extends Controller
     public function reporte(Request $request)
     {
         $seccion = $request->input('seccion');
-        $fecha = $request->input('fecha', now()->format('d-M-Y'));
+        $fecha = $request->input('fecha', \App\Helpers\DateHelper::nowFormatted('d/m/Y'));
         $modulo = 'configuracion-acceso';
 
 

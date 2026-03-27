@@ -284,7 +284,7 @@ class CalendarioController extends Controller
             return $c->estado && $c->estado->codigo === 'COMP';
         })->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'calendario';
 
         return view('admin.reporte-calendario', compact('calendarios', 'total', 'pendientes', 'enEjecucion', 'completados', 'fecha', 'modulo', 'sort', 'direction'));

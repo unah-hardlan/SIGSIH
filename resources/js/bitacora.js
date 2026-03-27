@@ -24,7 +24,12 @@ document.addEventListener("alpine:init", () => {
         reportUrl() {
             const params = new URLSearchParams();
             params.set("modulo", "Bitacora");
-            params.set("fecha", new Date().toISOString().split("T")[0]);
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, "0");
+            const yyyy = now.getFullYear();
+            const mm = pad(now.getMonth() + 1);
+            const dd = pad(now.getDate());
+            params.set("fecha", `${yyyy}-${mm}-${dd}`);
 
             Object.entries(this.filters).forEach(([k, v]) => {
                 if (v !== "" && v != null) params.set(k, v);

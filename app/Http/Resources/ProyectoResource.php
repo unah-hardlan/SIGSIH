@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\EstadoProyectoResource;
 
 class ProyectoResource extends JsonResource
 {
@@ -38,16 +39,7 @@ class ProyectoResource extends JsonResource
                     }),
                 ];
             }),
-            'estado_proyecto' => $this->whenLoaded('estadoProyecto', function () {
-                return [
-                    'id_estado_proyecto_pk' => $this->estadoProyecto->id_estado_proyecto_pk,
-                    'codigo' => $this->estadoProyecto->codigo,
-                    
-                    'nombre' => $this->estadoProyecto->nombre,
-                    'nombre_estado' => $this->estadoProyecto->nombre,
-                    'descripcion_estado_proyecto' => $this->estadoProyecto->descripcion,
-                ];
-            }),
+            'estado_proyecto' => new EstadoProyectoResource($this->estadoProyecto),
         ];
     }
 }

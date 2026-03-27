@@ -121,7 +121,7 @@ class ProductoController extends Controller
         $totalValor = $productos->sum('precio_venta');
         $promedioPrecio = $productos->avg('precio_venta');
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'productos';
 
         return view('admin.reporte-productos', compact('productos', 'total', 'totalValor', 'promedioPrecio', 'fecha', 'modulo', 'sort', 'direction'));

@@ -122,7 +122,7 @@ class ParametroController extends Controller
         if ($sort && isset($sortable[$sort])) { $query->orderBy($sortable[$sort], $direction); } else { $query->orderBy('id_parametro_pk','desc'); }
         $parametros = $query->get();
         $total = $parametros->count();
-        $fecha = $request->query('fecha', now()->format('d-M-Y'));
+        $fecha = $request->query('fecha', \App\Helpers\DateHelper::nowFormatted('d/m/Y'));
         $modulo = $request->query('modulo','PARAMETROS');
         return view('admin.reporte-parametros', compact('fecha','modulo','parametros','total'));
     }
