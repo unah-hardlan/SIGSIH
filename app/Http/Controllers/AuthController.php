@@ -139,11 +139,6 @@ class AuthController extends Controller
 
         $this->clearProgressiveFailures($loginBaseKey);
 
-        try {
-            $this->bitacora->logFor('Login', 'Login', 'Inicio de sesión', $result['user']['id'] ?? null);
-        } catch (\Throwable $e) {
-        }
-
         $token = $result['token'] ?? null;
         $payload = $result;
         unset($payload['token']);
@@ -207,10 +202,6 @@ class AuthController extends Controller
             if ($tokenId) {
                 SesionUsuario::where('id_sesion_pk', $tokenId)->delete();
             }
-        } catch (\Throwable $e) {
-        }
-        try {
-            $this->bitacora->logFor('Login', 'Logout', 'Cierre de sesión', $userId);
         } catch (\Throwable $e) {
         }
         $req = request();

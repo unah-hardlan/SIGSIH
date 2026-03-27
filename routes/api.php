@@ -83,6 +83,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
     Route::apiResource('permisos', PermisoController::class);
     Route::apiResource('bitacoras', BitacoraController::class);
+    Route::post('bitacoras/clean/all', [BitacoraController::class, 'destroyAll']);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
     Route::apiResource('tipos-objeto', TipoObjetoController::class);

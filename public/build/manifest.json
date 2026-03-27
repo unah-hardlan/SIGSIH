@@ -1,6 +1,6 @@
 {
-  "_index-CIZ4r3fZ.js": {
-    "file": "assets/index-CIZ4r3fZ.js",
+  "_index-CXbdeip1.js": {
+    "file": "assets/index-CXbdeip1.js",
     "name": "index",
     "dynamicImports": [
       "node_modules/laravel-echo/dist/echo.js",
@@ -19,7 +19,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-BrYLOKJ-.css",
+    "file": "assets/app-yMGw4_X-.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -39,12 +39,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Dvxr1-4a.js",
+    "file": "assets/app-sqeNpEWr.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-CIZ4r3fZ.js"
+      "_index-CXbdeip1.js"
     ]
   },
   "resources/js/auth.js": {
@@ -54,12 +54,12 @@
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-D3jButDj.js",
+    "file": "assets/cliente-Dy911jis.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-CIZ4r3fZ.js"
+      "_index-CXbdeip1.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
@@ -69,7 +69,7 @@
     "isEntry": true
   },
   "resources/js/estados-tickets.js": {
-    "file": "assets/estados-tickets-Bu9rXo01.js",
+    "file": "assets/estados-tickets-D9eQSsCI.js",
     "name": "estados-tickets",
     "src": "resources/js/estados-tickets.js",
     "isEntry": true
@@ -123,7 +123,7 @@
     "isEntry": true
   },
   "resources/js/tickets.js": {
-    "file": "assets/tickets-Bbdzc6Io.js",
+    "file": "assets/tickets-CSO27YXG.js",
     "name": "tickets",
     "src": "resources/js/tickets.js",
     "isEntry": true
