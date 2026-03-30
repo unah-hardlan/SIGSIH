@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use App\Notifications\PasswordResetNotification;
 use App\Notifications\VerifyEmailNotification;
 use App\Notifications\SystemNotification;
@@ -104,6 +105,15 @@ class AuthController extends Controller
 
         $user = $cred['user'];
 
+        if ((bool) ($user->primer_ingreso ?? false)) {
+            $resetUrl = $this->buildForcedResetUrl($user);
+            return response()->json([
+                'status' => 'password_reset_required',
+                'message' => 'Debes cambiar tu contraseña para poder ingresar al sistema.',
+                'reset_url' => $resetUrl,
+            ], 403);
+        }
+
 
         $requireVerify = (bool) (\App\Models\Parametro::where('parametro', 'AUTH.REQUIERE_VERIFICACION_CORREO')->value('valor')
             ?? \App\Models\Parametro::where('parametro', 'auth.require_email_verification')->value('valor')
@@ -144,24 +154,32 @@ class AuthController extends Controller
         unset($payload['token']);
 
         try {
-            $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
-            if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
-
-                $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
-
-                if (
-                    !$persona ||
-                    empty($persona->primer_nombre) ||
-                    empty($persona->primer_apellido) ||
-                    empty($persona->dni) ||
-                    empty($persona->id_genero_fk)
-                ) {
-                    $payload['redirect_url'] = route('cliente.configurar-perfil');
-                } else {
-                    $payload['redirect_url'] = route('cliente.perfil');
-                }
+            if ((bool) ($user->primer_ingreso ?? false)) {
+                $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
+                $payload['force_password_change'] = true;
+                $payload['redirect_url'] = in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])
+                    ? route('cliente.perfil')
+                    : route('admin.perfil');
             } else {
-                $payload['redirect_url'] = route('admin.dashboard');
+                $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
+                if (in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])) {
+
+                    $persona = \App\Models\Persona::where('id_usuario_fk', $user->id_usuario_pk)->first();
+
+                    if (
+                        !$persona ||
+                        empty($persona->primer_nombre) ||
+                        empty($persona->primer_apellido) ||
+                        empty($persona->dni) ||
+                        empty($persona->id_genero_fk)
+                    ) {
+                        $payload['redirect_url'] = route('cliente.configurar-perfil');
+                    } else {
+                        $payload['redirect_url'] = route('cliente.perfil');
+                    }
+                } else {
+                    $payload['redirect_url'] = route('admin.dashboard');
+                }
             }
         } catch (\Throwable $e) {
 
@@ -589,7 +607,7 @@ class AuthController extends Controller
         $broker = Password::broker();
 
         try {
-            $token = $broker->createToken($usuario);
+            $token = $this->createPasswordResetToken((string) $usuario->correo_electronico);
             $usuario->notify(new PasswordResetNotification($token, $normalizedEmail));
 
             if ($rateLimiterKey) {
@@ -669,7 +687,22 @@ class AuthController extends Controller
         return view('auth.password-reset', [
             'token' => $token,
             'email' => $request->query('email'),
+            'forced' => (bool) $request->query('forced', false),
         ]);
+    }
+
+    public function forcedPasswordResetRedirect(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if (!(bool) ($user->primer_ingreso ?? false)) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->to($this->buildForcedResetUrl($user));
     }
 
     public function resetPassword(Request $request): JsonResponse
@@ -677,7 +710,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'token' => 'required|string',
             'email' => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8|max:100|confirmed|regex:/^(?!.*\s)[\x21-\x7E\xA1-\xFF]+$/',
         ]);
 
         $email = strtolower($data['email']);
@@ -698,6 +731,13 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'El token de recuperación no es válido o ha expirado.'
             ], 400);
+        }
+
+        $policyError = $this->validateResetPasswordBusinessRules((string) $data['password'], (string) ($usuario->usuario ?? ''));
+        if ($policyError !== null) {
+            return response()->json([
+                'message' => $policyError,
+            ], 422);
         }
 
         $uid = $usuario->getKey();
@@ -804,5 +844,70 @@ class AuthController extends Controller
         }
 
         return $default;
+    }
+
+    private function buildForcedResetUrl($usuario): string
+    {
+        $userModel = $usuario instanceof Usuario
+            ? $usuario
+            : Usuario::find(method_exists($usuario, 'getAuthIdentifier') ? $usuario->getAuthIdentifier() : ($usuario->id_usuario_pk ?? $usuario->id ?? null));
+
+        if (!$userModel || !$userModel->correo_electronico) {
+            return route('password.request');
+        }
+
+        $email = (string) $userModel->correo_electronico;
+        $token = $this->createPasswordResetToken($email);
+
+        return route('password.reset.form', [
+            'token' => $token,
+            'email' => $email,
+            'forced' => 1,
+        ]);
+    }
+
+    private function createPasswordResetToken(string $email): string
+    {
+        $table = config('auth.passwords.users.table', 'password_reset_tokens');
+        $token = Str::random(64);
+
+        DB::table($table)->updateOrInsert(
+            ['email' => strtolower(trim($email))],
+            [
+                'token' => Hash::make($token),
+                'created_at' => now(),
+            ]
+        );
+
+        return $token;
+    }
+
+    private function validateResetPasswordBusinessRules(string $password, string $username): ?string
+    {
+        $upperPassword = strtoupper($password);
+
+        if ($username !== '' && $upperPassword === strtoupper($username)) {
+            return 'La contraseña no puede ser igual al usuario.';
+        }
+
+        if (in_array($upperPassword, ['CONTRASENA', 'CONTRASEÑA', 'PASSWORD'], true)) {
+            return 'La contraseña no puede ser una palabra muy común.';
+        }
+
+        // Reglas base equivalentes al flujo de creación de cuenta.
+        if (!preg_match('/[A-Z]/', $password)) {
+            return 'La contraseña debe incluir al menos una letra mayúscula.';
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            return 'La contraseña debe incluir al menos una letra minúscula.';
+        }
+        if (!preg_match('/\d/', $password)) {
+            return 'La contraseña debe incluir al menos un número.';
+        }
+        if (!preg_match('/[^A-Za-z0-9]/', $password)) {
+            return 'La contraseña debe incluir al menos un símbolo.';
+        }
+
+        return null;
     }
 }

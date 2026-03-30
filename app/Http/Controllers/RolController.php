@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateRolRequest;
 use App\Http\Resources\RolResource;
 use App\Http\Resources\UsuarioResource;
 use App\Services\BitacoraService;
+use Illuminate\Database\QueryException;
 
 class RolController extends Controller
 {
@@ -89,7 +90,13 @@ class RolController extends Controller
     {
         $rol = Rol::find($id);
         if (!$rol) return response()->json(['error' => 'Rol no encontrado'], 404);
-        $rol->delete();
+        try {
+            $rol->delete();
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => 'No se puede eliminar este rol porque tiene usuarios o permisos asociados. Reasigna esos registros e intentalo de nuevo.'
+            ], 422);
+        }
         try {
             $this->bitacora->logFor('Roles', 'Eliminar', 'Eliminación de rol ' . $rol->rol);
         } catch (\Throwable $e) {

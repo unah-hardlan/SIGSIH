@@ -67,7 +67,7 @@ Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', [\App
 // Catálogos sin autenticación
 Route::get('tecnicos', [UsuarioController::class, 'tecnicosCatalog']);
 
-Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function () {
+Route::middleware(['jwt.auth', 'jwt.refresh', 'force.password.change', 'auto.permiso'])->group(function () {
     Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
     Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
     Route::post('2fa/disable', [TwoFactorController::class, 'disable']);
@@ -77,11 +77,13 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::delete('perfil/avatar', [ProfileController::class, 'deleteAvatar']);
     Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
+    Route::put('usuarios/{id}/reset-password-generica', [UsuarioController::class, 'resetPasswordGenerica']);
     Route::put('usuarios/{id}/roles', [UsuarioController::class, 'syncRoles']);
     Route::get('usuarios/{id}/roles', [UsuarioController::class, 'getRoles']);
     Route::apiResource('roles', RolController::class);
     Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
     Route::apiResource('permisos', PermisoController::class);
+    Route::get('bitacoras/export/csv', [BitacoraController::class, 'exportCsv']);
     Route::apiResource('bitacoras', BitacoraController::class);
     Route::post('bitacoras/clean/all', [BitacoraController::class, 'destroyAll']);
     Route::apiResource('parametros', ParametroController::class);
@@ -147,6 +149,9 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
 
     Route::post('db/backup', [\App\Http\Controllers\GestionDbController::class, 'backup']);
+    Route::get('db/backups', [\App\Http\Controllers\GestionDbController::class, 'listBackups']);
+    Route::put('db/backups/{id}/restore', [\App\Http\Controllers\GestionDbController::class, 'restoreBackup']);
+    Route::delete('db/backups/{id}', [\App\Http\Controllers\GestionDbController::class, 'destroyBackup']);
     Route::get('db/backup/download', [\App\Http\Controllers\GestionDbController::class, 'download'])->name('db.backup.download');
 
     Route::get('clientes', [\App\Http\Controllers\ClienteCatalogController::class, 'index'])

@@ -77,15 +77,24 @@
                             <td class="py-2 px-4 flex gap-2">
                                 @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                                 Usuarios','Gestion de Usuarios'],'actualizacion')
-                                <button @click="openEdit(u)" class="text-blue-500 hover:text-blue-700"><i
+                                <button @click="openEdit(u)" :disabled="isSelfUser(u)"
+                                    :class="isSelfUser(u) ? 'text-blue-300 cursor-not-allowed' : 'text-blue-500 hover:text-blue-700'"><i
                                         class="fas fa-edit"></i></button>
+                                <button @click="openResetPasswordModal(u)" :disabled="isSelfUser(u)"
+                                    :class="isSelfUser(u) ? 'text-amber-300 cursor-not-allowed' : 'text-amber-500 hover:text-amber-700'"
+                                    title="Restablecer contraseña genérica">
+                                    <i class="fas fa-key"></i>
+                                </button>
                                 @else
                                 <span title="Sin permiso para editar" class="text-blue-300 cursor-not-allowed"><i
                                         class="fas fa-edit"></i></span>
+                                <span title="Sin permiso para restablecer contraseña"
+                                    class="text-amber-300 cursor-not-allowed"><i class="fas fa-key"></i></span>
                                 @endperm
                                 @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                                 Usuarios','Gestion de Usuarios'],'eliminacion')
-                                <button @click="openInactivar(u)" class="text-red-500 hover:text-red-700"><i
+                                <button @click="openInactivar(u)" :disabled="isSelfUser(u)"
+                                    :class="isSelfUser(u) ? 'text-red-300 cursor-not-allowed' : 'text-red-500 hover:text-red-700'"><i
                                         class="fas fa-trash"></i></button>
                                 @else
                                 <span title="Sin permiso para inactivar" class="text-red-300 cursor-not-allowed"><i
@@ -130,20 +139,28 @@
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                         Usuarios','Gestion de Usuarios'],'actualizacion')
-                        <button @click="openEdit(u)"
-                            class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                        <button @click="openEdit(u)" :disabled="isSelfUser(u)"
+                            :class="isSelfUser(u) ? 'px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1' : 'px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1'">
                             <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button @click="openResetPasswordModal(u)" :disabled="isSelfUser(u)"
+                            :class="isSelfUser(u) ? 'px-3 py-1 text-xs bg-amber-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1' : 'px-3 py-1 text-xs bg-amber-600 text-white rounded hover:bg-amber-700 flex items-center gap-1'">
+                            <i class="fas fa-key"></i> Restablecer
                         </button>
                         @else
                         <button disabled title="Sin permiso para editar"
                             class="px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1">
                             <i class="fas fa-edit"></i> Editar
                         </button>
+                        <button disabled title="Sin permiso para restablecer contraseña"
+                            class="px-3 py-1 text-xs bg-amber-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1">
+                            <i class="fas fa-key"></i> Restablecer
+                        </button>
                         @endperm
                         @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                         Usuarios','Gestion de Usuarios'],'eliminacion')
-                        <button @click="openInactivar(u)"
-                            class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                        <button @click="openInactivar(u)" :disabled="isSelfUser(u)"
+                            :class="isSelfUser(u) ? 'px-3 py-1 text-xs bg-red-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1' : 'px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1'">
                             <i class="fas fa-trash"></i> Inactivar
                         </button>
                         @else
@@ -369,36 +386,79 @@
             itemToDelete="userToInactivate" itemNameProperty="nombre"
             message="¿Seguro que deseas inactivar al usuario" />
         @endperm
+
+        @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de Usuarios','Gestion de
+        Usuarios'],'actualizacion')
+        <x-admin.form-modal class="nunito-bold" modalName="isResetPasswordConfirmModalOpen"
+            title="Restablecer Contraseña" submitLabel="Restablecer" formId="formResetPasswordGenerica"
+            maxWidth="max-w-md">
+            <div class="space-y-3 text-sm">
+                <p>¿Restablecer la contraseña de <strong x-text="userToResetPassword?.usuario || '-' "></strong> a una
+                    genérica?</p>
+                <p class="text-gray-500 dark:text-gray-300">El usuario deberá cambiarla antes de ingresar al sistema.
+                </p>
+            </div>
+        </x-admin.form-modal>
+
+        <x-admin.form-modal class="nunito-bold" modalName="isResetPasswordResultModalOpen"
+            title="Contraseña Restablecida" submitLabel="" hideActions="true" maxWidth="max-w-md">
+            <div class="space-y-3 text-sm">
+                <p>Se restableció la contraseña de <strong x-text="resetPasswordResult?.usuario || '-' "></strong>.</p>
+                <label class="block text-xs text-gray-500 dark:text-gray-300">Contraseña genérica</label>
+                <div class="flex gap-2">
+                    <input type="text" readonly x-model="resetPasswordResult.passwordGenerica"
+                        class="w-full border rounded px-3 py-2 bg-gray-100 dark:bg-gray-800" />
+                    <button type="button" @click="copyResetPassword()"
+                        class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Copiar
+                    </button>
+                </div>
+
+            </div>
+        </x-admin.form-modal>
+        @endperm
     </div>
 
 
     <script>
-        window.getAdminPasswordRegex = function() {
-                if (window._adminPasswordRegex) return window._adminPasswordRegex;
+    window.getAdminPasswordRegex = function() {
+        if (window._adminPasswordRegex) return window._adminPasswordRegex;
 
-                function buildRegexFromValue(v) {
-                    if (!v) return null;
-                    v = v.toString().trim();
-                    if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
-                        try {
-                            return new RegExp(v.slice(1, -1));
-                        } catch (e) {}
-                    }
-                    if (/[\\^\[\]()+*?.|]/.test(v)) {
-                        try {
-                            return new RegExp(v);
-                        } catch (e) {}
-                    }
-                    var lookaheads = [];
-                    if (/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
-                    if (/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
-                    if (/\d/.test(v)) lookaheads.push('(?=.*\\d)');
-                    if (/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
-                    if (lookaheads.length > 0) {
-                        var minLen = Math.max(8, v.length);
-                        var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
-                        try {
-                            return new RegExp(pattern);
-                        } catch (e) {}
-                    }
-                    return null;
+        function buildRegexFromValue(v) {
+            if (!v) return null;
+            v = v.toString().trim();
+            if (v.length > 2 && v.charAt(0) === '/' && v.charAt(v.length - 1) === '/') {
+                try {
+                    return new RegExp(v.slice(1, -1));
+                } catch (e) {}
+            }
+            if (/[\\^\[\]()+*?.|]/.test(v)) {
+                try {
+                    return new RegExp(v);
+                } catch (e) {}
+            }
+            var lookaheads = [];
+            if (/[a-z]/.test(v)) lookaheads.push('(?=.*[a-z])');
+            if (/[A-Z]/.test(v)) lookaheads.push('(?=.*[A-Z])');
+            if (/\d/.test(v)) lookaheads.push('(?=.*\\d)');
+            if (/[^A-Za-z0-9]/.test(v)) lookaheads.push('(?=.*[^A-Za-z0-9])');
+            if (lookaheads.length > 0) {
+                var minLen = Math.max(8, v.length);
+                var pattern = '^' + lookaheads.join('') + '.{' + minLen + ',100}$';
+                try {
+                    return new RegExp(pattern);
+                } catch (e) {}
+            }
+            return null;
+        }
+
+        var regex = buildRegexFromValue(window.__adminPasswordRegexValue || '');
+        if (!regex) {
+            regex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,100}/;
+        }
+
+        window._adminPasswordRegex = regex;
+        return window._adminPasswordRegex;
+    }
+    </script>
+</div>

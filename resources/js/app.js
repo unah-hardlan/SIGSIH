@@ -1138,21 +1138,22 @@ if (typeof window !== "undefined") {
         };
         return {
             tab: localStorage.getItem("mantenimientoTab") || "personalizacion",
+            isLoadingSettings: true,
             logoUrl: initial.appLogoUrl,
             nombreSistema: initial.appName,
             logoHeight: Number(initial.appLogoHeight) || 96,
             selectedLogoFile: null,
             savedMessagePersonalizacion: "",
             savedMessageParametros: "",
-            timezone: "UTC",
-            dateFormat: "Y-m-d",
-            sessionsLimit: 1,
+            timezone: "",
+            dateFormat: "",
+            sessionsLimit: null,
             requireEmailVerification: false,
-            passwordResetCooldown: 5,
-            passwordResetExpire: 60,
-            passwordResetMaxPerDay: 5,
-            dniFormat: "0000-0000-00000",
-            adminIntentos: 3,
+            passwordResetCooldown: null,
+            passwordResetExpire: null,
+            passwordResetMaxPerDay: null,
+            dniFormat: "",
+            adminIntentos: null,
             adminCorreo: "",
             adminUsuario: "",
             adminPassword: "",
@@ -1163,13 +1164,14 @@ if (typeof window !== "undefined") {
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        this.nombreSistema = data.appName || this.nombreSistema;
-                        this.logoUrl = data.logoUrl || this.logoUrl;
-                        this.logoHeight = data.logoHeight || this.logoHeight;
-                        this.timezone = data.timezone || this.timezone;
-                        this.dateFormat = data.dateFormat || this.dateFormat;
+                        this.nombreSistema =
+                            data.appName ?? this.nombreSistema;
+                        this.logoUrl = data.logoUrl ?? this.logoUrl;
+                        this.logoHeight = data.logoHeight ?? this.logoHeight;
+                        this.timezone = data.timezone ?? this.timezone;
+                        this.dateFormat = data.dateFormat ?? this.dateFormat;
                         this.sessionsLimit =
-                            data.sessionsLimit || this.sessionsLimit;
+                            data.sessionsLimit ?? this.sessionsLimit;
                         this.requireEmailVerification =
                             !!data.requireEmailVerification;
                         this.passwordResetCooldown =
@@ -1192,9 +1194,21 @@ if (typeof window !== "undefined") {
                         this.adminUsuario =
                             data.adminUsuario || this.adminUsuario;
                         this.adminPassword =
-                            data.adminPassword || this.adminPassword;
+                            data.adminPassword ?? this.adminPassword;
                     }
                 } catch (_) { }
+                finally {
+                    // Fallbacks solo si no llegaron valores desde API.
+                    if (!this.timezone) this.timezone = "America/Tegucigalpa";
+                    if (!this.dateFormat) this.dateFormat = "Y-m-d";
+                    if (this.sessionsLimit === null || this.sessionsLimit === undefined) this.sessionsLimit = 1;
+                    if (this.passwordResetCooldown === null || this.passwordResetCooldown === undefined) this.passwordResetCooldown = 5;
+                    if (this.passwordResetExpire === null || this.passwordResetExpire === undefined) this.passwordResetExpire = 60;
+                    if (this.passwordResetMaxPerDay === null || this.passwordResetMaxPerDay === undefined) this.passwordResetMaxPerDay = 5;
+                    if (!this.dniFormat) this.dniFormat = "0000-0000-00000";
+                    if (this.adminIntentos === null || this.adminIntentos === undefined) this.adminIntentos = 3;
+                    this.isLoadingSettings = false;
+                }
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
