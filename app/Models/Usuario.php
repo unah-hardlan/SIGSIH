@@ -26,6 +26,7 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         'email_verification_sent_at',
         'id_rol_fk',
         'primer_ingreso',
+        'pendiente_cambio_contrasena',
         'fecha_ultima_conexion',
         'fecha_vencimiento',
         'creado_por',
@@ -53,6 +54,7 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
         'email_verification_sent_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_enabled' => 'boolean',
+        'pendiente_cambio_contrasena' => 'boolean',
     ];
 
     protected static function boot()
@@ -192,6 +194,16 @@ class Usuario extends Authenticatable implements \Illuminate\Contracts\Auth\CanR
     public function setPrimerIngresoAttribute($value)
     {
         $this->attributes['primer_ingreso'] = in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true) ? 1 : 0;
+    }
+
+    public function getPendienteCambioContrasenaAttribute($value)
+    {
+        return in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true);
+    }
+
+    public function setPendienteCambioContrasenaAttribute($value)
+    {
+        $this->attributes['pendiente_cambio_contrasena'] = in_array($value, [1, '1', true, 'S', 's', 'Y', 'y'], true) ? 1 : 0;
     }
 
 
