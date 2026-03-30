@@ -14,6 +14,21 @@ use App\Notifications\PasswordResetNotification;
 class AuthService
 {
 
+    private function loginStatusError(Usuario $user): ?string
+    {
+        $status = strtoupper(trim((string) ($user->estado_usuario ?? '')));
+
+        if ($status === 'BLOQUEADO') {
+            return 'Usuario bloqueado por intentos inválidos';
+        }
+
+        if ($status === 'INACTIVO') {
+            return 'Usuario inactivo. Contacte al administrador del sistema.';
+        }
+
+        return null;
+    }
+
     private function getTokenTtlSeconds(): int
     {
         $minutes = (int) config('session.lifetime', 60);
@@ -54,8 +69,8 @@ class AuthService
         }
 
 
-        if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
-            return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
+        if ($statusError = $this->loginStatusError($user)) {
+            return ['success' => false, 'error' => $statusError, 'code' => 200];
         }
 
 
@@ -137,8 +152,8 @@ class AuthService
         if (!$user) {
             return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
-        if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
-            return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
+        if ($statusError = $this->loginStatusError($user)) {
+            return ['success' => false, 'error' => $statusError, 'code' => 200];
         }
         $cacheKey = 'login_attempts:' . $user->getKey();
         $attempts = cache()->get($cacheKey, 0);
@@ -174,6 +189,10 @@ class AuthService
 
     public function tokenForUser(Usuario $user): array
     {
+        if ($statusError = $this->loginStatusError($user)) {
+            return ['error' => $statusError, 'code' => 403];
+        }
+
         $secret = config('jwt.secret');
         if (!$secret) {
             return ['error' => 'JWT_SECRET no está configurado', 'code' => 500];

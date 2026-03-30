@@ -25,6 +25,9 @@ document.addEventListener("alpine:init", () => {
         apiBase() {
             return "/api/bitacoras";
         },
+        exportCsvUrl() {
+            return "/api/bitacoras/export/csv";
+        },
         reportUrl() {
             const params = new URLSearchParams();
             params.set("modulo", "Bitacora");
@@ -233,6 +236,50 @@ document.addEventListener("alpine:init", () => {
                 direction: "desc",
             };
             this.fetch(1);
+        },
+        async exportCsv() {
+            this.loading = true;
+            this.error = "";
+
+            try {
+                const params = new URLSearchParams();
+                Object.entries(this.filters).forEach(([k, v]) => {
+                    if (v !== null && v !== undefined && v !== "") {
+                        params.append(k, v);
+                    }
+                });
+
+                const res = await axios.get(`${this.exportCsvUrl()}?${params.toString()}`, {
+                    headers: {
+                        ...this.authHeader(),
+                        Accept: "text/csv",
+                    },
+                    responseType: "blob",
+                });
+
+                const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+
+                const dispo = res.headers["content-disposition"] || "";
+                const match = dispo.match(/filename="?([^\"]+)"?/i);
+                const fileName = match?.[1] || `bitacora_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+
+                link.setAttribute("download", fileName);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (e) {
+                const msg = e?.response?.data?.error || e?.message || "Error al exportar CSV";
+                this.error = msg;
+                if (window.showToast) {
+                    window.showToast(msg, "error");
+                }
+            } finally {
+                this.loading = false;
+            }
         },
         async clearAllRecords() {
             this.loading = true;

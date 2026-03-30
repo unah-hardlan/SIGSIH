@@ -576,14 +576,14 @@
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     <input type="file" x-ref="avatarInput" @change="handleAvatarChange($event)"
-                                        accept="image/*" class="hidden">
+                                        accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden">
                                 </label>
                             </div>
                         </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 font-serif">Foto de
                                 perfil</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">JPG, PNG o GIF. Máximo 2MB.</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">JPG, PNG o WEBP. Máximo 2MB.</p>
                         </div>
                     </div>
 
@@ -735,7 +735,7 @@
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
                                     <input type="file" x-ref="empresaAvatar" @change="handleEmpresaAvatar($event)"
-                                        accept="image/*" class="hidden" />
+                                        accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" />
                                 </label>
                             </div>
                         </div>
@@ -777,11 +777,11 @@
                         <textarea x-model="empresaForm.descripcion_empresa" rows="3"
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg  dark:bg-gray-700 dark:text-gray-100"></textarea>
                     </div>
-                    
+
                     <!-- Sección de Dirección -->
                     <div class="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dirección</h4>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -791,7 +791,7 @@
                                     placeholder="Ej. Avenida Principal, Blvd. Morazán"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Número *
@@ -800,7 +800,7 @@
                                     placeholder="Ej. Casa 24, #125B"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
                             </div>
-                            
+
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Colonia / Barrio *
@@ -809,7 +809,7 @@
                                     placeholder="Ej. Col. Las Uvas"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Código Postal *
@@ -818,7 +818,7 @@
                                     placeholder="Ej. 11101"
                                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100" />
                             </div>
-                            
+
                             <div class="md:col-span-3">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Referencia *
@@ -829,7 +829,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
                             <label class="block text-sm font-bold serif text-gray-700 dark:text-gray-300 mb-2">
@@ -884,7 +884,7 @@
 
                 <form @submit.prevent="submitPasswordModal()">
                     <input type="email" autocomplete="username" value="{{ auth()->user()->correo_electronico }}" hidden />
-                    
+
                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-4"
                         x-text="passwordModal.description || 'Ingresa tu contraseña actual para continuar.'"></p>
 
@@ -919,21 +919,21 @@
 </div>
 
 <script type="application/json" id="persona-json">
-@json($personaData)
+    @json($personaData)
 </script>
 @if($empresa)
 @php
-    $empresaPayload = $empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']);
-    if ($empresaDireccion) {
-        $empresaPayload['calle'] = $empresaDireccion['calle'] ?? '';
-        $empresaPayload['numero'] = $empresaDireccion['numero'] ?? '';
-        $empresaPayload['colonia'] = $empresaDireccion['colonia'] ?? '';
-        $empresaPayload['codigo_postal'] = $empresaDireccion['codigo_postal'] ?? '';
-        $empresaPayload['referencia'] = $empresaDireccion['referencia'] ?? '';
-    }
+$empresaPayload = $empresa->only(['nombre_comercial','razon_social','rtn','descripcion_empresa','horario_atencion']);
+if ($empresaDireccion) {
+$empresaPayload['calle'] = $empresaDireccion['calle'] ?? '';
+$empresaPayload['numero'] = $empresaDireccion['numero'] ?? '';
+$empresaPayload['colonia'] = $empresaDireccion['colonia'] ?? '';
+$empresaPayload['codigo_postal'] = $empresaDireccion['codigo_postal'] ?? '';
+$empresaPayload['referencia'] = $empresaDireccion['referencia'] ?? '';
+}
 @endphp
 <script type="application/json" id="empresa-json">
-@json($empresaPayload)
+    @json($empresaPayload)
 </script>
 @endif
 

@@ -46,8 +46,50 @@ async function apiSend(url, method, body) {
         credentials: "same-origin",
         body: body ? JSON.stringify(body) : undefined,
     });
-    if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
+    if (!r.ok) {
+        throw new Error(await parseApiError(r, "No se pudo completar la operación"));
+    }
     return r.json();
+}
+
+async function parseApiError(response, fallback = "No se pudo completar la operación") {
+    try {
+        const data = await response.json();
+        const message =
+            data?.message ||
+            data?.error ||
+            (typeof data === "string" ? data : "");
+        if (message) return normalizeFriendlyError(message);
+    } catch (_) {
+        try {
+            const rawText = await response.text();
+            if (rawText) return normalizeFriendlyError(rawText);
+        } catch (_) { }
+    }
+    return normalizeFriendlyError(fallback);
+}
+
+function normalizeFriendlyError(rawMessage) {
+    const msg = String(rawMessage || "").trim();
+    if (!msg) return "No se pudo completar la operación";
+
+    // Evita mostrar objetos JSON crudos o errores SQL técnicos.
+    const normalized = msg.toLowerCase();
+    if (
+        normalized.includes("restricción de integridad") ||
+        normalized.includes("restriccion de integridad") ||
+        normalized.includes("integrity constraint") ||
+        normalized.includes("foreign key") ||
+        normalized.includes("sqlstate")
+    ) {
+        return "No se puede eliminar este rol porque tiene usuarios o permisos asociados.";
+    }
+
+    if (msg.startsWith("{") && msg.endsWith("}")) {
+        return "No se pudo completar la operación solicitada.";
+    }
+
+    return msg;
 }
 
 function createRolesStore() {
@@ -122,7 +164,7 @@ function createRolesStore() {
                 if (this._abortCtrl) {
                     try {
                         this._abortCtrl.abort();
-                    } catch (_) {}
+                    } catch (_) { }
                 }
                 this._abortCtrl = new AbortController();
                 const url = this.buildQuery(page);
@@ -280,14 +322,14 @@ function createRolesStore() {
                 try {
                     window.showToast &&
                         window.showToast("Rol creado correctamente", "success");
-                } catch (_) {}
+                } catch (_) { }
                 return res;
             } catch (e) {
                 this.error = e && e.message ? e.message : String(e || "Error");
                 try {
                     window.showToast &&
-                        window.showToast("Error al crear el rol", "error");
-                } catch (_) {}
+                        window.showToast(this.error || "Error al crear el rol", "error");
+                } catch (_) { }
             } finally {
                 this.loading = false;
             }
@@ -325,14 +367,14 @@ function createRolesStore() {
                 try {
                     window.showToast &&
                         window.showToast("Rol actualizado", "success");
-                } catch (_) {}
+                } catch (_) { }
                 return res;
             } catch (e) {
                 this.error = e && e.message ? e.message : String(e || "Error");
                 try {
                     window.showToast &&
-                        window.showToast("Error al actualizar el rol", "error");
-                } catch (_) {}
+                        window.showToast(this.error || "Error al actualizar el rol", "error");
+                } catch (_) { }
             } finally {
                 this.loading = false;
             }
@@ -347,8 +389,11 @@ function createRolesStore() {
                     headers: authHeaders(),
                     credentials: "same-origin",
                 });
-                if (!r.ok)
-                    throw new Error(await r.text().catch(() => r.statusText));
+                if (!r.ok) {
+                    throw new Error(
+                        await parseApiError(r, "No se pudo eliminar el rol seleccionado")
+                    );
+                }
                 this.isDeleteOpen = false;
                 this.current = null;
                 await this.fetchList(1);
@@ -367,13 +412,13 @@ function createRolesStore() {
                 try {
                     window.showToast &&
                         window.showToast("Rol eliminado", "success");
-                } catch (_) {}
+                } catch (_) { }
             } catch (e) {
                 this.error = e && e.message ? e.message : String(e || "Error");
                 try {
                     window.showToast &&
-                        window.showToast("Error al eliminar el rol", "error");
-                } catch (_) {}
+                        window.showToast(this.error || "Error al eliminar el rol", "error");
+                } catch (_) { }
             } finally {
                 this.loading = false;
             }

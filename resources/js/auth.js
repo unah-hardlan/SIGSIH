@@ -276,6 +276,18 @@ function createAuthPage() {
                         return;
                     }
 
+                    if (data.status === "password_reset_required") {
+                        this.formError =
+                            data?.message ||
+                            "Debes cambiar tu contraseña para poder ingresar al sistema.";
+                        if (data?.reset_url) {
+                            window.location.assign(data.reset_url);
+                            return;
+                        }
+                        this.loading = false;
+                        return;
+                    }
+
                     try {
                         window.showToast &&
                             window.showToast("Sesión iniciada", "success", {
@@ -333,6 +345,17 @@ function createAuthPage() {
                         resp?.data?.message ||
                         "Debes verificar tu correo antes de continuar.";
                     this.showVerifyEmailModal = true;
+                } else if (
+                    resp?.status === 403 &&
+                    resp?.data?.status === "password_reset_required"
+                ) {
+                    this.formError =
+                        resp?.data?.message ||
+                        "Debes cambiar tu contraseña para poder ingresar al sistema.";
+                    if (resp?.data?.reset_url) {
+                        window.location.assign(resp.data.reset_url);
+                        return;
+                    }
                 } else {
                     this.formError =
                         resp?.data?.error ||

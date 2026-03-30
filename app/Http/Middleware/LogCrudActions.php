@@ -91,7 +91,15 @@ class LogCrudActions
                 return $response;
             }
 
+            $isBitacoraCleanAll = preg_match('#(^|/)bitacoras/clean/all$#i', $path) === 1;
+            if ($isBitacoraCleanAll) {
+                $accion = 'Eliminar';
+            }
+
             $descripcion = $this->friendlyDescription($accion, $objeto, $recordId, $path);
+            if ($isBitacoraCleanAll) {
+                $descripcion = 'Se limpió la bitácora';
+            }
             $this->bitacora->logFor($objeto, $accion, $descripcion, null, [
                 'tabla' => $table,
                 'id_registro' => is_scalar($recordId) ? (string) $recordId : null,

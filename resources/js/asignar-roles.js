@@ -52,6 +52,7 @@ document.addEventListener("alpine:init", () => {
         _rolesCache: {}, // { [userId]: { roles: string[], rol_principal: string, ts: number } }
         _rolesInflight: {}, // { [userId]: Promise }
         blocked: false,
+        currentSessionUser: "",
 
         // Variables de Paginación del lado del cliente
         allItems: [],
@@ -80,7 +81,32 @@ document.addEventListener("alpine:init", () => {
                 return;
             }
             this.blocked = false;
+            await this.fetchCurrentSessionUser();
             await Promise.all([this.fetchRoles(), this.fetchUsers(1)]);
+        },
+
+        async fetchCurrentSessionUser() {
+            try {
+                const r = await fetch("/api/me", {
+                    headers: authHeaders(),
+                    credentials: "same-origin",
+                });
+                if (!r.ok) {
+                    this.currentSessionUser = "";
+                    return;
+                }
+                const data = await r.json();
+                this.currentSessionUser = String(
+                    data?.usuario?.usuario || ""
+                ).toUpperCase();
+            } catch (_) {
+                this.currentSessionUser = "";
+            }
+        },
+
+        isSelfUser(user) {
+            const target = String(user?.usuario || "").toUpperCase();
+            return !!target && !!this.currentSessionUser && target === this.currentSessionUser;
         },
 
         rolNombre(id) {
@@ -210,7 +236,7 @@ document.addEventListener("alpine:init", () => {
                 if (this._abortCtrl) {
                     try {
                         this._abortCtrl.abort();
-                    } catch (_) {}
+                    } catch (_) { }
                 }
                 this._abortCtrl = new AbortController();
                 const url = this.buildQuery(page);
@@ -321,6 +347,10 @@ document.addEventListener("alpine:init", () => {
 
         openAssign(user) {
             if (this.blocked) return;
+            if (this.isSelfUser(user)) {
+                this._notify("No puedes asignar roles a tu propio usuario.", "error");
+                return;
+            }
             this.current = user;
             this.form.id_rol_fk = String(user?.id_rol_fk || "");
             // por defecto, usar el rol principal como seleccionado
@@ -380,7 +410,7 @@ document.addEventListener("alpine:init", () => {
             if (this._rolesInflight[id]) {
                 try {
                     await this._rolesInflight[id];
-                } catch (_) {}
+                } catch (_) { }
                 const c2 = this._rolesCache[id];
                 if (c2) {
                     this.rolesSelected = (c2.roles || []).map(String);
@@ -452,7 +482,7 @@ document.addEventListener("alpine:init", () => {
                 try {
                     window.showToast &&
                         window.showToast("Rol asignado al usuario", "success");
-                } catch (_) {}
+                } catch (_) { }
             } catch (e) {
                 this.error = e && e.message ? e.message : "Error asignando rol";
             } finally {
@@ -644,7 +674,7 @@ document.addEventListener("alpine:init", () => {
                             "Roles actualizados para el usuario",
                             "success"
                         );
-                } catch (_) {}
+                } catch (_) { }
             } catch (e) {
                 this.error =
                     e && e.message ? e.message : "Error asignando roles";

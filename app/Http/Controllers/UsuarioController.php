@@ -10,6 +10,8 @@ use App\Http\Requests\UpdateUsuarioRequest;
 use App\Http\Resources\UsuarioResource;
 use App\Http\Resources\RolResource;
 use App\Models\Rol;
+use App\Models\Parametro;
+use App\Models\HistorialContrasena;
 use App\Services\BitacoraService;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +22,7 @@ class UsuarioController extends Controller
 
         $this->middleware('permiso:usuarios,consultar')->only(['index', 'show']);
         $this->middleware('permiso:usuarios,insercion')->only(['store']);
-        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles']);
+        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles', 'resetPasswordGenerica']);
         $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
         $this->middleware('permiso:usuarios,consultar')->only(['rol', 'getRoles']);
     }
@@ -68,6 +70,27 @@ class UsuarioController extends Controller
             $this->bitacora->logFor('Usuarios', $accion, $descripcion, $idUsuario);
         } catch (\Throwable $e) {
         }
+    }
+
+    private function isSelfTarget(int $targetUserId): bool
+    {
+        $auth = auth()->user();
+        $authId = (int) ($auth->id_usuario_pk ?? $auth->id ?? 0);
+        return $authId > 0 && $authId === $targetUserId;
+    }
+
+    private function genericPasswordValue(): string
+    {
+        $param = Parametro::whereIn('parametro', [
+            'USUARIOS.PASSWORD_GENERICA',
+            'USUARIOS.PASSWORD.GENERICA',
+            'ADMIN.PASSWORD',
+            'ADMIN_CPASS',
+        ])->orderByRaw("FIELD(parametro,'USUARIOS.PASSWORD_GENERICA','USUARIOS.PASSWORD.GENERICA','ADMIN.PASSWORD','ADMIN_CPASS')")
+            ->value('valor');
+
+        $pwd = is_string($param) ? trim($param) : '';
+        return $pwd !== '' ? $pwd : 'Temporal123!';
     }
     public function index()
     {
@@ -153,6 +176,10 @@ class UsuarioController extends Controller
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autoedición bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
         $data = $request->validated();
         $antes = $usuario->getOriginal();
         $usuario->update($data);
@@ -174,6 +201,10 @@ class UsuarioController extends Controller
         $usuario = Usuario::find($id);
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autoinactivación bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
         }
         if ($usuario->estado_usuario === 'INACTIVO') {
             return response()->json(['message' => 'Usuario ya estaba inactivo'], 200);
@@ -200,6 +231,10 @@ class UsuarioController extends Controller
     {
         $usuario = Usuario::find($id);
         if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autoasignación de rol bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
         $validated = $request->validate([
             'id_rol_fk' => 'required|integer|exists:tbl_ms_rol,id_rol_pk',
         ]);
@@ -256,6 +291,10 @@ class UsuarioController extends Controller
     {
         $usuario = Usuario::find($id);
         if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autosincronización de roles bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
         $validated = $request->validate([
             'roles' => 'array',
             'roles.*' => 'integer|exists:tbl_ms_rol,id_rol_pk',
@@ -333,6 +372,49 @@ class UsuarioController extends Controller
         $roles = ($usuario->roles ?? collect())->pluck('id_rol_pk')->map(fn($v) => (int) $v)->values()->all();
         $principal = $usuario->id_rol_fk ? (int) $usuario->id_rol_fk : (count($roles) ? (int) $roles[0] : null);
         return response()->json(['roles' => $roles, 'rol_principal' => $principal]);
+    }
+
+    public function resetPasswordGenerica($id)
+    {
+        $usuario = Usuario::find($id);
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autorestablecimiento de contraseña bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
+
+        $genericPassword = $this->genericPasswordValue();
+        $usuario->contrasena = $genericPassword;
+        $usuario->primer_ingreso = 1;
+        $usuario->save();
+
+        try {
+            HistorialContrasena::create([
+                'contrasena' => (string) $usuario->contrasena,
+                'id_usuario_fk' => $usuario->id_usuario_pk,
+                'creado_por' => auth()->user()->usuario ?? 'system',
+                'fecha_creacion' => now(),
+            ]);
+        } catch (\Throwable $e) {
+        }
+
+        try {
+            $this->bitacora->logFor('Usuarios', 'Seguridad', 'Restablecimiento de contraseña genérica para usuario ' . $usuario->usuario, $usuario->id_usuario_pk, [
+                'tabla' => 'tbl_ms_usuario',
+                'id_registro' => $usuario->id_usuario_pk,
+                'despues' => ['primer_ingreso' => 1],
+            ]);
+        } catch (\Throwable $e) {
+        }
+
+        return response()->json([
+            'message' => 'Contraseña restablecida correctamente',
+            'usuario' => $usuario->usuario,
+            'password_generica' => $genericPassword,
+            'must_change_password' => true,
+        ]);
     }
 
 

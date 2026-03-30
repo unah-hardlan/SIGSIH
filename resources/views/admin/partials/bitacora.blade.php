@@ -49,6 +49,11 @@
                     class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                     <i class="fas fa-file-alt"></i> Generar Reporte
                 </a>
+                <button @click="exportCsv()"
+                    class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm"
+                    :disabled="loading">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </button>
                 <button @click="isClearAllModalOpen = true"
                     class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm"
                     :disabled="loading">

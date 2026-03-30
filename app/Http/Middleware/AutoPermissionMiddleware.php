@@ -22,7 +22,7 @@ class AutoPermissionMiddleware
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        
+
         if (
             $request->is('api/me') ||
             $request->is('api/login') ||
@@ -30,14 +30,14 @@ class AutoPermissionMiddleware
             $request->is('api/register') ||
             $request->is('api/dashboard/*') ||
             $request->is('api/2fa/*') ||
-            
+
             $request->is('api/notifications') ||
             $request->is('api/notifications/*')
         ) {
             return $next($request);
         }
 
-        
+
         try {
             if (($user instanceof Usuario) && $user->rol && mb_strtolower($user->rol->rol) === 'administrador') {
                 return $next($request);
@@ -47,10 +47,10 @@ class AutoPermissionMiddleware
 
         $method = strtoupper($request->method());
 
-        
+
         if (in_array($method, ['GET', 'HEAD'], true)) {
             $path = trim($request->path(), '/');
-            
+
             $datasetStates = [
                 'api/estados-solicitud' => ['Solicitudes', 'Gestión de Solicitudes', 'Gestion de Solicitudes'],
                 'api/estados-proyecto' => ['Proyectos', 'Gestión de proyectos', 'Gestion de proyectos'],
@@ -63,9 +63,8 @@ class AutoPermissionMiddleware
                 if ($perm->can($user, $datasetStates[$path], 'consultar')) {
                     return $next($request);
                 }
-                
             }
-            
+
             if (preg_match('#^api/(ingresos|gastos)(/.*)?$#i', $path)) {
                 $perm = app(PermissionService::class);
                 if ($perm->can($user, ['Proyectos', 'Gestión de proyectos', 'Gestion de proyectos'], 'consultar')) {
@@ -77,8 +76,8 @@ class AutoPermissionMiddleware
                 if ($perm->can($user, ['Permisos', 'Configuración de accesos', 'Configuracion de accesos'], 'consultar')) {
                     return $next($request);
                 }
-                
-                
+
+
                 if (preg_match('#^api/roles#i', $path)) {
                     $perm = app(PermissionService::class);
                     if ($perm->can($user, ['Usuarios'], 'consultar')) {
@@ -104,7 +103,7 @@ class AutoPermissionMiddleware
             }
         }
 
-        
+
         $route = $request->route();
         $controller = $route ? ($route->getActionName() ?? '') : '';
         $controllerBase = class_basename(is_string($controller) ? explode('@', (string) $controller)[0] : (string) $controller);
@@ -112,49 +111,49 @@ class AutoPermissionMiddleware
         $synonyms = [
             'Auth' => ['Login'],
             'Usuario' => ['Usuarios', 'Usuario'],
-            'Rol' => ['Roles', 'Rol'],
+            'Rol' => ['Roles', 'Rol', 'Permisos', 'Configuración de accesos', 'Configuracion de accesos'],
             'Permiso' => ['Permisos', 'Permiso', 'Configuración de accesos', 'Configuracion de accesos'],
             'Parametro' => ['Parámetros', 'Parametros', 'Parámetro', 'Parametro'],
             'Objeto' => ['Objetos', 'Objeto'],
             'Bitacora' => ['Bitácora', 'Bitacora'],
             'Profile' => ['Profile', 'Perfil'],
-            
-            
+
+
             'Genero' => ['Género', 'Genero', 'Géneros', 'Generos'],
             'Persona' => ['Persona', 'Personas', 'Gestión de personas', 'Gestion de personas'],
             'Solicitud' => ['Solicitud', 'Solicitudes', 'Gestión de solicitudes', 'Gestion de solicitudes'],
             'Proyecto' => ['Proyectos', 'Gestión de proyectos', 'Gestion de proyectos'],
             'Ticket' => ['Tickets', 'Gestión de tickets', 'Gestion de tickets'],
             'Dashboard' => ['Dashboard'],
-            
+
             'MantenimientoGeneral' => ['Mantenimiento del sistema', 'Mantenimiento'],
             'GestionPersonas' => ['Gestión de personas', 'Gestion de personas'],
             'GestionDb' => ['Gestión de base de datos', 'Gestion de base de datos'],
             'Origen' => ['Origen Kardex', 'Origenes', 'Origen'],
-            
+
             'EstadoTicket' => ['Estados de Tickets'],
             'EstadoCai' => ['Estados CAI'],
             'EstadoProyecto' => ['Estados de Proyecto'],
             'EstadoSolicitud' => ['Estados de Solicitud'],
             'EstadoCalendario' => ['Estados del Calendario'],
             'EstadoFactura' => ['Estados de Factura', 'Administración de Facturas', 'Administracion de Facturas', 'Facturas', 'Gestión de Facturas', 'Gestion de Facturas'],
-            
+
             'TipoMovimiento' => ['Tipo de Movimiento'],
             'TipoObjeto' => ['Tipo de Objeto'],
             'TipoProducto' => ['Tipo de Producto'],
             'TipoVisita' => ['Tipo de Visita'],
             'TipoMantenimiento' => ['Tipo de Mantenimiento'],
-            
+
             'Servicio' => ['Servicio Factura', 'Servicios Factura'],
             'ServicioRealizado' => ['Servicios Realizados'],
             'AccionRealizada' => ['Acciones Realizadas'],
             'Perfil' => ['Perfiles', 'Perfil'],
             'Categoria' => ['Categorías de Ingresos y Gastos', 'Categorias de Ingresos y Gastos'],
-            
+
             'ReporteVisita' => ['Reportes', 'Gestión de reportes', 'Gestion de reportes'],
-            
+
             'DetalleFactura' => ['Facturas', 'Gestión de Facturas', 'Gestion de Facturas'],
-            
+
             'EmpresasCliente' => ['Empresas', 'Gestión de Empresas', 'Gestion de Empresas'],
             'Cotizacion' => ['Cotizaciones', 'Gestión de Cotizaciones', 'Gestion de Cotizaciones'],
             'ItemCotizacion' => ['Cotizaciones', 'Gestión de Cotizaciones', 'Gestion de Cotizaciones'],
@@ -170,7 +169,7 @@ class AutoPermissionMiddleware
         $candidates = $synonyms[$controllerBase] ?? [];
         $first = explode('/', trim($request->path(), '/'))[1] ?? '';
         if ($first) {
-            
+
             $firstTitle = Str::of($first)->replace(['-', '_'], ' ')->title();
             $candidates[] = (string) $firstTitle;
         }
@@ -182,9 +181,9 @@ class AutoPermissionMiddleware
             default => 'consultar',
         };
 
-        
-        
-        
+
+
+
         $pathForAction = trim($request->path(), '/');
         if (preg_match('#^api/(ingresos|gastos)(/.*)?$#i', $pathForAction)) {
             $perm = app(PermissionService::class);

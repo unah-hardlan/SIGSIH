@@ -1,93 +1,216 @@
 <script>
-    window.__backupDb = function() {
-        return {
-            tab: localStorage.getItem('dbTab') || 'respaldo',
-            showModal: false,
-            modalMsg: '',
-            openModal(msg) {
-                this.modalMsg = msg;
-                this.showModal = true;
-                document.documentElement.classList.add('overflow-hidden');
-            },
-            closeModal() {
-                this.showModal = false;
-                document.documentElement.classList.remove('overflow-hidden');
-            },
-            estadoConexion: 'inicial',
-            path: '',
-            isBackingUp: false,
-            backupMsg: '',
-            downloadUrl: '',
-            driver: 'mysql',
-            respaldoExitoso: false,
-            mensajeRespaldo: '',
-            confirmPassword: '',
-            lastBackupAt: null,
-            init() {
-                const pad = n => String(n).padStart(2, '0');
-                const d = new Date();
-                const ts =
-                    `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-                if (!this.path) {
-                    this.path = 'C\\backups\\backup-' + ts + '.sql';
+window.__backupDb = function() {
+    return {
+        tab: localStorage.getItem('dbTab') || 'respaldo',
+        showModal: false,
+        modalMsg: '',
+        modalAction: 'backup',
+        selectedBackupId: null,
+        openModal(msg) {
+            this.modalMsg = msg;
+            this.showModal = true;
+            document.documentElement.classList.add('overflow-hidden');
+        },
+        closeModal() {
+            this.showModal = false;
+            document.documentElement.classList.remove('overflow-hidden');
+        },
+        estadoConexion: 'inicial',
+        path: '',
+        isBackingUp: false,
+        backupMsg: '',
+        downloadUrl: '',
+        driver: 'mysql',
+        respaldoExitoso: false,
+        mensajeRespaldo: '',
+        confirmPassword: '',
+        lastBackupAt: null,
+        backups: [],
+        backupsMeta: {
+            max_backups: 10,
+            total_activos: 0,
+            will_delete_oldest_on_next: false,
+            oldest_backup_name: null,
+        },
+        loadingBackups: false,
+        warningMsg: '',
+        restoringId: null,
+        deletingId: null,
+        init() {
+            const pad = n => String(n).padStart(2, '0');
+            const d = new Date();
+            const ts =
+                `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+            if (!this.path) {
+                this.path = 'C\\backups\\backup-' + ts + '.sql';
+            }
+            this.fetchBackups();
+        },
+        openBackupModal() {
+            this.modalAction = 'backup';
+            this.selectedBackupId = null;
+            this.openModal('¿Deseas confirmar el respaldo de la base de datos?');
+        },
+        openRestoreModal(backupId) {
+            this.modalAction = 'restore';
+            this.selectedBackupId = backupId;
+            this.openModal('La restauración sobrescribirá datos actuales. ¿Deseas continuar?');
+        },
+        async executeModalAction() {
+            this.closeModal();
+            if (this.modalAction === 'restore' && this.selectedBackupId) {
+                await this.restoreBackup(this.selectedBackupId);
+                return;
+            }
+            await this.doBackup();
+        },
+        async doBackup() {
+            this.isBackingUp = true;
+            this.backupMsg = '';
+            try {
+                const body = {
+                    path: this.path,
+                    confirm_password: this.confirmPassword
+                };
+                const r = await fetch('/api/db/backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(body)
+                });
+                const data = await r.json().catch(() => ({}));
+                if (data && data.ok === false && (data.code === 'INVALID_CONFIRM_PASSWORD' || data.code ===
+                        'MISSING_CONFIRM_PASSWORD')) {
+                    const msg = (data && data.errors && data.errors.confirm_password && data.errors
+                        .confirm_password[0]) || data.error || 'Contraseña incorrecta';
+                    this.backupMsg = msg;
+                    this.respaldoExitoso = false;
+                    this.mensajeRespaldo = (data.code === 'MISSING_CONFIRM_PASSWORD') ? 'Falta contraseña' :
+                        'Contraseña incorrecta';
+                    return;
                 }
-            },
-            async doBackup() {
-                this.isBackingUp = true;
-                this.backupMsg = '';
-                try {
-                    const body = {
-                        path: this.path,
-                        confirm_password: this.confirmPassword
-                    };
-                    const r = await fetch('/api/db/backup', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify(body)
-                    });
-                    const data = await r.json().catch(() => ({}));
-                    if (data && data.ok === false && (data.code === 'INVALID_CONFIRM_PASSWORD' || data.code ===
-                            'MISSING_CONFIRM_PASSWORD')) {
+                if (!r.ok) {
+                    if (r.status === 422 || r.status === 403) {
                         const msg = (data && data.errors && data.errors.confirm_password && data.errors
                             .confirm_password[0]) || data.error || 'Contraseña incorrecta';
                         this.backupMsg = msg;
                         this.respaldoExitoso = false;
-                        this.mensajeRespaldo = (data.code === 'MISSING_CONFIRM_PASSWORD') ? 'Falta contraseña' :
-                            'Contraseña incorrecta';
+                        this.mensajeRespaldo = 'Contraseña incorrecta';
                         return;
                     }
-                    if (!r.ok) {
-                        if (r.status === 422 || r.status === 403) {
-                            const msg = (data && data.errors && data.errors.confirm_password && data.errors
-                                .confirm_password[0]) || data.error || 'Contraseña incorrecta';
-                            this.backupMsg = msg;
-                            this.respaldoExitoso = false;
-                            this.mensajeRespaldo = 'Contraseña incorrecta';
-                            return; 
-                        }
-                        const msg = data.message || data.error || 'Fallo realizando respaldo';
-                        this.backupMsg = msg;
-                        this.respaldoExitoso = false;
-                        this.mensajeRespaldo = 'Error al respaldar';
-                        return;
-                    }
-                    this.backupMsg = `Respaldo listo: ${data.path || ''}`;
-                    this.respaldoExitoso = true;
-                    this.mensajeRespaldo = 'Respaldo exitoso';
-                    this.lastBackupAt = new Date();
-                    if (data.download_url) {
-                        this.downloadUrl = data.download_url;
-                    }
-                } finally {
-                    this.isBackingUp = false;
+                    const msg = data.message || data.error || 'Fallo realizando respaldo';
+                    this.backupMsg = msg;
+                    this.respaldoExitoso = false;
+                    this.mensajeRespaldo = 'Error al respaldar';
+                    return;
                 }
+                this.backupMsg = `Respaldo listo: ${data.path || ''}`;
+                this.respaldoExitoso = true;
+                this.mensajeRespaldo = 'Respaldo exitoso';
+                this.lastBackupAt = new Date();
+                this.warningMsg = data.will_delete_oldest_on_next ?
+                    `Al generar un nuevo respaldo, se eliminará el más antiguo: ${data.oldest_backup_name || '(sin nombre)'}` :
+                    '';
+                if (data.download_url) {
+                    this.downloadUrl = data.download_url;
+                }
+                await this.fetchBackups();
+            } finally {
+                this.isBackingUp = false;
+                this.confirmPassword = '';
             }
-        };
+        },
+        async fetchBackups() {
+            this.loadingBackups = true;
+            try {
+                const r = await fetch('/api/db/backups', {
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                const data = await r.json().catch(() => ({}));
+                if (!r.ok) {
+                    this.backups = [];
+                    return;
+                }
+                this.backups = Array.isArray(data?.data) ? data.data : [];
+                this.backupsMeta = {
+                    ...this.backupsMeta,
+                    ...(data?.meta || {})
+                };
+                this.warningMsg = this.backupsMeta.will_delete_oldest_on_next ?
+                    `Al generar un nuevo respaldo, se eliminará el más antiguo: ${this.backupsMeta.oldest_backup_name || '(sin nombre)'}` :
+                    '';
+            } finally {
+                this.loadingBackups = false;
+            }
+        },
+        async restoreBackup(backupId) {
+            this.restoringId = backupId;
+            try {
+                const r = await fetch(`/api/db/backups/${backupId}/restore`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        confirm_password: this.confirmPassword
+                    })
+                });
+                const data = await r.json().catch(() => ({}));
+                if (data && data.ok === false && data.code) {
+                    this.backupMsg = data.error || 'Contraseña incorrecta';
+                    this.mensajeRespaldo = 'No se pudo restaurar';
+                    this.respaldoExitoso = false;
+                    return;
+                }
+                if (!r.ok) {
+                    this.backupMsg = data.message || data.error || 'No se pudo restaurar';
+                    this.mensajeRespaldo = 'No se pudo restaurar';
+                    this.respaldoExitoso = false;
+                    return;
+                }
+                this.backupMsg = data.message || 'Restauración completada';
+                this.mensajeRespaldo = 'Restauración exitosa';
+                this.respaldoExitoso = true;
+            } finally {
+                this.restoringId = null;
+                this.confirmPassword = '';
+            }
+        },
+        async deleteBackup(backupId) {
+            this.deletingId = backupId;
+            try {
+                const r = await fetch(`/api/db/backups/${backupId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                const data = await r.json().catch(() => ({}));
+                if (!r.ok) {
+                    this.backupMsg = data.message || data.error || 'No se pudo eliminar el respaldo';
+                    this.mensajeRespaldo = 'Error al eliminar';
+                    this.respaldoExitoso = false;
+                    return;
+                }
+                this.backupMsg = data.message || 'Respaldo eliminado';
+                this.mensajeRespaldo = 'Respaldo eliminado';
+                this.respaldoExitoso = true;
+                await this.fetchBackups();
+            } finally {
+                this.deletingId = null;
+            }
+        },
     };
+};
 </script>
 
 <div class="max-w-4xl mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="__backupDb()">
@@ -124,7 +247,7 @@
 
                     <div class="flex flex-wrap items-center gap-3">
                         @perm(['Gestión de base de datos','Gestion de base de datos','Base de Datos'], 'insercion')
-                        <button @click="openModal('¿Deseas confirmar el respaldo de la base de datos?')"
+                        <button @click="openBackupModal()"
                             class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold transition nunito-regular text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                             :disabled="isBackingUp">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
@@ -147,8 +270,10 @@
                         @else
                         <button disabled title="Sin permiso para crear"
                             class="inline-flex items-center gap-2 bg-gray-300 text-gray-600 px-5 py-2.5 rounded-lg font-semibold transition nunito-regular text-sm cursor-not-allowed">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-.293.707l-6 6a1 1 0 01-1.414 0l-6-6A1 1 0 013 9V3zm4 2a1 1 0 100 2h6a1 1 0 100-2H7z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-.293.707l-6 6a1 1 0 01-1.414 0l-6-6A1 1 0 013 9V3zm4 2a1 1 0 100 2h6a1 1 0 100-2H7z" />
                             </svg>
                             Respaldar ahora
                         </button>
@@ -202,8 +327,80 @@
                                 x-text="new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(lastBackupAt)"></span>
                         </div>
                     </template>
+
+                    <template x-if="warningMsg">
+                        <div class="text-xs px-3 py-2 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
+                            x-text="warningMsg"></div>
+                    </template>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white nunito-bold">Últimos 10 respaldos</h3>
+            <button @click="fetchBackups()"
+                class="text-xs px-3 py-1.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">Actualizar</button>
+        </div>
+
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                    <tr>
+                        <th class="px-3 py-2 text-left">Archivo</th>
+                        <th class="px-3 py-2 text-left">Tipo</th>
+                        <th class="px-3 py-2 text-left">Tamaño</th>
+                        <th class="px-3 py-2 text-left">Fecha</th>
+                        <th class="px-3 py-2 text-left">Usuario</th>
+                        <th class="px-3 py-2 text-left">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-if="loadingBackups">
+                        <tr>
+                            <td colspan="6" class="px-3 py-4 text-center text-gray-500 dark:text-gray-400">Cargando
+                                respaldos...</td>
+                        </tr>
+                    </template>
+                    <template x-if="!loadingBackups && backups.length === 0">
+                        <tr>
+                            <td colspan="6" class="px-3 py-4 text-center text-gray-500 dark:text-gray-400">No hay
+                                respaldos registrados.</td>
+                        </tr>
+                    </template>
+                    <template x-for="b in backups" :key="b.id">
+                        <tr class="border-t border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-200">
+                            <td class="px-3 py-2" x-text="b.nombre_archivo"></td>
+                            <td class="px-3 py-2" x-text="b.tipo_respaldo"></td>
+                            <td class="px-3 py-2" x-text="b.tamano_humano"></td>
+                            <td class="px-3 py-2" x-text="b.fecha_respaldo"></td>
+                            <td class="px-3 py-2" x-text="b.creado_por || 'system'"></td>
+                            <td class="px-3 py-2">
+                                <div class="flex flex-wrap gap-2">
+                                    <button @click="window.open(b.download_url, '_blank')"
+                                        class="px-2 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded">Descargar</button>
+                                    @perm(['Gestión de base de datos','Gestion de base de datos','Base de Datos'],
+                                    'actualizacion')
+
+                                    @else
+                                    <button disabled
+                                        class="px-2 py-1 text-xs bg-indigo-300 text-white rounded cursor-not-allowed">Restaurar</button>
+                                    @endperm
+                                    @perm(['Gestión de base de datos','Gestion de base de datos','Base de Datos'],
+                                    'eliminacion')
+                                    <button @click="deleteBackup(b.id)" :disabled="deletingId === b.id"
+                                        class="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-60">Eliminar</button>
+                                    @else
+                                    <button disabled
+                                        class="px-2 py-1 text-xs bg-red-300 text-white rounded cursor-not-allowed">Eliminar</button>
+                                    @endperm
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -220,7 +417,7 @@
             <div class="flex justify-end gap-2 mt-4">
                 <button @click="closeModal()"
                     class="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded nunito-regular">Cancelar</button>
-                <button @click="closeModal(); doBackup()"
+                <button @click="executeModalAction()"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded nunito-regular">Aceptar</button>
             </div>
         </div>

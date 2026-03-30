@@ -19,7 +19,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-yMGw4_X-.css",
+    "file": "assets/app-DwCs71aJ.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -39,7 +39,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-sqeNpEWr.js",
+    "file": "assets/app-Cd1QNwby.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -48,13 +48,13 @@
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-Cz4FmRot.js",
+    "file": "assets/auth-b4SXFx6i.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-Dy911jis.js",
+    "file": "assets/cliente-C8NW5sLe.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
@@ -63,7 +63,7 @@
     ]
   },
   "resources/js/cliente/perfil.js": {
-    "file": "assets/perfil-DGWHTdiw.js",
+    "file": "assets/perfil-D69TO-xo.js",
     "name": "perfil",
     "src": "resources/js/cliente/perfil.js",
     "isEntry": true
@@ -87,7 +87,7 @@
     "isEntry": true
   },
   "resources/js/perfil.js": {
-    "file": "assets/perfil-4hCeujCu.js",
+    "file": "assets/perfil-vZDT_R0_.js",
     "name": "perfil",
     "src": "resources/js/perfil.js",
     "isEntry": true
@@ -135,7 +135,7 @@
     "isEntry": true
   },
   "resources/js/usuarios.js": {
-    "file": "assets/usuarios-DMoM7Bdd.js",
+    "file": "assets/usuarios-Bockb9tX.js",
     "name": "usuarios",
     "src": "resources/js/usuarios.js",
     "isEntry": true
