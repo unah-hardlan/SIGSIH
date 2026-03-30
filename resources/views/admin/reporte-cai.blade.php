@@ -50,15 +50,15 @@
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">{{ $cai->fecha_limite ? \Carbon\Carbon::parse($cai->fecha_limite)->format('d/m/Y') : 'N/A' }}</td>
                             <td class="border border-gray-300 py-2 px-3 nunito-regular">
                                 @if($cai->estadoCai)
-                                    <span class="px-2 py-1 rounded text-xs font-medium
+                                <span class="px-2 py-1 rounded text-xs font-medium
                                         @if(strtolower($cai->estadoCai->codigo) === 'act') bg-green-100 text-green-800
                                         @elseif(strtolower($cai->estadoCai->codigo) === 'cai-agt') bg-orange-100 text-orange-800
                                         @elseif(strtolower($cai->estadoCai->codigo) === 'cai-cer') bg-gray-100 text-gray-800
                                         @else bg-gray-100 text-gray-800 @endif">
-                                        {{ $cai->estadoCai->nombre }}
-                                    </span>
+                                    {{ $cai->estadoCai->nombre }}
+                                </span>
                                 @else
-                                    N/A
+                                N/A
                                 @endif
                             </td>
                         </tr>
@@ -73,13 +73,13 @@
                 </table>
             </div>
 
-            <div class="mt-6 flex justify-center gap-4 no-print">
+            <div class="report-print-controls no-print">
                 <button onclick="window.print()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
                     <i class="fas fa-print mr-2"></i>Imprimir
                 </button>
                 <button onclick="window.close()"
-                        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg nunito-bold transition">
                     <i class="fas fa-times mr-2"></i>Cerrar
                 </button>
             </div>

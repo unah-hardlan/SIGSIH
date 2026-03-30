@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
 Route::get('/verificar-correo', [AuthController::class, 'verifyEmailPage'])->name('verify.email.page');
 Route::get('/verify-email', [AuthController::class, 'verifyEmailPage']);
 
@@ -25,9 +25,14 @@ Route::get('/session/token', [SessionTokenController::class, 'issue'])
     ->name('session.token');
 
 Route::get('/password/reset', [AuthController::class, 'showPasswordRecoverForm'])->name('password.request');
-Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])->name('password.email');
+Route::post('/password/email', [AuthController::class, 'sendPasswordResetEmail'])
+    ->middleware('throttle:auth-password-recovery')
+    ->name('password.email');
 Route::get('/password/reset/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset.form');
 Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
+Route::get('/password/force-reset', [AuthController::class, 'forcedPasswordResetRedirect'])
+    ->middleware(['auth.jwt.web', 'jwt.refresh'])
+    ->name('password.force.redirect');
 
 Route::get('/', [AuthController::class, 'home'])
     ->middleware(['auth.jwt.web', 'jwt.refresh'])
@@ -92,11 +97,11 @@ Route::middleware(['auth.jwt.web', 'admin.only'])->group(function () {
 
 Route::get('/load-view', [ViewLoaderController::class, 'load'])
     ->name('load-view')
-    ->middleware(['auth.jwt.web', 'force.profile']);
+    ->middleware(['auth.jwt.web', 'force.profile', 'force.password.change']);
 
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh', 'force.profile', 'block.client'])
+    ->middleware(['spa.init', 'auth.jwt.web', 'jwt.refresh', 'force.profile', 'force.password.change', 'block.client'])
     ->group(function () {
         Route::get('/', [ViewLoaderController::class, 'root'])->name('root');
 

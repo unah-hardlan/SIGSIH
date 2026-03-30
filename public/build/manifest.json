@@ -1,6 +1,6 @@
 {
-  "_index-10ZcEK_X.js": {
-    "file": "assets/index-10ZcEK_X.js",
+  "_index-CXbdeip1.js": {
+    "file": "assets/index-CXbdeip1.js",
     "name": "index",
     "dynamicImports": [
       "node_modules/laravel-echo/dist/echo.js",
@@ -19,7 +19,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-BrYLOKJ-.css",
+    "file": "assets/app-DwCs71aJ.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -39,33 +39,39 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-BnKCrgy7.js",
+    "file": "assets/app-Cd1QNwby.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_index-10ZcEK_X.js"
+      "_index-CXbdeip1.js"
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-BeXyzU8p.js",
+    "file": "assets/auth-b4SXFx6i.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true
   },
   "resources/js/cliente.js": {
-    "file": "assets/cliente-CJFz439Y.js",
+    "file": "assets/cliente-C8NW5sLe.js",
     "name": "cliente",
     "src": "resources/js/cliente.js",
     "isEntry": true,
     "imports": [
-      "_index-10ZcEK_X.js"
+      "_index-CXbdeip1.js"
     ]
   },
   "resources/js/cliente/perfil.js": {
-    "file": "assets/perfil-DGWHTdiw.js",
+    "file": "assets/perfil-D69TO-xo.js",
     "name": "perfil",
     "src": "resources/js/cliente/perfil.js",
+    "isEntry": true
+  },
+  "resources/js/estados-tickets.js": {
+    "file": "assets/estados-tickets-D9eQSsCI.js",
+    "name": "estados-tickets",
+    "src": "resources/js/estados-tickets.js",
     "isEntry": true
   },
   "resources/js/idle-logout.js": {
@@ -80,8 +86,14 @@
     "src": "resources/js/login-guard.js",
     "isEntry": true
   },
+  "resources/js/perfil.js": {
+    "file": "assets/perfil-vZDT_R0_.js",
+    "name": "perfil",
+    "src": "resources/js/perfil.js",
+    "isEntry": true
+  },
   "resources/js/session.js": {
-    "file": "assets/session-D_0fWzlu.js",
+    "file": "assets/session-Dx8tWLeI.js",
     "name": "session",
     "src": "resources/js/session.js",
     "isEntry": true
@@ -110,10 +122,22 @@
     "src": "resources/js/tabla-responsive.js",
     "isEntry": true
   },
+  "resources/js/tickets.js": {
+    "file": "assets/tickets-CSO27YXG.js",
+    "name": "tickets",
+    "src": "resources/js/tickets.js",
+    "isEntry": true
+  },
   "resources/js/toast.js": {
     "file": "assets/toast-CRfo3b6F.js",
     "name": "toast",
     "src": "resources/js/toast.js",
+    "isEntry": true
+  },
+  "resources/js/usuarios.js": {
+    "file": "assets/usuarios-Bockb9tX.js",
+    "name": "usuarios",
+    "src": "resources/js/usuarios.js",
     "isEntry": true
   }
 }

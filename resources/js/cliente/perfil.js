@@ -50,7 +50,7 @@ window.perfilData = function (el) {
                         referencia: data.referencia || "",
                     };
                 }
-            } catch (_) {}
+            } catch (_) { }
             return {
                 nombre_comercial: "",
                 razon_social: "",
@@ -170,15 +170,18 @@ window.perfilData = function (el) {
         handleEmpresaAvatar(e) {
             const file = e.target.files[0];
             if (!file) return;
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
             if (file.size > 2 * 1024 * 1024) {
                 window.showToast?.(
                     "Archivo demasiado grande (máx 2MB)",
                     "error"
                 );
+                e.target.value = "";
                 return;
             }
-            if (!file.type.startsWith("image/")) {
-                window.showToast?.("Solo se permiten imágenes", "warning");
+            if (!allowedTypes.includes((file.type || "").toLowerCase())) {
+                window.showToast?.("Solo se permiten imágenes JPG, PNG o WEBP", "warning");
+                e.target.value = "";
                 return;
             }
             this.empresaAvatarFile = file;
@@ -186,24 +189,27 @@ window.perfilData = function (el) {
                 if (this.empresaAvatarPreviewUrl)
                     URL.revokeObjectURL(this.empresaAvatarPreviewUrl);
                 this.empresaAvatarPreviewUrl = URL.createObjectURL(file);
-            } catch (_) {}
+            } catch (_) { }
         },
 
         handleAvatarChange(event) {
             const file = event.target.files[0];
             if (file) {
+                const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
                 if (file.size > 2 * 1024 * 1024) {
                     window.showToast?.(
                         "El archivo es demasiado grande. Máximo 2MB.",
                         "error"
                     );
+                    event.target.value = "";
                     return;
                 }
-                if (!file.type.startsWith("image/")) {
+                if (!allowedTypes.includes((file.type || "").toLowerCase())) {
                     window.showToast?.(
-                        "Solo se permiten archivos de imagen.",
+                        "Solo se permiten archivos JPG, PNG o WEBP.",
                         "warning"
                     );
+                    event.target.value = "";
                     return;
                 }
                 this.avatarFile = file;
@@ -211,7 +217,7 @@ window.perfilData = function (el) {
                     if (this.avatarPreviewUrl)
                         URL.revokeObjectURL(this.avatarPreviewUrl);
                     this.avatarPreviewUrl = URL.createObjectURL(file);
-                } catch (_) {}
+                } catch (_) { }
             }
         },
 
@@ -311,7 +317,7 @@ window.perfilData = function (el) {
                                 `;
                             }
                         }
-                    } catch (_) {}
+                    } catch (_) { }
 
                     this.originalData = { ...this.formData };
                     this.closeEditModal();
@@ -683,7 +689,7 @@ window.perfilData = function (el) {
                 } else {
                     alert(
                         result.message ||
-                            "Error al generar códigos de recuperación"
+                        "Error al generar códigos de recuperación"
                     );
                 }
             } catch (error) {

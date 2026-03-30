@@ -1,6 +1,9 @@
 <div x-data="{
     deleteModal:false,
     selectedItem:null,
+    restoreModal:false,
+    selectedRestoreItem:null,
+    confirmMode:'delete',
     generateCotizacionModal:false,
     editModal:false,
     loading:false,
@@ -8,7 +11,7 @@
     cotizaciones:[],
     clientes:[],
     estadosCotizacion:[],
-    filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'' },
+    filters:{ search:'', desde:'', hasta:'', cliente:'', montoMin:'', montoMax:'', estadoRegistro:'activos' },
     ordenarPor:'',
     currentPage: 1,
     perPage: 10,
@@ -74,6 +77,22 @@
             const pad4 = (n)=> (('0000') + String(n)).slice(-4);
             return `COT-${fh}-${pad4(id)}`;
         }catch(e){ return c?.id ?? ''; }
+    },
+    normalizeClienteNombre(name){
+        try{
+            const tokens = String(name || '').trim().split(/\s+/).filter(Boolean);
+            if(!tokens.length) return '';
+            const seen = new Set();
+            const unique = tokens.filter(t=>{
+                const k = String(t).toLowerCase();
+                if(seen.has(k)) return false;
+                seen.add(k);
+                return true;
+            });
+            return unique.join(' ');
+        }catch(e){
+            return String(name || '');
+        }
     },
     addItem(formRef='form'){ this[formRef].items.push({ descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false }); },
     removeItem(index, formRef='form'){ this[formRef].items.splice(index,1); this.calcTotals(this[formRef]); },
@@ -280,8 +299,8 @@
     goToPage(page) {
         this.currentPage = page;
     },
-    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.ordenarPor) p.set('sort', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
-    .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id: (c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }))
+    async fetchCotizaciones(){ this.loading=true; try{ const p=new URLSearchParams(); if(this.filters.search) p.set('q',this.filters.search); if(this.filters.desde) p.set('desde',this.filters.desde); if(this.filters.hasta) p.set('hasta',this.filters.hasta); if(this.filters.cliente) p.set('id_cliente_fk',this.filters.cliente); if(this.filters.estadoRegistro==='todos') p.set('include_inactivos','1'); if(this.filters.estadoRegistro==='inactivos') p.set('only_inactivos','1'); if(this.ordenarPor) p.set('sort', this.ordenarPor); const r=await this.doFetch('/api/cotizaciones?per_page=100&'+p.toString()); if(!r.ok) throw new Error(); const j=await r.json(); this.cotizaciones = (j.data||j||[])
+    .map(c=>({ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, es_activo: Boolean(Number(c.es_activo ?? 1)), cliente_id: (c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:this.normalizeClienteNombre(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }))
             .filter(c=>c.id!=null);
         this.numbers = this.cotizaciones;
         }catch(e){ this.showToast('Error cargando cotizaciones','error'); } finally { this.loading=false; } },
@@ -307,7 +326,7 @@
             this.clientes = [];
         }
     },
-    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, cliente_id:(c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
+    async refreshCotizacionRow(id){ try{ if(!id) return; const r=await this.doFetch('/api/cotizaciones/'+id); if(!r.ok) return; const c=await r.json(); const idx=this.cotizaciones.findIndex(x=>String(x.id)===String(id)); if(idx>-1){ const updated={ id:c.id_cotizacion_pk, fecha:c.fecha_cotizacion?.split(' ')[0]||'', valido_hasta:c.valido_hasta, imponible:c.imponible, impuesto:c.impuesto, total_impuesto:c.total_impuesto, otros_cargos:c.otros_cargos, impuesto_otros: Number(c.impuesto_otros||0), anticipo_requerido:c.anticipo_requerido, total:c.total, es_activo: Boolean(Number(c.es_activo ?? 1)), cliente_id:(c.id_cliente_fk!=null? String(c.id_cliente_fk):''), cliente_nombre:this.normalizeClienteNombre(c.cliente_nombre || c.cliente?.empresa?.nombre_comercial || c.cliente?.empresa?.razon_social || ''), estado_nombre: (c.estado?.nombre || c.estado?.nombre_estado || null), estado_codigo: (c.estado?.codigo || null), estado_id: (c.id_estado_cotizacion_fk!=null? String(c.id_estado_cotizacion_fk):'') }; this.cotizaciones.splice(idx,1,updated); } }catch(e){} },
     async fetchEstadosCotizacion(){
         try{
             const r = await this.doFetch('/api/estados-cotizacion?per_page=100');
@@ -316,7 +335,13 @@
             const data = j.data || j || [];
             this.estadosCotizacion = data.map(e=>({ id: e.id_estado_cotizacion_pk || e.id || e.id_estado || e.id_pk || null, codigo: e.codigo, nombre: e.nombre, es_final: !!(e.es_final), orden: e.orden }))
                 .filter(e=>e.id!=null);
-        }catch(e){ this.estadosCotizacion = []; }
+            if(!this.estadosCotizacion.length){
+                this.showToast('No hay estados de cotizacion disponibles', 'error');
+            }
+        }catch(e){
+            this.estadosCotizacion = [];
+            this.showToast('No se pudieron cargar los estados de cotizacion', 'error');
+        }
     },
     resetForm(){ const today=new Date(); const plus30=new Date(today.getTime()+30*24*60*60*1000); const fmt=(d)=>d.toISOString().slice(0,10); this.form={ id:null, id_cliente_fk:'', id_estado_cotizacion_fk:'', fecha_cotizacion:fmt(today), valido_hasta:fmt(plus30), imponible:0, impuesto:0, total_impuesto:0, subtotal:0, otros_cargos:0, impuesto_otros:0, apply_isv_otros:false, anticipo_requerido:0, total:0, items:[ { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0, aplicar_impuesto:false } ] }; },
     resetFormEmpty(){
@@ -353,20 +378,28 @@
         this.saving=true;
         this.calcTotals(this.form);
         try{
-            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, impuesto_otros:this.form.impuesto_otros||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk, id_estado_cotizacion_fk: (this.form.id_estado_cotizacion_fk || undefined) };
-            const r=await this.doFetch('/api/cotizaciones',{ method:'POST', body:JSON.stringify(payload) });
-            if(r.status===422){
-                const body = await r.json();
-                this.errors = body.errors || body;
-                console.error('Validation errors creating cotización:', this.errors);
-                try{
-                    const msgs = Object.values(this.errors).flat().map(m=>Array.isArray(m)?m.join('; '):String(m)).join(' \n');
-                    this.showToast(msgs || 'Errores de validación', 'error');
-                }catch(e){ this.showToast('Errores de validación (revisar consola)', 'error'); }
+            if(!this.form.fecha_cotizacion){
+                this.showToast('La fecha de cotización es obligatoria', 'error');
                 throw new Error('validation');
             }
-            if(!r.ok) throw new Error();
-            const j=await r.json();
+            if(!this.form.id_estado_cotizacion_fk){
+                this.showToast('El estado de la cotización es obligatorio', 'error');
+                throw new Error('validation');
+            }
+            if(Number(this.form.total || 0) <= 0){
+                this.showToast('El total de la cotizacion debe ser mayor a 0', 'error');
+                throw new Error('validation');
+            }
+            const payload={ fecha_cotizacion:this.form.fecha_cotizacion, valido_hasta:this.form.valido_hasta, subtotal:this.form.subtotal, total:this.form.total, imponible:this.form.imponible, impuesto:this.form.total_impuesto, total_impuesto:this.form.total_impuesto, otros_cargos:this.form.otros_cargos||0, impuesto_otros:this.form.impuesto_otros||0, anticipo_requerido:this.form.anticipo_requerido||0, id_cliente_fk:this.form.id_cliente_fk, id_estado_cotizacion_fk: (this.form.id_estado_cotizacion_fk || undefined) };
+            const r=await this.doFetch('/api/cotizaciones',{ method:'POST', body:JSON.stringify(payload) });
+            const body = await r.json().catch(()=>({}));
+            if(!r.ok){
+                this.errors = body?.errors || {};
+                const msgs = Object.values(this.errors).flat().map(m=>Array.isArray(m)?m.join('; '):String(m)).join(' \n');
+                this.showToast(msgs || body?.message || body?.error || `No se creó (HTTP ${r.status})`, 'error');
+                throw new Error('validation');
+            }
+            const j=body;
             const newId=j.data?.id_cotizacion_pk||j.id_cotizacion_pk;
             for(const it of this.form.items){ if(!it.descripcion) continue; await this.doFetch('/api/items-cotizacion',{ method:'POST', body:JSON.stringify({ descripcion:it.descripcion, precio_unitario:it.precio_unitario, cantidad:it.cantidad, impuesto:it.impuesto, id_cotizacion_fk:newId, id_producto_fk: it.id_producto_fk ?? null }) }); }
             this.showToast('Cotización creada'); this.generateCotizacionModal=false; this.fetchCotizaciones();
@@ -385,6 +418,14 @@
         this.saving=true;
         try{
             this.calcTotals(this.editForm);
+            if(!this.editForm.id_estado_cotizacion_fk){
+                this.showToast('El estado de la cotización es obligatorio', 'error');
+                throw new Error('validation');
+            }
+            if(Number(this.editForm.total || 0) <= 0){
+                this.showToast('El total de la cotizacion debe ser mayor a 0', 'error');
+                throw new Error('validation');
+            }
             let vHasta = this.editForm.valido_hasta;
             try{
                 const todayStr = new Date().toISOString().slice(0,10);
@@ -431,7 +472,18 @@
             this.showToast('No se actualizó','error');
         }finally{ this.saving=false; }
     },
-    async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await this.doFetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE' }); if(!r.ok) throw new Error(); this.cotizaciones=this.cotizaciones.filter(c=>c.id!==this.selectedItem); this.showToast('Eliminada'); }catch(e){ this.showToast('No se eliminó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
+    async deleteCotizacion(){ if(!this.selectedItem) return; try{ const r=await this.doFetch('/api/cotizaciones/'+this.selectedItem,{ method:'DELETE' }); if(!r.ok) throw new Error(); this.showToast('Cotización inactivada'); await this.fetchCotizaciones(); }catch(e){ this.showToast('No se inactivó','error'); } finally{ this.deleteModal=false; this.selectedItem=null; } },
+    async restoreCotizacion(id){ if(!id) return; try{ const r=await this.doFetch('/api/cotizaciones/'+id+'/restore',{ method:'PUT' }); if(!r.ok) throw new Error(); this.showToast('Cotización restaurada'); await this.fetchCotizaciones(); }catch(e){ this.showToast('No se restauró','error'); } },
+    handleConfirmAction(){
+        if(this.confirmMode === 'restore'){
+            const id = this.selectedRestoreItem?.id;
+            this.restoreCotizacion(id);
+            this.selectedRestoreItem = null;
+            this.restoreModal = false;
+            return;
+        }
+        this.deleteCotizacion();
+    },
     init(){
     this.ensureAuth();
     this.fetchClientes(); this.fetchEstadosCotizacion(); this.fetchCotizaciones();
@@ -439,6 +491,7 @@
         this.$watch('filters.search',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
         this.$watch('ordenarPor',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
         this.$watch('filters.cliente',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
+        this.$watch('filters.estadoRegistro',debounce(()=>{ this.fetchCotizaciones(); this.currentPage = 1; }));
         this.$watch('catalogSearch',debounce(()=>{ if(this.catalogModal){ this.fetchCatalogItems(); } }, 400));
     this.$watch('generateCotizacionModal', val=>{ if(!val){ /* wait for Alpine to finish modal closing animation, then clear form to avoid flicker */ setTimeout(()=>{ this.resetFormEmpty(); this.formCotizacion = { _touched: {} }; }, 220); } });
         this.$watch('editModal', val=>{ if(!val){ this.editForm = null; this.formEditCotizacion = { _touched: {} }; } });
@@ -446,7 +499,7 @@
         this.$watch('itemsModal', val=>{ if(!val){ this.items = []; this.currentCotizacionId = null; this.itemMode='list'; this.itemForm = { descripcion:'', precio_unitario:0, cantidad:1, impuesto:0 }; this.itemEditId = null; } });
     }
         
-}" x-init="init()" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="deleteCotizacion()">
+}" x-init="init()" @modal-submit.window="handleModalSubmit($event)" @confirm-delete.window="handleConfirmAction()">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white nunito-bold mb-8">Cotizaciones</h1>
     </div>
@@ -472,6 +525,14 @@
                         <template x-for="cl in clientes" :key="cl.id">
                             <option :value="cl.id" x-text="cl.nombre"></option>
                         </template>
+                    </select>
+                </div>
+                <div class="w-full">
+                    <select x-model="filters.estadoRegistro"
+                        class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                        <option value="activos">Solo activas</option>
+                        <option value="inactivos">Solo inactivas</option>
+                        <option value="todos">Activas e inactivas</option>
                     </select>
                 </div>
             </div>
@@ -541,12 +602,13 @@
                                 </td>
                                 <td class="py-2 px-4">
                                     <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
+                                              'bg-slate-200 text-slate-700': !c.es_activo,
                                               'bg-amber-200 text-amber-800': c.estado_codigo==='BRD' || c.estado_codigo==='PEN' || (String(c.estado_nombre||'').toLowerCase().includes('pend')),
                                               'bg-green-200 text-green-800': c.estado_codigo==='APB' || (String(c.estado_nombre||'').toLowerCase().includes('aproba')),
                                               'bg-red-200 text-red-800':   c.estado_codigo==='REC' || (String(c.estado_nombre||'').toLowerCase().includes('rech')),
                                               'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN' || (String(c.estado_nombre||'').toLowerCase().includes('venc')),
                                               'bg-gray-200 text-gray-800': !c.estado_codigo && !c.estado_nombre
-                                          }" x-text="c.estado_nombre || '—'"></span>
+                                          }" x-text="!c.es_activo ? 'Inactiva' : (c.estado_nombre || '—')"></span>
                                 </td>
                                 <td class="py-2 px-4 flex items-center gap-2">
                                     <a :href="'/admin/detalle-cotizacion?id='+c.id" target="_blank"
@@ -562,9 +624,12 @@
                                     @endperm
                                     @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'],
                                     'eliminacion')
-                                    <a href="#" @click.prevent="deleteModal=true; selectedItem=c.id"
-                                        class="text-red-500 hover:text-red-700" title="Eliminar"><i
+                                    <a x-show="c.es_activo" href="#" @click.prevent="confirmMode='delete'; deleteModal=true; selectedItem=c.id"
+                                        class="text-red-500 hover:text-red-700" title="Inactivar"><i
                                             class="fas fa-trash"></i></a>
+                                    <a x-show="!c.es_activo" href="#" @click.prevent="confirmMode='restore'; selectedRestoreItem=c; restoreModal=true"
+                                        class="text-emerald-600 hover:text-emerald-700" title="Restaurar"><i
+                                            class="fas fa-undo"></i></a>
                                     @else
                                     <span class="text-gray-400 cursor-not-allowed" title="Sin permiso para eliminar">
                                         <i class="fas fa-trash"></i>
@@ -609,12 +674,13 @@
                         </div>
                         <div class="flex justify-start">
                             <span class="px-2 py-0.5 rounded text-xs font-semibold" :class="{
+                                                                        'bg-slate-200 text-slate-700': !c.es_activo,
                                                                         'bg-amber-200 text-amber-800': c.estado_codigo==='BRD' || c.estado_codigo==='PEN' || (String(c.estado_nombre||'').toLowerCase().includes('pend')),
                                                                         'bg-green-200 text-green-800': c.estado_codigo==='APB' || (String(c.estado_nombre||'').toLowerCase().includes('aproba')),
                                                                         'bg-red-200 text-red-800':   c.estado_codigo==='REC' || (String(c.estado_nombre||'').toLowerCase().includes('rech')),
                                                                         'bg-blue-200 text-blue-800':  c.estado_codigo==='VEN' || (String(c.estado_nombre||'').toLowerCase().includes('venc')),
                                                                         'bg-gray-200 text-gray-800': !c.estado_codigo && !c.estado_nombre
-                                                                    }" x-text="c.estado_nombre || '—'"></span>
+                                                                    }" x-text="!c.es_activo ? 'Inactiva' : (c.estado_nombre || '—')"></span>
                         </div>
                         <p class="text-xs text-gray-400">
                             Fecha: <span x-text="c.fecha"></span> | Válida hasta: <span x-text="c.valido_hasta"></span>
@@ -641,9 +707,13 @@
                             </button>
                             @endperm
                             @perm(['Cotizaciones','Gestión de Cotizaciones','Gestion de Cotizaciones'], 'eliminacion')
-                            <button @click.prevent="deleteModal=true; selectedItem=c.id"
+                            <button x-show="c.es_activo" @click.prevent="confirmMode='delete'; deleteModal=true; selectedItem=c.id"
                                 class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
-                                <i class="fas fa-trash"></i> Eliminar
+                                <i class="fas fa-trash"></i> Inactivar
+                            </button>
+                            <button x-show="!c.es_activo" @click.prevent="confirmMode='restore'; selectedRestoreItem=c; restoreModal=true"
+                                class="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 flex items-center gap-1">
+                                <i class="fas fa-undo"></i> Restaurar
                             </button>
                             @else
                             <button disabled
@@ -1405,13 +1475,16 @@
         </div>
     </x-admin.form-modal>
 
-    <x-admin.confirmation-modal class="nunito-bold" modalName="deleteModal" title="Eliminar Cotización"
-        itemToDelete="selectedItem" itemNameProperty="id" message="¿Estás seguro de eliminar la cotización" />
+    <x-admin.confirmation-modal class="nunito-bold" modalName="deleteModal" title="Inactivar Cotización"
+        itemToDelete="selectedItem" itemNameProperty="id" message="¿Estás seguro de inactivar la cotización" />
+
+    <x-admin.confirmation-modal class="nunito-bold" modalName="restoreModal" title="Activar Cotización"
+        itemToDelete="selectedRestoreItem" itemNameProperty="id" message="¿Estás seguro de activar la cotización" />
 </div>
 
 <style>
-table thead th,
-table tbody td {
-    font-size: 0.8125rem;
-}
+    table thead th,
+    table tbody td {
+        font-size: 0.8125rem;
+    }
 </style>

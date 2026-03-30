@@ -47,7 +47,7 @@
                         Nueva Factura
                     </button>
                     @endperm
-                    <a href="/admin/reportes-header?modulo=Facturas&fecha={{ now()->format('d-M-Y') }}" target="_blank"
+                    <a href="/admin/reportes-header?modulo=Facturas&fecha={{ \App\Helpers\DateHelper::nowFormatted('d/m/Y') }}" target="_blank"
                         class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular whitespace-nowrap text-sm flex items-center justify-center gap-2">
                         <i class="fas fa-file-alt"></i> Generar Reporte
                     </a>

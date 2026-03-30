@@ -161,7 +161,7 @@ class PersonaController extends Controller
         $query->orderBy($sortable[$sort] ?? 'id_persona_pk', $direction);
 
     $rows = $query->get();
-        $fecha = $request->query('fecha', now()->format('d-M-Y'));
+        $fecha = $request->query('fecha', \App\Helpers\DateHelper::nowFormatted('d/m/Y'));
         $modulo = $request->query('modulo', 'Gestion de Personas');
 
         return view('admin.reporte-gestion-personas', compact('fecha','modulo','rows'));

@@ -10,6 +10,8 @@ use App\Http\Requests\UpdateUsuarioRequest;
 use App\Http\Resources\UsuarioResource;
 use App\Http\Resources\RolResource;
 use App\Models\Rol;
+use App\Models\Parametro;
+use App\Models\HistorialContrasena;
 use App\Services\BitacoraService;
 use Illuminate\Support\Facades\DB;
 
@@ -20,15 +22,22 @@ class UsuarioController extends Controller
 
         $this->middleware('permiso:usuarios,consultar')->only(['index', 'show']);
         $this->middleware('permiso:usuarios,insercion')->only(['store']);
-        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles']);
+        $this->middleware('permiso:usuarios,actualizacion')->only(['update', 'setRol', 'syncRoles', 'resetPasswordGenerica']);
         $this->middleware('permiso:usuarios,eliminacion')->only(['destroy']);
         $this->middleware('permiso:usuarios,consultar')->only(['rol', 'getRoles']);
     }
 
 
-    private function isUserAdmin(?Usuario $user): bool
+    private function isUserAdmin($user): bool
     {
         if (!$user) return false;
+        if (!$user instanceof Usuario) {
+            $userId = method_exists($user, 'getAuthIdentifier')
+                ? $user->getAuthIdentifier()
+                : ($user->id_usuario_pk ?? $user->id ?? null);
+            $user = $userId ? Usuario::find($userId) : null;
+            if (!$user) return false;
+        }
         static $adminRoleId = null;
         if ($adminRoleId === null) {
             $adminRoleId = Rol::whereRaw('LOWER(rol)=?', ['administrador'])->value('id_rol_pk');
@@ -62,9 +71,30 @@ class UsuarioController extends Controller
         } catch (\Throwable $e) {
         }
     }
+
+    private function isSelfTarget(int $targetUserId): bool
+    {
+        $auth = auth()->user();
+        $authId = (int) ($auth->id_usuario_pk ?? $auth->id ?? 0);
+        return $authId > 0 && $authId === $targetUserId;
+    }
+
+    private function genericPasswordValue(): string
+    {
+        $param = Parametro::whereIn('parametro', [
+            'USUARIOS.PASSWORD_GENERICA',
+            'USUARIOS.PASSWORD.GENERICA',
+            'ADMIN.PASSWORD',
+            'ADMIN_CPASS',
+        ])->orderByRaw("FIELD(parametro,'USUARIOS.PASSWORD_GENERICA','USUARIOS.PASSWORD.GENERICA','ADMIN.PASSWORD','ADMIN_CPASS')")
+            ->value('valor');
+
+        $pwd = is_string($param) ? trim($param) : '';
+        return $pwd !== '' ? $pwd : 'Temporal123!';
+    }
     public function index()
     {
-        $query = Usuario::with('rol');
+        $query = Usuario::with(['rol', 'persona']);
 
 
         if (!request()->has('estado') && request('all') != 1) {
@@ -75,16 +105,12 @@ class UsuarioController extends Controller
             $query->where('estado_usuario', $estado);
         }
         if ($q = request('q')) {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('usuario', 'like', "%$q%")
-                    ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%");
-            });
+            $query->searchByIdentity($q);
         }
 
 
         $sortable = [
-            'nombre_usuario' => 'nombre_usuario',
+            'nombre' => 'nombre',
             'usuario' => 'usuario',
             'correo_electronico' => 'correo_electronico',
             'estado_usuario' => 'estado_usuario',
@@ -93,7 +119,11 @@ class UsuarioController extends Controller
         $sort = request('sort');
         $direction = strtolower(request('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($sort && isset($sortable[$sort])) {
-            $query->orderBy($sortable[$sort], $direction);
+            if ($sortable[$sort] === 'nombre') {
+                $query->orderByPersonaName($direction);
+            } else {
+                $query->orderBy($sortable[$sort], $direction);
+            }
         } else {
 
             $query->orderBy('id_usuario_pk', 'desc');
@@ -146,6 +176,10 @@ class UsuarioController extends Controller
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autoedición bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
         $data = $request->validated();
         $antes = $usuario->getOriginal();
         $usuario->update($data);
@@ -167,6 +201,10 @@ class UsuarioController extends Controller
         $usuario = Usuario::find($id);
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autoinactivación bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
         }
         if ($usuario->estado_usuario === 'INACTIVO') {
             return response()->json(['message' => 'Usuario ya estaba inactivo'], 200);
@@ -193,6 +231,10 @@ class UsuarioController extends Controller
     {
         $usuario = Usuario::find($id);
         if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autoasignación de rol bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
         $validated = $request->validate([
             'id_rol_fk' => 'required|integer|exists:tbl_ms_rol,id_rol_pk',
         ]);
@@ -249,6 +291,10 @@ class UsuarioController extends Controller
     {
         $usuario = Usuario::find($id);
         if (!$usuario) return response()->json(['error' => 'Usuario no encontrado'], 404);
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autosincronización de roles bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
         $validated = $request->validate([
             'roles' => 'array',
             'roles.*' => 'integer|exists:tbl_ms_rol,id_rol_pk',
@@ -328,6 +374,49 @@ class UsuarioController extends Controller
         return response()->json(['roles' => $roles, 'rol_principal' => $principal]);
     }
 
+    public function resetPasswordGenerica($id)
+    {
+        $usuario = Usuario::find($id);
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        if ($this->isSelfTarget((int) $usuario->id_usuario_pk)) {
+            $this->logBlockedAttempt('Bloquear', 'Intento de autorestablecimiento de contraseña bloqueado para usuario ' . $usuario->id_usuario_pk, $usuario->id_usuario_pk);
+            return response()->json(['error' => 'No puedes realizar esta acción sobre tu propio usuario'], 422);
+        }
+
+        $genericPassword = $this->genericPasswordValue();
+        $usuario->contrasena = $genericPassword;
+        $usuario->primer_ingreso = 1;
+        $usuario->save();
+
+        try {
+            HistorialContrasena::create([
+                'contrasena' => (string) $usuario->contrasena,
+                'id_usuario_fk' => $usuario->id_usuario_pk,
+                'creado_por' => auth()->user()->usuario ?? 'system',
+                'fecha_creacion' => now(),
+            ]);
+        } catch (\Throwable $e) {
+        }
+
+        try {
+            $this->bitacora->logFor('Usuarios', 'Seguridad', 'Restablecimiento de contraseña genérica para usuario ' . $usuario->usuario, $usuario->id_usuario_pk, [
+                'tabla' => 'tbl_ms_usuario',
+                'id_registro' => $usuario->id_usuario_pk,
+                'despues' => ['primer_ingreso' => 1],
+            ]);
+        } catch (\Throwable $e) {
+        }
+
+        return response()->json([
+            'message' => 'Contraseña restablecida correctamente',
+            'usuario' => $usuario->usuario,
+            'password_generica' => $genericPassword,
+            'must_change_password' => true,
+        ]);
+    }
+
 
     public function tecnicosCatalog()
     {
@@ -336,8 +425,16 @@ class UsuarioController extends Controller
             return response()->json(['data' => [], 'meta' => ['count' => 0]]);
         }
         $roleIds = $roles->pluck('id_rol_pk')->all();
-        $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_pk')->all();
-        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')->whereIn('id_rol_fk', $roleIds)->pluck('id_usuario_fk')->all();
+        // Solo usuarios ACTIVOS con rol técnico en id_rol_fk
+        $userIdsPrimary = Usuario::whereIn('id_rol_fk', $roleIds)
+            ->where('estado_usuario', 'ACTIVO')
+            ->pluck('id_usuario_pk')->all();
+        // Solo usuarios ACTIVOS con rol técnico en tbl_usuario_rol
+        $userIdsPivot = \Illuminate\Support\Facades\DB::table('tbl_usuario_rol')
+            ->whereIn('tbl_usuario_rol.id_rol_fk', $roleIds)
+            ->join('tbl_ms_usuario', 'tbl_usuario_rol.id_usuario_fk', '=', 'tbl_ms_usuario.id_usuario_pk')
+            ->where('tbl_ms_usuario.estado_usuario', 'ACTIVO')
+            ->pluck('id_usuario_fk')->all();
         $userIds = collect($userIdsPrimary)->merge($userIdsPivot)->unique()->values()->all();
         if (empty($userIds)) {
             return response()->json(['data' => [], 'meta' => ['count' => 0]]);
@@ -352,7 +449,7 @@ class UsuarioController extends Controller
 
     public function reporte(Request $request)
     {
-        $query = Usuario::query();
+        $query = Usuario::query()->with(['rol', 'persona']);
 
         if (!$request->filled('estado') && $request->input('all') != 1) {
             $query->where('estado_usuario', 'ACTIVO');
@@ -361,15 +458,11 @@ class UsuarioController extends Controller
             $query->where('estado_usuario', $estado);
         }
         if ($q = $request->input('q')) {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('usuario', 'like', "%$q%")
-                    ->orWhere('nombre_usuario', 'like', "%$q%")
-                    ->orWhere('correo_electronico', 'like', "%$q%");
-            });
+            $query->searchByIdentity($q);
         }
 
         $sortable = [
-            'nombre_usuario' => 'nombre_usuario',
+            'nombre' => 'nombre',
             'usuario' => 'usuario',
             'correo_electronico' => 'correo_electronico',
             'estado_usuario' => 'estado_usuario',
@@ -378,7 +471,11 @@ class UsuarioController extends Controller
         $sort = $request->input('sort');
         $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         if ($sort && isset($sortable[$sort])) {
-            $query->orderBy($sortable[$sort], $direction);
+            if ($sortable[$sort] === 'nombre') {
+                $query->orderByPersonaName($direction);
+            } else {
+                $query->orderBy($sortable[$sort], $direction);
+            }
         } else {
             $query->orderBy('id_usuario_pk', 'desc');
         }
@@ -389,7 +486,7 @@ class UsuarioController extends Controller
         $inactivos = $usuarios->where('estado_usuario', 'INACTIVO')->count();
         $bloqueados = $usuarios->where('estado_usuario', 'BLOQUEADO')->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'usuarios';
 
         return view('admin.reporte-usuarios', compact('usuarios', 'total', 'activos', 'inactivos', 'bloqueados', 'fecha', 'modulo', 'sort', 'direction'));

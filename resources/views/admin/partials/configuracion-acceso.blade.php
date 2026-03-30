@@ -772,11 +772,16 @@
                         <template x-for="u in $store.assignRoles.items" :key="u.id">
                             <tr class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                                 <td class="py-2 px-4 nunito-regular" x-text="u.usuario"></td>
-                                <td class="py-2 px-4 nunito-regular" x-text="u.nombre_usuario"></td>
+                                <td class="py-2 px-4 nunito-regular" x-text="u.nombre || u.usuario"></td>
                                 <td class="py-2 px-4 nunito-regular" x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></td>
                                 <td class="py-2 px-4">
                                     @perm(['Configuración de accesos','Configuracion de accesos','Asignación de Roles','Asignacion de Roles'],'actualizacion')
-                                    <button @click.prevent="$store.assignRoles.openAssign(u)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><i class="fas fa-edit"></i></button>
+                                    <button @click.prevent="$store.assignRoles.openAssign(u)"
+                                        :disabled="$store.assignRoles.isSelfUser(u)"
+                                        :class="$store.assignRoles.isSelfUser(u) ? 'text-blue-300 cursor-not-allowed' : 'text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300'"
+                                        :title="$store.assignRoles.isSelfUser(u) ? 'No puedes asignar roles a tu propio usuario' : 'Asignar rol'">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
                                     @else
                                     <span title="Sin permiso para asignar" class="text-blue-300 cursor-not-allowed"><i class="fas fa-edit"></i></span>
                                     @endperm
@@ -795,14 +800,17 @@
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-black dark:border-black p-4 space-y-2">
                         <div>
                             <h3 class="font-semibold text-gray-900 dark:text-gray-200 nunito-bold" x-text="u.usuario"></h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="u.nombre_usuario"></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 nunito-regular mt-1" x-text="u.nombre || u.usuario"></p>
                         </div>
                         <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1 nunito-regular">
                             <div><span class="font-semibold">Rol:</span> <span x-text="$store.assignRoles.rolNombre(u.id_rol_fk)"></span></div>
                         </div>
                         <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                             @perm(['Configuración de accesos','Configuracion de accesos','Asignación de Roles','Asignacion de Roles'],'actualizacion')
-                            <button @click.prevent="$store.assignRoles.openAssign(u)" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular">
+                            <button @click.prevent="$store.assignRoles.openAssign(u)"
+                                :disabled="$store.assignRoles.isSelfUser(u)"
+                                :class="$store.assignRoles.isSelfUser(u) ? 'px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1 nunito-regular' : 'px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 nunito-regular'"
+                                :title="$store.assignRoles.isSelfUser(u) ? 'No puedes asignar roles a tu propio usuario' : 'Asignar rol'">
                                 <i class="fas fa-edit"></i> Asignar
                             </button>
                             @else

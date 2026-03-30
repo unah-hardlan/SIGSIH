@@ -13,10 +13,10 @@ use App\Models\Usuario;
 
 class JwtWebAuth
 {
-    
+
     public function handle(Request $request, Closure $next): Response
     {
-        
+
         $token = $request->cookie('auth_token') ?: $request->bearerToken();
 
         if (!$token) {
@@ -46,10 +46,17 @@ class JwtWebAuth
             return $this->kick($request, true);
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        // Evita que vistas autenticadas queden en caché del navegador.
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
-    
+
     protected function kick(Request $request, bool $forgetCookie = false): Response
     {
         if ($request->expectsJson() || $request->is('api/*')) {

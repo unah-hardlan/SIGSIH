@@ -12,14 +12,22 @@ class KardexController extends Controller
 {
     public function index(Request $request)
     {
-        
         $query = Kardex::query()->with(['producto', 'tipoMovimiento', 'origen']);
 
-        
+        // Aplicar filtro de búsqueda desde el frontend (filtroKardex)
+        if ($filtro = $request->input('filtroKardex')) {
+            $query->where(function ($q) use ($filtro) {
+                $q->where('motivo', 'like', "%{$filtro}%")
+                    ->orWhereHas('producto', function ($q2) use ($filtro) {
+                        $q2->where('nombre_producto', 'like', "%{$filtro}%")
+                            ->orWhere('sku', 'like', "%{$filtro}%");
+                    });
+            });
+        }
+
         $ordenarPor = $request->input('ordenarPor', 'fecha_movimiento');
         $ordenarDirection = $request->input('ordenarDirection', 'desc');
 
-        
         $allowedColumns = ['fecha_movimiento', 'cantidad'];
         $allowedDirections = ['asc', 'desc'];
         if (!in_array($ordenarPor, $allowedColumns)) {
@@ -66,22 +74,22 @@ class KardexController extends Controller
     {
         $query = Kardex::with(['producto', 'tipoMovimiento', 'origen']);
 
-        
+
         if ($producto = $request->input('id_producto_fk')) {
             $query->where('id_producto_fk', $producto);
         }
 
-        
+
         if ($tipo_movimiento = $request->input('id_tipo_movimiento_fk')) {
             $query->where('id_tipo_movimiento_fk', $tipo_movimiento);
         }
 
-        
+
         if ($origen = $request->input('id_origen_fk')) {
             $query->where('id_origen_fk', $origen);
         }
 
-        
+
         if ($fecha_desde = $request->input('fecha_desde')) {
             $query->where('fecha_movimiento', '>=', $fecha_desde);
         }
@@ -90,12 +98,12 @@ class KardexController extends Controller
             $query->where('fecha_movimiento', '<=', $fecha_hasta);
         }
 
-        
+
         if ($q = $request->input('q')) {
             $query->where('motivo', 'like', "%$q%");
         }
 
-        
+
         $sortable = [
             'fecha_movimiento' => 'fecha_movimiento',
             'cantidad' => 'cantidad',
@@ -112,7 +120,7 @@ class KardexController extends Controller
         $kardex = $query->get();
         $total = $kardex->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'kardex';
 
         return view('admin.reporte-kardex', compact('kardex', 'total', 'fecha', 'modulo', 'sort', 'direction'));

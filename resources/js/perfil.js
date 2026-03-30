@@ -27,6 +27,7 @@ function perfilPage() {
             id_genero_fk: "",
         },
 
+        generos: [],
         email: "",
         displayName: "Mi Perfil",
         avatarUrl: "",
@@ -50,6 +51,10 @@ function perfilPage() {
         modalTitle: "",
         modalDescription: "",
         modalError: "",
+        showConfirmModal: false,
+        confirmTitle: "",
+        confirmDescription: "",
+        _confirmResolver: null,
 
         init() {
             this.$nextTick(() => {
@@ -72,11 +77,11 @@ function perfilPage() {
                     if (store?.user) {
                         this.displayName = store.persona?.primer_nombre
                             ? store.persona.primer_nombre +
-                              " " +
-                              (store.persona.primer_apellido || "")
-                            : store.user.nombre_usuario ||
-                              store.user.usuario ||
-                              "Mi Perfil";
+                            " " +
+                            (store.persona.primer_apellido || "")
+                            : store.user.nombre ||
+                            store.user.usuario ||
+                            "Mi Perfil";
                         this.email = store.user.correo_electronico || "";
                     }
                     if (store?.persona) {
@@ -93,8 +98,8 @@ function perfilPage() {
                             ? p.avatar_path.startsWith("http")
                                 ? p.avatar_path
                                 : window.location.origin +
-                                  "/storage/" +
-                                  p.avatar_path
+                                "/storage/" +
+                                p.avatar_path
                             : "";
                     }
                 }
@@ -112,8 +117,8 @@ function perfilPage() {
                 // Buscar parámetro FORMATO DNI (usa api index con filtro q)
                 const res = await fetch(
                     "/api/parametros?q=" +
-                        encodeURIComponent("FORMATO DNI") +
-                        "&per_page=1",
+                    encodeURIComponent("FORMATO DNI") +
+                    "&per_page=1",
                     { credentials: "same-origin" }
                 );
                 if (res.ok) {
@@ -194,14 +199,14 @@ function perfilPage() {
                     if (/^\d+$/.test(this.dniFormat)) {
                         errs.dni = [
                             "El DNI no cumple con el formato. Debe contener al menos " +
-                                this.dniFormat +
-                                " dígitos.",
+                            this.dniFormat +
+                            " dígitos.",
                         ];
                     } else {
                         errs.dni = [
                             "El DNI no cumple con el formato. El formato es: " +
-                                this.dniFormat +
-                                ".",
+                            this.dniFormat +
+                            ".",
                         ];
                     }
                     msgs.push(errs.dni[0]);
@@ -214,8 +219,13 @@ function perfilPage() {
 
         async cargarCatalogos() {
             try {
-            } catch (_) {
-                /* noop */
+                const res = await fetch("/api/catalogos/generos", { credentials: "same-origin" });
+                if (res.ok) {
+                    const data = await res.json();
+                    this.generos = data.data || [];
+                }
+            } catch (e) {
+                console.error("Error al cargar géneros", e);
             }
         },
 
@@ -228,9 +238,9 @@ function perfilPage() {
                     const data = await res.json();
                     this.displayName = data?.persona?.primer_nombre
                         ? data.persona.primer_nombre +
-                          " " +
-                          (data.persona.primer_apellido || "")
-                        : data?.usuario?.nombre_usuario || "Mi Perfil";
+                        " " +
+                        (data.persona.primer_apellido || "")
+                        : data?.usuario?.nombre || data?.usuario?.usuario || "Mi Perfil";
                     this.email = data?.usuario?.correo_electronico || "";
                     if (data?.persona) {
                         this.form = {
@@ -246,8 +256,8 @@ function perfilPage() {
                             ? data.persona.avatar_path.startsWith("http")
                                 ? data.persona.avatar_path
                                 : window.location.origin +
-                                  "/storage/" +
-                                  data.persona.avatar_path
+                                "/storage/" +
+                                data.persona.avatar_path
                             : "";
                         this.originalForm = JSON.parse(
                             JSON.stringify(this.form)
@@ -385,6 +395,24 @@ function perfilPage() {
                 recoveryCodes: [],
                 currentPassword: "",
             };
+        },
+
+        openConfirmModal({ title, description }) {
+            this.confirmTitle = title || "Confirmar acción";
+            this.confirmDescription = description || "¿Deseas continuar?";
+            this.showConfirmModal = true;
+            return new Promise((resolve) => {
+                this._confirmResolver = resolve;
+            });
+        },
+
+        resolveConfirmModal(result) {
+            const resolver = this._confirmResolver;
+            this._confirmResolver = null;
+            this.showConfirmModal = false;
+            if (typeof resolver === "function") {
+                resolver(!!result);
+            }
         },
 
         openPasswordModal({ action, title, description }) {
@@ -529,11 +557,12 @@ function perfilPage() {
         async removeAvatar() {
             try {
                 if (this.removing) return;
-                if (
-                    !confirm(
-                        "¿Está seguro de que desea eliminar la foto de perfil? Esta acción no se puede deshacer."
-                    )
-                ) {
+                const confirmed = await this.openConfirmModal({
+                    title: "Eliminar foto de perfil",
+                    description:
+                        "¿Está seguro de que desea eliminar la foto de perfil? Esta acción no se puede deshacer.",
+                });
+                if (!confirmed) {
                     return;
                 }
                 this.removing = true;
@@ -561,11 +590,31 @@ function perfilPage() {
             const file = ev.target.files?.[0];
             if (!file) return;
 
-            if (
-                !confirm(
-                    "¿Desea cambiar la foto de perfil actual? La imagen anterior será reemplazada."
-                )
-            ) {
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+            if (!allowedTypes.includes((file.type || "").toLowerCase())) {
+                window.showToast?.(
+                    "Solo se permiten imagenes JPG, PNG o WEBP.",
+                    "warning"
+                );
+                ev.target.value = "";
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                window.showToast?.(
+                    "La imagen no puede superar 2MB.",
+                    "warning"
+                );
+                ev.target.value = "";
+                return;
+            }
+
+            const confirmed = await this.openConfirmModal({
+                title: "Cambiar foto de perfil",
+                description:
+                    "¿Desea cambiar la foto de perfil actual? La imagen anterior será reemplazada.",
+            });
+            if (!confirmed) {
                 ev.target.value = "";
                 return;
             }
@@ -619,8 +668,9 @@ function perfilPage() {
                     const err = await res
                         .json()
                         .catch(() => ({ message: "Error" }));
-                    alert(
-                        err.message || "Error al actualizar la foto de perfil"
+                    window.showToast?.(
+                        err.message || "Error al actualizar la foto de perfil",
+                        "error"
                     );
                     return;
                 }
@@ -636,10 +686,10 @@ function perfilPage() {
                     ? data.avatar_path
                     : `${window.location.origin}/storage/${data.avatar_path}`;
 
-                alert("Foto de perfil actualizada correctamente");
+                window.showToast?.("Foto de perfil actualizada correctamente", "success");
             } catch (e) {
                 console.error("Error al actualizar la foto de perfil:", e);
-                alert("Error al actualizar la foto de perfil");
+                window.showToast?.("Error al actualizar la foto de perfil", "error");
             }
         },
 
@@ -667,12 +717,16 @@ function perfilPage() {
                     this.passwordForm.password !==
                     this.passwordForm.password_confirmation
                 ) {
-                    alert("Las contraseñas no coinciden");
+                    this.passwordError = "Las contraseñas no coinciden";
+                    window.showToast?.("Las contraseñas no coinciden", "warning");
                     return;
                 }
                 if ((this.passwordForm.password || "").length < 8) {
-                    alert(
-                        "La nueva contraseña debe tener al menos 8 caracteres"
+                    this.passwordError =
+                        "La nueva contraseña debe tener al menos 8 caracteres";
+                    window.showToast?.(
+                        "La nueva contraseña debe tener al menos 8 caracteres",
+                        "warning"
                     );
                     return;
                 }
@@ -707,9 +761,9 @@ function perfilPage() {
                             if (Array.isArray(first) && first.length)
                                 message = first[0];
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                     this.passwordError = message;
-                    alert(message);
+                    window.showToast?.(message, "error");
                     return;
                 }
                 this.passwordForm = {
@@ -725,7 +779,7 @@ function perfilPage() {
             } catch (_) {
                 const msg = "Error al cambiar la contraseña";
                 this.passwordError = msg;
-                alert(msg);
+                window.showToast?.(msg, "error");
             } finally {
                 this.changingPassword = false;
             }

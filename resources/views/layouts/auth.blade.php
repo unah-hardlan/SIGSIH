@@ -31,7 +31,6 @@
                 username: "",
                 password: "",
                 confirmPassword: "",
-                nombre_usuario: "",
                 email: "",
                 loading: false,
                 isDark: false,
@@ -105,21 +104,6 @@
 
                 validateUsername(username) {
                     return this.usernameIssues(username).length === 0;
-                },
-
-                nombreUsuarioIssues(nombre) {
-                    const value = nombre || "";
-                    const issues = [];
-                    if (!this.isLogin && value.length === 0) {
-                        issues.push("El nombre de usuario es requerido.");
-                    } else if (value.length > 0 && !/^[A-Za-z0-9]+$/.test(value)) {
-                        issues.push("Solo se permiten letras y números, sin espacios ni símbolos.");
-                    }
-                    return issues;
-                },
-
-                validateNombreUsuario(nombre) {
-                    return this.nombreUsuarioIssues(nombre).length === 0;
                 },
 
                 emailIssues(email) {
@@ -213,7 +197,6 @@
                         } else {
                             const regRes = await axios.post("/api/register", {
                                 usuario: this.username,
-                                nombre_usuario: this.nombre_usuario,
                                 correo_electronico: this.email,
                                 contrasena: this.password,
                             });
@@ -416,32 +399,6 @@
 
                 <form @submit.prevent="handleSubmit" autocomplete="off">
                     <div x-show="!isLogin" x-cloak class="grid grid-cols-1 gap-y-2">
-                        <div class="mb-2">
-                            <label
-                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Nombre
-                                de Usuario</label>
-                            <input type="text" name="nombre_usuario" x-model="nombre_usuario" :required="!isLogin"
-                                @input="clearFieldError('nombre_usuario')"
-                                class="auth-input w-full px-3 py-2 rounded transition-colors bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 nunito-regular text-xs"
-                                :class="{ 'border-red-500 focus:border-red-500': fieldErrors.nombre_usuario || (!isLogin && nombre_usuario && !validateNombreUsuario(nombre_usuario)) }"
-                                placeholder="Usuario" />
-                            <template x-if="fieldErrors.nombre_usuario">
-                                <p class="mt-1 text-xs text-red-600 dark:text-red-300 nunito-regular"
-                                    x-text="fieldErrors.nombre_usuario[0]"></p>
-                            </template>
-                            <template
-                                x-if="!isLogin && nombre_usuario && !fieldErrors.nombre_usuario && nombreUsuarioIssues(nombre_usuario).length > 0">
-                                <ul class="mt-1 text-xs nunito-regular space-y-1 validation-error">
-                                    <template x-for="issue in nombreUsuarioIssues(nombre_usuario)" :key="issue">
-                                        <li class="flex items-center gap-1">
-                                            <i class="fas fa-exclamation-circle text-[10px]"></i>
-                                            <span x-text="issue"></span>
-                                        </li>
-                                    </template>
-                                </ul>
-                            </template>
-                        </div>
-
                         <div class="mb-2">
                             <label
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 nunito-regular">Correo

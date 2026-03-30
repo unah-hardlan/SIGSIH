@@ -66,14 +66,11 @@ if (typeof window !== "undefined") {
                 }
 
                 const now = new Date();
-                params.set(
-                    "fecha",
-                    now.toLocaleDateString("es-HN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    })
-                );
+                const pad = (n) => String(n).padStart(2, "0");
+                const yyyy = now.getFullYear();
+                const mm = pad(now.getMonth() + 1);
+                const dd = pad(now.getDate());
+                params.set("fecha", `${yyyy}-${mm}-${dd}`);
                 params.set("fecha_generacion", now.toISOString());
 
                 return "/admin/reportes-header?" + params.toString();
@@ -761,6 +758,14 @@ if (typeof window !== "undefined") {
                 ).padStart(2, "0");
                 return `${H}:${M}`;
             },
+            _isFutureDate(value) {
+                if (!value) return false;
+                const selected = new Date(`${value}T00:00:00`);
+                if (Number.isNaN(selected.getTime())) return false;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return selected > today;
+            },
             validateEmpresaForm() {
                 this.errors = {};
                 const add = (k, m) => {
@@ -790,6 +795,8 @@ if (typeof window !== "undefined") {
                     add("descripcion_empresa", "Máximo 255 caracteres.");
                 if (!this.formEmpresa.fecha_registro)
                     add("fecha_registro", "La fecha es obligatoria.");
+                else if (this._isFutureDate(this.formEmpresa.fecha_registro))
+                    add("fecha_registro", "No se permiten fechas futuras");
 
                 const excludeId = this.formEmpresa.id || null;
                 if (

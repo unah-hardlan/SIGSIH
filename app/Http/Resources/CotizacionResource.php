@@ -23,15 +23,16 @@ class CotizacionResource extends JsonResource
             'anticipo_requerido' => $this->anticipo_requerido !== null ? (float) $this->anticipo_requerido : null,
             'id_estado_cotizacion_fk' => $this->id_estado_cotizacion_fk,
             'id_cliente_fk' => $this->id_cliente_fk,
+            'es_activo' => (bool) $this->es_activo,
             'cliente_nombre' => $this->whenLoaded('cliente', function () {
                 if (!$this->cliente) return null;
-                
+
                 if ($this->cliente->relationLoaded('empresa') && $this->cliente->empresa) {
                     return $this->cliente->empresa->nombre_comercial
                         ?? $this->cliente->empresa->razon_social
                         ?? null;
                 }
-                
+
                 if ($this->cliente->relationLoaded('personas') && $this->cliente->personas && $this->cliente->personas->count()) {
                     $p = $this->cliente->personas->first();
                     return trim(($p->primer_nombre . ' ' . $p->segundo_nombre . ' ' . $p->primer_apellido . ' ' . $p->segundo_apellido));

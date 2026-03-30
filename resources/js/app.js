@@ -361,6 +361,7 @@ import {
     faStar,
     faExchangeAlt,
     faTicket,
+    faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 library.add(
     faEye,
@@ -469,7 +470,8 @@ library.add(
     faStar,
     faExchangeAlt,
     faHome,
-    faTicket
+    faTicket,
+    faUndo
 );
 dom.watch();
 
@@ -1136,21 +1138,22 @@ if (typeof window !== "undefined") {
         };
         return {
             tab: localStorage.getItem("mantenimientoTab") || "personalizacion",
+            isLoadingSettings: true,
             logoUrl: initial.appLogoUrl,
             nombreSistema: initial.appName,
             logoHeight: Number(initial.appLogoHeight) || 96,
             selectedLogoFile: null,
             savedMessagePersonalizacion: "",
             savedMessageParametros: "",
-            timezone: "UTC",
-            dateFormat: "Y-m-d",
-            sessionsLimit: 1,
+            timezone: "",
+            dateFormat: "",
+            sessionsLimit: null,
             requireEmailVerification: false,
-            passwordResetCooldown: 5,
-            passwordResetExpire: 60,
-            passwordResetMaxPerDay: 5,
-            dniFormat: "0000-0000-00000",
-            adminIntentos: 3,
+            passwordResetCooldown: null,
+            passwordResetExpire: null,
+            passwordResetMaxPerDay: null,
+            dniFormat: "",
+            adminIntentos: null,
             adminCorreo: "",
             adminUsuario: "",
             adminPassword: "",
@@ -1161,13 +1164,14 @@ if (typeof window !== "undefined") {
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        this.nombreSistema = data.appName || this.nombreSistema;
-                        this.logoUrl = data.logoUrl || this.logoUrl;
-                        this.logoHeight = data.logoHeight || this.logoHeight;
-                        this.timezone = data.timezone || this.timezone;
-                        this.dateFormat = data.dateFormat || this.dateFormat;
+                        this.nombreSistema =
+                            data.appName ?? this.nombreSistema;
+                        this.logoUrl = data.logoUrl ?? this.logoUrl;
+                        this.logoHeight = data.logoHeight ?? this.logoHeight;
+                        this.timezone = data.timezone ?? this.timezone;
+                        this.dateFormat = data.dateFormat ?? this.dateFormat;
                         this.sessionsLimit =
-                            data.sessionsLimit || this.sessionsLimit;
+                            data.sessionsLimit ?? this.sessionsLimit;
                         this.requireEmailVerification =
                             !!data.requireEmailVerification;
                         this.passwordResetCooldown =
@@ -1190,9 +1194,21 @@ if (typeof window !== "undefined") {
                         this.adminUsuario =
                             data.adminUsuario || this.adminUsuario;
                         this.adminPassword =
-                            data.adminPassword || this.adminPassword;
+                            data.adminPassword ?? this.adminPassword;
                     }
                 } catch (_) { }
+                finally {
+                    // Fallbacks solo si no llegaron valores desde API.
+                    if (!this.timezone) this.timezone = "America/Tegucigalpa";
+                    if (!this.dateFormat) this.dateFormat = "Y-m-d";
+                    if (this.sessionsLimit === null || this.sessionsLimit === undefined) this.sessionsLimit = 1;
+                    if (this.passwordResetCooldown === null || this.passwordResetCooldown === undefined) this.passwordResetCooldown = 5;
+                    if (this.passwordResetExpire === null || this.passwordResetExpire === undefined) this.passwordResetExpire = 60;
+                    if (this.passwordResetMaxPerDay === null || this.passwordResetMaxPerDay === undefined) this.passwordResetMaxPerDay = 5;
+                    if (!this.dniFormat) this.dniFormat = "0000-0000-00000";
+                    if (this.adminIntentos === null || this.adminIntentos === undefined) this.adminIntentos = 3;
+                    this.isLoadingSettings = false;
+                }
             },
             onLogoSelected(e) {
                 const file = e.target.files?.[0];
@@ -2932,16 +2948,11 @@ if (typeof window !== "undefined") {
                     params.set("estado_solicitud", this.estadoSolicitud);
                 if (this.ordenarPor) params.set("ordenar_por", this.ordenarPor);
                 const now = new Date();
-                try {
-                    const fechaStr = now.toLocaleDateString("es-HN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    });
-                    params.set("fecha", fechaStr);
-                } catch (_) {
-                    params.set("fecha", now.toISOString().slice(0, 10));
-                }
+                const pad = (n) => String(n).padStart(2, "0");
+                const yyyy = now.getFullYear();
+                const mm = pad(now.getMonth() + 1);
+                const dd = pad(now.getDate());
+                params.set("fecha", `${yyyy}-${mm}-${dd}`);
                 params.set("fecha_generacion", now.toISOString());
                 return "/admin/reportes-header?" + params.toString();
             },
@@ -3743,6 +3754,28 @@ if (typeof window !== "undefined") {
                     errs.valor_contacto = [
                         "El valor de contacto es requerido.",
                     ];
+                } else {
+                    const valor = String(this.formContacto.valor_contacto).trim();
+                    // TC-011: Validate minimum 3 characters
+                    if (valor.length < 3) {
+                        errs.valor_contacto = [
+                            "El contacto debe tener al menos 3 caracteres.",
+                        ];
+                    } else {
+                        // TC-012: Check for emojis (Unicode points above U+1F000)
+                        const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{27BF}]|[\u{2300}-\u{23FF}]|[\u{2000}-\u{206F}]|[\u{FE00}-\u{FE0F}]/gu;
+                        if (emojiRegex.test(valor)) {
+                            errs.valor_contacto = [
+                                "El contacto contiene emojis no permitidos.",
+                            ];
+                        }
+                        // TC-012: Check for excessive character repetition (more than 2 consecutive)
+                        else if (/(.)\1{2,}/.test(valor)) {
+                            errs.valor_contacto = [
+                                "El contacto no puede contener caracteres repetidos más de 2 veces consecutivas.",
+                            ];
+                        }
+                    }
                 }
                 if (!this.formContacto.id_cliente_fk) {
                     errs.id_cliente_fk = ["Seleccione un cliente."];

@@ -1,4 +1,5 @@
-<div x-data="bitacoraList" x-init="init()" class="w-full mx-auto py-8 px-4">
+<div x-data="bitacoraList" x-init="init()" @confirm-delete.window="if (isClearAllModalOpen) clearAllRecords()"
+    class="w-full mx-auto py-8 px-4">
     <x-responsive-table class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4" title="Bitácora">
         <x-slot name="filters">
             <div class="flex flex-col sm:flex-row flex-wrap items-stretch gap-3 w-full">
@@ -8,12 +9,9 @@
                 <select x-model="filters.accion" @change="fetch()"
                     class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-44 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                     <option value="">Acción</option>
-                    <option value="Login">Login</option>
-                    <option value="Logout">Logout</option>
                     <option value="Insertar">Insertar</option>
                     <option value="Actualizar">Actualizar</option>
                     <option value="Eliminar">Eliminar</option>
-                    <option value="Consulta">Consulta</option>
                 </select>
                 <input type="text" x-model="filters.usuario" @keyup.enter="fetch()" placeholder="Usuario/Nombre"
                     class="border border-gray-500 rounded px-3 py-2 text-sm font-semibold nunito-bold w-full sm:w-48 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200" />
@@ -46,10 +44,22 @@
         </x-slot>
 
         <x-slot name="actions">
-            <a :href="reportUrl()" target="_blank"
-                class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
-                <i class="fas fa-file-alt"></i> Generar Reporte
-            </a>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <a :href="reportUrl()" target="_blank"
+                    class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-file-alt"></i> Generar Reporte
+                </a>
+                <button @click="exportCsv()"
+                    class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm"
+                    :disabled="loading">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </button>
+                <button @click="isClearAllModalOpen = true"
+                    class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg nunito-regular transition whitespace-nowrap flex items-center justify-center gap-2 text-sm"
+                    :disabled="loading">
+                    <i class="fas fa-trash-alt"></i> Limpiar Bitácora
+                </button>
+            </div>
         </x-slot>
 
         <x-slot name="table">
@@ -63,18 +73,19 @@
                         <th class="py-2 px-4 text-left">Acción</th>
                         <th class="py-2 px-4 text-left">Descripción</th>
                         <th class="py-2 px-4 text-left">Creado por</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-if="loading">
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular"><i
+                            <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular"><i
                                     class="fas fa-spinner fa-spin mr-2"></i> Cargando...</td>
                         </tr>
                     </template>
                     <template x-if="!loading && items.length===0">
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-gray-500 nunito-regular">Sin resultados</td>
+                            <td colspan="7" class="py-8 text-center text-gray-500 nunito-regular">Sin resultados</td>
                         </tr>
                     </template>
                     <template x-for="b in items" :key="b.id">
@@ -85,16 +96,19 @@
                             <td class="py-2 px-4">
                                 <span :class="{
                                     'px-2 py-1 rounded text-xs font-semibold': true,
-                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': b.accion === 'Login',
-                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': b.accion === 'Logout',
                                     'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': b.accion === 'Insertar',
                                     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': b.accion === 'Actualizar',
-                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': b.accion === 'Eliminar',
-                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': b.accion === 'Consulta'
+                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': b.accion === 'Eliminar'
                                 }" x-text="b.accion"></span>
                             </td>
-                            <td class="py-2 px-4 break-words" x-text="b.descripcion || '-' "></td>
+                            <td class="py-2 px-4 break-words" x-text="friendlyDescription(b)"></td>
                             <td class="py-2 px-4" x-text="b.creado_por || b.usuario?.usuario || '-' "></td>
+                            <td class="py-2 px-4">
+                                <button @click="openDetail(b)"
+                                    class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
+                                    <i class="fas fa-eye"></i> Ver detalle
+                                </button>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
@@ -124,9 +138,15 @@
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Objeto:</span> <span
                                 x-text="b.objeto?.nombre_objeto || '-' "></span></div>
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Descripción:</span> <span
-                                x-text="b.descripcion || '-' "></span></div>
+                                x-text="friendlyDescription(b)"></span></div>
                         <div><span class="nunito-bold text-gray-600 dark:text-gray-300">Creado por:</span> <span
                                 x-text="b.creado_por || b.usuario?.usuario || '-' "></span></div>
+                    </div>
+                    <div class="pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                        <button @click="openDetail(b)"
+                            class="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1">
+                            <i class="fas fa-eye"></i> Ver detalle
+                        </button>
                     </div>
                 </div>
             </template>
@@ -162,6 +182,57 @@
             <span class="nunito-regular text-sm" x-text="error"></span>
         </div>
     </div>
+
+    <x-admin.confirmation-modal modalName="isClearAllModalOpen" itemToDelete="itemToDelete" itemNameProperty="nombre"
+        message="¿Estás seguro de que deseas eliminar" title="Limpiar Bitácora" />
+
+    <x-admin.form-modal modalName="isDetailModalOpen" title="Detalle de Acción" submitLabel="" hideActions="true"
+        maxWidth="max-w-4xl">
+        <div class="space-y-4" x-show="selectedItem">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div><span class="nunito-bold">Acción:</span> <span x-text="selectedItem?.accion || '-' "></span></div>
+                <div><span class="nunito-bold">Objeto:</span> <span
+                        x-text="selectedItem?.objeto?.nombre_objeto || '-' "></span></div>
+                <div><span class="nunito-bold">Usuario:</span> <span
+                        x-text="selectedItem?.usuario?.usuario || '-' "></span></div>
+                <div><span class="nunito-bold">Fecha:</span> <span
+                        x-text="selectedItem?.fecha_evento_formatted || '-' "></span></div>
+            </div>
+
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40">
+                <p class="nunito-bold text-sm mb-2">Descripción</p>
+                <p class="text-sm" x-text="friendlyDescription(selectedItem)"></p>
+            </div>
+
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40"
+                x-show="(selectedItem?.accion || '').toLowerCase() === 'actualizar'">
+                <p class="nunito-bold text-sm mb-2">Detalle de cambios</p>
+                <template x-if="buildDetailRows(selectedItem).length === 0">
+                    <p class="text-sm text-gray-500">Sin detalles disponibles.</p>
+                </template>
+                <template x-if="buildDetailRows(selectedItem).length > 0">
+                    <div class="space-y-2 text-sm">
+                        <template x-for="row in buildDetailRows(selectedItem)"
+                            :key="row.campo + '-' + row.antes + '-' + row.despues">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-3 gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                <div><span class="nunito-bold">Campo:</span> <span x-text="row.campo"></span></div>
+                                <div><span class="nunito-bold">Antes:</span> <span x-text="row.antes"></span></div>
+                                <div><span class="nunito-bold">Después:</span> <span x-text="row.despues"></span></div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <div
+                class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40 text-xs">
+                <p><span class="nunito-bold">IP:</span> <span x-text="selectedItem?.ip || '-' "></span></p>
+                <p class="mt-1"><span class="nunito-bold">User Agent:</span> <span
+                        x-text="selectedItem?.user_agent || '-' "></span></p>
+            </div>
+        </div>
+    </x-admin.form-modal>
 </div>
 
 {{-- El componente x-data=bitacoraList se define en resources/js/bitacora.js y se importa en app.js --}}

@@ -11,7 +11,7 @@
             'filtrosSelect' => [
             'filtroPerfil' => [ 'label' => 'Estado', 'options' => ['ACTIVO','INACTIVO','BLOQUEADO'] ]
             ],
-            'ordenarOptions' => [ 'nombre_usuario' => 'Nombre', 'usuario' => 'Usuario', 'correo_electronico' =>
+            'ordenarOptions' => [ 'nombre' => 'Nombre', 'usuario' => 'Usuario', 'correo_electronico' =>
             'Correo', 'estado_usuario' => 'Estado']
             ])
         </x-slot>
@@ -63,7 +63,7 @@
                     </template>
                     <template x-for="u in paginatedUsuarios()" :key="u.id">
                         <tr class="border-b border-gray-200 dark:border-gray-700 nunito-regular">
-                            <td class="py-2 px-4" x-text="u.nombre_usuario"></td>
+                            <td class="py-2 px-4" x-text="userName(u)"></td>
                             <td class="py-2 px-4" x-text="u.usuario"></td>
                             <td class="py-2 px-4" x-text="userRole(u)"></td>
                             <td class="py-2 px-4">
@@ -77,15 +77,24 @@
                             <td class="py-2 px-4 flex gap-2">
                                 @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                                 Usuarios','Gestion de Usuarios'],'actualizacion')
-                                <button @click="openEdit(u)" class="text-blue-500 hover:text-blue-700"><i
+                                <button @click="openEdit(u)" :disabled="isSelfUser(u)"
+                                    :class="isSelfUser(u) ? 'text-blue-300 cursor-not-allowed' : 'text-blue-500 hover:text-blue-700'"><i
                                         class="fas fa-edit"></i></button>
+                                <button @click="openResetPasswordModal(u)" :disabled="isSelfUser(u)"
+                                    :class="isSelfUser(u) ? 'text-amber-300 cursor-not-allowed' : 'text-amber-500 hover:text-amber-700'"
+                                    title="Restablecer contraseña genérica">
+                                    <i class="fas fa-key"></i>
+                                </button>
                                 @else
                                 <span title="Sin permiso para editar" class="text-blue-300 cursor-not-allowed"><i
                                         class="fas fa-edit"></i></span>
+                                <span title="Sin permiso para restablecer contraseña"
+                                    class="text-amber-300 cursor-not-allowed"><i class="fas fa-key"></i></span>
                                 @endperm
                                 @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                                 Usuarios','Gestion de Usuarios'],'eliminacion')
-                                <button @click="openInactivar(u)" class="text-red-500 hover:text-red-700"><i
+                                <button @click="openInactivar(u)" :disabled="isSelfUser(u)"
+                                    :class="isSelfUser(u) ? 'text-red-300 cursor-not-allowed' : 'text-red-500 hover:text-red-700'"><i
                                         class="fas fa-trash"></i></button>
                                 @else
                                 <span title="Sin permiso para inactivar" class="text-red-300 cursor-not-allowed"><i
@@ -115,7 +124,7 @@
                     class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3 border border-black dark:border-gray-600">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="u.nombre_usuario"></h3>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" x-text="userName(u)"></h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400" x-text="u.usuario"></p>
                         </div>
                         <span class="px-2 py-1 rounded text-xs font-semibold" :class="{
@@ -130,20 +139,28 @@
                     <div class="flex justify-end gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                         Usuarios','Gestion de Usuarios'],'actualizacion')
-                        <button @click="openEdit(u)"
-                            class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                        <button @click="openEdit(u)" :disabled="isSelfUser(u)"
+                            :class="isSelfUser(u) ? 'px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1' : 'px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1'">
                             <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button @click="openResetPasswordModal(u)" :disabled="isSelfUser(u)"
+                            :class="isSelfUser(u) ? 'px-3 py-1 text-xs bg-amber-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1' : 'px-3 py-1 text-xs bg-amber-600 text-white rounded hover:bg-amber-700 flex items-center gap-1'">
+                            <i class="fas fa-key"></i> Restablecer
                         </button>
                         @else
                         <button disabled title="Sin permiso para editar"
                             class="px-3 py-1 text-xs bg-blue-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1">
                             <i class="fas fa-edit"></i> Editar
                         </button>
+                        <button disabled title="Sin permiso para restablecer contraseña"
+                            class="px-3 py-1 text-xs bg-amber-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1">
+                            <i class="fas fa-key"></i> Restablecer
+                        </button>
                         @endperm
                         @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de
                         Usuarios','Gestion de Usuarios'],'eliminacion')
-                        <button @click="openInactivar(u)"
-                            class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1">
+                        <button @click="openInactivar(u)" :disabled="isSelfUser(u)"
+                            :class="isSelfUser(u) ? 'px-3 py-1 text-xs bg-red-600 text-white rounded opacity-60 cursor-not-allowed flex items-center gap-1' : 'px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1'">
                             <i class="fas fa-trash"></i> Inactivar
                         </button>
                         @else
@@ -210,18 +227,6 @@
             @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de Usuarios','Gestion de
             Usuarios'],'insercion')
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm">Nombre</label>
-                    <input type="text" x-model="createForm.nombre_usuario" @click="$event.target.select()"
-                        @focus="$event.target.select()" @mouseup.prevent
-                        @blur="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true"
-                        @input="createForm._touched = createForm._touched || {}; createForm._touched.nombre_usuario = true"
-                        :class="{'border-red-500': (createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50)}"
-                        class="mt-1 w-full border rounded px-2 py-1" required maxlength="50" autocomplete="off">
-                    <small
-                        :class="(createForm._touched && createForm._touched.nombre_usuario) && (createForm.nombre_usuario === '' || createForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
-                        class="text-xs">Requerido. Máximo 50 caracteres.</small>
-                </div>
                 <div>
                     <label class="block text-sm">Usuario</label>
                     <input type="text" x-model="createForm.usuario" @click="$event.target.select()"
@@ -304,18 +309,6 @@
             Usuarios'],'actualizacion')
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm">Nombre</label>
-                    <input type="text" x-model="editForm.nombre_usuario" @click="$event.target.select()"
-                        @focus="$event.target.select()" @mouseup.prevent
-                        @blur="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true"
-                        @input="editForm._touched = editForm._touched || {}; editForm._touched.nombre_usuario = true"
-                        :class="{'border-red-500': (editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50)}"
-                        class="mt-1 w-full border rounded px-2 py-1" required maxlength="50">
-                    <small
-                        :class="(editForm._touched && editForm._touched.nombre_usuario) && (editForm.nombre_usuario === '' || editForm.nombre_usuario.length >= 50) ? 'text-red-500' : 'text-gray-500 dark:text-white'"
-                        class="text-xs">Requerido. Máximo 50 caracteres.</small>
-                </div>
-                <div>
                     <label class="block text-sm">Usuario</label>
                     <input type="text" x-model="editForm.usuario"
                         class="mt-1 w-full border rounded px-2 py-1 bg-gray-100" disabled>
@@ -390,8 +383,39 @@
         @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de Usuarios','Gestion de
         Usuarios'],'eliminacion')
         <x-admin.confirmation-modal class="nunito-bold" modalName="showDeleteModal" title="Confirmar Inactivación"
-            itemToDelete="userToInactivate" itemNameProperty="nombre_usuario"
+            itemToDelete="userToInactivate" itemNameProperty="nombre"
             message="¿Seguro que deseas inactivar al usuario" />
+        @endperm
+
+        @perm(['Usuarios','Usuario','Catálogo de Usuarios','Catalogo de Usuarios','Gestión de Usuarios','Gestion de
+        Usuarios'],'actualizacion')
+        <x-admin.form-modal class="nunito-bold" modalName="isResetPasswordConfirmModalOpen"
+            title="Restablecer Contraseña" submitLabel="Restablecer" formId="formResetPasswordGenerica"
+            maxWidth="max-w-md">
+            <div class="space-y-3 text-sm">
+                <p>¿Restablecer la contraseña de <strong x-text="userToResetPassword?.usuario || '-' "></strong> a una
+                    genérica?</p>
+                <p class="text-gray-500 dark:text-gray-300">El usuario deberá cambiarla antes de ingresar al sistema.
+                </p>
+            </div>
+        </x-admin.form-modal>
+
+        <x-admin.form-modal class="nunito-bold" modalName="isResetPasswordResultModalOpen"
+            title="Contraseña Restablecida" submitLabel="" hideActions="true" maxWidth="max-w-md">
+            <div class="space-y-3 text-sm">
+                <p>Se restableció la contraseña de <strong x-text="resetPasswordResult?.usuario || '-' "></strong>.</p>
+                <label class="block text-xs text-gray-500 dark:text-gray-300">Contraseña genérica</label>
+                <div class="flex gap-2">
+                    <input type="text" readonly x-model="resetPasswordResult.passwordGenerica"
+                        class="w-full border rounded px-3 py-2 bg-gray-100 dark:bg-gray-800" />
+                    <button type="button" @click="copyResetPassword()"
+                        class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Copiar
+                    </button>
+                </div>
+
+            </div>
+        </x-admin.form-modal>
         @endperm
     </div>
 
@@ -428,33 +452,13 @@
             return null;
         }
 
-        try {
-            var el = document.querySelector('input[x-model="adminPassword"]');
-            if (el && el.value) {
-                var r = buildRegexFromValue(el.value);
-                if (r) {
-                    window._adminPasswordRegex = r;
-                    return r;
-                }
-            }
-        } catch (e) {}
+        var regex = buildRegexFromValue(window.__adminPasswordRegexValue || '');
+        if (!regex) {
+            regex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,100}/;
+        }
 
-        try {
-            fetch('/api-web/system-settings', {
-                credentials: 'same-origin'
-            }).then(function(res) {
-                if (!res.ok) return null;
-                return res.json();
-            }).then(function(data) {
-                if (!data) return;
-                var v = data.adminPassword || data.admin_password || data.admin_password_regex || null;
-                var r = buildRegexFromValue(v);
-                if (r) window._adminPasswordRegex = r;
-            }).catch(function() {});
-        } catch (e) {}
-
-        window._adminPasswordRegex = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/;
+        window._adminPasswordRegex = regex;
         return window._adminPasswordRegex;
-    };
+    }
     </script>
 </div>

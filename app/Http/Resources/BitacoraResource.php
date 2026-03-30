@@ -7,13 +7,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class BitacoraResource extends JsonResource
 {
-    
+
     public function toArray($request)
     {
         $usuario = $this->whenLoaded('usuario');
         $objeto = $this->whenLoaded('objeto');
 
-        
+
         $creadoPor = $this->creado_por ?? ($usuario->usuario ?? null);
         $fechaCreacion = $this->fecha_creacion ?? $this->fecha_evento ?? null;
 
@@ -28,7 +28,7 @@ class BitacoraResource extends JsonResource
             'usuario' => $usuario ? [
                 'id' => $usuario->id_usuario_pk ?? $usuario->id ?? null,
                 'usuario' => $usuario->usuario ?? null,
-                'nombre_usuario' => $usuario->nombre_usuario ?? null,
+                'nombre' => $usuario->nombre ?? null,
             ] : null,
 
             'id_objetos_fk' => $this->id_objetos_fk,
@@ -37,7 +37,14 @@ class BitacoraResource extends JsonResource
                 'nombre_objeto' => $objeto->nombre_objeto ?? null,
             ] : null,
 
-            
+            'tabla' => $this->tabla,
+            'id_registro' => $this->id_registro,
+            'antes' => $this->antes,
+            'despues' => $this->despues,
+            'ip' => $this->ip,
+            'user_agent' => $this->user_agent,
+
+
             'creado_por' => $creadoPor,
             'fecha_creacion' => $fechaCreacion,
             'fecha_creacion_formatted' => DateHelper::format($fechaCreacion),

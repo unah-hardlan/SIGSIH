@@ -736,7 +736,7 @@
                         <i class="fas fa-plus mr-2"></i> Agregar Evento
                     </button>
                     @endperm
-                    <a href="/admin/reportes-header?modulo=Calendario&fecha={{ now()->format('d-M-Y') }}"
+                    <a href="/admin/reportes-header?modulo=Calendario&fecha={{ \App\Helpers\DateHelper::nowFormatted('d/m/Y') }}"
                         target="_blank"
                         class="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg nunito-regular transition duration-100 ease-in-out whitespace-nowrap flex items-center justify-center gap-2 text-sm">
                         <i class="fas fa-file-alt"></i> Generar Reporte

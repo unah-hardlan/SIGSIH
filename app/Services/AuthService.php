@@ -14,6 +14,21 @@ use App\Notifications\PasswordResetNotification;
 class AuthService
 {
 
+    private function loginStatusError(Usuario $user): ?string
+    {
+        $status = strtoupper(trim((string) ($user->estado_usuario ?? '')));
+
+        if ($status === 'BLOQUEADO') {
+            return 'Usuario bloqueado por intentos inválidos';
+        }
+
+        if ($status === 'INACTIVO') {
+            return 'Usuario inactivo. Contacte al administrador del sistema.';
+        }
+
+        return null;
+    }
+
     private function getTokenTtlSeconds(): int
     {
         $minutes = (int) config('session.lifetime', 60);
@@ -54,8 +69,8 @@ class AuthService
         }
 
 
-        if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
-            return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
+        if ($statusError = $this->loginStatusError($user)) {
+            return ['success' => false, 'error' => $statusError, 'code' => 200];
         }
 
 
@@ -105,7 +120,7 @@ class AuthService
         $ttl = $this->getTokenTtlSeconds();
         $payload = [
             'sub'  => $user->getKey(),
-            'name' => $user->nombre_usuario,
+            'name' => $user->nombre,
             'iat'  => time(),
             'exp'  => time() + $ttl,
         ];
@@ -119,7 +134,7 @@ class AuthService
             'user'  => [
                 'id'      => $user->getKey(),
                 'usuario' => $user->usuario,
-                'nombre'  => $user->nombre_usuario,
+                'nombre'  => $user->nombre,
                 'correo'  => $user->correo_electronico,
                 'rol'     => $user->rol->rol ?? null,
             ]
@@ -137,8 +152,8 @@ class AuthService
         if (!$user) {
             return ['success' => false, 'error' => 'Usuario/contraseña inválidos', 'code' => 200];
         }
-        if (strtoupper((string)$user->estado_usuario) === 'BLOQUEADO') {
-            return ['success' => false, 'error' => 'Usuario bloqueado por intentos inválidos', 'code' => 200];
+        if ($statusError = $this->loginStatusError($user)) {
+            return ['success' => false, 'error' => $statusError, 'code' => 200];
         }
         $cacheKey = 'login_attempts:' . $user->getKey();
         $attempts = cache()->get($cacheKey, 0);
@@ -174,6 +189,10 @@ class AuthService
 
     public function tokenForUser(Usuario $user): array
     {
+        if ($statusError = $this->loginStatusError($user)) {
+            return ['error' => $statusError, 'code' => 403];
+        }
+
         $secret = config('jwt.secret');
         if (!$secret) {
             return ['error' => 'JWT_SECRET no está configurado', 'code' => 500];
@@ -182,7 +201,7 @@ class AuthService
         $ttl = $this->getTokenTtlSeconds();
         $payload = [
             'sub'  => $user->getKey(),
-            'name' => $user->nombre_usuario,
+            'name' => $user->nombre,
             'iat'  => time(),
             'exp'  => time() + $ttl,
         ];
@@ -197,7 +216,7 @@ class AuthService
             'user'  => [
                 'id'      => $user->getKey(),
                 'usuario' => $user->usuario,
-                'nombre'  => $user->nombre_usuario,
+                'nombre'  => $user->nombre,
                 'correo'  => $user->correo_electronico,
                 'rol'     => $user->rol->rol ?? null,
             ]
@@ -206,7 +225,8 @@ class AuthService
 
     private function determineSessionLimit(Usuario $user): int
     {
-        $val = Parametro::where('parametro', 'auth.sessions_limit')->value('valor');
+        $val = Parametro::where('parametro', 'auth.sessions_limit')->value('valor')
+            ?? Parametro::where('parametro', 'SESIONES_SIMULTANEAS')->value('valor');
         if ($val !== null && $val !== '' && is_numeric($val)) {
             return max(0, (int) $val);
         }
@@ -238,11 +258,11 @@ class AuthService
     private function storeSessionToken(Usuario $user, string $token): void
     {
         try {
-            $tokenId = substr(hash('sha256', $token), 0, 32);
+            $tokenHash = hash('sha256', $token);
             $ttl     = $this->getTokenTtlSeconds();
             SesionUsuario::create([
-                'id_sesion_pk'    => $tokenId,
                 'id_usuario_fk'   => $user->getKey(),
+                'token_refresh'   => $tokenHash,
                 'ip_direccion'    => request()?->ip(),
                 'user_agent'      => substr((string) (request()?->userAgent() ?? ''), 0, 500),
                 'fecha_creacion'  => now(),

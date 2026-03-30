@@ -12,6 +12,8 @@ document.addEventListener("alpine:init", () => {
         isModalOpen: false,
         isEditUserModalOpen: false,
         showDeleteModal: false,
+        isResetPasswordConfirmModalOpen: false,
+        isResetPasswordResultModalOpen: false,
         users: [],
         loading: false,
         error: "",
@@ -28,7 +30,6 @@ document.addEventListener("alpine:init", () => {
         rolesError: "",
         createForm: {
             usuario: "",
-            nombre_usuario: "",
             correo_electronico: "",
             estado_usuario: "ACTIVO",
             contrasena: "",
@@ -37,7 +38,6 @@ document.addEventListener("alpine:init", () => {
         editForm: {
             id: null,
             usuario: "",
-            nombre_usuario: "",
             correo_electronico: "",
             estado_usuario: "ACTIVO",
             contrasena: "",
@@ -45,6 +45,12 @@ document.addEventListener("alpine:init", () => {
         },
         userToEdit: null,
         userToInactivate: null,
+        userToResetPassword: null,
+        resetPasswordResult: {
+            usuario: "",
+            passwordGenerica: "",
+        },
+        currentSessionUser: "",
 
         numbers: [],
         currentPage: 1,
@@ -56,9 +62,8 @@ document.addEventListener("alpine:init", () => {
         notify(msg, type = "success") {
             const el = document.createElement("div");
             el.textContent = msg;
-            el.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm text-white ${
-                type === "error" ? "bg-red-600" : "bg-green-600"
-            }`;
+            el.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded shadow text-sm text-white ${type === "error" ? "bg-red-600" : "bg-green-600"
+                }`;
             document.body.appendChild(el);
             setTimeout(() => {
                 el.classList.add("opacity-0", "transition");
@@ -100,6 +105,9 @@ document.addEventListener("alpine:init", () => {
                 if (e.detail?.formId === "formEditar") {
                     this.updateUser();
                 }
+                if (e.detail?.formId === "formResetPasswordGenerica") {
+                    this.confirmResetPasswordGenerica();
+                }
             });
             this.$watch("search", () => this.debounceFetch());
             this.$watch("filtroPerfil", () => {
@@ -130,6 +138,24 @@ document.addEventListener("alpine:init", () => {
             });
             this.fetchUsers();
             this.fetchRoles();
+            this.fetchCurrentSessionUser();
+        },
+        async fetchCurrentSessionUser() {
+            try {
+                const r = await fetch("/api/me", {
+                    headers: this.authHeaders(),
+                    credentials: "include",
+                });
+                if (!r.ok) return;
+                const data = await r.json();
+                this.currentSessionUser = (data?.usuario?.usuario || "").toString().toUpperCase();
+            } catch (_) {
+                this.currentSessionUser = "";
+            }
+        },
+        isSelfUser(u) {
+            const target = (u?.usuario || "").toString().toUpperCase();
+            return !!target && !!this.currentSessionUser && target === this.currentSessionUser;
         },
         async fetchRoles() {
             if (!this.canAccess()) {
@@ -226,6 +252,9 @@ document.addEventListener("alpine:init", () => {
         userRole(u) {
             return u && u.rol ? u.rol : "-";
         },
+        userName(u) {
+            return (u && (u.nombre || u.usuario)) || "-";
+        },
         changePage(p) {
             if (p >= 1 && p <= this.pagination.last_page) {
                 this.pagination.page = p;
@@ -236,7 +265,6 @@ document.addEventListener("alpine:init", () => {
             if (!this.canAccess() || this.isSubmitting) return;
             this.createForm = {
                 usuario: "",
-                nombre_usuario: "",
                 correo_electronico: "",
                 estado_usuario: "ACTIVO",
                 contrasena: "",
@@ -284,10 +312,13 @@ document.addEventListener("alpine:init", () => {
         },
         openEdit(u) {
             if (!this.canAccess() || this.isSubmitting) return;
+            if (this.isSelfUser(u)) {
+                this.notify("No puedes editar tu propio usuario desde este módulo", "error");
+                return;
+            }
             this.editForm = {
                 id: u.id,
                 usuario: u.usuario,
-                nombre_usuario: u.nombre_usuario,
                 correo_electronico: u.correo_electronico,
                 estado_usuario: u.estado_usuario,
                 contrasena: "",
@@ -303,7 +334,6 @@ document.addEventListener("alpine:init", () => {
             this.isSubmitting = true;
             this.formError = "";
             const payload = {
-                nombre_usuario: this.editForm.nombre_usuario,
                 correo_electronico: this.editForm.correo_electronico,
                 estado_usuario: this.editForm.estado_usuario,
             };
@@ -341,8 +371,59 @@ document.addEventListener("alpine:init", () => {
         },
         openInactivar(user) {
             if (!this.canAccess()) return;
+            if (this.isSelfUser(user)) {
+                this.notify("No puedes inactivar tu propio usuario", "error");
+                return;
+            }
             this.userToInactivate = user;
             this.showDeleteModal = true;
+        },
+        openResetPasswordModal(user) {
+            if (!user?.id) return;
+            if (this.isSelfUser(user)) {
+                this.notify("No puedes restablecer tu propia contraseña desde este módulo", "error");
+                return;
+            }
+
+            this.userToResetPassword = user;
+            this.isResetPasswordConfirmModalOpen = true;
+        },
+
+        async confirmResetPasswordGenerica() {
+            const user = this.userToResetPassword;
+            if (!user?.id) return;
+
+            try {
+                const resp = await fetch(`${this.apiBase}/${user.id}/reset-password-generica`, {
+                    method: "PUT",
+                    headers: this.authHeaders(),
+                    credentials: "include",
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(data?.error || "No se pudo restablecer la contraseña");
+                }
+
+                this.isResetPasswordConfirmModalOpen = false;
+                this.resetPasswordResult = {
+                    usuario: data?.usuario || user?.usuario || "",
+                    passwordGenerica: data?.password_generica || "",
+                };
+                this.isResetPasswordResultModalOpen = true;
+                await this.fetchUsers();
+            } catch (e) {
+                this.notify(e.message || "Error al restablecer contraseña", "error");
+            }
+        },
+        async copyResetPassword() {
+            const pwd = this.resetPasswordResult?.passwordGenerica || "";
+            if (!pwd) return;
+            try {
+                await navigator.clipboard.writeText(pwd);
+                this.notify("Contraseña copiada al portapapeles");
+            } catch (_) {
+                this.notify("No se pudo copiar automáticamente", "error");
+            }
         },
         openReporte() {
             if (!this.canAccess()) return;
@@ -360,6 +441,10 @@ document.addEventListener("alpine:init", () => {
         },
         async inactivarUser(user) {
             if (!user || !user.id) return;
+            if (this.isSelfUser(user)) {
+                this.notify("No puedes inactivar tu propio usuario", "error");
+                return;
+            }
             try {
                 const resp = await fetch(`${this.apiBase}/${user.id}`, {
                     method: "DELETE",

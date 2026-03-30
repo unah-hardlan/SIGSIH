@@ -50,9 +50,9 @@ use App\Models\EstadoOrdenServicio;
 
 Route::middleware('auth:sanctum')->get('/user', [ProfileController::class, 'sanctumUser']);
 
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
 Route::post('logout', [AuthController::class, 'logout']);
-Route::post('register', [AuthController::class, 'register']);
+Route::post('register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
 Route::post('email/resend', [AuthController::class, 'resendVerification']);
 Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
@@ -60,10 +60,14 @@ Route::post('2fa/verify', [TwoFactorController::class, 'verifyChallenge']);
 Route::post('email-contacto/enviar-codigo', [\App\Http\Controllers\EmailVerificationController::class, 'enviarCodigo']);
 Route::post('email-contacto/verificar-codigo', [\App\Http\Controllers\EmailVerificationController::class, 'verificarCodigo']);
 Route::post('email-contacto/verificar-estado', [\App\Http\Controllers\EmailVerificationController::class, 'verificarEstado']);
+Route::post('password/email', [AuthController::class, 'sendPasswordResetEmail'])->middleware('throttle:auth-password-recovery');
 
 Route::middleware(['jwt.auth', 'throttle:30,1'])->get('catalogos/generos', [\App\Http\Controllers\GeneroController::class, 'catalog']);
 
-Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function () {
+// Catálogos sin autenticación
+Route::get('tecnicos', [UsuarioController::class, 'tecnicosCatalog']);
+
+Route::middleware(['jwt.auth', 'jwt.refresh', 'force.password.change', 'auto.permiso'])->group(function () {
     Route::post('2fa/setup/start', [TwoFactorController::class, 'startSetup']);
     Route::post('2fa/setup/confirm', [TwoFactorController::class, 'confirmSetup']);
     Route::post('2fa/disable', [TwoFactorController::class, 'disable']);
@@ -73,12 +77,15 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::delete('perfil/avatar', [ProfileController::class, 'deleteAvatar']);
     Route::post('perfil/password', [ProfileController::class, 'changePassword']);
     Route::apiResource('usuarios', UsuarioController::class);
+    Route::put('usuarios/{id}/reset-password-generica', [UsuarioController::class, 'resetPasswordGenerica']);
     Route::put('usuarios/{id}/roles', [UsuarioController::class, 'syncRoles']);
     Route::get('usuarios/{id}/roles', [UsuarioController::class, 'getRoles']);
     Route::apiResource('roles', RolController::class);
     Route::put('permisos/roles/{idRol}/objetos/{idObjeto}', [PermisoController::class, 'upsertForRoleObject']);
     Route::apiResource('permisos', PermisoController::class);
+    Route::get('bitacoras/export/csv', [BitacoraController::class, 'exportCsv']);
     Route::apiResource('bitacoras', BitacoraController::class);
+    Route::post('bitacoras/clean/all', [BitacoraController::class, 'destroyAll']);
     Route::apiResource('parametros', ParametroController::class);
     Route::apiResource('objetos', ObjetoController::class);
     Route::apiResource('tipos-objeto', TipoObjetoController::class);
@@ -97,6 +104,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::apiResource('direcciones', DireccionesController::class);
     Route::apiResource('origenes', \App\Http\Controllers\OrigenController::class);
     Route::apiResource('cotizaciones', \App\Http\Controllers\CotizacionController::class);
+    Route::put('cotizaciones/{id}/restore', [\App\Http\Controllers\CotizacionController::class, 'restore']);
     Route::apiResource('acciones-realizadas', \App\Http\Controllers\AccionRealizadaController::class);
     Route::apiResource('items-cotizacion', \App\Http\Controllers\ItemCotizacionController::class);
     Route::apiResource('tipos-movimiento', \App\Http\Controllers\TipoMovimientoController::class);
@@ -141,6 +149,9 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
 
     Route::post('db/backup', [\App\Http\Controllers\GestionDbController::class, 'backup']);
+    Route::get('db/backups', [\App\Http\Controllers\GestionDbController::class, 'listBackups']);
+    Route::put('db/backups/{id}/restore', [\App\Http\Controllers\GestionDbController::class, 'restoreBackup']);
+    Route::delete('db/backups/{id}', [\App\Http\Controllers\GestionDbController::class, 'destroyBackup']);
     Route::get('db/backup/download', [\App\Http\Controllers\GestionDbController::class, 'download'])->name('db.backup.download');
 
     Route::get('clientes', [\App\Http\Controllers\ClienteCatalogController::class, 'index'])
@@ -152,8 +163,6 @@ Route::middleware(['jwt.auth', 'jwt.refresh', 'auto.permiso'])->group(function (
     Route::put('usuarios/{id}/rol', [\App\Http\Controllers\UsuarioController::class, 'setRol']);
 
     Route::get('roles/{id}/usuarios', [\App\Http\Controllers\RolController::class, 'usuarios']);
-
-    Route::get('tecnicos', [UsuarioController::class, 'tecnicosCatalog'])->withoutMiddleware('auto.permiso');
 
     Route::get('dashboard/indicadores', [DashboardController::class, 'indicators']);
     Route::get('dashboard/ordenes-estado', [DashboardController::class, 'ordenesPorEstado']);

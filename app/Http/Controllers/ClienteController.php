@@ -478,7 +478,7 @@ class ClienteController extends Controller
                 'segundo_apellido' => 'nullable|string|max:50',
                 'dni' => 'required|string|max:20',
                 'id_genero_fk' => 'nullable|exists:tbl_genero,id_genero_pk',
-                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'avatar' => 'nullable|file|image|mimes:jpeg,jpg,png,webp|mimetypes:image/jpeg,image/png,image/webp|max:2048',
             ]);
 
             DB::beginTransaction();

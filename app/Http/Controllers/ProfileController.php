@@ -44,7 +44,7 @@ class ProfileController extends Controller
             'persona' => $persona,
             'usuario' => [
                 'usuario' => $user->usuario,
-                'nombre_usuario' => $user->nombre_usuario,
+                'nombre' => $user->nombre,
                 'correo_electronico' => $user->correo_electronico,
             ],
         ]);
@@ -158,7 +158,12 @@ class ProfileController extends Controller
     public function uploadAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|max:2048',
+            'avatar' => 'required|file|image|mimes:jpeg,jpg,png,webp|mimetypes:image/jpeg,image/png,image/webp|max:2048',
+        ], [
+            'avatar.image' => 'El archivo debe ser una imagen valida.',
+            'avatar.mimes' => 'La imagen debe ser JPEG, PNG o WEBP.',
+            'avatar.mimetypes' => 'Tipo de archivo no permitido para foto de perfil.',
+            'avatar.max' => 'La imagen no puede superar 2MB.',
         ]);
         $user = Auth::user();
         $uid = $this->getUserId($user);
@@ -211,7 +216,7 @@ class ProfileController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8|max:100|confirmed|regex:/^(?!.*\s)[\x21-\x7E\xA1-\xFF]+$/',
         ]);
 
         if ($validator->fails()) {
@@ -252,6 +257,14 @@ class ProfileController extends Controller
             ], 400);
         }
 
+        $policyError = $this->validatePasswordAgainstBusinessRules((string) $request->password, (string) ($user->usuario ?? ''));
+        if ($policyError !== null) {
+            return response()->json([
+                'ok' => false,
+                'message' => $policyError,
+            ], 422);
+        }
+
 
         $N = 5;
         $hashes = $uid
@@ -290,7 +303,10 @@ class ProfileController extends Controller
 
         $hashed = Hash::make($request->password);
         if ($uid) {
-            Usuario::where('id_usuario_pk', $uid)->update(['contrasena' => $hashed]);
+            Usuario::where('id_usuario_pk', $uid)->update([
+                'contrasena' => $hashed,
+                'primer_ingreso' => 0,
+            ]);
 
 
             try {
@@ -324,5 +340,46 @@ class ProfileController extends Controller
             'ok' => true,
             'message' => 'Contraseña cambiada exitosamente'
         ]);
+    }
+
+    private function validatePasswordAgainstBusinessRules(string $password, string $username): ?string
+    {
+        $upperPassword = strtoupper($password);
+        if ($username !== '' && $upperPassword === strtoupper($username)) {
+            return 'La contraseña no puede ser igual al usuario.';
+        }
+
+        if (in_array($upperPassword, ['CONTRASENA', 'CONTRASEÑA', 'PASSWORD'], true)) {
+            return 'La contraseña no puede ser una palabra muy común.';
+        }
+
+        $sample = Parametro::whereIn('parametro', ['ADMIN.PASSWORD', 'ADMIN_CPASS'])
+            ->orderByRaw("FIELD(parametro,'ADMIN.PASSWORD','ADMIN_CPASS')")
+            ->value('valor');
+
+        $sample = is_string($sample) ? trim($sample) : '';
+        if ($sample === '') {
+            return null;
+        }
+
+        $minLength = max(8, strlen($sample));
+        if (strlen($password) < $minLength) {
+            return 'La contraseña debe tener al menos ' . $minLength . ' caracteres.';
+        }
+
+        if (preg_match('/[A-Z]/', $sample) && !preg_match('/[A-Z]/', $password)) {
+            return 'La contraseña debe incluir al menos una letra mayúscula.';
+        }
+        if (preg_match('/[a-z]/', $sample) && !preg_match('/[a-z]/', $password)) {
+            return 'La contraseña debe incluir al menos una letra minúscula.';
+        }
+        if (preg_match('/\d/', $sample) && !preg_match('/\d/', $password)) {
+            return 'La contraseña debe incluir al menos un número.';
+        }
+        if (preg_match('/[^A-Za-z0-9]/', $sample) && !preg_match('/[^A-Za-z0-9]/', $password)) {
+            return 'La contraseña debe incluir al menos un símbolo.';
+        }
+
+        return null;
     }
 }

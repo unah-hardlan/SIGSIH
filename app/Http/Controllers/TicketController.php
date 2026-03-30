@@ -321,7 +321,7 @@ class TicketController extends Controller
             return $t->estado && strtolower($t->estado->nombre) === 'finalizado';
         })->count();
 
-        $fecha = now()->format('d/m/Y');
+        $fecha = \App\Helpers\DateHelper::nowFormatted('d/m/Y');
         $modulo = 'tickets';
 
         return view('admin.reporte-tickets', compact('tickets', 'total', 'pendientes', 'enProceso', 'finalizados', 'fecha', 'modulo', 'sort', 'direction'));

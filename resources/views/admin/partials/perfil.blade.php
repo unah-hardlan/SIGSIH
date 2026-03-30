@@ -13,7 +13,7 @@
                         <label
                             class="bg-blue-600 hover:bg-blue-700 text-white rounded-full h-8 w-8 flex items-center justify-center cursor-pointer shadow" title="Cambiar foto">
                             <i class="fas fa-camera"></i>
-                            <input type="file" class="hidden" @change="onAvatarChange($event)">
+                            <input type="file" class="hidden" accept="image/jpeg,image/jpg,image/png,image/webp" @change="onAvatarChange($event)">
                         </label>
                         @else
                         <span class="bg-gray-400 text-white rounded-full h-8 w-8 flex items-center justify-center shadow cursor-not-allowed" title="Sin permiso para actualizar"><i class="fas fa-camera"></i></span>
@@ -105,8 +105,9 @@
                         <select x-model="form.id_genero_fk" @change="onFormChange()"
                             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white nunito-regular">
                             <option class="nunito-regular" value="">Seleccione…</option>
-                            <option class="nunito-regular" value="1">Masculino</option>
-                            <option class="nunito-regular" value="2">Femenino</option>
+                            <template x-for="g in generos" :key="g.id_genero_pk || g.id">
+                                <option class="nunito-regular" :value="g.id_genero_pk || g.id" x-text="g.genero"></option>
+                            </template>
                         </select>
                     </div>
                     <div>
@@ -276,6 +277,23 @@
 
         </div>
 
+    </div>
+    <div x-cloak
+        x-show="showConfirmModal"
+        class="fixed inset-0 z-50 flex items-center justify-center"
+        style="display: none;"
+        x-transition
+        aria-modal="true"
+        role="dialog">
+        <div class="absolute inset-0 bg-black/50" @click="resolveConfirmModal(false)"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 nunito-bold" x-text="confirmTitle || 'Confirmación requerida'"></h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 nunito-regular" x-text="confirmDescription || '¿Deseas continuar?'"></p>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" class="px-4 py-2 rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200" @click="resolveConfirmModal(false)">Cancelar</button>
+                <button type="button" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white" @click="resolveConfirmModal(true)">Confirmar</button>
+            </div>
+        </div>
     </div>
     <div x-cloak
         x-show="showPasswordModal"

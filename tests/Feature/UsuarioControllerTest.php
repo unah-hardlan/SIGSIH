@@ -16,7 +16,7 @@ class UsuarioControllerTest extends TestCase
         $usuario = Usuario::factory()->create();
         $payload = [
             'sub' => $usuario->id_usuario_pk,
-            'name' => $usuario->nombre_usuario,
+            'name' => $usuario->nombre,
             'iat' => time(),
             'exp' => time() + 3600,
         ];
@@ -38,7 +38,6 @@ class UsuarioControllerTest extends TestCase
     {
         $data = [
             'usuario' => 'testuser',
-            'nombre_usuario' => 'Test User',
             'correo_electronico' => 'test@example.com',
             'contrasena' => 'password123',
         ];
@@ -65,13 +64,13 @@ class UsuarioControllerTest extends TestCase
     {
         $usuario = Usuario::factory()->create();
 
-        $data = ['nombre_usuario' => 'Updated Name'];
+        $data = ['correo_electronico' => 'updated@example.com'];
 
         $token = $this->authenticate();
         $response = $this->putJson("/api/usuarios/{$usuario->id_usuario_pk}", $data, ['Authorization' => "Bearer $token"]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('tbl_ms_usuario', ['nombre_usuario' => 'Updated Name']);
+        $this->assertDatabaseHas('tbl_ms_usuario', ['correo_electronico' => 'updated@example.com']);
     }
 
     public function test_destroy_deletes_a_user()

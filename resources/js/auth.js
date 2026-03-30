@@ -22,7 +22,6 @@ function createAuthPage() {
         username: "",
         password: "",
         confirmPassword: "",
-        nombre_usuario: "",
         email: "",
         loading: false,
         formError: "",
@@ -142,6 +141,8 @@ function createAuthPage() {
             const issues = [];
             if (value.length === 0) {
                 issues.push("El usuario es requerido.");
+            } else if (!this.isLogin && value.length < 4) {
+                issues.push("El usuario debe tener al menos 4 caracteres.");
             } else if (!this.isAlphaNumeric(value)) {
                 issues.push(
                     "Solo se permiten letras y números, sin espacios ni símbolos."
@@ -156,32 +157,15 @@ function createAuthPage() {
             return this.usernameIssues(username).length === 0;
         },
 
-        nombreUsuarioIssues(nombre) {
-            const value = nombre || "";
-            const issues = [];
-            if (!this.isLogin && value.length === 0) {
-                issues.push("El nombre de usuario es requerido.");
-            } else if (value.length > 0 && !this.isAlphaNumeric(value)) {
-                issues.push(
-                    "Solo se permiten letras y números, sin espacios ni símbolos."
-                );
-            }
-            return issues;
-        },
-
-        validateNombreUsuario(nombre) {
-            return this.nombreUsuarioIssues(nombre).length === 0;
-        },
-
         emailIssues(email) {
             const value = email || "";
             const issues = [];
             if (!this.isLogin && value.length === 0) {
                 issues.push("El correo electrónico es requerido.");
             } else if (value.length > 0) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const emailRegex = /^[A-Za-z0-9._%+\-\u00C0-\u00FF]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/u;
                 if (!emailRegex.test(value)) {
-                    issues.push("Ingresa un correo electrónico válido.");
+                    issues.push("Usa un correo válido con letras latinas (incluye ñ), números y símbolos estándar.");
                 }
             }
             return issues;
@@ -199,6 +183,9 @@ function createAuthPage() {
             }
             if (/\s/.test(value)) {
                 issues.push("No debe contener espacios.");
+            }
+            if (/[^\x21-\x7E\u00A1-\u00FF]/.test(value)) {
+                issues.push("No se permiten caracteres de alfabetos no latinos (por ejemplo: 名前).");
             }
 
             if (!this.isLogin && !/[A-Z]/.test(value)) {
@@ -232,12 +219,6 @@ function createAuthPage() {
             this.clearFieldError("usuario");
             const issues = this.usernameIssues(this.username);
             if (issues.length > 0) this.setFieldError("usuario", issues[0]);
-        },
-        handleNombreUsuarioInput() {
-            this.clearFieldError("nombre_usuario");
-            const issues = this.nombreUsuarioIssues(this.nombre_usuario);
-            if (issues.length > 0)
-                this.setFieldError("nombre_usuario", issues[0]);
         },
         handleEmailInput() {
             this.clearFieldError("correo_electronico");
@@ -295,6 +276,18 @@ function createAuthPage() {
                         return;
                     }
 
+                    if (data.status === "password_reset_required") {
+                        this.formError =
+                            data?.message ||
+                            "Debes cambiar tu contraseña para poder ingresar al sistema.";
+                        if (data?.reset_url) {
+                            window.location.assign(data.reset_url);
+                            return;
+                        }
+                        this.loading = false;
+                        return;
+                    }
+
                     try {
                         window.showToast &&
                             window.showToast("Sesión iniciada", "success", {
@@ -310,7 +303,6 @@ function createAuthPage() {
                 } else {
                     await axios.post("/api/register", {
                         usuario: this.username,
-                        nombre_usuario: this.nombre_usuario,
                         correo_electronico: this.email,
                         contrasena: this.password,
                     });
@@ -330,6 +322,14 @@ function createAuthPage() {
                     this.formError =
                         resp.data?.message ||
                         "Hay información incorrecta. Verifica los datos e inténtalo de nuevo.";
+                } else if (resp?.status === 429) {
+                    const retry = Number(resp?.data?.retry_after_seconds || 0);
+                    this.formError =
+                        resp?.data?.message ||
+                        "Demasiados intentos. Intenta nuevamente más tarde.";
+                    if (Number.isFinite(retry) && retry > 0) {
+                        this.formError += ` (Espera ${Math.ceil(retry / 60)} minuto(s))`;
+                    }
                 } else if (resp?.status === 401) {
                     this.formError =
                         resp.data?.message ||
@@ -345,6 +345,17 @@ function createAuthPage() {
                         resp?.data?.message ||
                         "Debes verificar tu correo antes de continuar.";
                     this.showVerifyEmailModal = true;
+                } else if (
+                    resp?.status === 403 &&
+                    resp?.data?.status === "password_reset_required"
+                ) {
+                    this.formError =
+                        resp?.data?.message ||
+                        "Debes cambiar tu contraseña para poder ingresar al sistema.";
+                    if (resp?.data?.reset_url) {
+                        window.location.assign(resp.data.reset_url);
+                        return;
+                    }
                 } else {
                     this.formError =
                         resp?.data?.error ||

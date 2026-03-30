@@ -12,18 +12,15 @@ use App\Models\Persona;
 
 class AppServiceProvider extends ServiceProvider
 {
-    
-    public function register(): void
-    {
-        
-    }
 
-    
+    public function register(): void {}
+
+
     public function boot(): void
     {
-        
+
         require_once app_path('Helpers/SpaHelper.php');
-        
+
         require_once app_path('Helpers/DateHelper.php');
 
         if (!file_exists(public_path('storage'))) {
@@ -33,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        
+
         View::composer('*', function ($view) {
             $appName = Cache::remember('appName', 300, function () {
                 $v = optional(Parametro::where('parametro', 'APP.NOMBRE')->first())->valor;
@@ -85,13 +82,13 @@ class AppServiceProvider extends ServiceProvider
                 ->with('appTimezone', $timezone);
         });
 
-        
+
         Blade::directive('fecha', function ($expression) {
             return "<?php echo \\App\\Helpers\\DateHelper::format(...([$expression])); ?>";
         });
 
-        
-        
+
+
         Blade::if('perm', function ($objects, string $action) {
             try {
                 $user = auth()->user();
@@ -102,11 +99,11 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        
+
         View::composer('cliente.partials.header', \App\Http\View\Composers\ClienteHeaderComposer::class);
         View::composer('cliente.partials.sidebar', \App\Http\View\Composers\ClienteSidebarComposer::class);
 
-        
+
         View::composer('*', function ($view) {
             try {
                 $user = Auth::user();
@@ -115,7 +112,7 @@ class AppServiceProvider extends ServiceProvider
                     $persona = $uid ? Persona::where('id_usuario_fk', $uid)->first() : null;
                     $authUser = [
                         'usuario' => $user->usuario ?? null,
-                        'nombre_usuario' => $user->nombre_usuario ?? null,
+                        'nombre' => $user->nombre ?? null,
                         'correo_electronico' => $user->correo_electronico ?? null,
                     ];
                     $view->with('authUser', $authUser)

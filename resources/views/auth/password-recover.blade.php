@@ -15,7 +15,7 @@
 </head>
 
 <body class="min-h-screen transition-colors duration-300 bg-[#171C25] text-gray-100">
-    
+
     <div class="min-h-screen flex flex-col items-center justify-center p-4 bg-[#171C25]">
 
         <div class="w-full max-w-md mx-auto">
@@ -80,8 +80,31 @@
                 statusMessage: '',
                 statusType: 'info',
                 init() {},
+                recoverIdentifierIssues() {
+                    const value = (this.recoverIdentifier || '').trim();
+                    const issues = [];
+                    if (!value) {
+                        issues.push('Debes ingresar tu correo electrónico o nombre de usuario.');
+                        return issues;
+                    }
+
+                    const allowed = /^(?!.*\s)[A-Za-z0-9._%+\-\u00C0-\u00FF@]+$/u;
+                    if (!allowed.test(value)) {
+                        issues.push('No se permiten caracteres de alfabetos no latinos (por ejemplo: 名前).');
+                    }
+
+                    return issues;
+                },
                 async handleRecover() {
-                    if (!this.recoverIdentifier) return;
+                    const issues = this.recoverIdentifierIssues();
+                    if (issues.length > 0) {
+                        this.statusType = 'error';
+                        this.statusMessage = issues[0];
+                        if (window.showToast) {
+                            window.showToast(issues[0], 'error');
+                        }
+                        return;
+                    }
 
                     this.statusMessage = '';
                     this.loading = true;
