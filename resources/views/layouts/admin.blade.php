@@ -83,8 +83,7 @@
             try {
                 const el = document.getElementById('auth-bootstrap');
                 if (el && el.textContent) initial = JSON.parse(el.textContent);
-            } catch (_) {
-            }
+            } catch (_) {}
             Alpine.store('perfil', {
                 firstTime: !!initial.firstTime,
                 user: initial.user || null,

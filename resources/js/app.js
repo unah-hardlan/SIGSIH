@@ -520,6 +520,14 @@ document.addEventListener("alpine:init", () => {
         async navigate(url, viewName) {
             if (this.currentView === viewName) return;
 
+            // Prevent SPA navigation if user must complete profile
+            try {
+                if (window.Alpine && Alpine.store && Alpine.store('perfil') && Alpine.store('perfil').firstTime && viewName !== 'perfil') {
+                    window.showToast && window.showToast('Debe completar su perfil antes de continuar.', 'warning');
+                    return;
+                }
+            } catch (_) { }
+
             if (this.loadedViews[viewName]) {
                 this.setContent(this.loadedViews[viewName]);
                 this.updateState(url, viewName);

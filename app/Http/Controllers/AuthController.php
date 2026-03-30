@@ -105,7 +105,7 @@ class AuthController extends Controller
 
         $user = $cred['user'];
 
-        if ((bool) ($user->primer_ingreso ?? false)) {
+        if ((bool) ($user->pendiente_cambio_contrasena ?? false)) {
             $resetUrl = $this->buildForcedResetUrl($user);
             return response()->json([
                 'status' => 'password_reset_required',
@@ -154,7 +154,7 @@ class AuthController extends Controller
         unset($payload['token']);
 
         try {
-            if ((bool) ($user->primer_ingreso ?? false)) {
+            if ((bool) ($user->pendiente_cambio_contrasena ?? false)) {
                 $rolNombre = strtolower($result['user']['rol'] ?? ($user->rol->rol ?? ''));
                 $payload['force_password_change'] = true;
                 $payload['redirect_url'] = in_array($rolNombre, ['cliente', 'client', 'usuario', 'user'])
@@ -698,7 +698,8 @@ class AuthController extends Controller
             return redirect()->route('login');
         }
 
-        if (!(bool) ($user->primer_ingreso ?? false)) {
+        // If admin forced a password change, use the pendiente flag.
+        if (!(bool) ($user->pendiente_cambio_contrasena ?? false)) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -773,8 +774,10 @@ class AuthController extends Controller
 
 
         $usuario->contrasena = $data['password'];
+        // Clear both flags: primer_ingreso (if any) and pendiente_cambio_contrasena
+        // because the user successfully set a new password via recovery flow.
         $usuario->primer_ingreso = 0;
-
+        $usuario->pendiente_cambio_contrasena = 0;
         $usuario->estado_usuario = 'ACTIVO';
         $usuario->save();
 

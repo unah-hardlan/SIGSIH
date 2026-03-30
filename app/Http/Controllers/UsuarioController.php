@@ -147,6 +147,14 @@ class UsuarioController extends Controller
     public function store(StoreUsuarioRequest $request)
     {
         $data = $request->validated();
+        // Cuando el usuario se crea desde el módulo de administración, no
+        // forzamos el primer ingreso por defecto. El flujo de registro
+        // público (AuthController::register) y el restablecimiento
+        // genérico (resetPasswordGenerica) son los únicos que deberán marcar
+        // primer_ingreso = 1 para obligar al cambio de contraseña.
+        if (!array_key_exists('primer_ingreso', $data)) {
+            $data['primer_ingreso'] = 0;
+        }
         $usuario = Usuario::create($data);
         try {
             $this->bitacora->logFor('Usuarios', 'Insertar', 'Creación de usuario ' . $usuario->usuario, null, [
@@ -387,7 +395,9 @@ class UsuarioController extends Controller
 
         $genericPassword = $this->genericPasswordValue();
         $usuario->contrasena = $genericPassword;
-        $usuario->primer_ingreso = 1;
+        // Marcar que el usuario debe cambiar la contraseña porque el admin la
+        // restableció de forma genérica. No tocar `primer_ingreso` aquí.
+        $usuario->pendiente_cambio_contrasena = 1;
         $usuario->save();
 
         try {
@@ -404,7 +414,7 @@ class UsuarioController extends Controller
             $this->bitacora->logFor('Usuarios', 'Seguridad', 'Restablecimiento de contraseña genérica para usuario ' . $usuario->usuario, $usuario->id_usuario_pk, [
                 'tabla' => 'tbl_ms_usuario',
                 'id_registro' => $usuario->id_usuario_pk,
-                'despues' => ['primer_ingreso' => 1],
+                'despues' => ['pendiente_cambio_contrasena' => 1],
             ]);
         } catch (\Throwable $e) {
         }

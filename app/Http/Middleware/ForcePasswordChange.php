@@ -10,29 +10,10 @@ class ForcePasswordChange
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = auth()->user();
-        if (!$user) {
-            return $next($request);
-        }
-
-        if (!(bool) ($user->primer_ingreso ?? false)) {
-            return $next($request);
-        }
-
-        if ($this->isAllowedWhileFirstLogin($request)) {
-            return $next($request);
-        }
-
-        if ($request->expectsJson() || $request->is('api/*')) {
-            return response()->json([
-                'error' => 'Debes cambiar tu contraseña antes de continuar.',
-                'force_password_change' => true,
-                'status' => 'password_reset_required',
-                'reset_url' => route('password.force.redirect'),
-            ], 403);
-        }
-
-        return redirect()->route('password.force.redirect');
+        // Deshabilitado: ya no forzamos el cambio de contraseña basado en
+        // `primer_ingreso`. Mantener este middleware como passthrough para
+        // evitar redirecciones inesperadas.
+        return $next($request);
     }
 
     private function isAllowedWhileFirstLogin(Request $request): bool
