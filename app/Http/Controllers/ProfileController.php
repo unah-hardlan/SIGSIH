@@ -303,9 +303,12 @@ class ProfileController extends Controller
 
         $hashed = Hash::make($request->password);
         if ($uid) {
+            // Actualizar solo la contraseña aquí. No tocar `primer_ingreso` —
+            // el indicador de primer ingreso debe permanecer activo hasta que
+            // el usuario cree/actualice su `Persona` (completar perfil).
             Usuario::where('id_usuario_pk', $uid)->update([
                 'contrasena' => $hashed,
-                'primer_ingreso' => 0,
+                'pendiente_cambio_contrasena' => 0,
             ]);
 
 

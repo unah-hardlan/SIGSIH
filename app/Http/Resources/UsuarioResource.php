@@ -19,6 +19,7 @@ class UsuarioResource extends JsonResource
 
             'rol' => optional($this->whenLoaded('rol', $this->rol))->rol ?? optional($this->rol)->rol,
             'primer_ingreso' => (bool) $this->primer_ingreso,
+            'pendiente_cambio_contrasena' => (bool) ($this->pendiente_cambio_contrasena ?? false),
             'fecha_ultima_conexion' => optional($this->fecha_ultima_conexion)->toDateTimeString(),
             'fecha_ultima_conexion_formatted' => \App\Helpers\DateHelper::format($this->fecha_ultima_conexion),
             'fecha_vencimiento' => optional($this->fecha_vencimiento)->toDateString(),

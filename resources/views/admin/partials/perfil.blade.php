@@ -1,6 +1,13 @@
 {{-- resources/views/admin/partials/perfil.blade.php --}}
 
 <div class="container mx-auto py-8 dark:bg-gray-900 min-h-screen" x-data="perfilPage()" x-init="init()">
+    <div x-cloak x-show="Alpine && Alpine.store && Alpine.store('perfil') && Alpine.store('perfil').firstTime && !Alpine.store('perfil').persona"
+        class="mb-6 px-4">
+        <div class="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold nunito-bold">Completa tu perfil:</strong>
+            <span class="block sm:inline nunito-regular">Debes completar tu información personal para poder usar el sistema. Termina los campos marcados y guarda los cambios.</span>
+        </div>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
         <div class="md:col-span-1">

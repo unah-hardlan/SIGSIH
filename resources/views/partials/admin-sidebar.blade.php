@@ -409,7 +409,8 @@
 
             @if($canAdministracion)
             <li class="mt-2" x-data="sidebarDropdown('administracion', false)" x-init="init()"
-                @close-all-dropdowns.window="close()">
+                @close-all-dropdowns.window="close()"
+                :class="$store.perfil.firstTime ? 'opacity-50 pointer-events-none' : ''">
                 <button @click="toggle()"
                     :class="open ? 'bg-gray-800 text-yellow-400 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-400 dark:text-gray-300'"
                     class="w-full flex items-center justify-between px-4 py-1.5 transition-colors hover:bg-gray-700 dark:hover:bg-gray-600">
